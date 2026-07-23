@@ -1,0 +1,65 @@
+# questions/de/deep.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-3ffb209d
+  text: "Wann hast du zuletzt deine Meinung zu etwas Wichtigem geändert?"
+  tags: [reflective]
+  origin: q-881c8a18
+  added: "2026-07-24"
+- id: q-9b0c3d3a
+  text: "Wovon bist du überzeugt, obwohl kaum jemand in deinem Umfeld zustimmt?"
+  tags: [reflective, spicy]
+  added: "2026-07-24"
+- id: q-6b32ea01
+  text: "Auf welche Frage möchtest du die Antwort lieber gar nicht wissen?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-2b59054f
+  text: "Was trägst du mit dir herum, das du längst ablegen könntest?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-49ceabcd
+  text: "Worauf wäre dein jüngeres Ich am meisten stolz?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-8f881b97
+  text: "Welcher kleine Moment hat die Richtung deines Lebens verändert?"
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-8f885b70
+  text: "Wie sieht genug für dich aus?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-87383531
+  text: "Wem vertraust du blind, und womit hat diese Person das verdient?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-30cd5b8d
+  text: "Was würdest du wagen, wenn du nicht scheitern könntest?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-c3250213
+  text: "Welches Kompliment fällt dir schwer anzunehmen, und warum?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-1109739e
+  text: "Was hast du verziehen, obwohl du es nie für möglich gehalten hättest?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-e7220f70
+  text: "Welche Lüge erzählst du dir selbst am häufigsten?"
+  tags: [reflective, spicy]
+  added: "2026-07-24"
+- id: q-2c12f0ce
+  text: "Wo fühlst du dich am meisten wie du selbst?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-a0ea7586
+  text: "Welche Frage sollten dir andere Menschen viel öfter stellen?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9d31b9e4
+  text: "Wenn dein bisheriges Leben Kapitel hätte, wie hieße das aktuelle?"
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"

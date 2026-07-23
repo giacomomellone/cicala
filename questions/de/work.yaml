@@ -1,0 +1,61 @@
+# questions/de/work.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-af3575b6
+  text: "Womit hast du dein allererstes eigenes Geld verdient?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-d3b2442e
+  text: "Was würdest du arbeiten, wenn Geld überhaupt keine Rolle spielte?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-0d7348b2
+  text: "Welchen Teil deiner Arbeit würdest du sogar umsonst machen?"
+  added: "2026-07-24"
+- id: q-ea9e8117
+  text: "Wie sieht für dich ein richtig guter Arbeitstag aus?"
+  added: "2026-07-24"
+- id: q-2725edb9
+  text: "Was ist der wertvollste Fehler, den du je gemacht hast?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-a5c4b1fc
+  text: "Wen bewunderst du für seine Arbeit, obwohl du sie selbst nie machen könntest?"
+  added: "2026-07-24"
+- id: q-c093b82a
+  text: "Was wolltest du mit achtzehn werden, und wie stehst du heute dazu?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-1fd54883
+  text: "Was wäre dir lieber: vier intensive Arbeitstage oder fünf entspannte?"
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-6628a147
+  text: "Welche Fähigkeit aus deinem Beruf hilft dir überall im Leben weiter?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-a9e783a6
+  text: "Was würdest du in einem freien Jahr bei vollem Gehalt wirklich tun?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-8c4bef32
+  text: "Worüber könntest du morgen ohne jede Vorbereitung einen Vortrag halten?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-37484d39
+  text: "Welches Lob für deine Arbeit ist dir bis heute im Gedächtnis geblieben?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-5e35de43
+  text: "Welchen Beruf aus einem früheren Jahrhundert hättest du gut gemacht?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-130d9fdd
+  text: "Was bedeutet Erfolg für dich im Moment, und wie hat sich das verändert?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-44e29ebb
+  text: "Wann fühlst du dich am nützlichsten?"
+  tags: [reflective]
+  added: "2026-07-24"

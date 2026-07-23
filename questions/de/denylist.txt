@@ -1,0 +1,58 @@
+# Deutsche Moderations-Sperrliste.
+# Ein Begriff pro Zeile, klein geschrieben; Mehrwort-Ausdrücke sind erlaubt.
+# tools/validate.py prüft ganze Wörter (ohne Beachtung der Groß-/Klein-
+# schreibung) gegen den normalisierten Fragetext. Ein Treffer lässt die CI
+# fehlschlagen, damit eine betreuende Person den Eintrag von Hand prüft —
+# Stolperdraht, kein Urteil. Nur offensichtliche Beleidigungen und explizit
+# Sexuelles aufnehmen; keine schlaue Sprachanalyse versuchen.
+ficken
+fick
+gefickt
+scheiße
+scheisse
+arschloch
+arsch
+fotze
+hure
+nutte
+schlampe
+wichser
+wichsen
+schwanz
+muschi
+möse
+titten
+penis
+vagina
+blasen
+porno
+pornos
+nackt
+geil
+orgasmus
+vergewaltigung
+vergewaltigen
+vergewaltiger
+missbrauchen
+inzest
+pädophil
+pädophiler
+neger
+kanake
+kanaken
+schwuchtel
+tunte
+transe
+spasti
+mongo
+krüppel
+zigeuner
+polacke
+itaker
+judensau
+untermensch
+nazi
+heil hitler
+sieg heil
+hurensohn
+missgeburt

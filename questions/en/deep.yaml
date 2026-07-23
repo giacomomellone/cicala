@@ -1,0 +1,163 @@
+# questions/en/deep.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-881c8a18
+  text: "When did you last change your mind about something important?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-63ac36c7
+  text: "What do you believe that most people around you don't?"
+  tags: [reflective, spicy]
+  added: "2026-07-24"
+- id: q-37a84249
+  text: "What's a question you're afraid to know the answer to?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-5d4bfdcc
+  text: "What would you do differently if nobody would ever judge you?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-8b3d995f
+  text: "What part of your younger self would be proudest of you now?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-5e6b3088
+  text: "What belief did you inherit that you've never really questioned?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-c43fcf65
+  text: "What does enough look like for you?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-de009941
+  text: "Which version of you, from which year, would you most like to talk to?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-7ae7bc73
+  text: "What's the hardest truth you've accepted about yourself?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-463643bd
+  text: "What are you still carrying that you could put down?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6b030909
+  text: "What would you attempt if you knew you could not fail?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-7b5d4d91
+  text: "Who knows you best, and what would they say your blind spot is?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-67baaa74
+  text: "What's the most alive you've ever felt?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-3cfb6e05
+  text: "What do you hope people say about you when you leave the room?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9c971758
+  text: "What compliment do you have trouble accepting, and why?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-4739b47f
+  text: "If your fear disappeared overnight, what would you do first?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-0305e963
+  text: "What have you forgiven that you once thought you never could?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-815c4918
+  text: "What small moment changed the direction of your life?"
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-b010a682
+  text: "What are you pretending not to know?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d7964420
+  text: "What secret would you be relieved if someone finally asked you about?"
+  tags: [spicy, reflective]
+  added: "2026-07-24"
+- id: q-d582d581
+  text: "What double standard do you know you hold?"
+  tags: [reflective, spicy]
+  added: "2026-07-24"
+- id: q-9c5e1d75
+  text: "What's the biggest lie you tell yourself?"
+  tags: [reflective, spicy]
+  added: "2026-07-24"
+- id: q-44a34024
+  text: "Would you rather know how you'll die or when?"
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-172defba
+  text: "What do you want to want, but don't yet?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-31499a18
+  text: "What's the kindest thing you've done that nobody knows about?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-c902fc0e
+  text: "When were you most wrong about a person?"
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-f77876f3
+  text: "What would a perfect day look like if you couldn't tell anyone about it?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-552688ae
+  text: "What's your earliest memory of feeling truly understood?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a234db42
+  text: "What role has luck played in where you've ended up?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6b87d119
+  text: "What's one thing you would protect at any cost?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d382248e
+  text: "If you wrote a letter to yourself in ten years, what's the first line?"
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-b59d61ab
+  text: "What loss shaped you the most?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-f06bceaf
+  text: "What ritual or tradition gives your life structure?"
+  added: "2026-07-24"
+- id: q-2ca03465
+  text: "What's the best decision you almost didn't make?"
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-92b7788d
+  text: "Where do you feel most like yourself?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-27e1719b
+  text: "What's something beautiful you saw and never told anyone about?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-0ea54e93
+  text: "What question do you wish people asked you more often?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-b4cf6c76
+  text: "If your life so far had chapters, what would this one be called?"
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-e5b3911b
+  text: "What are you more sure of now than ever before?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9e65833f
+  text: "What would you like to be forgiven for?"
+  tags: [reflective]
+  added: "2026-07-24"

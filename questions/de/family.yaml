@@ -1,0 +1,62 @@
+# questions/de/family.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-f9c354d5
+  text: "Was ist deine früheste Erinnerung, und wie deutlich siehst du sie noch?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-3172d648
+  text: "Welches Familienritual soll es für immer geben?"
+  added: "2026-07-24"
+- id: q-5744dcc9
+  text: "Welches Gericht schmeckt für dich nach Zuhause?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-8a874c6a
+  text: "Was wolltest du mit sieben Jahren unbedingt werden?"
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-40e4727a
+  text: "Welcher Geruch versetzt dich sofort zurück in deine Kindheit?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-fa522ea7
+  text: "Welches Spiel konntest du als Kind stundenlang spielen?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a89ef55e
+  text: "Was ist das Klügste, das dir ein Großelternteil je gesagt hat?"
+  added: "2026-07-24"
+- id: q-da5aaaca
+  text: "Worin hatten deine Eltern von Anfang an recht?"
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-3525bd64
+  text: "Wenn deine Familie ein Motto hätte, wie würde es lauten?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-148d5c54
+  text: "Was kannst du besser als alle anderen am Tisch?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-5685017c
+  text: "Wärst du lieber am Meer oder in den Bergen zu Hause?"
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-2167aa72
+  text: "Welches Tier hättest du gern als Haustier, wenn alles möglich wäre?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-5929c1b1
+  text: "Was würdest du an einem Tag ganz ohne Schule und Arbeit machen?"
+  tags: [hypothetical, icebreaker]
+  added: "2026-07-24"
+- id: q-41988d04
+  text: "Welche Geschichte wird bei euch auf jedem Familienfest erzählt?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a8e2c7d3
+  text: "Worauf bist du richtig stolz, weil es schwer zu schaffen war?"
+  tags: [reflective]
+  added: "2026-07-24"

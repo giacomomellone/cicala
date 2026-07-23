@@ -1,0 +1,61 @@
+# English moderation denylist.
+# One lowercase term per line; multi-word phrases allowed. Matched by
+# tools/validate.py as whole words (case-insensitive) against normalized
+# question text. A hit fails CI so a maintainer reviews the entry manually —
+# it is a tripwire, not a verdict. Keep this list to obvious slurs and
+# explicit sexual content; do not attempt clever NLP.
+fuck
+fucking
+motherfucker
+shit
+bullshit
+asshole
+bitch
+bastard
+cunt
+dick
+cock
+pussy
+twat
+wanker
+prick
+slut
+whore
+cum
+jizz
+blowjob
+handjob
+anal
+dildo
+orgasm
+horny
+naked
+nude
+nudes
+porn
+porno
+tits
+boobs
+penis
+vagina
+nigger
+nigga
+faggot
+fag
+dyke
+tranny
+retard
+retarded
+spastic
+kike
+spic
+chink
+wetback
+coon
+rape
+rapist
+molest
+incest
+pedophile
+pedo
+nazi

@@ -1,0 +1,64 @@
+# questions/de/party.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-1c77d2c6
+  text: "Was ist das Spontanste, das du je gemacht hast?"
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-90057e00
+  text: "Bei welchem Lied kannst du unmöglich stillsitzen?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-d032c829
+  text: "Welche Geschichte musst du auf jeder Feier aufs Neue erzählen?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-c254f5c3
+  text: "Was ist deine unnützeste Fähigkeit, auf die du trotzdem stolz bist?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-3658e834
+  text: "Welche Speisen kombinierst du, obwohl alle anderen den Kopf schütteln?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-55a71110
+  text: "Wärst du lieber immer zu schick oder immer zu leger angezogen?"
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-96dba9be
+  text: "Was war der beste Streich, den du je gespielt hast oder auf den du reingefallen bist?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-74272e05
+  text: "Mit welcher berühmten Person würdest du gern im Aufzug stecken bleiben?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-90c8b5a9
+  text: "Was war die peinlichste Frisur deines Lebens, und wer war schuld daran?"
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-74113f26
+  text: "Welche Meinung über Essen bringt dir regelmäßig Widerspruch ein?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-61e773c4
+  text: "Wenn du heute Abend bei einer Talentschau auftreten müsstest, was würdest du zeigen?"
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-cc9f6eb8
+  text: "Was war das Lustigste, das du je auf einer Hochzeit erlebt hast?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-cb467348
+  text: "Wovon hast du als Kind alle überzeugt, obwohl es frei erfunden war?"
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-e08ff9a5
+  text: "Was willst du unbedingt noch erleben, womit niemand rechnen würde?"
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-d56f060e
+  text: "Was war die wildeste Mutprobe deines Lebens?"
+  tags: [spicy, memory]
+  added: "2026-07-24"

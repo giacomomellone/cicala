@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tischkarte.pages.dev/questions/schema.json",
+  "title": "Tischkarte question file",
+  "description": "One YAML file per category per language: questions/{lang}/{category}.yaml. Each file is a flat list of question entries. Contributors omit `id` and `added`; `tools/validate.py --fix` assigns them. See CONTRIBUTING.md.",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["id", "text", "added"],
+    "properties": {
+      "id": {
+        "description": "q- + first 8 hex chars of SHA-256 of `lang|category|normalized text`. Assigned by validate.py --fix, never hand-written. Stable forever once assigned; later typo edits do NOT change the id.",
+        "type": "string",
+        "pattern": "^q-[0-9a-f]{8}$"
+      },
+      "text": {
+        "description": "The question. 10-140 characters, must end with a terminator from the language's config block (plus optional closing quote/bracket), no newlines, no leading/trailing whitespace, one question per entry.",
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 140,
+        "pattern": "^\\S(.*\\S)?$"
+      },
+      "tags": {
+        "description": "Optional, from the controlled vocabulary in x-tischkarte.tags. Tag keys are global English identifiers; translated labels live in the website's i18n.ts.",
+        "type": "array",
+        "uniqueItems": true,
+        "items": {
+          "enum": ["icebreaker", "reflective", "spicy", "hypothetical", "memory", "wouldyourather"]
+        }
+      },
+      "origin": {
+        "description": "Optional lineage link: the id of an existing question in another language that this one adapts. Never required — languages are independent corpora (docs/LANGUAGES.md).",
+        "type": "string",
+        "pattern": "^q-[0-9a-f]{8}$"
+      },
+      "author": {
+        "description": "Optional free-text credit. Courtesy only, no legal claim — all questions are CC0.",
+        "type": "string",
+        "maxLength": 40
+      },
+      "added": {
+        "description": "ISO date the entry was merged. Set by validate.py --fix.",
+        "type": "string",
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      }
+    }
+  },
+  "x-tischkarte": {
+    "description": "Project config consumed by tools/validate.py and tools/build_*.py. Not part of the JSON Schema vocabulary.",
+    "categories": ["party", "family", "love", "work", "deep"],
+    "tags": ["icebreaker", "reflective", "spicy", "hypothetical", "memory", "wouldyourather"],
+    "keyOrder": ["id", "text", "tags", "origin", "author", "added"],
+    "defaultTerminators": ["?"],
+    "closingCharacters": ["\"", "'", "”", "’", "»", "«", ")", "]"],
+    "languages": {
+      "en": { "name": "English", "terminators": ["?"] },
+      "de": { "name": "Deutsch", "terminators": ["?"] }
+    }
+  }
+}
