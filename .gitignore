@@ -1,0 +1,22 @@
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# node / astro
+node_modules/
+website/dist/
+website/.astro/
+
+# generated data (rebuilt by tools/build_site_data.py in CI)
+website/src/data/*.json
+
+# generated bundles
+dist/bundles/
+
+# os
+.DS_Store
+
+# secrets — never commit private keys
+*.pem
+signing_key*
