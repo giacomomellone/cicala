@@ -1,0 +1,28 @@
+name: firmware
+
+on:
+  pull_request:
+    paths:
+      - "firmware/**"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: espressif/idf:release-v5.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build firmware (skips while only the phase-C structure stubs exist)
+        shell: bash
+        run: |
+          if [ -f firmware/CMakeLists.txt ]; then
+            . "$IDF_PATH/export.sh"
+            cd firmware
+            idf.py set-target esp32s3
+            idf.py build
+          else
+            echo "firmware/ contains structure stubs only — nothing to build yet."
+            echo "This step activates automatically once firmware/CMakeLists.txt lands (phase C)."
+          fi

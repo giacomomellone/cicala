@@ -1,0 +1,70 @@
+name: New question
+description: Add a conversation question to the open database. Takes ~30 seconds.
+title: "question: "
+labels: ["question-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for adding to the database! A maintainer who speaks your language reviews every
+        submission; once approved it ships to the website within minutes and to every device with
+        the next release. Quality bar: answerable by a stranger, open-ended (no yes/no), specific
+        enough to start a story. See your language's style guide in `questions/<lang>/STYLE.md`.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      description: Only shipped languages can receive questions directly. Picking "other / new language" gets you an explainer about starting one — see docs/LANGUAGES.md.
+      options:
+        - English (en)
+        - Deutsch (de)
+        - other / new language
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: family questions must be safe and interesting for a 10-year-old.
+      options:
+        - party
+        - family
+        - love
+        - work
+        - deep
+    validations:
+      required: true
+  - type: input
+    id: question-text
+    attributes:
+      label: Question
+      description: 10–140 characters, must end with "?", exactly one question.
+      placeholder: When did you last change your mind about something important?
+    validations:
+      required: true
+  - type: dropdown
+    id: tags
+    attributes:
+      label: Tags (optional)
+      description: Pick at most one or two. "spicy" marks risqué/daring questions (never for family or work).
+      multiple: true
+      options:
+        - icebreaker
+        - reflective
+        - spicy
+        - hypothetical
+        - memory
+        - wouldyourather
+  - type: input
+    id: credit
+    attributes:
+      label: Name for credit (optional)
+      description: Free-text credit stored next to the question (max 40 characters). A courtesy, not a legal claim — see below.
+  - type: checkboxes
+    id: cc0
+    attributes:
+      label: Public domain dedication
+      description: Required. This is what lets the questions ship everywhere, forever.
+      options:
+        - label: I dedicate this question to the public domain (CC0-1.0). Anyone may use it for any purpose, without attribution.
+          required: true

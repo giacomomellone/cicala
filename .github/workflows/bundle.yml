@@ -1,0 +1,42 @@
+name: bundle
+
+on:
+  push:
+    tags: ["db-*"]
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml jsonschema
+      - name: Validate question database
+        run: python tools/validate.py
+      - name: Build and sign bundles
+        env:
+          BUNDLE_SIGNING_KEY: ${{ secrets.BUNDLE_SIGNING_KEY }}
+        run: |
+          version="${GITHUB_REF_NAME#db-}"
+          if [ -n "$BUNDLE_SIGNING_KEY" ]; then
+            printf '%s' "$BUNDLE_SIGNING_KEY" > signing_key.pem
+            python tools/build_bundle.py --version "$version" --sign-key signing_key.pem
+            rm -f signing_key.pem
+          else
+            echo "::warning::BUNDLE_SIGNING_KEY secret not set — building UNSIGNED bundles"
+            python tools/build_bundle.py --version "$version"
+          fi
+      - name: Attach bundles + manifest to a GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/bundles/* \
+            --title "Question database $GITHUB_REF_NAME" \
+            --notes "Per-language device bundles + manifest. See docs/SYNC-PROTOCOL.md. The next site deploy serves these under /device/."

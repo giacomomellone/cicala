@@ -1,0 +1,32 @@
+name: Bug report
+description: Something broken on the website, in the tools, or on the device.
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - website
+        - question database / validation
+        - device / firmware
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser + OS for website bugs; firmware version (menu → about) for device bugs.
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Links, screenshots, the question id (e.g. q-8f3a2c1d) if one is involved.

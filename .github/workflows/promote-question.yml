@@ -1,0 +1,87 @@
+name: promote-question
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  # On open: add the lang:{code} label (issue forms can't set dynamic labels),
+  # or reply with the incubator explainer for "other / new language".
+  label-language:
+    if: >
+      github.event.action == 'opened' &&
+      contains(github.event.issue.labels.*.name, 'question-submission')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse language from the issue form
+        id: parse
+        continue-on-error: true
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: python3 tools/promote_issue.py parse
+      - name: Add lang label
+        if: steps.parse.outputs.lang != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create "lang:${{ steps.parse.outputs.lang }}" --color BFD4F2 \
+            --description "Question submissions for ${{ steps.parse.outputs.lang }}" || true
+          gh issue edit "${{ github.event.issue.number }}" \
+            --add-label "lang:${{ steps.parse.outputs.lang }}"
+      - name: Reply with the new-language explainer
+        if: steps.parse.outputs.new_language == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment "${{ github.event.issue.number }}" --body \
+            "Thanks! New languages start in the incubator rather than as direct submissions — see [docs/LANGUAGES.md](../blob/main/docs/LANGUAGES.md) for how a language graduates (≥150 native questions, a fluent maintainer, a style guide and a denylist). Open an issue titled \`lang: <code>\` if you want to start one — we'd love that."
+
+  # On approval: parse the issue, append the entry, run validate --fix, open a
+  # PR that requests review from the language's CODEOWNERS and closes the issue
+  # on merge.
+  promote:
+    if: >
+      github.event.action == 'labeled' &&
+      github.event.label.name == 'approved' &&
+      contains(github.event.issue.labels.*.name, 'question-submission')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml jsonschema
+      - name: Append entry from issue
+        id: apply
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: python tools/promote_issue.py apply
+      - name: Assign id and validate
+        run: |
+          python tools/validate.py --fix
+          python tools/validate.py
+      - name: Open the pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_TITLE: ${{ steps.apply.outputs.pr_title }}
+        run: |
+          branch="question/issue-${{ github.event.issue.number }}"
+          git config user.name "tischkarte-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git checkout -b "$branch"
+          git add questions/
+          git commit -m "$PR_TITLE"
+          git push -u origin "$branch" --force
+          gh pr create --title "$PR_TITLE" \
+            --body "Automated promotion of an approved question submission. Review per questions/${{ steps.apply.outputs.lang }}/STYLE.md, then merge.
+
+Closes #${{ github.event.issue.number }}" \
+            --label "question-submission" || echo "PR may already exist"
