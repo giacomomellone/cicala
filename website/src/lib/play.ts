@@ -3,6 +3,7 @@
 
 import { CATEGORIES, displayId } from "../config";
 import { tr } from "./apply-i18n";
+import { drawFromBag } from "./bag";
 import {
   detectLang,
   loadPayload,
@@ -17,14 +18,6 @@ interface Shown {
 }
 
 const HISTORY_MAX = 50;
-
-function shuffle<T>(arr: T[]): T[] {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-  }
-  return arr;
-}
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -71,21 +64,9 @@ export async function initPlay(): Promise<void> {
   // --------------------------------------------------------- shuffle bag
 
   function drawNext(c: string): Shown | null {
-    const ids = idsFor(c);
-    if (ids.length === 0) return null;
-    const alive = new Set(ids);
     const bag = getBag(lang, c);
-    bag.b = bag.b.filter((id) => alive.has(id)); // drop ids removed upstream
-    let id = bag.b.pop();
-    if (!id) {
-      const recent = new Set(bag.r);
-      let pool = ids.filter((x) => !recent.has(x));
-      if (pool.length === 0) pool = ids.slice();
-      shuffle(pool);
-      id = pool.pop()!;
-      bag.b = pool;
-    }
-    bag.r = [...bag.r, id].slice(-5);
+    const id = drawFromBag(bag, idsFor(c));
+    if (id === null) return null;
     setBag(lang, c, bag);
     return byId.get(id) ?? null;
   }

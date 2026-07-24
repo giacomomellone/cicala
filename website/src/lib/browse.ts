@@ -4,6 +4,7 @@
 
 import { CATEGORIES } from "../config";
 import { tr } from "./apply-i18n";
+import { shuffle } from "./bag";
 import { detectLang, loadPayload, type Payload } from "./data";
 import { bindHearts, rowHtml, type RowItem } from "./rows";
 import { getCat, setCat } from "./store";
@@ -15,14 +16,6 @@ function fold(s: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
-}
-
-function shuffle<T>(arr: T[]): T[] {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j]!, arr[i]!];
-  }
-  return arr;
 }
 
 export async function initBrowse(): Promise<void> {
@@ -46,7 +39,7 @@ export async function initBrowse(): Promise<void> {
   }
 
   // newest = reverse file order; files are append-only so file order is
-  // chronological (docs/DECISIONS.md)
+  // chronological (docs/decisions.md)
   const newestFirst: RowItem[] = CATEGORIES.flatMap((category) =>
     (payload.categories[category] ?? []).map((q) => ({ q, category })),
   ).reverse();

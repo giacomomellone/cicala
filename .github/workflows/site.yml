@@ -39,6 +39,7 @@ jobs:
         working-directory: website
         run: |
           npm ci
+          npm test
           npm run build
       - name: Include latest device bundles under /device (best effort)
         if: github.event_name == 'push'

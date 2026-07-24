@@ -5,11 +5,7 @@
 import { REPO_URL } from "../config";
 import { tr } from "./apply-i18n";
 import { detectLang, loadRecent, siteConfig } from "./data";
-
-const MIN = 10;
-const MAX = 140;
-// terminator + optional closing quote/bracket, mirroring validate.py
-const ENDS_OK = /\?["'”’»«)\]]?$/;
+import { questionTextIssue, TEXT_MAX } from "./rules";
 
 export async function initContribute(): Promise<void> {
   const form = document.getElementById("c-form") as HTMLFormElement | null;
@@ -44,21 +40,19 @@ export async function initContribute(): Promise<void> {
   langSel.append(other);
 
   function validate(): boolean {
-    const text = textEl.value.replace(/\s+/g, " ").trim();
     const n = textEl.value.length;
-    counter.textContent = `${n}/${MAX}`;
-    counter.classList.toggle("is-bad", n > 0 && (n < MIN || n > MAX));
+    const issue = questionTextIssue(textEl.value);
+    counter.textContent = `${n}/${TEXT_MAX}`;
+    counter.classList.toggle("is-bad", n > 0 && (issue === "short" || issue === "long"));
 
     let rule = "";
     if (n === 0) rule = tr(lang, "contribute.question.hint");
-    else if (n < MIN) rule = tr(lang, "contribute.rule.short");
-    else if (n > MAX) rule = tr(lang, "contribute.rule.long");
-    else if (/\n/.test(textEl.value) || !ENDS_OK.test(text))
-      rule = tr(lang, "contribute.rule.mark");
+    else if (issue === "short") rule = tr(lang, "contribute.rule.short");
+    else if (issue === "long") rule = tr(lang, "contribute.rule.long");
+    else if (issue === "mark") rule = tr(lang, "contribute.rule.mark");
     else rule = tr(lang, "contribute.rule.ok");
     ruleHint.textContent = rule;
-    const textOk =
-      n >= MIN && n <= MAX && ENDS_OK.test(text) && !/\n/.test(textEl.value);
+    const textOk = issue === null;
     ruleHint.classList.toggle("is-bad", n > 0 && !textOk);
 
     const isOther = langSel.value === "__other__";
