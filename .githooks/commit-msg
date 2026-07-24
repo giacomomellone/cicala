@@ -1,0 +1,33 @@
+#!/bin/sh
+# Conventional-commit check (CONTRIBUTING.md "Commit style").
+# Enabled by `just setup` via: git config core.hooksPath .githooks
+# Zero dependencies on purpose — no commitlint, no node in the commit path.
+
+msg_file="$1"
+header="$(head -n 1 "$msg_file")"
+
+# let git-generated messages through untouched
+case "$header" in
+  Merge\ *|Revert\ *|fixup!\ *|squash!\ *) exit 0 ;;
+esac
+
+types='feat|fix|docs|test|chore|refactor|ci|build|perf|style|revert'
+if printf '%s' "$header" | grep -Eq "^(${types})(\([a-z0-9,-]+\))?!?: .+"; then
+  if [ "${#header}" -gt 72 ]; then
+    echo "commit-msg: header is ${#header} chars — keep it ≤ 72." >&2
+    exit 1
+  fi
+  exit 0
+fi
+
+cat >&2 <<EOF
+commit-msg: not a conventional commit header:
+
+    $header
+
+Expected:  type(scope): subject     e.g.  feat(site): add deck import
+Types:     feat fix docs test chore refactor ci build perf style revert
+Scope:     optional, lowercase (site, questions, tools, ci, fw, hw, docs)
+See CONTRIBUTING.md "Commit style".
+EOF
+exit 1

@@ -10,11 +10,12 @@ mkdocs := ".venv/bin/mkdocs"
 default:
     @just --list --unsorted
 
-# one-time setup: python venv (tools + docs) and website npm dependencies
+# one-time setup: python venv (tools + docs), website npm deps, git hooks
 setup:
     @if [ ! -d .venv ]; then (command -v python3.13 >/dev/null && python3.13 -m venv .venv) || python3 -m venv .venv; fi
     .venv/bin/pip install -q -r requirements.txt
     cd website && npm install
+    git config core.hooksPath .githooks
     @echo "ready — try: just validate · just website · just docs"
 
 # ---------------------------------------------------------------- database
