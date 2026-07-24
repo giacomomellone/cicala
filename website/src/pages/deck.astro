@@ -1,0 +1,39 @@
+---
+// Deck (spec §7.9): favorites viewer; also renders shared decks arriving via
+// /deck#ids=… — read-only, with "save all to my deck". Entirely client-side:
+// favorites only exist in this browser.
+import Chips from "../components/Chips.astro";
+import { t } from "../i18n";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="your deck — tischkarte" lang="en">
+  <div class="toolbar-row" style="justify-content:space-between; margin-bottom:1rem">
+    <h1 id="d-title" style="margin:0" data-i18n="deck.title">your deck</h1>
+    <div class="toolbar-row" id="d-own-actions">
+      <button type="button" class="btn-quiet" id="d-share" data-i18n="deck.share">{t("en", "deck.share")}</button>
+      <button type="button" class="btn-quiet" id="d-export" data-i18n="deck.export">{t("en", "deck.export")}</button>
+      <button type="button" class="btn-quiet" id="d-import" data-i18n="deck.import">{t("en", "deck.import")}</button>
+      <input type="file" id="d-file" accept=".json,application/json" hidden />
+    </div>
+    <button type="button" class="btn" id="d-saveall" hidden data-i18n="deck.saveall">{t("en", "deck.saveall")}</button>
+  </div>
+
+  <p class="hint" id="d-status" aria-live="polite"></p>
+  <Chips id="deck-chips" />
+  <p class="hint" id="d-count" style="margin-top:1rem"></p>
+
+  <ul class="rows" id="d-rows" style="margin-top:0.5rem"></ul>
+
+  <div class="empty-state" id="d-empty" hidden>
+    <p data-i18n="deck.empty">{t("en", "deck.empty")}</p>
+    <p style="margin-top:1.25rem">
+      <a class="btn" href="/" data-i18n="play.next">{t("en", "play.next")}</a>
+    </p>
+  </div>
+
+  <script>
+    import { initDeck } from "../lib/deck";
+    initDeck();
+  </script>
+</Base>

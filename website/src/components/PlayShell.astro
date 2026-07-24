@@ -1,0 +1,86 @@
+---
+// The play surface, shared by / and /q/[id] (spec §7.4). Statically rendered
+// with a seed question so play works without JS up to the first question;
+// src/lib/play.ts takes over from there.
+import Chips from "./Chips.astro";
+import { displayId, type Category } from "../config";
+import { t, type StringKey } from "../i18n";
+import { tr } from "../lib/apply-i18n";
+import { heartIcon, shareIcon } from "../lib/icons";
+import type { Question } from "../lib/data";
+
+interface Props {
+  question: Question;
+  category: Category;
+  lang: string;
+  /** true on /q/[id] pages — "next" transitions back to / via replaceState */
+  permalink?: boolean;
+}
+const { question, category, lang, permalink = false } = Astro.props;
+const catLabel = tr(lang, `cat.${category}` as StringKey);
+---
+
+<div
+  class="play"
+  id="play-root"
+  data-seed-id={question.id}
+  data-seed-cat={category}
+  data-permalink={permalink ? "1" : "0"}
+>
+  <div class="q-zone">
+    <div class="q-swap question-wrap" id="q-swap">
+      <p class="question" id="q-text" aria-live="polite">{question.text}</p>
+      <div class="meta" id="q-meta">
+        <span id="q-num">{displayId(question.id)}</span>
+        <span aria-hidden="true">·</span>
+        <span id="q-cat" data-cat={category}>{catLabel}</span>
+        <span aria-hidden="true">·</span>
+        <button
+          type="button"
+          class="iconbtn"
+          id="q-fav"
+          aria-pressed="false"
+          set:html={heartIcon + `<span id="q-fav-label" data-i18n="play.save">${t("en", "play.save")}</span>`}
+        />
+        <span aria-hidden="true">·</span>
+        <button
+          type="button"
+          class="iconbtn"
+          id="q-share"
+          set:html={shareIcon + `<span id="q-share-label" data-i18n="play.share">${t("en", "play.share")}</span>`}
+        />
+        <span data-vote-slot hidden></span>
+      </div>
+    </div>
+  </div>
+  <div class="play-controls">
+    <Chips active={category} />
+    <button type="button" class="btn" id="q-next" data-i18n="play.next">
+      {t("en", "play.next")}
+    </button>
+    <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
+  </div>
+</div>
+
+<style>
+  .q-swap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.4rem;
+    transition: opacity 120ms ease;
+  }
+  .q-swap.is-fading {
+    opacity: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .q-swap {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { initPlay } from "../lib/play";
+  initPlay();
+</script>

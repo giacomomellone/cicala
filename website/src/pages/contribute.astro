@@ -1,0 +1,116 @@
+---
+// Contribute (spec §7.7): a styled thin client of the GitHub issue form.
+// Client-side pre-validation mirrors tools/validate.py; submit opens the
+// prefilled issue in a new tab. "Recently added" is the social-proof loop.
+import { CATEGORIES, REPO_URL, TAGS } from "../config";
+import { t, type StringKey } from "../i18n";
+import Base from "../layouts/Base.astro";
+import recent from "../data/recent.en.json";
+---
+
+<Base title="contribute — tischkarte" lang="en">
+  <div class="prose">
+    <h1 data-i18n="contribute.title">contribute</h1>
+    <p data-i18n="contribute.pitch">{t("en", "contribute.pitch")}</p>
+  </div>
+
+  <form id="c-form" style="margin-top:2rem; max-width:38rem" novalidate>
+    <div class="field">
+      <label for="c-lang" data-i18n="contribute.lang">language</label>
+      <select id="c-lang">
+        <option value="en">English (en)</option>
+        <option value="de">Deutsch (de)</option>
+        <option value="__other__" data-i18n="contribute.lang.other">another language…</option>
+      </select>
+      <span class="sub" id="c-newlang" hidden>
+        <span data-i18n="contribute.newlang">{t("en", "contribute.newlang")}</span>
+        <a href={`${REPO_URL}/blob/main/docs/LANGUAGES.md`} rel="external">docs/LANGUAGES.md</a>
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="c-cat" data-i18n="contribute.category">category</label>
+      <select id="c-cat">
+        {
+          CATEGORIES.map((cat) => (
+            <option value={cat} data-i18n={`cat.${cat}`}>
+              {t("en", `cat.${cat}` as StringKey)}
+            </option>
+          ))
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="c-text" data-i18n="contribute.question">your question</label>
+      <textarea id="c-text" rows="3" maxlength="200"></textarea>
+      <span class="sub">
+        <span class="rule-hint" id="c-rule" data-i18n="contribute.question.hint">{t("en", "contribute.question.hint")}</span>
+        · <span class="counter" id="c-counter">0/140</span>
+      </span>
+    </div>
+
+    <div class="field">
+      <span data-i18n="contribute.tags" style="display:block; font-size:0.8125rem; margin-bottom:0.45rem">{t("en", "contribute.tags")}</span>
+      <div class="checks">
+        {
+          TAGS.map((tag) => (
+            <label>
+              <input type="checkbox" name="tags" value={tag} />
+              <span data-i18n={`tag.${tag}`}>{t("en", `tag.${tag}` as StringKey)}</span>
+            </label>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="c-name" data-i18n="contribute.name">name for credit (optional)</label>
+      <input type="text" id="c-name" maxlength="40" style="width:100%" />
+    </div>
+
+    <div class="field">
+      <label class="checks" style="align-items:flex-start">
+        <input type="checkbox" id="c-cc0" style="margin-top:0.2rem" />
+        <span>
+          <span data-i18n="contribute.cc0">{t("en", "contribute.cc0")}</span>
+          <a href={`${REPO_URL}/blob/main/LICENSE-QUESTIONS`} rel="external" data-i18n="contribute.cc0.link">{t("en", "contribute.cc0.link")}</a>
+        </span>
+      </label>
+    </div>
+
+    <button type="submit" class="btn" id="c-submit" disabled data-i18n="contribute.submit">
+      {t("en", "contribute.submit")}
+    </button>
+    <p class="hint" style="margin-top:0.9rem" data-i18n="contribute.fineprint">
+      {t("en", "contribute.fineprint")}
+    </p>
+  </form>
+
+  <section style="margin-top:3rem">
+    <h2 data-i18n="contribute.recent">recently added</h2>
+    <ul class="rows" id="c-recent">
+      {
+        recent.map((r) => (
+          <li class="row">
+            <div class="row-main">
+              <a class="row-q" href={`/q/${r.id}`}>{r.text}</a>
+              <div class="row-meta">
+                <span data-i18n={`cat.${r.category}`}>{t("en", `cat.${r.category}` as StringKey)}</span>
+                <span>{r.added}</span>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="hint" id="c-recent-empty" hidden={recent.length > 0} data-i18n="contribute.recent.empty">
+      {t("en", "contribute.recent.empty")}
+    </p>
+  </section>
+
+  <script>
+    import { initContribute } from "../lib/contribute";
+    initContribute();
+  </script>
+</Base>

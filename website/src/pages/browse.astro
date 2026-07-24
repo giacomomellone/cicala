@@ -1,0 +1,94 @@
+---
+// Browse (spec §7.5): sticky toolbar, flat rows, 100-row pagination.
+// The English list is statically rendered for no-JS visitors; the island
+// re-renders for the active language and live filters.
+import Chips from "../components/Chips.astro";
+import { CATEGORIES, TAGS } from "../config";
+import { t, type StringKey } from "../i18n";
+import Base from "../layouts/Base.astro";
+import payload from "../data/questions.en.json";
+import { heartIcon } from "../lib/icons";
+import type { Question } from "../lib/data";
+
+const categories = payload.categories as Record<string, Question[]>;
+const newestFirst = CATEGORIES.flatMap((category) =>
+  (categories[category] ?? []).map((q) => ({ q, category })),
+).reverse();
+const firstPage = newestFirst.slice(0, 100);
+---
+
+<Base title="browse — tischkarte" lang="en">
+  <h1 class="visually-hidden" data-i18n="browse.title">browse</h1>
+  <div class="toolbar">
+    <div class="toolbar-row">
+      <input
+        type="search"
+        id="b-search"
+        placeholder={t("en", "browse.search")}
+        data-i18n-placeholder="browse.search"
+        aria-label={t("en", "browse.search")}
+        data-i18n-aria="browse.search"
+      />
+      <select id="b-tag" aria-label="tag filter">
+        <option value="" data-i18n="browse.alltags">{t("en", "browse.alltags")}</option>
+        {
+          TAGS.map((tag) => (
+            <option value={tag} data-i18n={`tag.${tag}`}>
+              {t("en", `tag.${tag}` as StringKey)}
+            </option>
+          ))
+        }
+      </select>
+      <select id="b-sort" aria-label="sort">
+        <option value="newest" data-i18n="browse.sort.newest">{t("en", "browse.sort.newest")}</option>
+        <option value="random" data-i18n="browse.sort.random">{t("en", "browse.sort.random")}</option>
+      </select>
+    </div>
+    <Chips id="browse-chips" />
+  </div>
+
+  <ul class="rows" id="rows">
+    {
+      firstPage.map(({ q, category }) => (
+        <li class="row" data-id={q.id}>
+          <div class="row-main">
+            <a class="row-q" href={`/q/${q.id}`}>{q.text}</a>
+            <div class="row-meta">
+              <span data-i18n={`cat.${category}`}>{t("en", `cat.${category}` as StringKey)}</span>
+              {q.tags.map((tag) => (
+                <span data-i18n={`tag.${tag}`}>{t("en", `tag.${tag}` as StringKey)}</span>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            class="iconbtn row-fav"
+            aria-pressed="false"
+            aria-label={t("en", "play.save")}
+            set:html={heartIcon}
+          />
+          <span data-vote-slot hidden></span>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="empty-state" id="b-empty" hidden>
+    <p data-i18n="browse.empty">{t("en", "browse.empty")}</p>
+    <p><a href="/contribute" data-i18n="browse.empty.cta">{t("en", "browse.empty.cta")}</a></p>
+  </div>
+
+  <p style="text-align:center; padding:1.5rem 0">
+    <button
+      type="button"
+      class="btn"
+      id="b-more"
+      hidden={newestFirst.length <= 100}
+      data-i18n="browse.more">{t("en", "browse.more")}</button>
+  </p>
+
+  <script>
+    import { initBrowse } from "../lib/browse";
+    initBrowse();
+  </script>
+</Base>

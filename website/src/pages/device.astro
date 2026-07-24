@@ -1,0 +1,83 @@
+---
+// Device page (spec §7.8): what it is, the interaction table, links into the
+// repo, sync explainer, and the v2 deck-codes stub.
+import { REPO_URL } from "../config";
+import { t } from "../i18n";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="the device — tischkarte" lang="en">
+  <div class="prose">
+    <h1 data-i18n="device.title">the device</h1>
+    <p data-i18n="device.p1">{t("en", "device.p1")}</p>
+    <p data-i18n="device.p2">{t("en", "device.p2")}</p>
+    <p data-i18n="device.p3">{t("en", "device.p3")}</p>
+  </div>
+
+  <div class="device-photo" role="img" aria-label={t("en", "device.photo")}>
+    <span data-i18n="device.photo">{t("en", "device.photo")}</span>
+  </div>
+
+  <h2 data-i18n="device.how">how it works</h2>
+  <table class="spec-table">
+    <thead>
+      <tr>
+        <th data-i18n="device.t.input">input</th>
+        <th data-i18n="device.t.action">action</th>
+        <th data-i18n="device.t.feedback">feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td data-i18n="device.t.r1a">turn knob</td>
+        <td data-i18n="device.t.r1b">change category</td>
+        <td data-i18n="device.t.r1c">{t("en", "device.t.r1c")}</td>
+      </tr>
+      <tr>
+        <td data-i18n="device.t.r2a">press</td>
+        <td data-i18n="device.t.r2b">next question in category</td>
+        <td data-i18n="device.t.r2c">{t("en", "device.t.r2c")}</td>
+      </tr>
+      <tr>
+        <td data-i18n="device.t.r3a">long-press 1.5 s</td>
+        <td data-i18n="device.t.r3b">utility menu on OLED only</td>
+        <td data-i18n="device.t.r3c">{t("en", "device.t.r3c")}</td>
+      </tr>
+      <tr>
+        <td data-i18n="device.t.r4a">idle 30 s</td>
+        <td data-i18n="device.t.r4b">deep sleep</td>
+        <td data-i18n="device.t.r4c">{t("en", "device.t.r4c")}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2 data-i18n="device.build">build one</h2>
+  <div class="prose">
+    <p data-i18n="device.build.text">{t("en", "device.build.text")}</p>
+    <p>
+      <a href={`${REPO_URL}/tree/main/firmware`} rel="external" data-i18n="device.link.firmware">firmware sources</a>
+      <span aria-hidden="true"> · </span>
+      <a href={`${REPO_URL}/tree/main/hardware`} rel="external" data-i18n="device.link.hardware">hardware / PCB</a>
+      <span aria-hidden="true"> · </span>
+      <span class="hint" data-i18n="device.link.guide">build guide (soon)</span>
+      <span aria-hidden="true"> · </span>
+      <a href={`${REPO_URL}/releases`} rel="external" data-i18n="device.link.releases">releases</a>
+    </p>
+  </div>
+
+  <h2 data-i18n="device.sync">sync</h2>
+  <div class="prose">
+    <p data-i18n="device.sync.text">{t("en", "device.sync.text")}</p>
+    <p>
+      <a href={`${REPO_URL}/blob/main/docs/SYNC-PROTOCOL.md`} rel="external" data-i18n="device.sync.link">how sync works</a>
+    </p>
+  </div>
+
+  <h2>
+    <span data-i18n="device.deckcodes">deck codes</span>
+    <span class="soon-tag">v2 · coming soon</span>
+  </h2>
+  <div class="prose">
+    <p data-i18n="device.deckcodes.text">{t("en", "device.deckcodes.text")}</p>
+  </div>
+</Base>

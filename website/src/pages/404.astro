@@ -1,0 +1,32 @@
+---
+// 404 (spec §7.3): a question about being lost + a link home — in character.
+import { t } from "../i18n";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="lost — tischkarte" lang="en">
+  <div class="play">
+    <div class="q-zone">
+      <div class="q-swap">
+        <p class="question" data-i18n="notfound.q">{t("en", "notfound.q")}</p>
+        <div class="meta">
+          <span data-i18n="notfound.meta">{t("en", "notfound.meta")}</span>
+        </div>
+      </div>
+    </div>
+    <div class="play-controls">
+      <a class="btn" href="/">
+        <span data-i18n="notfound.home">{t("en", "notfound.home")}</span>
+      </a>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .q-swap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.4rem;
+  }
+</style>

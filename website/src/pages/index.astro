@@ -1,0 +1,20 @@
+---
+// Play (spec §7.4). A build-time random question is statically rendered so
+// play works without JS up to the first question; the island then draws from
+// the shuffle bag.
+import PlayShell from "../components/PlayShell.astro";
+import { CATEGORIES, type Category } from "../config";
+import Base from "../layouts/Base.astro";
+import payload from "../data/questions.en.json";
+import type { Question } from "../lib/data";
+
+const categories = payload.categories as Record<string, Question[]>;
+const all = CATEGORIES.flatMap((category) =>
+  (categories[category] ?? []).map((q) => ({ q, category })),
+);
+const seed = all[Math.floor(Math.random() * all.length)]!;
+---
+
+<Base title="tischkarte — conversation questions" lang="en">
+  <PlayShell question={seed.q} category={seed.category as Category} lang="en" />
+</Base>

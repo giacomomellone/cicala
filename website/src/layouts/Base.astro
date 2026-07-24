@@ -1,0 +1,150 @@
+---
+// Base layout: header, footer, i18n bootstrap, and the runtime data config.
+// Fonts are self-hosted via @fontsource, latin + latin-ext subsets only
+// (spec §7.1 — revisit when a non-Latin language graduates).
+import "@fontsource/literata/latin-400.css";
+import "@fontsource/literata/latin-ext-400.css";
+import "@fontsource/literata/latin-400-italic.css";
+import "@fontsource/literata/latin-ext-400-italic.css";
+import "@fontsource/ibm-plex-mono/latin-400.css";
+import "@fontsource/ibm-plex-mono/latin-ext-400.css";
+import "@fontsource/ibm-plex-mono/latin-500.css";
+import "@fontsource/ibm-plex-mono/latin-ext-500.css";
+import "../styles/tokens.css";
+import "../styles/global.css";
+import { REPO_URL, SITE_URL } from "../config";
+import languages from "../data/languages.json";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** <html lang> for the statically rendered content. */
+  lang?: string;
+  /** Permalink pages pass the question's language: it becomes the active language on load. */
+  seedLang?: string;
+}
+
+const {
+  title,
+  description = "Conversation questions from the open Tischkarte database — free, no accounts, public domain.",
+  lang = "en",
+  seedLang,
+} = Astro.props;
+
+// Content-hashed asset URLs for every per-language payload. Only the active
+// language's payload is fetched at runtime (spec §7.1).
+const payloadFiles = import.meta.glob<string>("../data/questions.*.json", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const recentFiles = import.meta.glob<string>("../data/recent.*.json", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+const indexFiles = import.meta.glob<string>("../data/index.json", {
+  query: "?url",
+  import: "default",
+  eager: true,
+});
+
+const byLang = (files: Record<string, string>) =>
+  Object.fromEntries(
+    Object.entries(files).map(([path, url]) => {
+      const match = path.match(/\.([a-z]{2,3})\.json$/);
+      return [match ? match[1] : path, url];
+    }),
+  );
+
+const tkConfig = {
+  langs: languages,
+  payloads: byLang(payloadFiles),
+  recents: byLang(recentFiles),
+  index: Object.values(indexFiles)[0] ?? "",
+};
+
+const path = Astro.url.pathname.replace(/\.html$/, "");
+const current = (p: string) =>
+  path === p || path.startsWith(p + "/") ? "page" : undefined;
+const ogImage = new URL("/og.png", SITE_URL).href;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FAF8F2" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script
+      type="application/json"
+      id="tk-config"
+      set:html={JSON.stringify(tkConfig)}
+    />
+  </head>
+  <body data-seed-lang={seedLang}>
+    <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
+    <header class="site-header">
+      <a class="wordmark" href="/">tischkarte</a>
+      <nav class="site-nav" aria-label="site">
+        <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
+        <span class="nav-dot" aria-hidden="true">·</span>
+        <a href="/contribute" aria-current={current("/contribute")} data-i18n="nav.contribute">contribute</a>
+        <span class="nav-dot" aria-hidden="true">·</span>
+        <a href="/device" aria-current={current("/device")} data-i18n="nav.device">device</a>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="lang-switch" id="lang-switch">
+        {
+          languages.map((l) => (
+            <button type="button" data-lang={l.code} aria-pressed="false">
+              {l.name.toLowerCase()} · {l.count}
+            </button>
+          ))
+        }
+      </div>
+      <div>
+        <a href="/deck" data-i18n="deck.title">your deck</a>
+        <span class="nav-dot" aria-hidden="true"> · </span>
+        <a href={REPO_URL} rel="external" data-i18n="footer.source">source</a>
+        <span class="nav-dot" aria-hidden="true"> · </span>
+        <span data-i18n="footer.license">questions are public domain (CC0)</span>
+      </div>
+    </footer>
+    <script>
+      import { applyI18n } from "../lib/apply-i18n";
+      import { detectLang } from "../lib/data";
+      import { setStoredLang } from "../lib/store";
+
+      // detectLang() also adopts a permalink's seed language (set on <body>).
+      const lang = detectLang();
+      applyI18n(lang);
+
+      const switcher = document.getElementById("lang-switch");
+      switcher?.querySelectorAll<HTMLButtonElement>("button[data-lang]").forEach((btn) => {
+        const code = btn.dataset.lang ?? "";
+        btn.setAttribute("aria-pressed", String(code === lang));
+        btn.addEventListener("click", () => {
+          if (code === lang) return;
+          setStoredLang(code);
+          // Full reload keeps the no-framework islands simple; from a
+          // permalink go home, since /q/<id> would re-pin its own language.
+          if (location.pathname.startsWith("/q/")) location.href = "/";
+          else location.reload();
+        });
+      });
+    </script>
+  </body>
+</html>
