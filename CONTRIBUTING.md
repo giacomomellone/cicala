@@ -11,12 +11,12 @@ Either way you'll need a free GitHub account. A maintainer who speaks your langu
 
 ### The public domain dedication (please read)
 
-By submitting a question you **dedicate it to the public domain under [CC0-1.0](LICENSE-QUESTIONS)**. There is no attribution requirement and no take-backs: your question may be reused anywhere, by anyone, for any purpose — including commercial products and training data. The optional `author` field is a courtesy credit, not a legal claim. The submission form makes you confirm this explicitly; submissions without that confirmation are not merged.
+By submitting a question you **dedicate it to the public domain under [CC0-1.0](LICENSE-QUESTIONS)**. There is no attribution requirement and no take-backs: your question may be reused anywhere, by anyone, for any purpose, including commercial products and training data. The optional `author` field is a courtesy credit and carries no legal claim. The submission form makes you confirm this explicitly; submissions without that confirmation are not merged.
 
 ### What makes a good question
 
-- Answerable by a stranger — no shared context required.
-- Open-ended — never yes/no.
+- Answerable by a stranger, with no shared context required.
+- Open-ended, never yes/no.
 - Specific enough to start a story ("When did you last…" beats "What do you think about…").
 - 10–140 characters, ends with `?`, one question per entry.
 - `family` questions must be safe and interesting for a 10-year-old.
@@ -24,11 +24,11 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 
 ### Adding a new language
 
-Languages are independent corpora, not translations — see [docs/languages.md](docs/languages.md). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 per category), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
+Languages are independent corpora, not translations (see [docs/languages.md](docs/languages.md)). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 per category), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
 
 ## Editing question files directly (developers)
 
-One YAML file per category per language: `questions/{lang}/{category}.yaml`. Append your entry **without an `id` and without `added`** — CI assigns both:
+One YAML file per category per language: `questions/{lang}/{category}.yaml`. Append your entry **without an `id` and without `added`**; CI assigns both:
 
 ```yaml
 - text: "When did you last change your mind about something important?"
@@ -43,7 +43,7 @@ just fix        # assigns ids/dates, normalizes formatting
 just validate   # must pass clean
 ```
 
-Rules the validator enforces: schema conformance, 10–140 chars ending in `?`, no duplicates within a language (across categories), per-language denylist, controlled tag vocabulary, `origin` references must exist. Never hand-write or edit an `id` — once assigned, ids are stable forever, even through typo fixes.
+Rules the validator enforces: schema conformance, 10–140 chars ending in `?`, no duplicates within a language (across categories), per-language denylist, controlled tag vocabulary, `origin` references must exist. Never hand-write or edit an `id`. Once assigned, ids are stable forever, even through typo fixes.
 
 ## Website development
 
@@ -62,7 +62,7 @@ Structure and interface docs live in [`firmware/`](firmware/) and [`hardware/`](
 
 Conventional commits, small PR-sized changes: `feat(site): …`, `feat(questions): …`, `fix(tools): …`, `chore(ci): …`, `docs: …`.
 
-The format is enforced locally by a zero-dependency `commit-msg` hook in [`.githooks/`](.githooks/) — enable it with `just hooks` (also part of `just setup`); it runs `git config core.hooksPath .githooks`. Allowed types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope optional and lowercase.
+The format is enforced locally by a zero-dependency `commit-msg` hook in [`.githooks/`](.githooks/). Enable it with `just hooks` (also part of `just setup`); it runs `git config core.hooksPath .githooks`. Allowed types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope optional and lowercase.
 
 ## Code of conduct
 

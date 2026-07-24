@@ -13,26 +13,26 @@ How to write a Tischkarte question in English. The bar: a stranger can answer it
 ## Shape
 
 - 10–140 characters, ends with `?`.
-- Prefer *when/what/who/how* openers over *do/did/are/is* — the latter invite yes/no.
+- Prefer *when/what/who/how* openers over *do/did/are/is*; the latter invite yes/no.
 - Specific beats abstract: "When did you last change your mind about something important?" beats "Are you open-minded?"
 - Two-part questions ("…, and what happened?") are fine when the second half pulls out the story. Never two unrelated questions.
 - No trailing qualifiers that do the answerer's work: "…or not?", "…if any?".
 
 ## Categories
 
-- `party` — light, playful, laughing-out-loud allowed. Good with people you met an hour ago.
-- `family` — must be safe *and interesting* for a 10-year-old. Cross-generational: a grandparent and a kid can both answer.
-- `love` — romance, crushes, heartbreak, friendship-love. Warmth over voyeurism.
-- `work` — careers, craft, ambition, meaning. Should work for a student and a retiree too.
-- `deep` — values, fears, beliefs, mortality. Earnest is fine; heavy is fine; hopeless is not.
+- `party`: light, playful, laughing-out-loud allowed. Good with people you met an hour ago.
+- `family`: must be safe *and interesting* for a 10-year-old. Cross-generational: a grandparent and a kid can both answer.
+- `love`: romance, crushes, heartbreak, friendship-love. Warmth over voyeurism.
+- `work`: careers, craft, ambition, meaning. Should work for a student and a retiree too.
+- `deep`: values, fears, beliefs, mortality. Earnest is fine; heavy is fine; hopeless is not.
 
 ## Tags
 
-Tag sparingly — most questions need zero or one.
+Tag sparingly. Most questions need zero or one.
 
-- `icebreaker` — safe with total strangers in the first five minutes.
-- `reflective` — asks the answerer to look inward; expect a pause.
-- `spicy` — risqué or emotionally daring; excluded from `family` device builds. Never on `family` or `work` questions.
-- `hypothetical` — imagined situations ("if…", "what would…").
-- `memory` — asks for a specific remembered moment.
-- `wouldyourather` — a forced choice between exactly two options.
+- `icebreaker`: safe with total strangers in the first five minutes.
+- `reflective`: asks the answerer to look inward; expect a pause.
+- `spicy`: risqué or emotionally daring; excluded from `family` device builds. Never on `family` or `work` questions.
+- `hypothetical`: imagined situations ("if…", "what would…").
+- `memory`: asks for a specific remembered moment.
+- `wouldyourather`: a forced choice between exactly two options.

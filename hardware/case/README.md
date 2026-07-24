@@ -9,7 +9,7 @@ manufacturing dimension.
 
 Envelope requirements from the product design ([docs/design.md](../../docs/design.md)):
 
-- Pocketable; the e-paper window is the face — the device lies flat mid-table like a place card.
+- Pocketable; the e-paper window is the face. The device lies flat mid-table like a place card.
 - One low-profile rotary push crown above the e-paper, reachable while the device stays on the table.
 - USB-C on the bottom edge; no visible LEDs on the tabletop faces.
 - Battery: 503035 LiPo (30 × 35 × 5 mm) behind the display stack.

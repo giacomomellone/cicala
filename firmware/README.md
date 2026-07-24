@@ -8,9 +8,9 @@
 - Displays: GDEY0213B74 2.13″ e-paper (SSD1680, SPI) + 0.91″ OLED (SSD1306, I²C).
 - Input: one EC11 rotary encoder (quadrature on PCNT) with push button.
 
-## Hard rules (from docs/design.md — not negotiable in code review)
+## Hard rules (from docs/design.md; not negotiable in code review)
 
-- The e-paper shows **only questions**. Menus, logos, status, progress — all of it belongs on the OLED.
+- The e-paper shows **only questions**. Menus, logos, status, progress: all of it belongs on the OLED.
 - The OLED is dark whenever hands are off the device.
 - Fully functional out of the box with the factory-preloaded database; Wi-Fi optional forever.
 - Sync runs opportunistically while charging and never interrupts use.

@@ -1,4 +1,4 @@
-// All UI strings — one object per shipped language (spec §7.3).
+// All UI strings, one object per shipped language (spec §7.3).
 // Sentence case everywhere. Question text itself never passes through here;
 // it lives in the per-language payloads.
 
@@ -43,7 +43,7 @@ const en = {
   "browse.sort.newest": "newest",
   "browse.sort.random": "random",
   "browse.more": "show more",
-  "browse.empty": "No question matches — maybe yours is missing?",
+  "browse.empty": "No question matches. Maybe yours is missing?",
   "browse.empty.cta": "add it",
 
   // contribute
@@ -55,22 +55,22 @@ const en = {
   "contribute.category": "category",
   "contribute.question": "your question",
   "contribute.question.hint": "10–140 characters, one question, ends with ?",
-  "contribute.rule.short": "a bit longer — at least 10 characters",
-  "contribute.rule.long": "too long — 140 characters max",
+  "contribute.rule.short": "a bit longer: at least 10 characters",
+  "contribute.rule.long": "too long: 140 characters max",
   "contribute.rule.mark": "must end with ?",
   "contribute.rule.ok": "looks good",
   "contribute.tags": "tags (optional)",
   "contribute.name": "name for credit (optional)",
   "contribute.cc0":
-    "I dedicate this question to the public domain (CC0). Anyone may use it for any purpose, forever, without attribution — that's what lets it ship everywhere.",
+    "I dedicate this question to the public domain (CC0). Anyone may use it for any purpose, forever, without attribution. That's what lets it ship everywhere.",
   "contribute.cc0.link": "what CC0 means",
   "contribute.submit": "open the submission on GitHub →",
   "contribute.fineprint":
     "Submitting opens GitHub (free account required). A maintainer who speaks your language reviews every question.",
   "contribute.newlang":
-    "New languages start in the incubator — read how to launch one:",
+    "New languages start in the incubator. Read how to launch one:",
   "contribute.recent": "recently added",
-  "contribute.recent.empty": "nothing merged yet — yours could be first.",
+  "contribute.recent.empty": "nothing merged yet; yours could be first.",
 
   // deck
   "deck.title": "your deck",
@@ -78,7 +78,7 @@ const en = {
   "deck.empty": "Your deck is empty. Heart questions while you play.",
   "deck.share": "share deck",
   "deck.share.copied": "link copied",
-  "deck.share.truncated": "deck too large to share — link carries the first 150",
+  "deck.share.truncated": "deck too large to share, link carries the first 150",
   "deck.export": "export",
   "deck.import": "import",
   "deck.saveall": "save all to my deck",
@@ -88,9 +88,9 @@ const en = {
   // device page
   "device.title": "the device",
   "device.p1":
-    "A pocket-sized gadget for the middle of the table: ESP32-S3, a 2.13″ e-paper display, a small OLED, and one rotary knob. It shows one conversation question at a time — and nothing else, ever.",
+    "A pocket-sized gadget for the middle of the table: ESP32-S3, a 2.13″ e-paper display, a small OLED, and one rotary knob. It shows one conversation question at a time, and nothing else, ever.",
   "device.p2":
-    "Unlike a phone, it's a shared object. The question stays on the e-paper at zero power, so the device is the table card: placing it on the table is the invitation, like producing a deck of cards. It's finite and offline — no feed, no notifications, nowhere else to be.",
+    "Unlike a phone, it's a shared object. The question stays on the e-paper at zero power, so the device is the table card: placing it on the table is the invitation, like producing a deck of cards. It's finite and offline: no feed, no notifications.",
   "device.p3":
     "It works fully out of the box with the preloaded database. Wi-Fi is optional forever; when you do connect it, it syncs new questions from this same open database while it charges.",
   "device.how": "how it works",
@@ -119,7 +119,7 @@ const en = {
   "device.link.releases": "releases",
   "device.sync": "sync",
   "device.sync.text":
-    "The device pulls signed per-language question bundles built from this same repository — the site and the device consume the same release. It only ever downloads the languages you keep on it.",
+    "The device pulls signed per-language question bundles built from this same repository, so the site and the device consume the same release. It only ever downloads the languages you keep on it.",
   "device.sync.link": "how sync works",
   "device.deckcodes": "deck codes",
   "device.deckcodes.text":
@@ -172,40 +172,40 @@ const de: Record<StringKey, string> = {
   "browse.sort.newest": "neueste",
   "browse.sort.random": "zufällig",
   "browse.more": "mehr anzeigen",
-  "browse.empty": "Keine Frage passt — vielleicht fehlt deine?",
+  "browse.empty": "Keine Frage passt. Vielleicht fehlt deine?",
   "browse.empty.cta": "füge sie hinzu",
 
   "contribute.title": "beitragen",
   "contribute.pitch":
-    "Gute Fragen schreiben Menschen. Füge deine der offenen Datenbank hinzu — sie erscheint auf jedem Gerät und dieser Seite.",
+    "Gute Fragen schreiben Menschen. Füge deine der offenen Datenbank hinzu, sie erscheint auf jedem Gerät und dieser Seite.",
   "contribute.lang": "sprache",
   "contribute.lang.other": "eine andere sprache…",
   "contribute.category": "kategorie",
   "contribute.question": "deine frage",
   "contribute.question.hint": "10–140 zeichen, eine frage, endet mit ?",
-  "contribute.rule.short": "etwas länger — mindestens 10 zeichen",
-  "contribute.rule.long": "zu lang — höchstens 140 zeichen",
+  "contribute.rule.short": "etwas länger: mindestens 10 zeichen",
+  "contribute.rule.long": "zu lang: höchstens 140 zeichen",
   "contribute.rule.mark": "muss mit ? enden",
   "contribute.rule.ok": "sieht gut aus",
   "contribute.tags": "schlagwörter (optional)",
   "contribute.name": "name für die nennung (optional)",
   "contribute.cc0":
-    "Ich übergebe diese Frage der Gemeinfreiheit (CC0). Alle dürfen sie für immer und für jeden Zweck nutzen, ohne Namensnennung — genau das lässt sie überallhin gelangen.",
+    "Ich übergebe diese Frage der Gemeinfreiheit (CC0). Alle dürfen sie für immer und für jeden Zweck nutzen, ohne Namensnennung. Genau das lässt sie überallhin gelangen.",
   "contribute.cc0.link": "was CC0 bedeutet",
   "contribute.submit": "einreichung auf GitHub öffnen →",
   "contribute.fineprint":
     "Beim Absenden öffnet sich GitHub (kostenloses Konto nötig). Eine betreuende Person, die deine Sprache spricht, prüft jede Frage.",
   "contribute.newlang":
-    "Neue Sprachen starten im Inkubator — so bringst du eine an den Start:",
+    "Neue Sprachen starten im Inkubator. So bringst du eine an den Start:",
   "contribute.recent": "zuletzt aufgenommen",
-  "contribute.recent.empty": "noch nichts aufgenommen — deine Frage könnte die erste sein.",
+  "contribute.recent.empty": "noch nichts aufgenommen. Deine Frage könnte die erste sein.",
 
   "deck.title": "dein deck",
   "deck.shared.title": "ein geteiltes deck",
   "deck.empty": "Dein Deck ist leer. Merke dir Fragen mit dem Herz, während du spielst.",
   "deck.share": "deck teilen",
   "deck.share.copied": "link kopiert",
-  "deck.share.truncated": "deck zu groß zum Teilen — der Link enthält die ersten 150",
+  "deck.share.truncated": "deck zu groß zum Teilen, der Link enthält die ersten 150",
   "deck.export": "exportieren",
   "deck.import": "importieren",
   "deck.saveall": "alle in mein deck übernehmen",
@@ -214,9 +214,9 @@ const de: Record<StringKey, string> = {
 
   "device.title": "das gerät",
   "device.p1":
-    "Ein Gerät für die Mitte des Tisches, klein genug für die Hosentasche: ESP32-S3, ein 2,13″-E-Papier-Bildschirm, ein kleines OLED und ein Drehknopf. Es zeigt eine Gesprächsfrage auf einmal — und sonst nie etwas.",
+    "Ein Gerät für die Mitte des Tisches, klein genug für die Hosentasche: ESP32-S3, ein 2,13″-E-Papier-Bildschirm, ein kleines OLED und ein Drehknopf. Es zeigt eine Gesprächsfrage auf einmal und sonst nie etwas.",
   "device.p2":
-    "Anders als ein Telefon ist es ein geteilter Gegenstand. Die Frage bleibt ohne Strom auf dem E-Papier stehen, das Gerät ist also die Tischkarte: Es auf den Tisch zu legen ist die Einladung, wie ein Kartenspiel hervorzuholen. Es ist endlich und offline — kein Strom an Neuigkeiten, keine Benachrichtigungen, kein Woanders.",
+    "Anders als ein Telefon ist es ein geteilter Gegenstand. Die Frage bleibt ohne Strom auf dem E-Papier stehen, das Gerät ist also die Tischkarte: Es auf den Tisch zu legen ist die Einladung, wie ein Kartenspiel hervorzuholen. Es ist endlich und offline: kein Nachrichtenstrom, keine Benachrichtigungen.",
   "device.p3":
     "Es funktioniert vollständig ab Werk, mit vorinstallierter Datenbank. WLAN bleibt für immer optional; wenn du es doch verbindest, lädt es beim Aufladen neue Fragen aus genau dieser offenen Datenbank.",
   "device.how": "so funktioniert es",
@@ -245,7 +245,7 @@ const de: Record<StringKey, string> = {
   "device.link.releases": "veröffentlichungen",
   "device.sync": "synchronisierung",
   "device.sync.text":
-    "Das Gerät lädt signierte Fragenpakete je Sprache, gebaut aus genau diesem Repository — Seite und Gerät nutzen dieselbe Veröffentlichung. Es lädt nur die Sprachen herunter, die du darauf behältst.",
+    "Das Gerät lädt signierte Fragenpakete je Sprache, gebaut aus genau diesem Repository. Seite und Gerät nutzen dieselbe Veröffentlichung. Es lädt nur die Sprachen herunter, die du darauf behältst.",
   "device.sync.link": "wie die synchronisierung funktioniert",
   "device.deckcodes": "deck-codes",
   "device.deckcodes.text":

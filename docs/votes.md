@@ -1,6 +1,6 @@
-# Voting — v2 stub (agreed design, not built)
+# Voting: v2 stub (agreed design, not built)
 
-One anonymous, account-free signal per question: **"sparked a good conversation."** Not a like button — it is asked about the conversation, not the card.
+One anonymous, account-free signal per question: **"sparked a good conversation."** It asks about the conversation, not the card, which is what separates it from a like button.
 
 Agreed design, frozen here so v1 can leave the right seams:
 

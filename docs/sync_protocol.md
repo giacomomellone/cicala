@@ -1,6 +1,6 @@
 # Device sync protocol and bundle format
 
-The device pulls signed per-language question bundles over HTTPS. The website deploy hosts the manifest and bundles, so the site and the device consume the same release. The device downloads **only its installed language(s)** — up to two.
+The device pulls signed per-language question bundles over HTTPS. The website deploy hosts the manifest and bundles, so the site and the device consume the same release. The device downloads **only its installed language(s)**, at most two.
 
 ## Manifest
 
@@ -46,7 +46,7 @@ One bundle per shipped language, built by `tools/build_bundle.py`. A `.tkb` file
 
 ### Worked example
 
-Language `en`, version `2026.07.1`, exactly one question — in `party`, id `q-8f3a2c1d`, not spicy, text `When did you last sing out loud?` (32 bytes). Display id: first two hash bytes `8f 3a` → 0x8f3a = 36666 → mod 10000 = **6666** = 0x1A0A.
+Language `en`, version `2026.07.1`, exactly one question in `party`: id `q-8f3a2c1d`, not spicy, text `When did you last sing out loud?` (32 bytes). Display id: first two hash bytes `8f 3a` → 0x8f3a = 36666 → mod 10000 = **6666** = 0x1A0A.
 
 Uncompressed bytes:
 
@@ -78,7 +78,7 @@ Trigger: on charger + known Wi-Fi, or manual "sync now" from the menu. Sync neve
 4. Write to a staging file in LittleFS, then **atomic rename** over the old bundle.
 5. On next wake the OLED reports "142 new questions".
 
-Any failure at any step: keep the old bundle, log, retry on next charge. There is no partial state — a bundle is either fully replaced or untouched.
+Any failure at any step: keep the old bundle, log, retry on next charge. There is no partial state; a bundle is either fully replaced or untouched.
 
 ## Keys and signing
 
