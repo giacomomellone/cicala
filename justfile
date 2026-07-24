@@ -11,12 +11,16 @@ default:
     @just --list --unsorted
 
 # one-time setup: python venv (tools + docs), website npm deps, git hooks
-setup:
+setup: hooks
     @if [ ! -d .venv ]; then (command -v python3.13 >/dev/null && python3.13 -m venv .venv) || python3 -m venv .venv; fi
     .venv/bin/pip install -q -r requirements.txt
     cd website && npm install
-    git config core.hooksPath .githooks
     @echo "ready — try: just validate · just website · just docs"
+
+# enable the git hooks (conventional-commit check on commit-msg)
+hooks:
+    git config core.hooksPath .githooks
+    @echo "hooks enabled — commit messages are now checked (.githooks/commit-msg)"
 
 # ---------------------------------------------------------------- database
 

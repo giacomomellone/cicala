@@ -62,7 +62,7 @@ Structure and interface docs live in [`firmware/`](firmware/) and [`hardware/`](
 
 Conventional commits, small PR-sized changes: `feat(site): …`, `feat(questions): …`, `fix(tools): …`, `chore(ci): …`, `docs: …`.
 
-The format is enforced locally by a zero-dependency `commit-msg` hook in [`.githooks/`](.githooks/) — `just setup` enables it (`git config core.hooksPath .githooks`). Allowed types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope optional and lowercase.
+The format is enforced locally by a zero-dependency `commit-msg` hook in [`.githooks/`](.githooks/) — enable it with `just hooks` (also part of `just setup`); it runs `git config core.hooksPath .githooks`. Allowed types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope optional and lowercase.
 
 ## Code of conduct
 
