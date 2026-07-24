@@ -14,6 +14,9 @@ website/src/data/*.json
 # generated bundles
 dist/bundles/
 
+# mkdocs output
+site/
+
 # os
 .DS_Store
 

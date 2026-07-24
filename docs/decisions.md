@@ -1,6 +1,6 @@
 # Decisions
 
-Append-only decision log (ADR-lite). One `##` per decision, newest last. Decisions marked DECIDED in the [handoff specification](../Tischkarte%20—%20Project%20handoff%20specification.md) are not repeated here — this file records choices the spec left OPEN, plus every dependency added.
+Append-only decision log (ADR-lite). One `##` per decision, newest last. Decisions marked DECIDED in the handoff specification (`Tischkarte — Project handoff specification.md` at the repo root) are not repeated here — this file records choices the spec left OPEN, plus every dependency added.
 
 ## 2026-07-24 — Repo bootstrapped from the handoff specification
 
@@ -8,7 +8,7 @@ Phase A (database + tools), Phase B (website), and structure-only stubs for firm
 
 ## 2026-07-24 — Placeholder org and domain
 
-GitHub org/repo is assumed as `tischkarte/tischkarte` and the site domain as `tischkarte.pages.dev` until the real ones exist. Both live in exactly one place each (`website/src/config.ts`; `$id` in `questions/schema.json`; `--base-url` default in `tools/build_bundle.py`; CODEOWNERS handles in `.github/CODEOWNERS` and maintainer names in `docs/LANGUAGES.md`), so the rename is a one-commit operation as the spec requires.
+GitHub org/repo is assumed as `tischkarte/tischkarte` and the site domain as `tischkarte.pages.dev` until the real ones exist. Both live in exactly one place each (`website/src/config.ts`; `$id` in `questions/schema.json`; `--base-url` default in `tools/build_bundle.py`; CODEOWNERS handles in `.github/CODEOWNERS` and maintainer names in `docs/languages.md`), so the rename is a one-commit operation as the spec requires.
 
 ## 2026-07-24 — Tests use stdlib unittest, not pytest
 
@@ -57,3 +57,15 @@ The firmware CI workflow checks for `firmware/CMakeLists.txt` and exits green wi
 ## 2026-07-24 — GitHub issue form uses a multi-select dropdown for tags
 
 GitHub issue forms cannot URL-prefill checkbox groups, and the contribute page must prefill everything. Tags are therefore a `dropdown` with `multiple: true` (prefillable); the CC0 confirmation stays a required checkbox the contributor must tick on GitHub — which is exactly the explicit consent we want anyway.
+
+## 2026-07-24 — Doc filenames are snake_case; just is the repo entry point
+
+`docs/` files renamed from SCREAMING_SNAKE_CASE to snake_case (`design.md`, `decisions.md`, `languages.md`, `sync_protocol.md`) per maintainer preference; root-level `README.md`/`CONTRIBUTING.md`/`CODE_OF_CONDUCT.md` keep their conventional names because GitHub's UI treats them specially. A `justfile` is the single entry point: typing `just` lists every command (database, website, docs, tests, firmware); recipes call the `.venv` tools directly so nothing needs to be on PATH except `just`, `python3` and `npm`.
+
+## 2026-07-24 — Docs are an MkDocs site (mkdocs-material)
+
+`docs/` doubles as an MkDocs site (`mkdocs.yml`, strict mode, output gitignored at `site/`). Dependency justification: `mkdocs-material` — the de-facto standard MkDocs distribution; configured with `font: false` so the docs load no third-party resources, matching the website's ethos. Installed via the same `.venv` as the tools (`requirements.txt`).
+
+## 2026-07-24 — Website tests: vitest + happy-dom
+
+Dependency justifications (dev-only, zero runtime bytes): `vitest` — the Vite-native runner, shares Astro's transform pipeline so TS test files just work; `happy-dom` — lightweight DOM (localStorage, events) for testing `store.ts` and row rendering without a browser download. To make the core logic testable, the shuffle bag moved to `lib/bag.ts` and the question-text rules to `lib/rules.ts` as pure modules; `play.ts`/`contribute.ts` are thin DOM wrappers over them. CI runs `npm test` before every site build.

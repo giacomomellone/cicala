@@ -1,5 +1,5 @@
 // Single place for external URLs — the org/domain are placeholders until the
-// real ones exist (docs/DECISIONS.md "Placeholder org and domain").
+// real ones exist (docs/decisions.md "Placeholder org and domain").
 export const REPO_URL = "https://github.com/tischkarte/tischkarte";
 export const SITE_URL = "https://tischkarte.pages.dev";
 
@@ -18,7 +18,7 @@ export const TAGS = [
 ] as const;
 export type Tag = (typeof TAGS)[number];
 
-// The OLED-style display number, shared with the device (docs/DECISIONS.md):
+// The OLED-style display number, shared with the device (docs/decisions.md):
 // decimal of the first 2 id-hash bytes mod 10000.
 export function displayId(id: string): string {
   return "#" + (parseInt(id.slice(2, 6), 16) % 10000);

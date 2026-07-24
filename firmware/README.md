@@ -8,7 +8,7 @@
 - Displays: GDEY0213B74 2.13″ e-paper (SSD1680, SPI) + 0.91″ OLED (SSD1306, I²C).
 - Input: one EC11 rotary encoder (quadrature on PCNT) with push button.
 
-## Hard rules (from docs/DESIGN.md — not negotiable in code review)
+## Hard rules (from docs/design.md — not negotiable in code review)
 
 - The e-paper shows **only questions**. Menus, logos, status, progress — all of it belongs on the OLED.
 - The OLED is dark whenever hands are off the device.
@@ -41,7 +41,7 @@ firmware/
 │   ├── input/              # EC11 quadrature on PCNT + debounced button,
 │   │                       # short/long press events
 │   ├── qdb/                # question store: LittleFS mount, bundle parser
-│   │                       # (docs/SYNC-PROTOCOL.md), qdb_next(category) with
+│   │                       # (docs/sync_protocol.md), qdb_next(category) with
 │   │                       # on-flash shuffle bag; up to two installed language
 │   │                       # bundles, active language switchable in the menu
 │   ├── sync/               # HTTPS manifest check, per-language bundle download,

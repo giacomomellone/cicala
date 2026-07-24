@@ -41,7 +41,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh issue comment "${{ github.event.issue.number }}" --body \
-            "Thanks! New languages start in the incubator rather than as direct submissions — see [docs/LANGUAGES.md](../blob/main/docs/LANGUAGES.md) for how a language graduates (≥150 native questions, a fluent maintainer, a style guide and a denylist). Open an issue titled \`lang: <code>\` if you want to start one — we'd love that."
+            "Thanks! New languages start in the incubator rather than as direct submissions — see [docs/languages.md](../blob/main/docs/languages.md) for how a language graduates (≥150 native questions, a fluent maintainer, a style guide and a denylist). Open an issue titled \`lang: <code>\` if you want to start one — we'd love that."
 
   # On approval: parse the issue, append the entry, run validate --fix, open a
   # PR that requests review from the language's CODEOWNERS and closes the issue

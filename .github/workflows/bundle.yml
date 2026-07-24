@@ -39,4 +39,4 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" dist/bundles/* \
             --title "Question database $GITHUB_REF_NAME" \
-            --notes "Per-language device bundles + manifest. See docs/SYNC-PROTOCOL.md. The next site deploy serves these under /device/."
+            --notes "Per-language device bundles + manifest. See docs/sync_protocol.md. The next site deploy serves these under /device/."

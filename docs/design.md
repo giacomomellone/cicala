@@ -14,7 +14,7 @@ Product and UX rationale. This is the shared mental model for everyone touching 
 - No visible vote counts on question cards (voting itself is v2 — see [votes.md](votes.md)).
 - No dark mode in website v1 — light, paper-like only. CSS is structured with custom properties so dark mode is a v2 patch, not a rewrite.
 - No CMS, no database server. The Git repo is the database.
-- No master-language translation pipeline — see [LANGUAGES.md](LANGUAGES.md).
+- No master-language translation pipeline — see [languages.md](languages.md).
 
 ## Why a device at all
 

@@ -2,7 +2,7 @@
 
 STEP/3MF exports plus FreeCAD source will live here (phase D). Licensed [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-Envelope requirements from the product design ([docs/DESIGN.md](../../docs/DESIGN.md)):
+Envelope requirements from the product design ([docs/design.md](../../docs/design.md)):
 
 - Pocketable; the e-paper window is the face — the device lies flat mid-table like a place card.
 - Knob on the top edge, reachable while the device stays on the table.

@@ -52,7 +52,7 @@ export function siteConfig(): SiteConfig {
   return config;
 }
 
-/** Active language: permalink seed (persisted — docs/DECISIONS.md), else
+/** Active language: permalink seed (persisted — docs/decisions.md), else
  * stored preference, else navigator.language, else en. Seed handling lives
  * here because island scripts can execute before the layout's script. */
 export function detectLang(): string {

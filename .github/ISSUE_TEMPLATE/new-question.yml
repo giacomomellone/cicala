@@ -14,7 +14,7 @@ body:
     id: language
     attributes:
       label: Language
-      description: Only shipped languages can receive questions directly. Picking "other / new language" gets you an explainer about starting one — see docs/LANGUAGES.md.
+      description: Only shipped languages can receive questions directly. Picking "other / new language" gets you an explainer about starting one — see docs/languages.md.
       options:
         - English (en)
         - Deutsch (de)

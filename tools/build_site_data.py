@@ -9,7 +9,7 @@ Emits into website/src/data/ (override with --out):
   recent.{lang}.json      newest 10 questions incl. added dates (contribute page)
 
 Only shipped languages are built — the incubator is excluded by design
-(docs/LANGUAGES.md). Strips author/added/origin from the main payloads.
+(docs/languages.md). Strips author/added/origin from the main payloads.
 Fails if any single language payload exceeds 2 MB.
 """
 

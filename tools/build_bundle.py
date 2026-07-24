@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build per-language device bundles (.tkb) plus the sync manifest.
 
-Bundle format (docs/SYNC-PROTOCOL.md has the worked example) — gzip of:
+Bundle format (docs/sync_protocol.md has the worked example) — gzip of:
 
   magic        4 bytes  "TKB1"
   version      u8 length + UTF-8 bytes (e.g. "2026.07.1")

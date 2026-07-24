@@ -1,0 +1,39 @@
+site_name: tischkarte
+site_description: Docs for the tischkarte conversation-question system — database, website, device.
+site_url: https://tischkarte.pages.dev/docs/
+repo_url: https://github.com/tischkarte/tischkarte
+repo_name: tischkarte/tischkarte
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: site
+strict: true
+
+nav:
+  - overview: index.md
+  - design: design.md
+  - decisions: decisions.md
+  - languages: languages.md
+  - sync protocol: sync_protocol.md
+  - votes (v2): votes.md
+
+theme:
+  name: material
+  # no external font loading — same no-third-party ethos as the website
+  font: false
+  palette:
+    scheme: default
+    primary: white
+    accent: deep orange
+  features:
+    - navigation.sections
+    - content.action.edit
+    - toc.integrate
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.highlight
