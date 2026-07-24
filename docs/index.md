@@ -7,6 +7,7 @@ An open-source system for conversation questions: a community-maintained [questi
 ## Pages
 
 - **[design](design.md)** — product and UX rationale: why a device, the interaction surface, website jobs, non-goals.
+- **[device prototype](device_prototype.md)** — honest feasibility review, proposed enclosure, concept renders, and a gated hardware-development plan.
 - **[decisions](decisions.md)** — append-only decision log (ADR-lite), including every dependency justification.
 - **[languages](languages.md)** — multilingual policy: independent corpora, the incubator, maintainers.
 - **[sync protocol](sync_protocol.md)** — device sync flow and the `.tkb` bundle format, byte by byte.

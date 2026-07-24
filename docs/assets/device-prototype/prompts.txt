@@ -1,0 +1,47 @@
+Prototype render prompts
+========================
+
+These images are AI-generated concept renders created with OpenAI's built-in
+image-generation tool on 2026-07-24. They are design communication, not evidence
+that the device has been engineered or manufactured.
+
+The second and third prompts used the preceding generated render(s) as visual
+references to keep the object consistent.
+
+hero.webp
+---------
+
+> Photorealistic industrial-design hero render of a pocket-sized offline
+> conversation-question device. Approximately 78 × 52 × 14 mm, landscape,
+> warm-ivory matte two-part pebble enclosure, slight 3° face incline, recessed
+> 2.13-inch landscape black-and-white e-paper display dominating the lower
+> two-thirds, narrow charcoal smoked-glass utility rail above it with a small
+> OLED at left and one 13 mm low-profile knurled charcoal rotary push crown at
+> upper right, centered USB-C on the bottom edge. E-paper text: “What story do
+> you always enjoy telling?” OLED text: “deep”. Soft off-white studio setting,
+> calm editorial light, realistic proportions and assembly gaps. No logo,
+> visible LED, touchscreen, extra control, colorful UI, props, or watermark.
+
+tabletop.webp
+-------------
+
+> Preserve the exact device from the hero render and show it in natural
+> tabletop use on warm oak at early evening. The small device lies flat at the
+> center, with cropped relaxed hands from several adults around the frame and
+> one hand about to turn the crown. Keep the same e-paper and OLED text. Candid
+> editorial photography, passive non-glowing e-paper, restrained warm light,
+> natural skin and wood texture. No phone, cards, bottles, logos, duplicate
+> device, extra control, staged faces, or watermark.
+
+exploded.webp
+--------------
+
+> Preserve the same exterior and create a clean, technically plausible vertical
+> exploded CAD-style render. Show the ivory top bezel, charcoal utility lens
+> and crown, one e-paper panel with FPC, one small OLED, mechanically supported
+> rotary encoder, one custom rounded PCB with an ESP32-S3 module at a board edge
+> and centered USB-C, one protected 30 × 35 × 5 mm LiPo, and an ivory bottom
+> shell with screw bosses and shallow feet. Warm off-white technical studio,
+> realistic FR-4, metal, polymer, and battery materials. No labels, logos,
+> development board, duplicate parts, phone internals, wires everywhere, or
+> watermark. Treat the output as layering intent, not a placement drawing.
