@@ -22,28 +22,27 @@ An open-source system for conversation questions, in three parts sharing one dat
 
 You don't need to be a developer. Open a [new-question issue](../../issues/new?template=new-question.yml) (or use the form on the website's contribute page), a maintainer who speaks your language reviews it, and it ships to the site and every device. Questions are dedicated to the public domain (CC0) — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Want to add a whole language? Read [docs/LANGUAGES.md](docs/LANGUAGES.md) — new languages start in the incubator.
+Want to add a whole language? Read [docs/languages.md](docs/languages.md) — new languages start in the incubator.
 
 ## Development
 
+[`just`](https://github.com/casey/just) is the entry point — type `just` to see every command:
+
 ```sh
-# validate the question database
-python3 tools/validate.py
-
-# build website data payloads
-python3 tools/build_site_data.py
-
-# run the website locally
-cd website && npm install && npm run dev
+just setup     # one-time: python venv + npm install
+just validate  # check the question database
+just website   # run the site locally
+just test      # database validation + tools tests + website tests
+just docs      # live-preview the docs (mkdocs)
 ```
 
-Requires Python 3.11+ (`pyyaml`, `jsonschema`) and Node 20+.
+Requires `just`, Python 3.11+ and Node 20+. The venv (`.venv/`) is created by `just setup` from [requirements.txt](requirements.txt).
 
 ## Documentation
 
-- [docs/DESIGN.md](docs/DESIGN.md) — product and UX rationale
-- [docs/DECISIONS.md](docs/DECISIONS.md) — decision log
-- [docs/LANGUAGES.md](docs/LANGUAGES.md) — multilingual policy and maintainers
-- [docs/SYNC-PROTOCOL.md](docs/SYNC-PROTOCOL.md) — device sync and bundle format
+- [docs/design.md](docs/design.md) — product and UX rationale
+- [docs/decisions.md](docs/decisions.md) — decision log
+- [docs/languages.md](docs/languages.md) — multilingual policy and maintainers
+- [docs/sync_protocol.md](docs/sync_protocol.md) — device sync and bundle format
 
 <!-- screenshots: add website + device photos here once available -->

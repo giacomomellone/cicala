@@ -24,7 +24,7 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 
 ### Adding a new language
 
-Languages are independent corpora, not translations — see [docs/LANGUAGES.md](docs/LANGUAGES.md). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 per category), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
+Languages are independent corpora, not translations — see [docs/languages.md](docs/languages.md). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 per category), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
 
 ## Editing question files directly (developers)
 
@@ -36,12 +36,11 @@ One YAML file per category per language: `questions/{lang}/{category}.yaml`. App
   author: "your name"   # optional
 ```
 
-Then run the validator before pushing:
+Then run the validator before pushing (`just setup` once, if you haven't):
 
 ```sh
-python3 -m venv .venv && .venv/bin/pip install pyyaml jsonschema
-.venv/bin/python tools/validate.py --fix   # assigns ids/dates, normalizes formatting
-.venv/bin/python tools/validate.py         # must pass clean
+just fix        # assigns ids/dates, normalizes formatting
+just validate   # must pass clean
 ```
 
 Rules the validator enforces: schema conformance, 10–140 chars ending in `?`, no duplicates within a language (across categories), per-language denylist, controlled tag vocabulary, `origin` references must exist. Never hand-write or edit an `id` — once assigned, ids are stable forever, even through typo fixes.
@@ -49,13 +48,11 @@ Rules the validator enforces: schema conformance, 10–140 chars ending in `?`, 
 ## Website development
 
 ```sh
-python3 tools/build_site_data.py   # generates website/src/data/*.json
-cd website
-npm install
-npm run dev
+just website        # dev server (regenerates website/src/data/*.json first)
+just test-website   # vitest suite
 ```
 
-Ground rules (from [docs/DESIGN.md](docs/DESIGN.md)): no UI frameworks, no Tailwind, no third-party scripts, no analytics, no accounts. Performance budget: ≤ 60 KB gzipped JS per page, Lighthouse mobile ≥ 95 on the play page. Every new dependency needs a one-line justification in [docs/DECISIONS.md](docs/DECISIONS.md).
+Ground rules (from [docs/design.md](docs/design.md)): no UI frameworks, no Tailwind, no third-party scripts, no analytics, no accounts. Performance budget: ≤ 60 KB gzipped JS per page, Lighthouse mobile ≥ 95 on the play page. Every new dependency needs a one-line justification in [docs/decisions.md](docs/decisions.md).
 
 ## Firmware / hardware
 

@@ -1,16 +1,16 @@
 # tischkarte website
 
-Astro 5, static output, vanilla TypeScript islands — no UI framework, no Tailwind, no third-party scripts. See spec §7 and [docs/DESIGN.md](../docs/DESIGN.md).
+Astro 5, static output, vanilla TypeScript islands — no UI framework, no Tailwind, no third-party scripts. See spec §7 and [docs/design.md](../docs/design.md).
 
 ## Develop
 
-```sh
-# 1. generate the data payloads from the question database (requires python3 + pyyaml + jsonschema)
-npm run data
+From the repo root: `just website` (dev server), `just website-build`, `just test-website` — or directly in this directory:
 
-# 2. run the site
+```sh
+npm run data   # regenerate src/data/*.json from the question database
 npm install
 npm run dev
+npm test       # vitest suite in tests/
 ```
 
 `src/data/*.json` is generated and gitignored; if the build complains about missing data, run `npm run data` again.
