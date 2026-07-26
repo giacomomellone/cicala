@@ -8,8 +8,9 @@ body:
       value: |
         Thanks for adding to the database! A maintainer who speaks your language reviews every
         submission; once approved it ships to the website within minutes and to every device with
-        the next release. Quality bar: answerable by a stranger, open-ended (no yes/no), specific
-        enough to start a story. See your language's style guide in `questions/<lang>/STYLE.md`.
+        the next release. Quality bar: answerable in every selected deck, open-ended (no yes/no),
+        and specific enough to start a story. See your language's style guide in
+        `questions/<lang>/STYLE.md`.
   - type: dropdown
     id: language
     attributes:
@@ -22,16 +23,29 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: category
+    id: decks
     attributes:
-      label: Category
-      description: family questions must be safe and interesting for a 10-year-old.
+      label: Decks
+      description: Choose every physical selector position where the question fits. "new_people" assumes no shared history; "close" assumes familiarity. Dark or spicy questions belong only in "wild".
+      multiple: true
       options:
-        - party
+        - new_people
+        - close
         - family
-        - love
         - work
-        - deep
+        - here
+        - wild
+    validations:
+      required: true
+  - type: dropdown
+    id: depth
+    attributes:
+      label: Depth
+      description: Editorial exposure cost, independent of tone. The initial player serves only 1 and 2.
+      options:
+        - 1 — little public exposure
+        - 2 — a personal construction
+        - 3 — vulnerability, conflict, fear, loss, or consequential disclosure
     validations:
       required: true
   - type: input
@@ -46,12 +60,13 @@ body:
     id: tags
     attributes:
       label: Tags (optional)
-      description: Pick at most one or two. "spicy" marks risqué/daring questions (never for family or work).
+      description: Pick at most one or two. "dark" and "spicy" are tone markers and require Wild as the only deck.
       multiple: true
       options:
         - icebreaker
         - reflective
         - spicy
+        - dark
         - hypothetical
         - memory
         - wouldyourather

@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Validate the Tischkarte question database.
 
-Checks every questions/{lang}/{category}.yaml (shipped and incubator) against
+Checks every questions/{lang}/questions.yaml (shipped and incubator) against
 questions/schema.json plus the rules JSON Schema cannot express: id format and
 global uniqueness, per-language dedup on normalized text, per-language
-denylist, terminator rule, and origin references.
+denylist, terminator rules, deck/tone invariants, and origin references.
 
-With --fix, assigns missing ids and added-dates and rewrites all clean files
-with stable formatting (2-space indent, keys in schema order). Ids are derived
-from a hash of lang|category|normalized text at assignment time and are stable
-forever after — this tool deliberately never re-checks hash equality, only
-uniqueness, so typo fixes don't change ids.
+With --fix, assigns missing ids and added dates and rewrites every clean corpus
+with stable formatting. New ids hash `lang|normalized text`; existing ids stay
+stable through later text or deck edits.
 
 Exit code 0 = clean (warnings allowed), 1 = errors. Requires pyyaml, jsonschema.
 """
@@ -29,8 +27,6 @@ from pathlib import Path
 import yaml
 from jsonschema import Draft202012Validator
 
-
-# ---------------------------------------------------------------- loading
 
 class LineLoader(yaml.SafeLoader):
     """SafeLoader that records the source line of every mapping."""
@@ -51,8 +47,8 @@ def normalize_text(text: str) -> str:
     return " ".join(unicodedata.normalize("NFC", text).lower().split())
 
 
-def compute_id(lang: str, category: str, text: str) -> str:
-    payload = f"{lang}|{category}|{normalize_text(text)}".encode("utf-8")
+def compute_id(lang: str, text: str) -> str:
+    payload = f"{lang}|{normalize_text(text)}".encode("utf-8")
     return "q-" + hashlib.sha256(payload).hexdigest()[:8]
 
 
@@ -111,12 +107,12 @@ def load_denylist(path: Path) -> list[str]:
 
 
 def parse_file(path: Path, rep: Reporter):
-    """Return the list of entry dicts (each with __line__), or None on error."""
+    """Return entry dictionaries with source lines, or None on error."""
     try:
         data = yaml.load(path.read_text(encoding="utf-8"), Loader=LineLoader)
-    except yaml.YAMLError as exc:
+    except (OSError, yaml.YAMLError) as exc:
         line = getattr(getattr(exc, "problem_mark", None), "line", 0)
-        rep.error(path, (line or 0) + 1, f"YAML parse error: {getattr(exc, 'problem', exc)}")
+        rep.error(path, (line or 0) + 1, f"cannot parse YAML: {getattr(exc, 'problem', exc)}")
         return None
     if data is None:
         return []
@@ -128,14 +124,15 @@ def parse_file(path: Path, rep: Reporter):
         if not isinstance(entry, dict):
             rep.error(path, 1, f"entry {i + 1} is not a mapping")
             return None
-        # yaml parses unquoted ISO dates into date objects; the schema wants strings
         if isinstance(entry.get("added"), dt.date):
             entry["added"] = entry["added"].isoformat()
         entries.append(entry)
     return entries
 
 
-# ---------------------------------------------------------------- checks
+def load_corpus(lang_dir: Path, cfg: dict, rep: Reporter):
+    return parse_file(lang_dir / cfg.get("questionFile", "questions.yaml"), rep)
+
 
 def check_text_rules(text: str, lang: str, cfg: dict, path, line, rep: Reporter):
     if "\n" in text:
@@ -164,11 +161,28 @@ def check_denylist(text: str, terms: list[str], path, line, rep: Reporter):
             )
 
 
-# ---------------------------------------------------------------- fixing / formatting
+def check_deck_rules(entry: dict, path, line, rep: Reporter):
+    decks = entry.get("decks")
+    tags = entry.get("tags", [])
+    if not isinstance(decks, list) or not isinstance(tags, list):
+        return
+    daring = {"dark", "spicy"}.intersection(tags)
+    if daring and decks != ["wild"]:
+        rep.error(
+            path,
+            line,
+            f"{', '.join(sorted(daring))} questions must be exclusive to the wild deck",
+        )
 
-def format_file(lang: str, category: str, entries: list[dict], key_order: list[str]) -> str:
+
+def _render_scalar(value) -> str:
+    escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
+    return f'"{escaped}"'
+
+
+def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
     lines = [
-        f"# questions/{lang}/{category}.yaml — Tischkarte question database (CC0).",
+        f"# questions/{lang}/questions.yaml — Tischkarte question database (CC0).",
         "# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;",
         "# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.",
         "",
@@ -179,26 +193,25 @@ def format_file(lang: str, category: str, entries: list[dict], key_order: list[s
             if key not in entry:
                 continue
             value = entry[key]
-            if key == "tags":
-                if not value:
+            if key in ("decks", "tags"):
+                if not value and key == "tags":
                     continue
                 rendered = "[" + ", ".join(value) + "]"
+            elif key == "depth":
+                rendered = str(value)
             elif key in ("id", "origin"):
                 rendered = str(value)
             else:
-                escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
-                rendered = f'"{escaped}"'
+                rendered = _render_scalar(value)
             lines.append(("- " if first else "  ") + f"{key}: {rendered}")
             first = False
     return "\n".join(lines) + "\n"
 
 
-# ---------------------------------------------------------------- main
-
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--fix", action="store_true",
-                        help="assign missing ids/dates and rewrite files with stable formatting")
+                        help="assign missing ids/dates and rewrite clean corpora")
     parser.add_argument("--root", type=Path,
                         default=Path(__file__).resolve().parent.parent,
                         help="repository root (for tests)")
@@ -210,113 +223,120 @@ def main(argv=None) -> int:
         print("\n".join(rep.errors), file=sys.stderr)
         return 1
 
-    categories = cfg["categories"]
-    key_order = cfg.get("keyOrder", ["id", "text", "tags", "origin", "author", "added"])
+    decks = cfg["decks"]
+    question_file = cfg.get("questionFile", "questions.yaml")
+    key_order = cfg.get(
+        "keyOrder", ["id", "text", "decks", "depth", "tags", "origin", "author", "added"]
+    )
     entry_validator = Draft202012Validator(schema["items"])
     today = dt.date.today().isoformat()
-
-    all_ids: dict[str, str] = {}          # id -> "path:line" of first definition
-    origin_refs: list[tuple] = []          # (path, line, origin_id)
+    all_ids: dict[str, str] = {}
+    origin_refs: list[tuple] = []
     total = 0
 
     for lang, lang_dir, incubator in discover_languages(args.root):
         rel = lang_dir.relative_to(args.root)
-
         denylist_path = lang_dir / "denylist.txt"
         if denylist_path.exists():
             denylist = load_denylist(denylist_path)
         else:
             denylist = []
-            if incubator:
-                rep.warn(rel, 0, "no denylist.txt yet — required before graduation")
-            else:
-                rep.error(rel, 0, "shipped language is missing denylist.txt")
+            (rep.warn if incubator else rep.error)(
+                rel, 0, "missing denylist.txt" + (" — required before graduation" if incubator else "")
+            )
         if not (lang_dir / "STYLE.md").exists():
             (rep.warn if incubator else rep.error)(
-                rel, 0,
-                "missing STYLE.md" + (" — required before graduation" if incubator else ""),
+                rel, 0, "missing STYLE.md" + (" — required before graduation" if incubator else "")
             )
 
-        for yaml_file in sorted(lang_dir.glob("*.yaml")):
-            if yaml_file.stem not in categories:
-                rep.error(yaml_file.relative_to(args.root), 1,
-                          f"unknown category '{yaml_file.stem}' (allowed: {', '.join(categories)})")
+        unexpected = [
+            p.name for p in sorted(lang_dir.glob("*.yaml")) if p.name != question_file
+        ]
+        for name in unexpected:
+            rep.error(rel / name, 1, f"question data must live in {question_file}")
 
-        seen_texts: dict[str, str] = {}   # normalized text -> "path:line", per language
+        path = lang_dir / question_file
+        if not path.exists():
+            (rep.warn if incubator else rep.error)(rel, 0, f"missing {question_file}")
+            continue
+        rpath = path.relative_to(args.root)
+        entries = parse_file(path, rep)
+        if entries is None:
+            continue
 
-        for category in categories:
-            path = lang_dir / f"{category}.yaml"
-            if not path.exists():
-                if not incubator:
-                    rep.warn(rel, 0, f"missing {category}.yaml for shipped language")
-                continue
-            rpath = path.relative_to(args.root)
-            entries = parse_file(path, rep)
-            if entries is None:
-                continue
+        file_error_count = len(rep.errors)
+        seen_texts: dict[str, str] = {}
+        coverage = {deck: 0 for deck in decks}
 
-            file_error_count = len(rep.errors)
-            for entry in entries:
-                line = entry.pop("__line__", 0)
-                total += 1
+        for entry in entries:
+            line = entry.pop("__line__", 0)
+            total += 1
+            text = entry.get("text")
+            if args.fix and isinstance(text, str):
+                if "id" not in entry:
+                    entry["id"] = compute_id(lang, text)
+                if "added" not in entry:
+                    entry["added"] = today
 
-                text = entry.get("text")
-                if args.fix and isinstance(text, str):
-                    if "id" not in entry:
-                        entry["id"] = compute_id(lang, category, text)
-                    if "added" not in entry:
-                        entry["added"] = today
+            for err in sorted(entry_validator.iter_errors(entry), key=str):
+                field = ".".join(str(p) for p in err.path) or "entry"
+                msg = err.message
+                if "'id' is a required property" in msg or "'added' is a required property" in msg:
+                    msg += " — run `tools/validate.py --fix` to assign it"
+                rep.error(rpath, line, f"{field}: {msg}")
 
-                for err in sorted(entry_validator.iter_errors(entry), key=str):
-                    field = ".".join(str(p) for p in err.path) or "entry"
-                    msg = err.message
-                    if ("'id' is a required property" in msg
-                            or "'added' is a required property" in msg):
-                        msg += " — run `tools/validate.py --fix` to assign it"
-                    rep.error(rpath, line, f"{field}: {msg}")
-
-                if not isinstance(text, str):
-                    continue
+            if isinstance(text, str):
                 check_text_rules(text, lang, cfg, rpath, line, rep)
                 check_denylist(text, denylist, rpath, line, rep)
-
                 norm = normalize_text(text)
                 if norm in seen_texts:
-                    rep.error(rpath, line,
-                              f"duplicate question text within language '{lang}' "
-                              f"(first seen at {seen_texts[norm]})")
+                    rep.error(
+                        rpath, line,
+                        f"duplicate question text within language '{lang}' "
+                        f"(first seen at {seen_texts[norm]})",
+                    )
                 else:
                     seen_texts[norm] = f"{rpath}:{line}"
 
-                qid = entry.get("id")
-                if isinstance(qid, str) and ID_RE.match(qid):
-                    if qid in all_ids:
-                        rep.error(rpath, line,
-                                  f"duplicate id {qid} (first seen at {all_ids[qid]})")
-                    else:
-                        all_ids[qid] = f"{rpath}:{line}"
+            check_deck_rules(entry, rpath, line, rep)
+            for deck in entry.get("decks", []):
+                if deck in coverage:
+                    coverage[deck] += 1
 
-                if "origin" in entry:
-                    origin_refs.append((rpath, line, entry["origin"]))
+            qid = entry.get("id")
+            if isinstance(qid, str) and ID_RE.match(qid):
+                if qid in all_ids:
+                    rep.error(rpath, line, f"duplicate id {qid} (first seen at {all_ids[qid]})")
+                else:
+                    all_ids[qid] = f"{rpath}:{line}"
+            if "origin" in entry:
+                origin_refs.append((rpath, line, entry["origin"]))
 
-            if args.fix and len(rep.errors) == file_error_count:
-                formatted = format_file(lang, category, entries, key_order)
-                if formatted != path.read_text(encoding="utf-8"):
-                    path.write_text(formatted, encoding="utf-8")
-                    print(f"fixed: {rpath}")
+        minimum = 1 if incubator else 10
+        for deck, count in coverage.items():
+            if count < minimum:
+                rep.warn(rpath, 0, f"deck '{deck}' has {count} questions; target is at least {minimum}")
+
+        if args.fix and len(rep.errors) == file_error_count:
+            formatted = format_file(lang, entries, key_order)
+            if formatted != path.read_text(encoding="utf-8"):
+                path.write_text(formatted, encoding="utf-8")
+                print(f"fixed: {rpath}")
 
     for rpath, line, origin in origin_refs:
         if origin not in all_ids:
-            rep.warn(rpath, line,
-                     f"origin {origin} does not exist (anymore) in the database")
+            rep.warn(rpath, line, f"origin {origin} does not exist (anymore) in the database")
 
-    for w in rep.warnings:
-        print(w, file=sys.stderr)
-    for e in rep.errors:
-        print(e, file=sys.stderr)
+    for warning in rep.warnings:
+        print(warning, file=sys.stderr)
+    for error in rep.errors:
+        print(error, file=sys.stderr)
     if rep.errors:
-        print(f"\n{total} questions checked — {len(rep.errors)} error(s), "
-              f"{len(rep.warnings)} warning(s)", file=sys.stderr)
+        print(
+            f"\n{total} questions checked — {len(rep.errors)} error(s), "
+            f"{len(rep.warnings)} warning(s)",
+            file=sys.stderr,
+        )
         return 1
     print(f"{total} questions checked — OK ({len(rep.warnings)} warning(s))")
     return 0

@@ -15,23 +15,29 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 
 ### What makes a good question
 
-- Answerable by a stranger, with no shared context required.
+- Answerable in every selected deck. `new_people` questions require no shared
+  history; `close` questions may assume familiarity.
 - Open-ended, never yes/no.
 - Specific enough to start a story ("When did you last…" beats "What do you think about…").
 - 10–140 characters, ends with `?`, one question per entry.
 - `family` questions must be safe and interesting for a 10-year-old.
+- Dark and spicy questions use `wild` only. Tone is separate from depth.
 - Read your language's style guide: [`questions/en/STYLE.md`](questions/en/STYLE.md), [`questions/de/STYLE.md`](questions/de/STYLE.md).
 
 ### Adding a new language
 
-Languages are independent corpora, not translations (see [docs/languages.md](docs/languages.md)). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 per category), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
+Languages are independent corpora, not translations (see [docs/languages.md](docs/languages.md)). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 eligible for each deck), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
 
 ## Editing question files directly (developers)
 
-One YAML file per category per language: `questions/{lang}/{category}.yaml`. Append your entry **without an `id` and without `added`**; CI assigns both:
+One corpus file per language: `questions/{lang}/questions.yaml`. Store a
+question once and list every deck where it is eligible. Append the entry
+**without an `id` and without `added`**; CI assigns both:
 
 ```yaml
 - text: "When did you last change your mind about something important?"
+  decks: [new_people, close]
+  depth: 2
   tags: [reflective]
   author: "your name"   # optional
 ```
@@ -43,7 +49,11 @@ just fix        # assigns ids/dates, normalizes formatting
 just validate   # must pass clean
 ```
 
-Rules the validator enforces: schema conformance, 10–140 chars ending in `?`, no duplicates within a language (across categories), per-language denylist, controlled tag vocabulary, `origin` references must exist. Never hand-write or edit an `id`. Once assigned, ids are stable forever, even through typo fixes.
+Rules the validator enforces: schema conformance, 10–140 chars ending in `?`,
+no duplicates within a language, one or more known decks, depth 1–3,
+Wild-only dark/spicy tone, per-language denylist, controlled tags, and origin
+references. Never hand-write or edit an `id`. Once assigned, IDs stay stable
+through text, deck, and depth edits.
 
 ## Website development
 

@@ -3,15 +3,14 @@
 
 Bundle format (docs/sync_protocol.md has the worked example) — gzip of:
 
-  magic        4 bytes  "TKB1"
+  magic        4 bytes  "TKB2"
   version      u8 length + UTF-8 bytes (e.g. "2026.07.1")
   lang         u8 length + UTF-8 bytes (e.g. "en")
-  per category, in the fixed order from questions/schema.json:
-    count      u16 LE
-    per question:
-      text     u16 LE length + UTF-8 bytes
-      flags    u8, bit0 = spicy
-      display  u16 LE, decimal of first 2 id-hash bytes mod 10000 (cosmetic)
+  count        u16 LE
+  per question:
+    deck mask  u8; bits follow the fixed deck order in questions/schema.json
+    metadata   u8; bits 0–1 = depth - 1, bit 2 = spicy, bit 3 = dark
+    text       u16 LE length + UTF-8 bytes
 
 All integers little-endian. Signing: ed25519 over the bundle's SHA-256 digest,
 via the system openssl (no Python crypto dependency); the private key lives in
@@ -37,33 +36,30 @@ import validate  # noqa: E402
 from build_site_data import git_version  # noqa: E402
 
 
-def display_id(qid: str) -> int:
-    return int(qid[2:6], 16) % 10000
-
-
-def build_bundle_bytes(lang: str, version: str, per_category: dict[str, list[dict]],
-                       categories: list[str]) -> bytes:
+def build_bundle_bytes(
+    lang: str, version: str, questions: list[dict], decks: list[str]
+) -> bytes:
     out = bytearray()
-    out += b"TKB1"
+    out += b"TKB2"
     for s in (version, lang):
         raw = s.encode("utf-8")
         out += struct.pack("<B", len(raw)) + raw
-    for category in categories:
-        entries = per_category.get(category, [])
-        out += struct.pack("<H", len(entries))
-        for entry in entries:
-            text = entry["text"].encode("utf-8")
-            flags = 1 if "spicy" in entry.get("tags", []) else 0
-            out += struct.pack("<H", len(text)) + text
-            out += struct.pack("<B", flags)
-            out += struct.pack("<H", display_id(entry["id"]))
+    out += struct.pack("<H", len(questions))
+    for entry in questions:
+        mask = sum(1 << decks.index(deck) for deck in entry["decks"])
+        tags = entry.get("tags", [])
+        metadata = entry["depth"] - 1
+        metadata |= (1 << 2) if "spicy" in tags else 0
+        metadata |= (1 << 3) if "dark" in tags else 0
+        text = entry["text"].encode("utf-8")
+        out += struct.pack("<BBH", mask, metadata, len(text)) + text
     return gzip.compress(bytes(out), mtime=0)
 
 
 def parse_bundle(blob: bytes):
     """Inverse of build_bundle_bytes, for tests and debugging."""
     raw = gzip.decompress(blob)
-    if raw[:4] != b"TKB1":
+    if raw[:4] != b"TKB2":
         raise ValueError("bad magic")
     pos = 4
 
@@ -74,19 +70,24 @@ def parse_bundle(blob: bytes):
         return s
 
     version, lang = take_str8(), take_str8()
-    result = {"version": version, "lang": lang, "categories": {}}
-    cats = json.loads((Path(__file__).resolve().parent.parent /
-                       "questions" / "schema.json").read_text())["x-tischkarte"]["categories"]
-    for category in cats:
-        (count,) = struct.unpack_from("<H", raw, pos); pos += 2
-        items = []
-        for _ in range(count):
-            (tlen,) = struct.unpack_from("<H", raw, pos); pos += 2
-            text = raw[pos:pos + tlen].decode("utf-8"); pos += tlen
-            flags = raw[pos]; pos += 1
-            (disp,) = struct.unpack_from("<H", raw, pos); pos += 2
-            items.append({"text": text, "spicy": bool(flags & 1), "display": disp})
-        result["categories"][category] = items
+    decks = json.loads((Path(__file__).resolve().parent.parent /
+                        "questions" / "schema.json").read_text())["x-tischkarte"]["decks"]
+    (count,) = struct.unpack_from("<H", raw, pos)
+    pos += 2
+    items = []
+    for _ in range(count):
+        mask, metadata, tlen = struct.unpack_from("<BBH", raw, pos)
+        pos += 4
+        text = raw[pos:pos + tlen].decode("utf-8")
+        pos += tlen
+        items.append({
+            "text": text,
+            "decks": [deck for bit, deck in enumerate(decks) if mask & (1 << bit)],
+            "depth": (metadata & 0b11) + 1,
+            "spicy": bool(metadata & (1 << 2)),
+            "dark": bool(metadata & (1 << 3)),
+        })
+    result = {"version": version, "lang": lang, "questions": items}
     if pos != len(raw):
         raise ValueError(f"{len(raw) - pos} trailing bytes")
     return result
@@ -127,27 +128,25 @@ def main(argv=None) -> int:
     if schema is None:
         print("\n".join(rep.errors), file=sys.stderr)
         return 1
-    categories = cfg["categories"]
+    decks = cfg["decks"]
 
-    manifest = {"schema": 1, "version": version, "min_fw": args.min_fw, "languages": {}}
+    manifest = {"schema": 2, "version": version, "min_fw": args.min_fw, "languages": {}}
     for lang, lang_dir, incubator in validate.discover_languages(args.root):
         if incubator:
             continue
-        per_category, count = {}, 0
-        for category in categories:
-            path = lang_dir / f"{category}.yaml"
-            entries = validate.parse_file(path, rep) if path.exists() else []
-            if entries is None:
+        path = lang_dir / cfg.get("questionFile", "questions.yaml")
+        entries = validate.parse_file(path, rep) if path.exists() else []
+        if entries is None:
+            return 1
+        for entry in entries:
+            entry.pop("__line__", None)
+            if "id" not in entry:
+                print(f"{path}: entry without id — run tools/validate.py --fix first",
+                      file=sys.stderr)
                 return 1
-            for entry in entries:
-                if "id" not in entry:
-                    print(f"{path}: entry without id — run tools/validate.py --fix first",
-                          file=sys.stderr)
-                    return 1
-            per_category[category] = entries
-            count += len(entries)
+        count = len(entries)
 
-        blob = build_bundle_bytes(lang, version, per_category, categories)
+        blob = build_bundle_bytes(lang, version, entries, decks)
         name = f"bundle-{lang}-{version}.tkb"
         (out_dir / name).write_bytes(blob)
         digest = hashlib.sha256(blob).digest()

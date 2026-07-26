@@ -4,8 +4,8 @@
 Used by .github/workflows/promote-question.yml. Reads the GitHub issue-form
 body from the ISSUE_BODY environment variable (never from argv — issue text is
 untrusted), parses the structured sections, appends the entry (without id and
-added — validate.py --fix assigns those) to questions/{lang}/{category}.yaml,
-and emits `lang`, `category` and `pr_title` to $GITHUB_OUTPUT.
+added — validate.py --fix assigns those) to questions/{lang}/questions.yaml,
+and emits `lang` and `pr_title` to $GITHUB_OUTPUT.
 
 Modes:
   promote_issue.py parse   only parse and emit outputs (used on issue open
@@ -69,9 +69,17 @@ def main() -> int:
         sys.exit(78)
     lang = m.group(1)
 
-    category = s.get("category", "").strip()
-    if category not in ("party", "family", "love", "work", "deep"):
-        fail(f"unknown category {category!r}")
+    deck_vocab = ("new_people", "close", "family", "work", "here", "wild")
+    decks_raw = s.get("decks", "")
+    decks = [deck for deck in deck_vocab if re.search(rf"\b{deck}\b", decks_raw)]
+    if not decks:
+        fail("choose at least one known deck")
+
+    depth_raw = s.get("depth", "")
+    match = re.match(r"\s*([123])\b", depth_raw)
+    if not match:
+        fail(f"unknown depth {depth_raw!r}")
+    depth = int(match.group(1))
 
     text = " ".join(s.get("question", "").split())
     if not text or text == NO_RESPONSE:
@@ -80,8 +88,13 @@ def main() -> int:
     tags_raw = s.get("tags (optional)", s.get("tags", ""))
     tags = []
     if tags_raw and tags_raw != NO_RESPONSE:
-        vocab = {"icebreaker", "reflective", "spicy", "hypothetical", "memory", "wouldyourather"}
+        vocab = {
+            "icebreaker", "reflective", "spicy", "dark", "hypothetical",
+            "memory", "wouldyourather",
+        }
         tags = [t.strip() for t in tags_raw.split(",") if t.strip() in vocab]
+    if {"spicy", "dark"}.intersection(tags) and decks != ["wild"]:
+        fail("dark/spicy questions must use only the wild deck")
 
     credit = s.get("name for credit (optional)", s.get("name for credit", ""))
     if credit == NO_RESPONSE:
@@ -93,19 +106,20 @@ def main() -> int:
         fail("the CC0 public-domain checkbox is not ticked — cannot promote")
 
     emit("lang", lang)
-    emit("category", category)
     first_words = " ".join(text.split()[:6])
     emit("pr_title", f"question({lang}): {first_words}… (#{issue})")
 
     if mode != "apply":
         return 0
 
-    target = ROOT / "questions" / lang / f"{category}.yaml"
+    target = ROOT / "questions" / lang / "questions.yaml"
     if not target.parent.is_dir():
         fail(f"language '{lang}' is not shipped (no questions/{lang}/ directory)")
 
     escaped = text.replace("\\", "\\\\").replace('"', '\\"')
     entry_lines = [f'- text: "{escaped}"']
+    entry_lines.append(f"  decks: [{', '.join(decks)}]")
+    entry_lines.append(f"  depth: {depth}")
     if tags:
         entry_lines.append(f"  tags: [{', '.join(tags)}]")
     if credit:

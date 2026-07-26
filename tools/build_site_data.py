@@ -3,9 +3,9 @@
 
 Emits into website/src/data/ (override with --out):
 
-  questions.{lang}.json   {"version", "generated", "categories": {cat: [{id,text,tags}]}}
+  questions.{lang}.json   {"version", "generated", "questions": [{id,text,decks,depth,tags}]}
   languages.json          shipped languages with names and question counts
-  index.json              id -> lang, for permalinks and cross-language deck links
+  index.json              id -> lang, for permalinks and cross-language links
   recent.{lang}.json      newest 10 questions incl. added dates (contribute page)
 
 Only shipped languages are built — the incubator is excluded by design
@@ -59,7 +59,6 @@ def main(argv=None) -> int:
     if schema is None:
         print("\n".join(rep.errors), file=sys.stderr)
         return 1
-    categories = cfg["categories"]
     lang_names = {code: c.get("name", code) for code, c in cfg.get("languages", {}).items()}
 
     version = git_version(args.root)
@@ -73,37 +72,34 @@ def main(argv=None) -> int:
     for lang, lang_dir, incubator in validate.discover_languages(args.root):
         if incubator:
             continue
-        payload = {"version": version, "generated": generated, "categories": {}}
+        payload = {"version": version, "generated": generated, "questions": []}
         recent = []
-        count = 0
-        for category in categories:
-            path = lang_dir / f"{category}.yaml"
-            entries = validate.parse_file(path, rep) if path.exists() else []
-            if entries is None:
-                failed = True
-                continue
-            questions = []
-            for pos, entry in enumerate(entries):
-                entry.pop("__line__", None)
-                if "id" not in entry:
-                    print(f"{path}: entry without id — run tools/validate.py --fix first",
-                          file=sys.stderr)
-                    return 1
-                questions.append({
-                    "id": entry["id"],
-                    "text": entry["text"],
-                    "tags": entry.get("tags", []),
-                })
-                index[entry["id"]] = lang
-                recent.append({
-                    "id": entry["id"],
-                    "text": entry["text"],
-                    "category": category,
-                    "added": entry.get("added", ""),
-                    "_pos": (category, pos),
-                })
-            payload["categories"][category] = questions
-            count += len(questions)
+        path = lang_dir / cfg.get("questionFile", "questions.yaml")
+        entries = validate.parse_file(path, rep) if path.exists() else []
+        if entries is None:
+            failed = True
+            continue
+        for pos, entry in enumerate(entries):
+            entry.pop("__line__", None)
+            if "id" not in entry:
+                print(f"{path}: entry without id — run tools/validate.py --fix first",
+                      file=sys.stderr)
+                return 1
+            question = {
+                "id": entry["id"],
+                "text": entry["text"],
+                "decks": entry["decks"],
+                "depth": entry["depth"],
+                "tags": entry.get("tags", []),
+            }
+            payload["questions"].append(question)
+            index[entry["id"]] = lang
+            recent.append({
+                **question,
+                "added": entry.get("added", ""),
+                "_pos": pos,
+            })
+        count = len(entries)
 
         blob = dump(payload)
         if len(blob.encode("utf-8")) > MAX_PAYLOAD_BYTES:
