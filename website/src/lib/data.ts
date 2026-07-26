@@ -8,13 +8,15 @@ import { getStoredLang, setStoredLang } from "./store";
 export interface Question {
   id: string;
   text: string;
+  decks: string[];
+  depth: number;
   tags: string[];
 }
 
 export interface Payload {
   version: string;
   generated: string;
-  categories: Record<string, Question[]>;
+  questions: Question[];
 }
 
 export interface LangInfo {
@@ -26,7 +28,9 @@ export interface LangInfo {
 export interface RecentItem {
   id: string;
   text: string;
-  category: string;
+  decks: string[];
+  depth: number;
+  tags: string[];
   added: string;
 }
 
@@ -105,16 +109,12 @@ export function loadRecent(lang: string): Promise<RecentItem[]> {
 }
 
 export function allQuestions(payload: Payload): Question[] {
-  return Object.values(payload.categories).flat();
+  return payload.questions;
 }
 
 export function findQuestion(
   payload: Payload,
   id: string,
-): { q: Question; category: string } | null {
-  for (const [category, questions] of Object.entries(payload.categories)) {
-    const q = questions.find((x) => x.id === id);
-    if (q) return { q, category };
-  }
-  return null;
+): Question | null {
+  return payload.questions.find((question) => question.id === id) ?? null;
 }

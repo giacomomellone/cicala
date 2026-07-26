@@ -1,5 +1,5 @@
 // All persistent client state lives in localStorage under the `tk.` namespace
-// (spec §7.9): tk.lang, tk.cat, tk.favs, tk.bag.<lang>.<cat>. No cookies, no
+// (spec §7.9): tk.lang, tk.deck, tk.favs, tk.bag.<lang>.<deck>. No cookies, no
 // accounts, nothing leaves the browser.
 
 function read(key: string): string | null {
@@ -38,14 +38,14 @@ export function setStoredLang(lang: string): void {
   write("tk.lang", lang);
 }
 
-// ---------------------------------------------------------------- category
+// -------------------------------------------------------------------- deck
 
-export function getCat(): string {
-  return read("tk.cat") ?? "all";
+export function getDeck(): string {
+  return read("tk.deck") ?? "new_people";
 }
 
-export function setCat(cat: string): void {
-  write("tk.cat", cat);
+export function setDeck(deck: string): void {
+  write("tk.deck", deck);
 }
 
 // --------------------------------------------------------------- favorites
@@ -84,14 +84,14 @@ export interface Bag {
   r: string[]; // last 5 shown, excluded from the next reshuffle
 }
 
-export function getBag(lang: string, cat: string): Bag {
-  const bag = readJson<Bag>(`tk.bag.${lang}.${cat}`, { b: [], r: [] });
+export function getBag(lang: string, deck: string): Bag {
+  const bag = readJson<Bag>(`tk.bag.${lang}.${deck}`, { b: [], r: [] });
   return {
     b: Array.isArray(bag.b) ? bag.b : [],
     r: Array.isArray(bag.r) ? bag.r : [],
   };
 }
 
-export function setBag(lang: string, cat: string, bag: Bag): void {
-  write(`tk.bag.${lang}.${cat}`, JSON.stringify(bag));
+export function setBag(lang: string, deck: string, bag: Bag): void {
+  write(`tk.bag.${lang}.${deck}`, JSON.stringify(bag));
 }

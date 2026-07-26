@@ -1,7 +1,7 @@
 ---
-// Category chips: all + the five categories in knob order (spec §7.4).
+// Browse/deck filters: all + the six physical decks in selector order.
 // role="radiogroup" per §7.10; the active chip is inverted.
-import { CATEGORIES } from "../config";
+import { DECKS } from "../config";
 import { t, type StringKey } from "../i18n";
 
 interface Props {
@@ -9,21 +9,21 @@ interface Props {
   id?: string;
 }
 const { active = "all", id = "chips" } = Astro.props;
-const options = ["all", ...CATEGORIES];
+const options = ["all", ...DECKS];
 ---
 
-<div class="chips" role="radiogroup" aria-label="category" id={id}>
+<div class="chips" role="radiogroup" aria-label="deck" id={id}>
   {
-    options.map((cat) => (
+    options.map((deck) => (
       <button
         type="button"
         class="chip"
         role="radio"
-        aria-checked={String(cat === active)}
-        data-cat={cat}
-        data-i18n={`cat.${cat}`}
+        aria-checked={String(deck === active)}
+        data-deck={deck}
+        data-i18n={`deck.${deck}`}
       >
-        {t("en", `cat.${cat}` as StringKey)}
+        {t("en", `deck.${deck}` as StringKey)}
       </button>
     ))
   }

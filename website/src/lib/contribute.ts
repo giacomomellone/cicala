@@ -11,7 +11,8 @@ export async function initContribute(): Promise<void> {
   const form = document.getElementById("c-form") as HTMLFormElement | null;
   if (!form) return;
   const langSel = document.getElementById("c-lang") as HTMLSelectElement;
-  const catSel = document.getElementById("c-cat") as HTMLSelectElement;
+  const depthSel = document.getElementById("c-depth") as HTMLSelectElement;
+  const deckRule = document.getElementById("c-deck-rule")!;
   const textEl = document.getElementById("c-text") as HTMLTextAreaElement;
   const counter = document.getElementById("c-counter")!;
   const ruleHint = document.getElementById("c-rule")!;
@@ -58,7 +59,25 @@ export async function initContribute(): Promise<void> {
     const isOther = langSel.value === "__other__";
     newlangNote.hidden = !isOther;
 
-    const ok = textOk && cc0El.checked && !isOther;
+    const decks = Array.from(
+      form.querySelectorAll<HTMLInputElement>("input[name=decks]:checked"),
+    ).map((input) => input.value);
+    const toneTags = Array.from(
+      form.querySelectorAll<HTMLInputElement>("input[name=tags]:checked"),
+    ).some((input) => input.value === "dark" || input.value === "spicy");
+    const decksOk = decks.length > 0 &&
+      (!toneTags || (decks.length === 1 && decks[0] === "wild"));
+    deckRule.textContent = tr(
+      lang,
+      decks.length === 0
+        ? "contribute.decks.required"
+        : decksOk
+          ? "contribute.decks.hint"
+          : "contribute.decks.wild",
+    );
+    deckRule.classList.toggle("is-bad", !decksOk);
+
+    const ok = textOk && decksOk && cc0El.checked && !isOther;
     submit.disabled = !ok;
     return ok;
   }
@@ -66,6 +85,7 @@ export async function initContribute(): Promise<void> {
   textEl.addEventListener("input", validate);
   cc0El.addEventListener("change", validate);
   langSel.addEventListener("change", validate);
+  form.addEventListener("change", validate);
   validate();
 
   form.addEventListener("submit", (e) => {
@@ -76,11 +96,20 @@ export async function initContribute(): Promise<void> {
     const tags = Array.from(
       form.querySelectorAll<HTMLInputElement>("input[name=tags]:checked"),
     ).map((t) => t.value);
+    const decks = Array.from(
+      form.querySelectorAll<HTMLInputElement>("input[name=decks]:checked"),
+    ).map((input) => input.value);
+    const depthOption = {
+      "1": "1 — little public exposure",
+      "2": "2 — a personal construction",
+      "3": "3 — consequential disclosure",
+    }[depthSel.value] ?? "2 — a personal construction";
     const params = new URLSearchParams({
       template: "new-question.yml",
       labels: "question-submission",
       language: `${chosen.name} (${chosen.code})`,
-      category: catSel.value,
+      decks: decks.join(","),
+      depth: depthOption,
       "question-text": textEl.value.replace(/\s+/g, " ").trim(),
     });
     if (tags.length) params.set("tags", tags.join(","));
@@ -108,7 +137,10 @@ export async function initContribute(): Promise<void> {
             `<a class="row-q" href="/q/${r.id}">${r.text
               .replace(/&/g, "&amp;")
               .replace(/</g, "&lt;")}</a>` +
-            `<div class="row-meta"><span>${tr(lang, `cat.${r.category}` as never)}</span>` +
+            `<div class="row-meta">${r.decks
+              .map((deck) => `<span>${tr(lang, `deck.${deck}` as never)}</span>`)
+              .join("")}` +
+            `<span>${tr(lang, `depth.${r.depth}` as never)}</span>` +
             `<span>${r.added}</span></div></div></li>`,
         )
         .join("");

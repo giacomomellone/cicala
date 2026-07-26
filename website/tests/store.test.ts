@@ -4,9 +4,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   getBag,
+  getDeck,
   getFavs,
   isFav,
   setBag,
+  setDeck,
   setFavs,
   toggleFav,
 } from "../src/lib/store";
@@ -39,16 +41,25 @@ describe("favorites", () => {
 });
 
 describe("bags", () => {
-  it("round-trips per lang+category under the tk.bag.* key", () => {
-    setBag("de", "deep", { b: ["q-00000001"], r: ["q-00000002"] });
-    expect(localStorage.getItem("tk.bag.de.deep")).not.toBeNull();
-    expect(getBag("de", "deep")).toEqual({ b: ["q-00000001"], r: ["q-00000002"] });
+  it("round-trips per lang+deck under the tk.bag.* key", () => {
+    setBag("de", "wild", { b: ["q-00000001"], r: ["q-00000002"] });
+    expect(localStorage.getItem("tk.bag.de.wild")).not.toBeNull();
+    expect(getBag("de", "wild")).toEqual({ b: ["q-00000001"], r: ["q-00000002"] });
     // other keys unaffected
-    expect(getBag("en", "deep")).toEqual({ b: [], r: [] });
+    expect(getBag("en", "wild")).toEqual({ b: [], r: [] });
   });
 
   it("degrades corrupted bags to empty", () => {
     localStorage.setItem("tk.bag.en.all", "not json at all");
     expect(getBag("en", "all")).toEqual({ b: [], r: [] });
+  });
+});
+
+describe("deck selection", () => {
+  it("defaults to new people and persists an absolute deck", () => {
+    expect(getDeck()).toBe("new_people");
+    setDeck("here");
+    expect(getDeck()).toBe("here");
+    expect(localStorage.getItem("tk.deck")).toBe("here");
   });
 });

@@ -1,7 +1,7 @@
 // Play controller (spec §7.4): shuffle-bag randomness with no repeats,
 // session history (in-memory, max 50), keyboard map, favorites, share.
 
-import { CATEGORIES, displayId } from "../config";
+import { DECKS, PLAYBACK_DEPTH_MAX } from "../config";
 import { tr } from "./apply-i18n";
 import { drawFromBag } from "./bag";
 import {
@@ -10,11 +10,11 @@ import {
   type Payload,
   type Question,
 } from "./data";
-import { getBag, getCat, isFav, setBag, setCat, toggleFav } from "./store";
+import { getBag, getDeck, isFav, setBag, setDeck, toggleFav } from "./store";
 
 interface Shown {
   q: Question;
-  category: string;
+  deck: string;
 }
 
 const HISTORY_MAX = 50;
@@ -27,22 +27,20 @@ export async function initPlay(): Promise<void> {
 
   const qText = document.getElementById("q-text")!;
   const qSwap = document.getElementById("q-swap")!;
-  const qNum = document.getElementById("q-num")!;
-  const qCat = document.getElementById("q-cat")!;
   const favBtn = document.getElementById("q-fav") as HTMLButtonElement;
   const favLabel = document.getElementById("q-fav-label")!;
   const shareBtn = document.getElementById("q-share") as HTMLButtonElement;
   const shareLabel = document.getElementById("q-share-label")!;
   const nextBtn = document.getElementById("q-next") as HTMLButtonElement;
-  const chips = Array.from(
-    root.querySelectorAll<HTMLButtonElement>(".chip[data-cat]"),
+  const selectors = Array.from(
+    root.querySelectorAll<HTMLButtonElement>("[data-deck]"),
   );
 
   const lang = detectLang();
   const isPermalink = root.dataset.permalink === "1";
   const seedId = root.dataset.seedId ?? "";
-  let cat = isPermalink ? (root.dataset.seedCat ?? "all") : getCat();
-  if (cat !== "all" && !(CATEGORIES as readonly string[]).includes(cat)) cat = "all";
+  let deck = isPermalink ? (root.dataset.seedDeck ?? "new_people") : getDeck();
+  if (!(DECKS as readonly string[]).includes(deck)) deck = "new_people";
 
   let payload: Payload;
   try {
@@ -51,24 +49,25 @@ export async function initPlay(): Promise<void> {
     return; // static page keeps working with its SSR question
   }
 
-  const byId = new Map<string, Shown>();
-  for (const [category, questions] of Object.entries(payload.categories)) {
-    for (const q of questions) byId.set(q.id, { q, category });
-  }
+  const byId = new Map(payload.questions.map((q) => [q.id, q]));
 
-  const idsFor = (c: string): string[] =>
-    c === "all"
-      ? CATEGORIES.flatMap((k) => (payload.categories[k] ?? []).map((q) => q.id))
-      : (payload.categories[c] ?? []).map((q) => q.id);
+  const idsFor = (selectedDeck: string): string[] =>
+    payload.questions
+      .filter(
+        (q) =>
+          q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(selectedDeck),
+      )
+      .map((q) => q.id);
 
   // --------------------------------------------------------- shuffle bag
 
-  function drawNext(c: string): Shown | null {
-    const bag = getBag(lang, c);
-    const id = drawFromBag(bag, idsFor(c));
+  function drawNext(selectedDeck: string): Shown | null {
+    const bag = getBag(lang, selectedDeck);
+    const id = drawFromBag(bag, idsFor(selectedDeck));
     if (id === null) return null;
-    setBag(lang, c, bag);
-    return byId.get(id) ?? null;
+    setBag(lang, selectedDeck, bag);
+    const q = byId.get(id);
+    return q ? { q, deck: selectedDeck } : null;
   }
 
   // ------------------------------------------------------------- history
@@ -88,9 +87,6 @@ export async function initPlay(): Promise<void> {
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function renderMeta(entry: Shown): void {
-    qNum.textContent = displayId(entry.q.id);
-    qCat.textContent = tr(lang, `cat.${entry.category}` as never);
-    qCat.dataset.cat = entry.category;
     const saved = isFav(entry.q.id);
     favBtn.setAttribute("aria-pressed", String(saved));
     favLabel.textContent = tr(lang, saved ? "play.saved" : "play.save");
@@ -98,6 +94,8 @@ export async function initPlay(): Promise<void> {
 
   function renderQuestion(entry: Shown): void {
     qText.textContent = entry.q.text;
+    deck = entry.deck;
+    setActiveDeck(deck);
     renderMeta(entry);
     document.documentElement.lang = lang;
   }
@@ -113,9 +111,12 @@ export async function initPlay(): Promise<void> {
     }
   }
 
-  function setActiveChip(c: string): void {
-    for (const chip of chips)
-      chip.setAttribute("aria-checked", String(chip.dataset.cat === c));
+  function setActiveDeck(selectedDeck: string): void {
+    for (const selector of selectors)
+      selector.setAttribute(
+        "aria-checked",
+        String(selector.dataset.deck === selectedDeck),
+      );
   }
 
   // --------------------------------------------------------------- moves
@@ -133,7 +134,7 @@ export async function initPlay(): Promise<void> {
       await show(history[cursor]!);
       return;
     }
-    const entry = drawNext(cat);
+    const entry = drawNext(deck);
     if (!entry) {
       qText.textContent = tr(lang, "play.empty");
       return;
@@ -149,12 +150,12 @@ export async function initPlay(): Promise<void> {
     }
   }
 
-  async function selectCat(c: string): Promise<void> {
-    cat = c;
-    setCat(c);
-    setActiveChip(c);
+  async function selectDeck(selectedDeck: string): Promise<void> {
+    deck = selectedDeck;
+    setDeck(selectedDeck);
+    setActiveDeck(selectedDeck);
     leavePermalink();
-    const entry = drawNext(c);
+    const entry = drawNext(selectedDeck);
     if (!entry) {
       qText.textContent = tr(lang, "play.empty");
       return;
@@ -165,16 +166,17 @@ export async function initPlay(): Promise<void> {
 
   // ---------------------------------------------------------------- init
 
-  const seed = seedId ? (byId.get(seedId) ?? null) : null;
+  const seedQuestion = seedId ? (byId.get(seedId) ?? null) : null;
+  const seed = seedQuestion ? { q: seedQuestion, deck } : null;
   if (seed && isPermalink) {
     // permalink: the SSR question is already on screen — adopt it
     record(seed);
     renderMeta(seed);
-    setActiveChip(cat);
+    setActiveDeck(deck);
   } else {
     // normal play: draw from the bag (replaces the build-time SSR question)
-    setActiveChip(cat);
-    const entry = drawNext(cat);
+    setActiveDeck(deck);
+    const entry = drawNext(deck);
     if (entry) {
       record(entry);
       await show(entry, false);
@@ -185,8 +187,11 @@ export async function initPlay(): Promise<void> {
 
   nextBtn.addEventListener("click", () => void next());
 
-  for (const chip of chips)
-    chip.addEventListener("click", () => void selectCat(chip.dataset.cat ?? "all"));
+  for (const selector of selectors)
+    selector.addEventListener("click", () => {
+      const selectedDeck = selector.dataset.deck;
+      if (selectedDeck) void selectDeck(selectedDeck);
+    });
 
   favBtn.addEventListener("click", () => {
     const entry = history[cursor];
@@ -231,8 +236,8 @@ export async function initPlay(): Promise<void> {
     } else if (e.key === "f" || e.key === "F") {
       favBtn.click();
     } else if (e.key >= "1" && e.key <= "6") {
-      const chip = chips[Number(e.key) - 1];
-      if (chip) void selectCat(chip.dataset.cat ?? "all");
+      const selector = selectors[Number(e.key) - 1];
+      if (selector?.dataset.deck) void selectDeck(selector.dataset.deck);
     }
   });
 }

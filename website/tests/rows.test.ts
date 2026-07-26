@@ -11,9 +11,10 @@ const item = {
   q: {
     id: "q-8f3a2c1d",
     text: 'What would <script>alert("x")</script> & "quotes" ask?',
-    tags: ["spicy"],
+    decks: ["close", "wild"],
+    depth: 2,
+    tags: ["reflective"],
   },
-  category: "deep",
 };
 
 describe("rowHtml", () => {
@@ -29,8 +30,10 @@ describe("rowHtml", () => {
     container.innerHTML = rowHtml(item, "de");
     const link = container.querySelector<HTMLAnchorElement>("a.row-q")!;
     expect(link.getAttribute("href")).toBe("/q/q-8f3a2c1d");
-    expect(container.textContent).toContain("tiefgang"); // de label for deep
-    expect(container.textContent).toContain("gewagt"); // de label for spicy
+    expect(container.textContent).toContain("close");
+    expect(container.textContent).toContain("wild");
+    expect(container.textContent).toContain("tiefe 2");
+    expect(container.textContent).toContain("nachdenklich");
   });
 
   it("renders the heart pressed when the question is a favorite", () => {

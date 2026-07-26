@@ -3,17 +3,14 @@
 // The English list is statically rendered for no-JS visitors; the island
 // re-renders for the active language and live filters.
 import Chips from "../components/Chips.astro";
-import { CATEGORIES, TAGS } from "../config";
+import { TAGS } from "../config";
 import { t, type StringKey } from "../i18n";
 import Base from "../layouts/Base.astro";
 import payload from "../data/questions.en.json";
 import { heartIcon } from "../lib/icons";
 import type { Question } from "../lib/data";
 
-const categories = payload.categories as Record<string, Question[]>;
-const newestFirst = CATEGORIES.flatMap((category) =>
-  (categories[category] ?? []).map((q) => ({ q, category })),
-).reverse();
+const newestFirst = (payload.questions as Question[]).map((q) => ({ q })).reverse();
 const firstPage = newestFirst.slice(0, 100);
 ---
 
@@ -49,12 +46,15 @@ const firstPage = newestFirst.slice(0, 100);
 
   <ul class="rows" id="rows">
     {
-      firstPage.map(({ q, category }) => (
+      firstPage.map(({ q }) => (
         <li class="row" data-id={q.id}>
           <div class="row-main">
             <a class="row-q" href={`/q/${q.id}`}>{q.text}</a>
             <div class="row-meta">
-              <span data-i18n={`cat.${category}`}>{t("en", `cat.${category}` as StringKey)}</span>
+              {q.decks.map((deck) => (
+                <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
+              ))}
+              <span data-i18n={`depth.${q.depth}`}>{t("en", `depth.${q.depth}` as StringKey)}</span>
               {q.tags.map((tag) => (
                 <span data-i18n={`tag.${tag}`}>{t("en", `tag.${tag}` as StringKey)}</span>
               ))}

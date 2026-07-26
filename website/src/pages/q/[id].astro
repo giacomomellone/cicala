@@ -3,12 +3,12 @@
 // language, so /q/<id> works without JS, carries the question as <title>,
 // and sets <html lang> to the question's language.
 import PlayShell from "../../components/PlayShell.astro";
-import type { Category } from "../../config";
+import type { Deck } from "../../config";
 import Base from "../../layouts/Base.astro";
 import type { Question } from "../../lib/data";
 
 interface Payload {
-  categories: Record<string, Question[]>;
+  questions: Question[];
 }
 
 export function getStaticPaths() {
@@ -19,10 +19,11 @@ export function getStaticPaths() {
   const paths = [];
   for (const [path, mod] of Object.entries(files)) {
     const lang = path.match(/questions\.([a-z]{2,3})\.json$/)?.[1] ?? "en";
-    for (const [category, questions] of Object.entries(mod.default.categories)) {
-      for (const q of questions) {
-        paths.push({ params: { id: q.id }, props: { q, category, lang } });
-      }
+    for (const q of mod.default.questions) {
+      paths.push({
+        params: { id: q.id },
+        props: { q, deck: q.decks[0] ?? "new_people", lang },
+      });
     }
   }
   return paths;
@@ -30,10 +31,10 @@ export function getStaticPaths() {
 
 interface Props {
   q: Question;
-  category: string;
+  deck: string;
   lang: string;
 }
-const { q, category, lang } = Astro.props;
+const { q, deck, lang } = Astro.props;
 ---
 
 <Base
@@ -44,7 +45,7 @@ const { q, category, lang } = Astro.props;
 >
   <PlayShell
     question={q}
-    category={category as Category}
+    deck={deck as Deck}
     lang={lang}
     permalink
   />

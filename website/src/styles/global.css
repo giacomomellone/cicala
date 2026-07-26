@@ -499,13 +499,14 @@ input[type="checkbox"] {
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--paper-raised);
-  aspect-ratio: 3 / 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--ink-faint);
-  font-size: 0.75rem;
   margin: 1.25rem 0;
+  overflow: hidden;
+}
+
+.device-photo img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .soon-tag {

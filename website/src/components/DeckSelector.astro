@@ -1,0 +1,98 @@
+---
+// Website analogue of the six-position absolute selector. Each stop is a real
+// radio button; the line and markers make the physical state model visible.
+import { DECKS } from "../config";
+import { t, type StringKey } from "../i18n";
+
+interface Props {
+  active: string;
+}
+
+const { active } = Astro.props;
+---
+
+<div class="deck-selector" role="radiogroup" aria-label="deck">
+  {
+    DECKS.map((deck, index) => (
+      <button
+        type="button"
+        class="deck-stop"
+        role="radio"
+        aria-checked={String(deck === active)}
+        data-deck={deck}
+        aria-label={`${index + 1}. ${t("en", `deck.${deck}` as StringKey)}`}
+      >
+        <span class="deck-marker" aria-hidden="true"></span>
+        <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
+      </button>
+    ))
+  }
+</div>
+
+<style>
+  .deck-selector {
+    --marker: 0.55rem;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    width: min(100%, 38rem);
+    padding-top: 0.15rem;
+  }
+
+  .deck-selector::before {
+    content: "";
+    position: absolute;
+    top: calc(0.15rem + var(--marker) / 2);
+    left: calc(100% / 12);
+    right: calc(100% / 12);
+    border-top: 1px solid var(--line);
+  }
+
+  .deck-stop {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 44px;
+    min-height: 52px;
+    padding: 0;
+    border: 0;
+    color: var(--ink-faint);
+    background: transparent;
+    font: inherit;
+    font-size: 0.6875rem;
+    line-height: 1.15;
+    cursor: pointer;
+  }
+
+  .deck-marker {
+    width: var(--marker);
+    height: var(--marker);
+    border: 1px solid var(--ink-faint);
+    border-radius: 50%;
+    background: var(--paper);
+    transition: transform 120ms ease, background 120ms ease;
+  }
+
+  .deck-stop:hover {
+    color: var(--ink);
+  }
+
+  .deck-stop[aria-checked="true"] {
+    color: var(--ink);
+  }
+
+  .deck-stop[aria-checked="true"] .deck-marker {
+    border-color: var(--ink);
+    background: var(--ink);
+    transform: scale(1.45);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .deck-marker {
+      transition: none;
+    }
+  }
+</style>

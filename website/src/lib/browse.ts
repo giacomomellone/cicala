@@ -1,13 +1,11 @@
 // Browse controller (spec §7.5): client-side search (case- and diacritic-
-// insensitive substring), category chips, tag filter, newest/random sort,
+// insensitive substring), deck chips, tag filter, newest/random sort,
 // 100-row pagination via "show more" — all on the active language only.
 
-import { CATEGORIES } from "../config";
 import { tr } from "./apply-i18n";
 import { shuffle } from "./bag";
 import { detectLang, loadPayload, type Payload } from "./data";
 import { bindHearts, rowHtml, type RowItem } from "./rows";
-import { getCat, setCat } from "./store";
 
 const PAGE = 100;
 
@@ -40,12 +38,9 @@ export async function initBrowse(): Promise<void> {
 
   // newest = reverse file order; files are append-only so file order is
   // chronological (docs/decisions.md)
-  const newestFirst: RowItem[] = CATEGORIES.flatMap((category) =>
-    (payload.categories[category] ?? []).map((q) => ({ q, category })),
-  ).reverse();
+  const newestFirst: RowItem[] = payload.questions.map((q) => ({ q })).reverse();
 
-  let cat = getCat();
-  if (cat !== "all" && !(CATEGORIES as readonly string[]).includes(cat)) cat = "all";
+  let deck = "all";
   let tag = "";
   let sort: "newest" | "random" = "newest";
   let query = "";
@@ -54,7 +49,7 @@ export async function initBrowse(): Promise<void> {
 
   const setActiveChip = () => {
     for (const chip of chips)
-      chip.setAttribute("aria-checked", String(chip.dataset.cat === cat));
+      chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
   };
 
   function filtered(): RowItem[] {
@@ -62,7 +57,7 @@ export async function initBrowse(): Promise<void> {
     const q = fold(query.trim());
     return source.filter(
       (item) =>
-        (cat === "all" || item.category === cat) &&
+        (deck === "all" || item.q.decks.includes(deck)) &&
         (tag === "" || item.q.tags.includes(tag)) &&
         (q === "" || fold(item.q.text).includes(q)),
     );
@@ -90,8 +85,7 @@ export async function initBrowse(): Promise<void> {
 
   for (const chip of chips)
     chip.addEventListener("click", () => {
-      cat = chip.dataset.cat ?? "all";
-      setCat(cat);
+      deck = chip.dataset.deck ?? "all";
       setActiveChip();
       shown = PAGE;
       render();

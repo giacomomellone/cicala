@@ -14,9 +14,9 @@ import Base from "../layouts/Base.astro";
     <p data-i18n="device.p3">{t("en", "device.p3")}</p>
   </div>
 
-  <div class="device-photo" role="img" aria-label={t("en", "device.photo")}>
-    <span data-i18n="device.photo">{t("en", "device.photo")}</span>
-  </div>
+  <figure class="device-photo">
+    <img src="/device-prototype.webp" alt={t("en", "device.photo")} />
+  </figure>
 
   <h2 data-i18n="device.how">how it works</h2>
   <table class="spec-table">
@@ -29,23 +29,23 @@ import Base from "../layouts/Base.astro";
     </thead>
     <tbody>
       <tr>
-        <td data-i18n="device.t.r1a">turn knob</td>
-        <td data-i18n="device.t.r1b">change category</td>
+        <td data-i18n="device.t.r1a">rotate to a detent</td>
+        <td data-i18n="device.t.r1b">select one of six decks</td>
         <td data-i18n="device.t.r1c">{t("en", "device.t.r1c")}</td>
       </tr>
       <tr>
-        <td data-i18n="device.t.r2a">press</td>
-        <td data-i18n="device.t.r2b">next question in category</td>
+        <td data-i18n="device.t.r2a">press Next</td>
+        <td data-i18n="device.t.r2b">draw another question</td>
         <td data-i18n="device.t.r2c">{t("en", "device.t.r2c")}</td>
       </tr>
       <tr>
-        <td data-i18n="device.t.r3a">long-press 1.5 s</td>
-        <td data-i18n="device.t.r3b">utility menu on OLED only</td>
+        <td data-i18n="device.t.r3a">connect USB while holding Next</td>
+        <td data-i18n="device.t.r3b">open service setup</td>
         <td data-i18n="device.t.r3c">{t("en", "device.t.r3c")}</td>
       </tr>
       <tr>
-        <td data-i18n="device.t.r4a">idle 30 s</td>
-        <td data-i18n="device.t.r4b">deep sleep</td>
+        <td data-i18n="device.t.r4a">hands off</td>
+        <td data-i18n="device.t.r4b">sleep</td>
         <td data-i18n="device.t.r4c">{t("en", "device.t.r4c")}</td>
       </tr>
     </tbody>
@@ -73,11 +73,4 @@ import Base from "../layouts/Base.astro";
     </p>
   </div>
 
-  <h2>
-    <span data-i18n="device.deckcodes">deck codes</span>
-    <span class="soon-tag">v2 · coming soon</span>
-  </h2>
-  <div class="prose">
-    <p data-i18n="device.deckcodes.text">{t("en", "device.deckcodes.text")}</p>
-  </div>
 </Base>

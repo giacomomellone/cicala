@@ -8,7 +8,6 @@ import { isFav, toggleFav } from "./store";
 
 export interface RowItem {
   q: Question;
-  category: string;
 }
 
 function escapeHtml(s: string): string {
@@ -20,6 +19,9 @@ function escapeHtml(s: string): string {
 }
 
 export function rowHtml(item: RowItem, lang: string): string {
+  const decks = item.q.decks
+    .map((deck) => `<span>${escapeHtml(tr(lang, `deck.${deck}` as never))}</span>`)
+    .join("");
   const tags = item.q.tags
     .map((tag) => `<span>${escapeHtml(tr(lang, `tag.${tag}` as never))}</span>`)
     .join("");
@@ -28,7 +30,7 @@ export function rowHtml(item: RowItem, lang: string): string {
   <div class="row-main">
     <a class="row-q" href="/q/${item.q.id}">${escapeHtml(item.q.text)}</a>
     <div class="row-meta">
-      <span>${escapeHtml(tr(lang, `cat.${item.category}` as never))}</span>${tags}
+      ${decks}<span>${escapeHtml(tr(lang, `depth.${item.q.depth}` as never))}</span>${tags}
     </div>
   </div>
   <button type="button" class="iconbtn row-fav" aria-pressed="${saved}"

@@ -2,7 +2,7 @@
 // Contribute (spec §7.7): a styled thin client of the GitHub issue form.
 // Client-side pre-validation mirrors tools/validate.py; submit opens the
 // prefilled issue in a new tab. "Recently added" is the social-proof loop.
-import { CATEGORIES, REPO_URL, TAGS } from "../config";
+import { DECKS, REPO_URL, TAGS } from "../config";
 import { t, type StringKey } from "../i18n";
 import Base from "../layouts/Base.astro";
 import recent from "../data/recent.en.json";
@@ -29,15 +29,28 @@ import recent from "../data/recent.en.json";
     </div>
 
     <div class="field">
-      <label for="c-cat" data-i18n="contribute.category">category</label>
-      <select id="c-cat">
+      <span data-i18n="contribute.decks" style="display:block; font-size:0.8125rem; margin-bottom:0.45rem">decks</span>
+      <div class="checks">
         {
-          CATEGORIES.map((cat) => (
-            <option value={cat} data-i18n={`cat.${cat}`}>
-              {t("en", `cat.${cat}` as StringKey)}
-            </option>
+          DECKS.map((deck) => (
+            <label>
+              <input type="checkbox" name="decks" value={deck} />
+              <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
+            </label>
           ))
         }
+      </div>
+      <span class="sub rule-hint" id="c-deck-rule" data-i18n="contribute.decks.hint">
+        {t("en", "contribute.decks.hint")}
+      </span>
+    </div>
+
+    <div class="field">
+      <label for="c-depth" data-i18n="contribute.depth">depth</label>
+      <select id="c-depth">
+        <option value="1" data-i18n="contribute.depth.1">{t("en", "contribute.depth.1")}</option>
+        <option value="2" data-i18n="contribute.depth.2" selected>{t("en", "contribute.depth.2")}</option>
+        <option value="3" data-i18n="contribute.depth.3">{t("en", "contribute.depth.3")}</option>
       </select>
     </div>
 
@@ -96,7 +109,10 @@ import recent from "../data/recent.en.json";
             <div class="row-main">
               <a class="row-q" href={`/q/${r.id}`}>{r.text}</a>
               <div class="row-meta">
-                <span data-i18n={`cat.${r.category}`}>{t("en", `cat.${r.category}` as StringKey)}</span>
+                {r.decks.map((deck) => (
+                  <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
+                ))}
+                <span data-i18n={`depth.${r.depth}`}>{t("en", `depth.${r.depth}` as StringKey)}</span>
                 <span>{r.added}</span>
               </div>
             </div>

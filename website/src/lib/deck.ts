@@ -3,7 +3,7 @@
 // work because ids are language-scoped; missing languages resolve through
 // the id→lang index on demand.
 
-import { CATEGORIES, MAX_SHARED_DECK } from "../config";
+import { DECKS, MAX_SHARED_DECK } from "../config";
 import { tr } from "./apply-i18n";
 import {
   detectLang,
@@ -38,7 +38,7 @@ async function resolve(ids: string[], activeLang: string): Promise<DeckItem[]> {
       const payload = await loadPayload(lang);
       for (const id of subset) {
         const hit = findQuestion(payload, id);
-        if (hit) items.set(id, { q: hit.q, category: hit.category, lang });
+        if (hit) items.set(id, { q: hit, lang });
       }
     } catch {
       /* language payload unavailable — those ids stay unresolved */
@@ -98,11 +98,11 @@ export async function initDeck(): Promise<void> {
   }
 
   let items: DeckItem[] = await resolve(ids, lang);
-  let cat = "all";
+  let deck = "all";
 
   function render(): void {
     const visible =
-      cat === "all" ? items : items.filter((i) => i.category === cat);
+      deck === "all" ? items : items.filter((i) => i.q.decks.includes(deck));
     rowsEl!.innerHTML = visible.map((i) => rowHtml(i, lang)).join("");
     countEl.textContent = `${visible.length} ${tr(lang, "deck.count")}`;
     const empty = items.length === 0;
@@ -116,7 +116,7 @@ export async function initDeck(): Promise<void> {
 
   const setActiveChip = () => {
     for (const chip of chips)
-      chip.setAttribute("aria-checked", String(chip.dataset.cat === cat));
+      chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
   };
 
   setActiveChip();
@@ -125,9 +125,9 @@ export async function initDeck(): Promise<void> {
 
   for (const chip of chips)
     chip.addEventListener("click", () => {
-      cat = chip.dataset.cat && chip.dataset.cat !== "all" &&
-        (CATEGORIES as readonly string[]).includes(chip.dataset.cat)
-        ? chip.dataset.cat
+      deck = chip.dataset.deck && chip.dataset.deck !== "all" &&
+        (DECKS as readonly string[]).includes(chip.dataset.deck)
+        ? chip.dataset.deck
         : "all";
       setActiveChip();
       render();
