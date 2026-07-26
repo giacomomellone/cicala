@@ -1,6 +1,8 @@
 # Device sync protocol and bundle format
 
-The device pulls signed per-language question bundles over HTTPS. The website deploy hosts the manifest and bundles, so the site and the device consume the same release. The device downloads **only its installed language(s)**, at most two.
+This is the data contract for later firmware. The website hosts one signed
+bundle per shipped language. A device downloads only its installed languages,
+at most two.
 
 ## Manifest
 
@@ -8,81 +10,94 @@ Stable URL: `https://<site-domain>/device/manifest.json`
 
 ```json
 {
-  "schema": 1,
-  "version": "2026.07.1",
+  "schema": 2,
+  "version": "2026.07.2",
   "min_fw": "0.1.0",
   "languages": {
     "en": {
-      "url": "https://<site-domain>/device/bundle-en-2026.07.1.tkb",
-      "size": 18744,
+      "url": "https://<site-domain>/device/bundle-en-2026.07.2.tkb",
+      "size": 19042,
       "sha256": "9e2f…c41a",
       "sig": "base64-ed25519-signature-of-sha256",
-      "count": 200
-    },
-    "de": { "…": "…" }
+      "count": 240
+    }
   }
 }
 ```
 
-- `version` is the database release (git tag `db-*`), compared per installed language.
-- `sig` is an ed25519 signature **over the 32 raw bytes of the bundle's SHA-256 digest**, base64-encoded. `"sig": null` marks an unsigned dev build; release firmware rejects it.
-- v2 (documented, not implemented): the manifest gains a `firmware` object for OTA; A/B partitions are already reserved.
+`count` is the number of unique stored questions, not the sum of deck
+eligibilities. `sig` is an Ed25519 signature over the 32 raw bytes of the
+bundle's SHA-256 digest. An unsigned development bundle uses `"sig": null`;
+release firmware rejects it.
 
-## Bundle format `.tkb`
+## TKB2 bundle
 
-One bundle per shipped language, built by `tools/build_bundle.py`. A `.tkb` file is the **gzip** of the following flat binary. All integers are **little-endian**; strings are UTF-8 with no terminator.
+A `.tkb` file is a deterministic gzip stream (`mtime=0`) around this flat
+binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
 | Field | Size | Meaning |
-|---|---|---|
-| magic | 4 | ASCII `TKB1` |
-| version | 1 + n | u8 length, then version string |
-| lang | 1 + n | u8 length, then language code |
-| then, per category in the fixed order `party, family, love, work, deep`: | | |
-| count | 2 | u16, number of questions in this category |
-| — per question: | | |
-| text | 2 + n | u16 length, then question text |
-| flags | 1 | bit0 = spicy (excluded from `family`-safe builds); bits 1–7 reserved, zero |
-| display | 2 | u16 display id: decimal of the first 2 id-hash bytes mod 10000. Cosmetic (`#274` on the OLED); collisions within a language are acceptable |
+|---|---:|---|
+| magic | 4 | ASCII `TKB2` |
+| version | 1 + n | u8 length, then release version |
+| language | 1 + n | u8 length, then language code |
+| count | 2 | u16 number of unique questions |
+| then, per question | | |
+| deck mask | 1 | bits 0–5 are `new_people`, `close`, `family`, `work`, `here`, `wild`; bits 6–7 are zero |
+| metadata | 1 | bits 0–1 are `depth - 1`; bit 2 is `spicy`; bit 3 is `dark`; bits 4–7 are zero |
+| text | 2 + n | u16 byte length, then question text |
+
+The bundle omits IDs because the physical device has no favorites, permalinks,
+or human-visible question numbers. IDs remain in the repository and website.
+A question with several eligible decks is stored once with several mask bits,
+which avoids duplicated text.
+
+Dark and spicy flags are tone metadata. Corpus validation requires either flag
+to be exclusive to the Wild deck. Normal playback filters out depth 3.
 
 ### Worked example
 
-Language `en`, version `2026.07.1`, exactly one question in `party`: id `q-8f3a2c1d`, not spicy, text `When did you last sing out loud?` (32 bytes). Display id: first two hash bytes `8f 3a` → 0x8f3a = 36666 → mod 10000 = **6666** = 0x1A0A.
+Language `en`, version `2026.07.2`, with one depth-2 question eligible for New
+People and Close:
 
-Uncompressed bytes:
+`When did you last sing out loud?`
 
-```
-54 4B 42 31                                      "TKB1"
-09 32 30 32 36 2E 30 37 2E 31                    len=9, "2026.07.1"
+Its deck mask is `00000011` and metadata is `00000001`.
+
+```text
+54 4B 42 32                                      "TKB2"
+09 32 30 32 36 2E 30 37 2E 32                    len=9, "2026.07.2"
 02 65 6E                                         len=2, "en"
-01 00                                            party: count = 1
+01 00                                            count = 1
+03                                               new_people + close
+01                                               depth 2, no tone flags
 20 00                                            text length = 32
-57 68 65 6E 20 64 69 64 20 79 6F 75 20 6C 61 73  "When did you las"
-74 20 73 69 6E 67 20 6F 75 74 20 6C 6F 75 64 3F  "t sing out loud?"
-00                                               flags = 0 (not spicy)
-0A 1A                                            display = 6666 (0x1A0A LE)
-00 00                                            family: count = 0
-00 00                                            love:   count = 0
-00 00                                            work:   count = 0
-00 00                                            deep:   count = 0
+57 68 65 6E 20 64 69 64 20 79 6F 75 20 6C 61 73
+74 20 73 69 6E 67 20 6F 75 74 20 6C 6F 75 64 3F
 ```
 
-The `.tkb` on disk is `gzip(bytes above)` (built with `mtime=0` so builds are deterministic). `tools/build_bundle.py` contains `parse_bundle()` as the executable reference decoder; the round-trip test in `tools/tests/` is the conformance check.
+`tools/build_bundle.py` contains `parse_bundle()`, the executable reference
+decoder. The tools unit suite round-trips both shipped languages.
 
-## Device sync flow
+## Later device flow
 
-Trigger: on charger + known Wi-Fi, or manual "sync now" from the menu. Sync never interrupts use.
+Normal trigger: USB power plus known Wi-Fi. Setup trigger: connect USB while
+holding Next, then use the captive portal on a phone. There is no tabletop menu
+or manual-sync gesture.
 
-1. `GET /device/manifest.json`; check `schema` and `min_fw`.
-2. For each installed language: compare `version` with the installed bundle's version. Skip if equal.
-3. `GET` the bundle. Verify `size`, then SHA-256, then the ed25519 `sig` against the embedded public key (`firmware/components/sync/trusted_key.h`).
-4. Write to a staging file in LittleFS, then **atomic rename** over the old bundle.
-5. On next wake the OLED reports "142 new questions".
+1. Fetch the manifest and check `schema` and `min_fw`.
+2. Compare the release with each installed language.
+3. Download a changed bundle and verify size, SHA-256, then signature.
+4. Write a staging file and atomically rename it over the prior bundle.
+5. Use the new bundle on the next requested draw without displaying a status
+   message.
 
-Any failure at any step: keep the old bundle, log, retry on next charge. There is no partial state; a bundle is either fully replaced or untouched.
+Any failure leaves the old bundle intact and retries during a later charging
+window. Sync does not refresh the e-paper or take attention from the current
+question.
 
-## Keys and signing
+## Keys
 
-- `tools/keygen.py` generates the ed25519 pair via the system `openssl`.
-- The **private key** is a GitHub Actions secret (`BUNDLE_SIGNING_KEY`), used by the `bundle.yml` workflow on `db-*` tags. Never committed.
-- The **public key** is committed at `firmware/components/sync/trusted_key.h` and baked into firmware.
-- Key rotation = new firmware release; old devices keep working with their preloaded database (Wi-Fi is optional forever).
+`tools/keygen.py` generates the Ed25519 pair through the system `openssl`.
+The private key is a GitHub Actions secret. The public key remains part of a
+future firmware build. Key rotation requires a firmware release; devices
+without a valid new bundle continue with their preloaded corpus.

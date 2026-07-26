@@ -1,59 +1,120 @@
 # Design
 
-Product and UX rationale. This is the shared mental model for everyone touching the site, the firmware, or the database. [Theory](theory.md) governs the question corpus. When any decision conflicts with another, the principle below wins.
+Product and interaction rationale. [Theory](theory.md) governs the question
+corpus. When choices conflict, the principle below wins.
 
 ## The principle
 
-**Minimize time-to-question, maximize time-in-conversation.** The product succeeds when people stop looking at it. Any proposed feature must either shorten the path to a good question or deepen the conversation after it. If it does neither, reject it, even if it would "improve engagement." Engagement with the product is the failure mode. Engagement between people is the goal.
+**Minimize time-to-question, maximize time-in-conversation.** A feature must
+shorten the path to a useful question or help the conversation after it starts.
+Time spent operating the product is a cost.
 
-## Non-goals (permanent unless explicitly revisited)
+## Non-goals
 
-- No user accounts, login, or profiles. Anywhere, ever.
-- No mobile app, no Bluetooth.
-- No analytics in v1; never any third-party scripts. (A self-hosted, cookieless option may come later.)
-- No visible vote counts on question cards (voting itself is v2, see [votes.md](votes.md)).
-- No dark mode in website v1: light, paper-like only. CSS is structured with custom properties so dark mode is a v2 patch rather than a rewrite.
-- No CMS, no database server. The Git repo is the database.
-- No master-language translation pipeline, see [languages.md](languages.md).
+- No accounts, login, or profiles.
+- No mobile app or Bluetooth.
+- No analytics in v1 and no third-party scripts.
+- No visible vote counts on the play page.
+- No dark mode in website v1.
+- No CMS or database server. The Git repository is the database.
+- No master-language translation pipeline; see [languages.md](languages.md).
+- No device menus, modes, favorites, or session progression.
 
-## Why a device at all
+## Why a device
 
-The device's advantage over a phone:
+The device is a shared object rather than personal territory. Its question
+remains visible on e-paper without power. Putting it in the middle of a table
+is the invitation, as with putting down a deck of cards. It has no feed,
+notifications, or reason to be checked between questions.
 
-1. It is a shared object. It gets passed around and left mid-table. A phone is personal territory; handing yours over is lending, not sharing.
-2. The question persists at zero power. E-paper keeps displaying it after everyone's attention has moved into the conversation. In that sense the device *is* the table card.
-3. Placing it on the table is the social invitation, like producing a deck of cards. No one has to say "let's do conversation prompts now"; the object says it.
-4. It is finite and offline. There is no feed and nothing to check. When the questions run out, they reshuffle, and the device never asks for attention back.
+## The complete device interaction
 
-## Device interaction surface (complete — nothing else exists)
+The top face has a six-position absolute rotary selector, a separate Next
+button, and one e-paper display.
 
 | Input | Action | Feedback |
 |---|---|---|
-| Turn knob | Change category | OLED wakes and scrolls category names; e-paper untouched |
-| Press | Next question in category | One e-paper partial refresh (~0.3 s); OLED shows `#274 · deep` for 3 s |
-| Long-press 1.5 s | Utility menu on OLED only | sync now / Wi-Fi setup / language / battery / about; 10 s timeout |
-| Idle 30 s | Deep sleep | OLED off; question remains on e-paper; µA draw |
+| Rotate to a detent | Select `new people`, `close`, `family`, `work`, `here`, or `wild` | The shaft points at a printed English label. After the contacts remain stable for about 600 ms, the e-paper draws a question from that deck |
+| Press Next | Draw another eligible question | One e-paper refresh |
+| Hold Next | Same as a short press | One e-paper refresh; press duration has no second meaning |
+| Leave it alone | Sleep | The question and selector position remain readable |
+| Connect USB while holding Next | Enter service setup | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
 
 Hard rules:
 
-- The e-paper shows **only questions**, never menus, logos, or status. It belongs to the table, not to the device.
-- The OLED is dark whenever hands are off the device.
-- The device is fully functional out of the box with the preloaded database. Wi-Fi is optional forever.
-- Sync runs opportunistically while charging and never interrupts use.
+- E-paper shows a question and nothing else: no logo, number, category, status,
+  menu, progress, or follow-up nudge.
+- The physical selector is the deck state. Firmware must read it on every wake
+  rather than restoring a remembered deck.
+- A selector change draws a question. Requiring an extra press would add an
+  avoidable step.
+- Long press is not Favorite. The device has no way to confirm a save without
+  adding status UI, and a hidden saved collection would introduce a mode.
+- Wi-Fi is optional. Sync runs while charging and never interrupts use.
+
+## Six decks
+
+Decks are eligibility lenses, not mutually exclusive folders. One stored
+question may be eligible for several selector positions.
+
+| Deck | Assumption |
+|---|---|
+| `new_people` | The table may have no shared history. Ask for a story, choice, observation, or present construction without testing how well people know each other |
+| `close` | People already know one another. Prefer change, interpretation, and the present over basic biography they have probably heard |
+| `family` | The relationship is family. Questions remain safe and answerable for a 10-year-old |
+| `work` | The shared place is work. Avoid forced intimacy, gossip, diagnosis, and material that can change someone's standing |
+| `here` | The room, table, event, or visible surroundings provide a third object for attention |
+| `wild` | The table explicitly chose dark, spicy, macabre, or absurd tone |
+
+`wild` is not Random and not a depth setting. Random describes a selection
+algorithm and gives no warning about tone. Dark and spicy questions are
+exclusive to Wild so they cannot leak into Work or Family through overlapping
+membership.
+
+## Depth without a control
+
+Depth remains editorial metadata:
+
+1. little public exposure;
+2. a personal construction;
+3. vulnerability, conflict, fear, loss, or consequential disclosure.
+
+Tone and depth are independent. A macabre cartoon-villain question can be
+depth 1; a calm question about forgiveness can be depth 3.
+
+The first player and physical prototype draw only depths 1 and 2. Depth 3 stays
+in the corpus and browse view while consent is unresolved. There is no ramp,
+session counter, idle heuristic, or inferred readiness. The product cannot
+observe a conversation well enough to know when to escalate.
+
+A physical depth slider remains a testable hypothesis, not part of this
+prototype. Its proposed benefit is public, low-cost boundary setting. Its
+largest risk is the same public signal: moving a date or work table to “light”
+can read as a judgment about the people present. The non-functional study must
+show people changing such a control in front of others without prompting
+before it earns a component.
 
 ## Website jobs
 
-Flat navigation: play / browse / contribute / device. In priority order the site is:
+Navigation is play / browse / contribute / device.
 
-1. The player, for people without the device. One question, huge type, next on Space. Nothing else competes with the question.
-2. The contribution surface. A 30-second flow for non-developers; the "recently added" list closes the loop by showing contributions shipping within minutes.
-3. The bridge to the device (v2: deck codes).
+1. The player: one question in dominant type, a six-position deck selector,
+   Next, save, and share. It uses depths 1 and 2 and defaults to New People.
+2. Browse: all questions, including depth 3, with deck and editorial metadata.
+3. Contribution: one question stored once, with one or more eligible decks and
+   an editorial depth.
+4. Device explanation and build documentation.
 
-The site should feel like the e-paper device: calm, typographic, slightly warm. Sentence case everywhere, one accent color, no images outside the device page, no motion beyond a 120 ms fade.
+Favorites remain on the website because a browser can show confirmation and
+ownership without changing the physical object's interaction.
 
-## v2 stubs (agreed design, do not build yet)
+The visual language is warm paper, quiet typography, and one accent. Motion is
+limited to the 120 ms question fade and selector state transition.
 
-- **Anonymous submissions:** a Cloudflare Worker that accepts submissions without a GitHub account and opens PRs via a bot account. Removes the single biggest contribution barrier; deferred because v1 must stay zero-backend.
-- **Deck codes:** short codes that move a favorites deck from the site onto a device.
-- **Voting:** one anonymous "sparked a good conversation" action per question. Design in [votes.md](votes.md); the seam is already in the DOM (`data-vote-slot`).
-- **Dark mode:** a token-swap patch on `tokens.css`.
+## Deferred work
+
+- Anonymous submissions through a small backend.
+- Anonymous “sparked a good conversation” voting; see [votes.md](votes.md).
+- A token-swap dark theme.
+- A depth-boundary physical study. A slider is reconsidered only if people use
+  it publicly and unprompted.

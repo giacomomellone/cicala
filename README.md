@@ -4,7 +4,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo. The product's core asset. Licensed [CC0](LICENSE-QUESTIONS): every question is dedicated to the public domain.
 2. **[Website](website/)**: a free, static front-end to the database. No accounts. Anyone can play, save favorites, and contribute questions.
-3. **[Device](hardware/)**: a pocket-sized offline gadget (ESP32-S3, 2.13" e-paper, rotary knob) that shows one question at a time and syncs the database over Wi-Fi. [Firmware](firmware/) and hardware live here too.
+3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display, a six-position absolute deck selector, and a separate Next button. [Firmware](firmware/) remains a structure-only stub.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 
@@ -12,7 +12,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 
 | Part | Directory | Status | License |
 |---|---|---|---|
-| Question database | [`questions/`](questions/) | shipped: English (200), German (75) | [CC0-1.0](LICENSE-QUESTIONS) |
+| Question database | [`questions/`](questions/) | shipped: English (240), German (99) | [CC0-1.0](LICENSE-QUESTIONS) |
 | Website | [`website/`](website/) | v1 | [MIT](LICENSE-CODE) |
 | Tools & CI | [`tools/`](tools/) | v1 | [MIT](LICENSE-CODE) |
 | Firmware | [`firmware/`](firmware/) | structure only | [MIT](LICENSE-CODE) |

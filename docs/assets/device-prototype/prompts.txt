@@ -1,47 +1,83 @@
 Prototype render prompts
 ========================
 
-These images are AI-generated concept renders created with OpenAI's built-in
-image-generation tool on 2026-07-24. They are design communication, not evidence
-that the device has been engineered or manufactured.
+These concept renders were regenerated with OpenAI's built-in image-generation
+tool on 2026-07-26. Mode: image-to-image edits of the 2026-07-24 renders. They
+communicate design intent and are not evidence of engineering or manufacture.
 
-The second and third prompts used the preceding generated render(s) as visual
-references to keep the object consistent.
+The tabletop and exploded prompts also referenced the regenerated hero to keep
+the object consistent.
 
 hero.webp
 ---------
 
-> Photorealistic industrial-design hero render of a pocket-sized offline
-> conversation-question device. Approximately 78 × 52 × 14 mm, landscape,
-> warm-ivory matte two-part pebble enclosure, slight 3° face incline, recessed
-> 2.13-inch landscape black-and-white e-paper display dominating the lower
-> two-thirds, narrow charcoal smoked-glass utility rail above it with a small
-> OLED at left and one 13 mm low-profile knurled charcoal rotary push crown at
-> upper right, centered USB-C on the bottom edge. E-paper text: “What story do
-> you always enjoy telling?” OLED text: “deep”. Soft off-white studio setting,
-> calm editorial light, realistic proportions and assembly gaps. No logo,
-> visible LED, touchscreen, extra control, colorful UI, props, or watermark.
+> Edit and regenerate this industrial-design hero render as the next
+> Tischkarte prototype while preserving the calm warm-ivory matte pebble
+> product language, landscape orientation, off-white studio backdrop, e-paper
+> proportions, subtle 3-degree incline, realistic assembly gaps, and centered
+> USB-C lower edge. Remove the entire black OLED/status rail and remove the push
+> encoder. The device must have exactly one display: a recessed 2.13-inch
+> landscape black-and-white e-paper panel showing only this question in crisp
+> dark serif type: “What could we do here tonight that we would remember in a
+> year?” No ID, deck name, logo, icon, battery, status, or other text on the
+> e-paper. Above the e-paper, add exactly two physical controls: (1) one
+> charcoal low-profile pointer knob on a mechanically stepped six-position
+> absolute rotary selector, with a replaceable warm-ivory bezel showing six
+> clear center ticks and these exact small English labels arranged across a
+> 150-degree arc: “new people”, “close”, “family”, “work”, “here”, “wild”; the
+> knob pointer is aligned to “here”; (2) one separate low-profile round charcoal
+> button to the right, with the single printed label “next”. No slider. No
+> second knob. No extra buttons. No touchscreen. No glowing elements. Slightly
+> widen the enclosure as needed to make the six positions plausible and labels
+> legible. Photorealistic design prototype, warm editorial lighting, physically
+> credible shadows and material seams, three-quarter top view, no props, no
+> hands, no watermark.
 
 tabletop.webp
 -------------
 
-> Preserve the exact device from the hero render and show it in natural
-> tabletop use on warm oak at early evening. The small device lies flat at the
-> center, with cropped relaxed hands from several adults around the frame and
-> one hand about to turn the crown. Keep the same e-paper and OLED text. Candid
-> editorial photography, passive non-glowing e-paper, restrained warm light,
-> natural skin and wood texture. No phone, cards, bottles, logos, duplicate
-> device, extra control, staged faces, or watermark.
+> Regenerate the tabletop-use photograph. Use the first reference only for the
+> candid composition of several adults around a warm wooden table. Use the
+> second reference as the exact new device design and preserve it consistently:
+> warm-ivory landscape pebble enclosure; exactly one large black-and-white
+> e-paper display; no OLED and no black status rail; one broad low-profile
+> charcoal pointer knob with six mechanically stepped absolute positions and an
+> English arc legend reading exactly “new people”, “close”, “family”, “work”,
+> “here”, “wild”; one separate round charcoal button labeled “next”; centered
+> USB-C edge. Show the device lying flat in the shared center of a warm oak table
+> at early evening, fully visible and realistically scaled. The e-paper displays
+> only: “What did you notice first when you arrived here?” in dark serif type.
+> The selector pointer is aligned to “new people”. One relaxed adult hand is
+> reaching to rotate the selector, while other cropped hands rest naturally
+> around the table; no faces. Keep every label physically on the device, not
+> floating in the image. Candid editorial photography, passive non-glowing
+> e-paper, restrained warm light, natural skin and wood texture, plausible
+> shadows. No phone, cards, OLED, slider, bottles, food, extra controls,
+> duplicate device, logos, staged faces, or watermark.
 
 exploded.webp
 --------------
 
-> Preserve the same exterior and create a clean, technically plausible vertical
-> exploded CAD-style render. Show the ivory top bezel, charcoal utility lens
-> and crown, one e-paper panel with FPC, one small OLED, mechanically supported
-> rotary encoder, one custom rounded PCB with an ESP32-S3 module at a board edge
-> and centered USB-C, one protected 30 × 35 × 5 mm LiPo, and an ivory bottom
-> shell with screw bosses and shallow feet. Warm off-white technical studio,
-> realistic FR-4, metal, polymer, and battery materials. No labels, logos,
-> development board, duplicate parts, phone internals, wires everywhere, or
-> watermark. Treat the output as layering intent, not a placement drawing.
+> Regenerate the exploded technical concept render. Use the first reference for
+> its clean vertical exploded-CAD composition and the second reference as the
+> exact new exterior design. Show a technically plausible stack for the
+> warm-ivory landscape Tischkarte device, aligned vertically in this order:
+> warm-ivory top shell with one large e-paper lens opening, one opening for a
+> six-position rotary selector shaft, one opening for a separate round Next
+> cap, and a subtle printed six-stop arc legend; a matte protective lens;
+> exactly one 2.13-inch e-paper panel with a visible short FPC tail; one compact
+> through-hole SP6T six-position absolute rotary switch with a D-flat shaft and
+> fixed-position contact body mechanically supported near the top edge; one
+> separate small sealed SMD tactile switch under the Next cap with a mechanical
+> overload stop; one custom rounded FR-4 PCB with ESP32-S3 module at an edge,
+> centered USB-C, e-paper connector, power components, and no OLED hardware; one
+> protected 30 × 35 × 5 mm LiPo pouch cell placed beside rather than underneath
+> the rotary switch; one warm-ivory bottom shell with screw bosses, seam gasket
+> channel, and four shallow feet. Also show the broad charcoal pointer knob and
+> separate charcoal Next cap aligned with their controls. Preserve the broad
+> pointer-knob form from the new hero. Warm off-white technical studio,
+> realistic polymer, glass, FR-4, metal and battery materials, consistent
+> perspective, physically plausible proportions. No OLED, no status rail, no
+> encoder, no slider, no labels floating in space, no arrows, no development
+> board, no duplicate parts, no phone internals, no loose wires, no logo, and no
+> watermark. This is layering intent, not a manufacturing drawing.

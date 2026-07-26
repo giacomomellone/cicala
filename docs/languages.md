@@ -18,7 +18,7 @@ New languages start in `questions/incubator/{lang}/` with the same file structur
 
 A language **graduates** (its directory moves to `questions/{lang}/` in a reviewed PR) when it has:
 
-1. **≥ 150 questions, with ≥ 20 per category.**
+1. **≥ 150 unique questions, with ≥ 20 eligible for each deck.**
 2. **A named maintainer** listed below: a fluent speaker who commits to reviewing submissions in that language.
 3. Its own **`STYLE.md`** (tone and register decisions; German uses informal "du", for example) and **`denylist.txt`**.
 
@@ -36,8 +36,8 @@ Submissions (GitHub issue → `promote-question.yml` → PR) are routed to the l
 
 | Language | Code | Maintainer | Status |
 |---|---|---|---|
-| English | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped (200 seed questions) |
-| Deutsch | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped (75 seed questions) |
+| English | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped (240 seed questions) |
+| Deutsch | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped (99 seed questions; multilingual interaction test) |
 
 ## Incubator
 

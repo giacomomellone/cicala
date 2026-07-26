@@ -1,6 +1,6 @@
 # tischkarte docs
 
-An open-source system for conversation questions: a community-maintained [question database](https://github.com/tischkarte/tischkarte/tree/main/questions), a free static [website](https://tischkarte.pages.dev), and a pocket-sized e-paper [device](design.md#why-a-device-at-all). All three share one database, which lives in the Git repository.
+An open-source system for conversation questions: a community-maintained [question database](https://github.com/tischkarte/tischkarte/tree/main/questions), a free static [website](https://tischkarte.pages.dev), and a pocket-sized e-paper [device](design.md#why-a-device). All three share one database, which lives in the Git repository.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 

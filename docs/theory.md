@@ -237,26 +237,59 @@ typical conversations with strangers as less intimate than they would ideally
 prefer. This supports making substantive questions available. It does not
 justify forcing them or assuming that every table wants the same depth.
 
-Research does not support Tischkarte’s topic categories. `party`, `family`,
-`love`, and `work` are a product convention inherited from card decks, not an
-empirical taxonomy. Corpus-linguistic work on 2.3 million words of conversation
-classified stretches of talk by communicative purposes and found 16 discourse
-types; conventional genres such as jokes and personal narratives were rare
-([Biber et al., 2021](https://doi.org/10.1016/j.pragma.2020.09.018)). Most talk
-would be called “chat” at the product level even though it contains local
-purposes such as evaluating, explaining, planning, and joking. Topic is a UI
-affordance. Disclosure depth is the evidence-backed axis, although the project’s
-exact depth labels and boundaries remain editorial choices.
+Research does not supply Tischkarte's deck taxonomy. Decks are UI affordances,
+not empirical kinds of conversation. Corpus-linguistic work on 2.3 million
+words of conversation classified stretches of talk by communicative purposes
+and found 16 discourse types; conventional genres such as jokes and personal
+narratives were rare ([Biber et al.,
+2021](https://doi.org/10.1016/j.pragma.2020.09.018)). Most talk would be called
+“chat” at the product level even though it contains local purposes such as
+evaluating, explaining, planning, and joking.
+
+Five current decks name a relationship or shared place: New People, Close,
+Family, Work, and Here. They change what the question may assume:
+
+- **New People** assumes no shared history. It should not test recall about the
+  relationship or ask for a biography on demand.
+- **Close** assumes familiarity. Basic archive questions are often exhausted,
+  so it asks about current change, interpretation, and things that may not have
+  been said yet.
+- **Family** permits shared history but keeps the whole prompt safe and
+  answerable for a 10-year-old.
+- **Work** recognizes a setting with status and consequences. A question that
+  is acceptable among friends may be coercive between colleagues.
+- **Here** uses the room, table, event, or visible surroundings as a third
+  object. Joint attention lets a group begin without making one person the
+  immediate object of disclosure.
+
+Wild is the deliberate exception to the relationship-or-place naming rule. It
+is an explicit opt-in to dark, spicy, macabre, or absurd tone. `random` would
+describe the sampling mechanism and `anything` would conceal the tone change.
+Wild is not evidence of depth and does not mean the heaviest available
+question.
+
+One question may be eligible for several decks. “What did you stop enjoying
+when it became work?” can fit Close and Work without being copied or assigned
+an objective category. Dark and spicy questions are Wild-only because
+eligibility overlap must not leak their tone into Family or Work.
 
 ## Consequences for Tischkarte
 
-Depth is a physical ceiling control because it changes the answerer’s exposure;
-topic is a knob because it changes subject matter. The ceiling selects a
-stateless distribution rather than a ramp. At a medium setting, the device may
-draw light and medium questions in any order; it does not infer that the table
-is “ready” for the next level. “Which habit have you changed this month?” must
-stand on its own instead of being unlocked by answering “What made you laugh
-today?”
+Depth remains editorial exposure-cost metadata, independent from tone. The
+first physical prototype has no depth control. Normal playback samples depths 1
+and 2 from the selected deck; depth 3 remains browseable and reviewable but is
+not served automatically.
+
+This is a consent decision under uncertainty, not a claim that shallow talk is
+better. A public slider might let someone set a boundary without speaking, but
+moving a date or work table toward “light” can also become a public verdict on
+the people present. That interaction needs observation before it earns a
+physical part. Until then, Next is the low-cost rejection mechanism.
+
+There is still no ramp. The device does not infer that the table is “ready”
+after several questions, and it has no reliable session boundary. “Which habit
+have you changed this month?” must stand on its own instead of being unlocked
+by answering “What made you laugh today?”
 
 Reciprocity is a hard style rule: never write a question the asker could not
 also answer. “Which mistake do people like you keep making?” points outward and

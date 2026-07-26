@@ -69,3 +69,108 @@ GitHub issue forms cannot URL-prefill checkbox groups, and the contribute page m
 ## 2026-07-24: Website tests: vitest + happy-dom
 
 Dependency justifications (dev-only, zero runtime bytes): `vitest` is the Vite-native runner and shares Astro's transform pipeline, so TS test files just work; `happy-dom` provides a lightweight DOM (localStorage, events) for testing `store.ts` and row rendering without a browser download. To make the core logic testable, the shuffle bag moved to `lib/bag.ts` and the question-text rules to `lib/rules.ts` as pure modules; `play.ts`/`contribute.ts` are thin DOM wrappers over them. CI runs `npm test` before every site build.
+
+## 2026-07-26: Delete the OLED
+
+The device has one display: e-paper, showing only the question. An absolute
+selector makes category preview redundant; follow-up nudges belong in question
+text or human listening; service setup belongs on a phone. This deletes the
+OLED, its window, driver, rail, load switch, and status vocabulary.
+
+Accepted cost: battery, sync, and language state have no tabletop display.
+Setup must be discoverable through packaging and the USB-plus-Next service
+gesture. This supersedes the 2026-07-24 decision to show a device display ID on
+the website; human-visible question numbers are removed from both products.
+
+## 2026-07-26: Use a six-position absolute selector
+
+The physical selector order is `new_people`, `close`, `family`, `work`, `here`,
+`wild`. Position is readable at zero power, a turn cannot silently wrap, and
+the selected deck is read from contacts on every wake. A separate button owns
+Next; turning to a stable detent draws immediately.
+
+Accepted cost: a compact absolute switch is less common and more expensive
+than an EC11 encoder, uses six GPIOs in the simple circuit, and freezes the
+position count. Alps Alpine SRBV160803 is only the study candidate because it
+is not ingress rated. The legend and taxonomy must pass a physical model before
+custom electronics.
+
+## 2026-07-26: Store questions once with overlapping deck eligibility
+
+The corpus is one `questions.yaml` per language. Each question has one or more
+eligible decks rather than an owning category. New People assumes no shared
+history; Close assumes familiarity; Family and Work apply their relationship
+constraints; Here supplies a shared third object.
+
+Wild is a deliberate exception to the rule that labels name a relationship or
+place. It communicates an opt-in to dark, spicy, macabre, or absurd tone.
+`random` describes sampling and `anything` hides the tone change. Dark and
+spicy questions are Wild-only.
+
+Accepted cost: deck membership becomes editorial judgment and can change
+without changing a question ID. Coverage totals count eligibility and therefore
+sum to more than the number of stored questions.
+
+## 2026-07-26: Keep depth editorial; defer the physical control
+
+Depth 1–3 measures exposure cost and remains independent of tone. Normal
+website and device playback serves depths 1 and 2; depth 3 remains in browse
+and the corpus. There is no depth slider in the first physical prototype.
+
+The proposed slider could make a boundary cheap to express, but a visible
+“light” position can also signal rejection on a date or at work. It returns
+only if an unexplained table study shows people moving it publicly and
+unprompted.
+
+Accepted cost: the table cannot request depth 3 from the normal player and
+cannot set a precise exposure ceiling. Next is the only rejection mechanism.
+
+## 2026-07-26: Reject ramping and hidden session state
+
+Selection is a pure filter of deck eligibility and the playback depth cap.
+Questions do not escalate with presses, time, RTC gaps, or a guessed session
+boundary. The device cannot observe conversational readiness.
+
+Accepted cost: a sequence has no designed dramatic arc. Corpus quality and the
+people at the table must create progression.
+
+## 2026-07-26: New People is the player default
+
+The website opens on New People. There is no depth-control default: including
+depths 1 and 2 in every normal deck replaces the earlier proposal to default a
+three-position control to its middle setting.
+
+Accepted cost: returning users must turn or click back to a preferred deck
+once on a new browser. The website persists their later selection locally; the
+physical device always uses its visible selector.
+
+## 2026-07-26: Long press is Next, not Favorite
+
+Every Next press duration draws another question. Physical favorites would
+need confirmation, recovery, and a way to enter a saved collection, creating
+hidden state or another mode. Website favorites remain because the browser can
+show ownership and feedback.
+
+Accepted cost: a device user cannot save a question on the object. They can
+continue talking, take a photo, or find questions later on the website.
+
+## 2026-07-26: The first physical bezel is English
+
+The model uses complete English words and center ticks. German questions remain
+in the corpus as the first multilingual content test, but the project will not
+invent German deck labels or supposedly universal icons before the English
+interaction passes.
+
+Accepted cost: the first model is not a multilingual industrial design.
+Replaceable bezel artwork adds a part and future scripts may need a larger
+legend or a different layout.
+
+## 2026-07-26: TKB2 stores one question with a deck mask
+
+Device bundles store each question once with a six-bit eligibility mask,
+editorial depth, and dark/spicy flags. The physical device no longer needs
+repository IDs or OLED display numbers. Manifest schema and bundle magic both
+advance to version 2.
+
+Accepted cost: no backward compatibility with the unshipped TKB1 format. This
+is intentional while firmware is still a stub.
