@@ -1,6 +1,6 @@
 # Deutscher Stil-Leitfaden
 
-So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Eine fremde Person kann sie beantworten, sie ist nicht mit Ja oder Nein zu erledigen, und sie ist konkret genug, um eine Geschichte anzustoßen.
+So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Eine fremde Person kann sie beantworten, sie ist nicht mit Ja oder Nein zu erledigen, und sie ist konkret genug, um eine Geschichte anzustoßen. Die Begründung für diese Regeln steht in der [Theorie](../../docs/theory.md).
 
 ## Stimme
 
@@ -11,10 +11,12 @@ So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Eine fremde Pe
 
 ## Form
 
-- 10–140 Zeichen, endet mit `?`.
+- Ziele auf 10–95 Zeichen; 140 ist die technische Obergrenze. Die Frage endet mit `?`.
 - Beginne mit *Wann/Was/Wer/Wie/Welche* statt mit *Hast du/Bist du*; Letzteres lädt zu Ja/Nein ein.
 - Konkret schlägt abstrakt: "Wann hast du zuletzt deine Meinung zu etwas Wichtigem geändert?" schlägt "Bist du aufgeschlossen?"
 - Zweiteilige Fragen ("…, und was ist passiert?") sind gut, wenn der zweite Teil die Geschichte hervorlockt.
+- Schreibe nur eine Frage, die auch die fragende Person beantworten könnte.
+- Meide Superlative wie "beste", "schlimmste", "meiste" und "wenigste"; sie machen aus Erinnerung eine Rangliste.
 
 ## Kategorien
 

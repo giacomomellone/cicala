@@ -1,6 +1,6 @@
 # English style guide
 
-How to write a Tischkarte question in English. The bar: a stranger can answer it, it can't be answered with yes or no, and it's specific enough to start a story.
+How to write a Tischkarte question in English. The bar: a stranger can answer it, it can't be answered with yes or no, and it's specific enough to start a story. See [theory](../../docs/theory.md) for the reasoning behind these rules.
 
 ## Voice
 
@@ -12,10 +12,12 @@ How to write a Tischkarte question in English. The bar: a stranger can answer it
 
 ## Shape
 
-- 10–140 characters, ends with `?`.
+- Aim for 10–95 characters; 140 is the hard storage limit. End with `?`.
 - Prefer *when/what/who/how* openers over *do/did/are/is*; the latter invite yes/no.
 - Specific beats abstract: "When did you last change your mind about something important?" beats "Are you open-minded?"
 - Two-part questions ("…, and what happened?") are fine when the second half pulls out the story. Never two unrelated questions.
+- Write only a question the asker could answer too.
+- Avoid superlatives such as "best", "worst", "most", and "least"; they turn recall into a ranking test.
 - No trailing qualifiers that do the answerer's work: "…or not?", "…if any?".
 
 ## Categories

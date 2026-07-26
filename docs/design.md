@@ -1,6 +1,6 @@
 # Design
 
-Product and UX rationale. This is the shared mental model for everyone touching the site, the firmware, or the database. When any decision conflicts with another, the principle below wins.
+Product and UX rationale. This is the shared mental model for everyone touching the site, the firmware, or the database. [Theory](theory.md) governs the question corpus. When any decision conflicts with another, the principle below wins.
 
 ## The principle
 
