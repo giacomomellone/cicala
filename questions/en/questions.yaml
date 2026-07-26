@@ -1,0 +1,1415 @@
+# questions/en/questions.yaml — Tischkarte question database (CC0).
+# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
+# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
+
+- id: q-5a3fb181
+  text: "What's the most spontaneous thing you've ever done?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-5b5d9714
+  text: "Which song gets you on the dance floor every single time?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-349092b4
+  text: "What's the best party you've ever been to, and what made it great?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-1877895c
+  text: "What's your go-to karaoke song, and how did it earn that spot?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-03765224
+  text: "What's the strangest food combination you genuinely enjoy?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-b03f9f70
+  text: "What would the theme of your dream party be?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-10b753f0
+  text: "What's the funniest thing you've ever witnessed at a wedding?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-182bdc6f
+  text: "Who is the best storyteller you know, and what's their signature story?"
+  decks: [new_people, close]
+  depth: 1
+  added: "2026-07-24"
+- id: q-92c67648
+  text: "What's a skill you have that surprises people when they find out?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-c0f40125
+  text: "What's the most ridiculous thing you've ever bought and never regretted?"
+  decks: [new_people, close]
+  depth: 1
+  added: "2026-07-24"
+- id: q-75547a32
+  text: "Would you rather always be overdressed or always be underdressed?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-cf122dd5
+  text: "What's the worst haircut you've ever had, and whose fault was it?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-c9f5be2f
+  text: "What's your most controversial food opinion?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-138a1f32
+  text: "If you had to enter a talent show tonight, what would you perform?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-8d917690
+  text: "What's the best prank you've ever pulled or fallen for?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-901b441a
+  text: "Which fictional place would you book a holiday to?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-75b64403
+  text: "What's a small thing that instantly wins you over at a party?"
+  decks: [new_people, close]
+  depth: 1
+  added: "2026-07-24"
+- id: q-95ce2feb
+  text: "What's the most embarrassing thing in your search history you'd admit to?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy]
+  added: "2026-07-24"
+- id: q-52e681ad
+  text: "What's a story your friends make you tell every time you go out?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a8fe5dff
+  text: "If animals could talk, which species would be the rudest?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical, icebreaker]
+  added: "2026-07-24"
+- id: q-034c50fe
+  text: "What's the weirdest compliment you've ever received?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-172b2c26
+  text: "Would you rather never hear music again or never watch another film?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-1f8937fb
+  text: "What childhood game would you still absolutely win at?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-ed3eaf59
+  text: "What's the most useless talent you're secretly proud of?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-25cf6318
+  text: "If your life had a laugh track, which moment would have gotten the biggest laugh?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical, memory]
+  added: "2026-07-24"
+- id: q-852ebed2
+  text: "What's the pettiest opinion you will defend to the very end?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-099c0d8d
+  text: "What's the best excuse you've ever used to leave a party early?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-f6133d16
+  text: "Which celebrity would be the most fun to be stuck in an elevator with?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-33dafac6
+  text: "What's the last thing that made you laugh until you cried?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-2117fd92
+  text: "What would your signature drink be called, and what's in it?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-22d3390f
+  text: "Would you rather speak every language or play every instrument?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-ac9d4be9
+  text: "What's the boldest lie you told as a child that actually worked?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-ff06bab3
+  text: "What's something everyone seems to love that you just don't get?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-a375b263
+  text: "If you could instantly master one dance style, which would you pick?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-109c3b33
+  text: "What's the most trouble a dare has ever gotten you into?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-24"
+- id: q-bdc6da0f
+  text: "What's the closest you've ever come to accidental fame?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-3e45402d
+  text: "Who would play you in the film of your life, and what genre would it be?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-74bf9104
+  text: "What's the worst date story you're willing to tell strangers?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-24"
+- id: q-43fe816b
+  text: "What's the weirdest thing you believed as a child?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-8661c438
+  text: "What do you still want to experience that nobody would guess?"
+  decks: [new_people, close]
+  depth: 1
+  added: "2026-07-24"
+- id: q-64fc8fed
+  text: "What's your earliest memory, and how clearly do you see it?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-013e4f9a
+  text: "What family tradition do you hope never dies out?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-42b34422
+  text: "What dish reminds you most of home?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-71e62afb
+  text: "What did you want to be when you were seven years old?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-8849fbde
+  text: "What's the best piece of advice a grandparent ever gave you?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-3b821e68
+  text: "What smell instantly takes you back to childhood?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-ca7a739a
+  text: "What game could you play for hours as a kid?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-4fa6dae7
+  text: "If your family had a motto, what should it be?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-38069f32
+  text: "What's the funniest thing a family member has ever said?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-1590d26b
+  text: "Which family story gets retold at every gathering?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-d1bf6780
+  text: "What's something your parents were right about all along?"
+  decks: [close, family]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-24d7c07a
+  text: "What's your favorite holiday memory so far?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-fa33c658
+  text: "If you could have any animal as a pet, no limits, what would you choose?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-a2c943d0
+  text: "What's the kindest thing someone has done for you this year?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-b5cc0c93
+  text: "What would you do with a whole day of no school and no work?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [hypothetical, icebreaker]
+  added: "2026-07-24"
+- id: q-ea007f08
+  text: "What's the best birthday you've ever had, and what made it special?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-0319e8bb
+  text: "Which superpower would make your everyday life easiest?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [hypothetical, icebreaker]
+  added: "2026-07-24"
+- id: q-14f3c46a
+  text: "What's something you can do that your parents can't?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-91b70eac
+  text: "What's your favorite thing about the place where you live?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-d486f43c
+  text: "If you built a treehouse, what three things would go inside?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-64ac51cb
+  text: "What's the most interesting thing you've learned this week?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-79ce4eb9
+  text: "Who in your family are you most like, and in what way?"
+  decks: [close, family]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-63895205
+  text: "What rule would you make if you were in charge of the house for a day?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-88ca85d3
+  text: "What's your favorite season, and what does a perfect day in it look like?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-c09fbc2a
+  text: "What food did you hate as a kid that you love now?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-b0fbfb42
+  text: "What's the farthest you've ever traveled, and what do you remember most?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-10b26b0c
+  text: "If you could ask a great-grandparent one question, what would it be?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-68b21592
+  text: "What's the best thing you've ever built or made with your hands?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-c8bebe06
+  text: "Would you rather live by the sea or in the mountains?"
+  decks: [close, family]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-4a4f2f55
+  text: "What song do you never get tired of, no matter how often it plays?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-90c99e95
+  text: "What's a small act of kindness you saw recently?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-e3c25bf5
+  text: "What job would you be absolutely terrible at, and why?"
+  decks: [new_people, close, family]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-32df5523
+  text: "What's your favorite story someone read or told you as a child?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-f64d265c
+  text: "If you could plan the perfect family weekend, what would it include?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-24a7fe34
+  text: "What's something hard you did that you're really proud of?"
+  decks: [close, family]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6bf1f896
+  text: "Would you rather be able to talk to animals or to fly?"
+  decks: [close, family]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-871b7035
+  text: "What's the silliest thing that always makes your family laugh?"
+  decks: [close, family]
+  depth: 2
+  added: "2026-07-24"
+- id: q-b146c433
+  text: "What do you hope will be invented in your lifetime?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-c4aeebd2
+  text: "What's your favorite photo of your family, and what's happening in it?"
+  decks: [close, family]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-9bd2b125
+  text: "What's one thing you'd teach everyone in the world if you could?"
+  decks: [close, family]
+  depth: 2
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-28bb4cc2
+  text: "Who was your first crush, and what made them special?"
+  decks: [close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-4cc76d94
+  text: "What's the most romantic thing anyone has ever done for you?"
+  decks: [close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-7c2725e0
+  text: "What does a perfect ordinary evening with someone you love look like?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-d319b2dc
+  text: "How do you show someone you love them without saying it?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-64ea55b2
+  text: "What tiny gesture instantly makes you feel loved?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-1e890e66
+  text: "What's your idea of a truly great first date?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-f2ec1ba5
+  text: "Which love song actually gets it right, and what does it get right?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-3d47b16d
+  text: "What's the best relationship advice you've ever received?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-8b0d51f4
+  text: "When did you last say I love you and completely mean it?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-60f01166
+  text: "What did your first heartbreak teach you?"
+  decks: [close]
+  depth: 2
+  tags: [reflective, memory]
+  added: "2026-07-24"
+- id: q-04016a1d
+  text: "Would you rather have wild chemistry or effortless compatibility?"
+  decks: [close]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-6f0186f8
+  text: "What's the longest crush you've ever kept secret?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-24"
+- id: q-41347807
+  text: "What's a dealbreaker of yours that others find too strict?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-c464c806
+  text: "What's the strangest place you've ever met someone you liked?"
+  decks: [close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-0fa88293
+  text: "Which fictional couple sets the standard for you, and why?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-cc9e3ee7
+  text: "What's something unromantic that you find deeply romantic?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-f64d1c4e
+  text: "How do you know when a crush has become something more?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-2e59498c
+  text: "What's a date idea you've always wanted to try?"
+  decks: [close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-da0ba05d
+  text: "What's the boldest romantic move you've ever made?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-24"
+- id: q-f10f9d6c
+  text: "What makes you feel instantly at home with another person?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-1704684f
+  text: "What's the best compliment a partner could give you?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-9a4ab873
+  text: "Who taught you the most about love, and what was the lesson?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-57833d91
+  text: "What's your most embarrassing story from trying to impress someone?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-24"
+- id: q-36f8cea5
+  text: "Would you rather relive your first kiss or skip ahead to meeting your last love?"
+  decks: [close]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-98a689f7
+  text: "What's a green flag in a person that nobody talks about enough?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-2d5f612d
+  text: "What's the hardest thing you've ever had to say to someone you loved?"
+  decks: [close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6ad82c56
+  text: "What's your favorite story of two people finding each other?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-32ce77be
+  text: "What do you wish you'd known about love ten years ago?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-5e7b00d6
+  text: "What's the pettiest reason you've ever lost interest in someone?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-fc7c9b3a
+  text: "Which friendship in your life feels like a love story?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-1c7297cf
+  text: "What's the kindest goodbye you've ever witnessed or been part of?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6f6a3241
+  text: "What would your dating profile say if it had to be brutally honest?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, icebreaker]
+  added: "2026-07-24"
+- id: q-6ca12a5a
+  text: "What everyday moment with a partner would you bottle and keep forever?"
+  decks: [close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-db00243b
+  text: "How has your idea of a perfect partner changed over the years?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-7234e17b
+  text: "What relationship habit have you seen in others that you want to steal?"
+  decks: [close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-de82a765
+  text: "Would you rather be adored in public or understood in private?"
+  decks: [close]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-560333aa
+  text: "What's the longest you've stayed up talking with someone, and about what?"
+  decks: [close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-611000c5
+  text: "What's one thing you'd want a future partner to know about you upfront?"
+  decks: [close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-40512581
+  text: "What's the most attractive quality that has nothing to do with looks?"
+  decks: [new_people, close]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-16f951f5
+  text: "What moment made you believe in love again?"
+  decks: [close]
+  depth: 2
+  tags: [reflective, memory]
+  added: "2026-07-24"
+- id: q-8a368de7
+  text: "What was your very first job, and what did it teach you?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-b0c68f29
+  text: "What would you do for work if money were completely irrelevant?"
+  decks: [close, work]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-01295c23
+  text: "Who's the best boss you've ever had, and what made them great?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-3a964d8a
+  text: "What part of your work would you happily do for free?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-66bfef5d
+  text: "What work skill turned out to be useful everywhere in life?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9722939c
+  text: "What did you want to become at eighteen, and how do you feel about that now?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-7f52037d
+  text: "What's the most useful thing you learned outside any classroom?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-0b6d0c39
+  text: "Would you rather lead a big team or master a rare craft?"
+  decks: [close, work]
+  depth: 1
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-d7deef34
+  text: "What's the strangest job you've ever heard of that actually exists?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-364f1d3e
+  text: "What does a genuinely good workday look like for you?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-0e90957d
+  text: "What's the best piece of career advice you've ever ignored?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-97517da5
+  text: "Which coworker changed how you work, and how?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-adb4ec2d
+  text: "What would your dream office or workshop look like?"
+  decks: [close, work]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-24d285ce
+  text: "What profession do you admire but could never do yourself?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-640fd22a
+  text: "What's the biggest risk you've ever taken in your working life?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-fed72c35
+  text: "If you had a year off with full pay, what would you actually do?"
+  decks: [close, work]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-610f00ad
+  text: "What small daily ritual keeps you sane at work?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-6327f6cc
+  text: "What's the proudest you've ever been of something you made or did?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-d0217d26
+  text: "What job would ten-year-old you assume you have now?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [hypothetical, icebreaker]
+  added: "2026-07-24"
+- id: q-2f5e2d44
+  text: "What's a lesson you learned from a job you hated?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d3b98f27
+  text: "How do you tell a bad week from a wrong path?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-1afdd538
+  text: "What's the best meeting you've ever been in, and why did it work?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-a3b7b1a3
+  text: "What are you trying to learn right now, and what's the hardest part?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-2589cae3
+  text: "Would you rather work four intense days or five relaxed ones?"
+  decks: [close, work]
+  depth: 1
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-d29ab080
+  text: "Who's the hardest-working person you know, and what drives them?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-978ccb2b
+  text: "What compliment about your work has stuck with you the longest?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a13c663b
+  text: "What does your field get wrong that outsiders can see clearly?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-da4ba894
+  text: "What could you teach a class about tomorrow with zero preparation?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-c79431dd
+  text: "What's the most valuable mistake you've ever made?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-0d781459
+  text: "What does success mean to you right now, and how has that changed?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-f3ced49a
+  text: "What tool or trick of your trade feels like a superpower?"
+  decks: [close, work]
+  depth: 2
+  added: "2026-07-24"
+- id: q-237667c3
+  text: "What work of yours might still exist in fifty years?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-c2f95108
+  text: "What's the funniest thing that's ever happened to you in a meeting?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory, icebreaker]
+  added: "2026-07-24"
+- id: q-efd75dfb
+  text: "What would make you walk away from a dream job?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-57e029b2
+  text: "If your work had a highlight reel, what moment would open it?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [hypothetical, memory]
+  added: "2026-07-24"
+- id: q-c3527e34
+  text: "What job from history would you have been great at?"
+  decks: [close, work]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-77ff2009
+  text: "How do you want the people you've worked with to remember you?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-11cb5e02
+  text: "What's the best thing a mentor ever did for you?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-b1174642
+  text: "What's one thing about your job that would surprise most people?"
+  decks: [new_people, work]
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-07-24"
+- id: q-08c2d3b9
+  text: "When do you feel most useful?"
+  decks: [close, work]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-881c8a18
+  text: "When did you last change your mind about something important?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-63ac36c7
+  text: "What do you believe that most people around you don't?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-37a84249
+  text: "What's a question you're afraid to know the answer to?"
+  decks: [new_people, close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-5d4bfdcc
+  text: "What would you do differently if nobody would ever judge you?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-8b3d995f
+  text: "What part of your younger self would be proudest of you now?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-5e6b3088
+  text: "What belief did you inherit that you've never really questioned?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-c43fcf65
+  text: "What does enough look like for you?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-de009941
+  text: "Which version of you, from which year, would you most like to talk to?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-7ae7bc73
+  text: "What's the hardest truth you've accepted about yourself?"
+  decks: [new_people, close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-463643bd
+  text: "What are you still carrying that you could put down?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6b030909
+  text: "What would you attempt if you knew you could not fail?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-7b5d4d91
+  text: "Who knows you best, and what would they say your blind spot is?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-67baaa74
+  text: "What's the most alive you've ever felt?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-3cfb6e05
+  text: "What do you hope people say about you when you leave the room?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9c971758
+  text: "What compliment do you have trouble accepting, and why?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-4739b47f
+  text: "If your fear disappeared overnight, what would you do first?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-0305e963
+  text: "What have you forgiven that you once thought you never could?"
+  decks: [new_people, close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-815c4918
+  text: "What small moment changed the direction of your life?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-b010a682
+  text: "What are you pretending not to know?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d7964420
+  text: "What secret would you be relieved if someone finally asked you about?"
+  decks: [close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d582d581
+  text: "What double standard do you know you hold?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9c5e1d75
+  text: "What's the biggest lie you tell yourself?"
+  decks: [close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-44a34024
+  text: "Would you rather know how you'll die or when?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [wouldyourather]
+  added: "2026-07-24"
+- id: q-172defba
+  text: "What do you want to want, but don't yet?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-31499a18
+  text: "What's the kindest thing you've done that nobody knows about?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-c902fc0e
+  text: "When were you most wrong about a person?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-f77876f3
+  text: "What would a perfect day look like if you couldn't tell anyone about it?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-24"
+- id: q-552688ae
+  text: "What's your earliest memory of feeling truly understood?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-a234db42
+  text: "What role has luck played in where you've ended up?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-6b87d119
+  text: "What's one thing you would protect at any cost?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-d382248e
+  text: "If you wrote a letter to yourself in ten years, what's the first line?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-b59d61ab
+  text: "What loss shaped you the most?"
+  decks: [new_people, close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-f06bceaf
+  text: "What ritual or tradition gives your life structure?"
+  decks: [new_people, close]
+  depth: 2
+  added: "2026-07-24"
+- id: q-2ca03465
+  text: "What's the best decision you almost didn't make?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory, reflective]
+  added: "2026-07-24"
+- id: q-92b7788d
+  text: "Where do you feel most like yourself?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-27e1719b
+  text: "What's something beautiful you saw and never told anyone about?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [memory]
+  added: "2026-07-24"
+- id: q-0ea54e93
+  text: "What question do you wish people asked you more often?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-b4cf6c76
+  text: "If your life so far had chapters, what would this one be called?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [hypothetical, reflective]
+  added: "2026-07-24"
+- id: q-e5b3911b
+  text: "What are you more sure of now than ever before?"
+  decks: [new_people, close]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-9e65833f
+  text: "What would you like to be forgiven for?"
+  decks: [new_people, close]
+  depth: 3
+  tags: [reflective]
+  added: "2026-07-24"
+- id: q-b681f180
+  text: "What did you notice first when you arrived here?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-6afaa5d4
+  text: "Which object near us has the best story behind it?"
+  decks: [here]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-d32d7fa4
+  text: "What sound from this place would you recognize with your eyes closed?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-4adfb822
+  text: "If this room could keep one memory from tonight, which should it keep?"
+  decks: [here]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-a0cd4958
+  text: "What would you change about this place if you had one free hour?"
+  decks: [here]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-acea1e84
+  text: "Which detail here would you point out to someone seeing it for the first time?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-b58ed86e
+  text: "Where is the best seat here, and what makes it the best?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-6093f1da
+  text: "What would this place be used for two hundred years from now?"
+  decks: [here]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-ef3d0ff7
+  text: "Which object within sight would be hardest to explain to someone from the past?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-6981ac74
+  text: "What mood does this place put you in without asking permission?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-acc9737c
+  text: "If we hid a note here for a stranger, what should it say?"
+  decks: [here]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-2e98e188
+  text: "What is the smallest thing here that makes the place work?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-49e5832e
+  text: "Which part of this place feels most familiar to you?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-807e8c84
+  text: "What would you miss first if this place disappeared tomorrow?"
+  decks: [here]
+  depth: 2
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-4b4952f6
+  text: "Where would you hide here during an absurd game of hide-and-seek?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-939f1439
+  text: "What conversation do you imagine happened at this table before ours?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-fa4f8216
+  text: "Which smell belongs to this place?"
+  decks: [here]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-bf7f2a4f
+  text: "What could we do here tonight that we would remember in a year?"
+  decks: [here]
+  depth: 1
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-e6987a24
+  text: "If this place had a theme song, what would it sound like?"
+  decks: [here]
+  depth: 1
+  tags: [hypothetical]
+  added: "2026-07-26"
+- id: q-f23a73d0
+  text: "What do you see from where you sit that the rest of us might have missed?"
+  decks: [here]
+  depth: 2
+  tags: [reflective]
+  added: "2026-07-26"
+- id: q-03c34aa1
+  text: "You're the villain in a terrible crime film. Where does the obviously fake body end up?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-eade0055
+  text: "What would your signature punishment be as a cartoon villain?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-2a484383
+  text: "Which fictional character would be the worst person to wake up next to?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-01de8a84
+  text: "What harmless opinion would you defend as if your life depended on it?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-24be5aba
+  text: "Which conspiracy theory would be funniest if it turned out to be true?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-c8e80ac1
+  text: "If your browser history were read aloud, which search would need the most explaining?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy]
+  added: "2026-07-26"
+- id: q-87e2becf
+  text: "What is the pettiest reason you have ever disliked someone?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-26"
+- id: q-f4f6af4a
+  text: "What social rule would you break first if nobody could judge you?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-aa124bc3
+  text: "What is the worst possible sentence to hear during a first date?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-8c7e9a39
+  text: "Which of your habits would make you a suspicious character in a detective story?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-04701510
+  text: "If you had to haunt one place forever, where would you choose?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-9b4323e4
+  text: "Which everyday object would make the most embarrassing murder weapon in a mystery?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-35ae3087
+  text: "What is the most chaotic thing you could do with a completely consequence-free day?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-3f8f2682
+  text: "Which famous person would you least trust with your phone unlocked?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-5ba46332
+  text: "What compliment have you received that sounded more like a threat?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, memory]
+  added: "2026-07-26"
+- id: q-c9aee663
+  text: "What is a red flag you once ignored because the person was attractive?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-26"
+- id: q-3a5efe3d
+  text: "Which lie would be hardest to keep during a dinner party?"
+  decks: [wild]
+  depth: 1
+  tags: [spicy, hypothetical]
+  added: "2026-07-26"
+- id: q-122ce877
+  text: "If you could erase one awkward encounter from everyone else's memory, which one?"
+  decks: [wild]
+  depth: 2
+  tags: [spicy, memory]
+  added: "2026-07-26"
+- id: q-2dd28bea
+  text: "What would be the funniest last meal to request?"
+  decks: [wild]
+  depth: 1
+  tags: [dark, hypothetical]
+  added: "2026-07-26"
+- id: q-a7b74a10
+  text: "What is the most inappropriate moment when you nearly started laughing?"
+  decks: [wild]
+  depth: 2
+  tags: [dark, memory]
+  added: "2026-07-26"

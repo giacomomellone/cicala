@@ -1,11 +1,15 @@
 # Deutscher Stil-Leitfaden
 
-So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Eine fremde Person kann sie beantworten, sie ist nicht mit Ja oder Nein zu erledigen, und sie ist konkret genug, um eine Geschichte anzustoßen. Die Begründung für diese Regeln steht in der [Theorie](../../docs/theory.md).
+So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Sie passt zu
+jedem gewählten Deck, ist nicht mit Ja oder Nein zu erledigen und ist konkret
+genug, um eine Geschichte anzustoßen. Die Begründung für diese Regeln steht in
+der [Theorie](../../docs/theory.md).
 
 ## Stimme
 
 - Sprich eine Person direkt an: **du**, immer klein geschrieben, niemals "Sie" oder "man".
-- **Keine Anglizismen.** Schreibe "Verabredung", nicht "Date"; "Feier", nicht "Party" (die Kategorie-*Schlüssel* bleiben englisch, das ist Technik; die angezeigten Namen übersetzt die Oberfläche).
+- **Keine Anglizismen in Fragen.** Schreibe "Verabredung", nicht "Date". Die
+  Deck-Schlüssel und die Beschriftung des ersten Prototyps bleiben englisch.
 - Deutsche Fragen sind **eigenständige Fragen, keine Übersetzungen**. Eine gute deutsche Frage klingt, als hätte sie jemand am Küchentisch gestellt. Wenn du eine englische Frage adaptierst, verlinke sie über `origin`, aber nur, wenn sie sich wirklich natürlich anfühlt.
 - Ein Fragezeichen, keine Ausrufezeichen, genau eine Frage pro Eintrag.
 
@@ -18,13 +22,30 @@ So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Eine fremde Pe
 - Schreibe nur eine Frage, die auch die fragende Person beantworten könnte.
 - Meide Superlative wie "beste", "schlimmste", "meiste" und "wenigste"; sie machen aus Erinnerung eine Rangliste.
 
-## Kategorien
+## Deck-Zuordnung
 
-- `party`: leicht, verspielt, zum Lachen. Funktioniert mit Menschen, die man vor einer Stunde kennengelernt hat.
+- `new_people`: setzt keine gemeinsame Vergangenheit voraus. Keine
+  Wissensprüfung über die Beziehung und keine erzwungene Lebensgeschichte.
+- `close`: setzt Vertrautheit voraus. Frage eher nach Veränderung und Deutung
+  als nach bekannten Eckdaten.
 - `family`: muss für ein zehnjähriges Kind sicher *und interessant* sein. Generationsübergreifend: Oma und Enkel können beide antworten.
-- `love`: Romantik, Schwärmereien, Liebeskummer, auch Freundschaftsliebe. Wärme statt Sensationslust.
-- `work`: Beruf, Handwerk, Ehrgeiz, Sinn. Muss auch für Studierende und Rentner funktionieren.
-- `deep`: Werte, Ängste, Überzeugungen, Vergänglichkeit. Ernst ist gut, schwer ist gut, hoffnungslos nicht.
+- `work`: keine erzwungene Intimität, Gerüchte, Diagnosen oder Antworten, die
+  den Status am Arbeitsplatz verändern können.
+- `here`: nutzt den Raum, den Tisch, die Veranstaltung oder sichtbare Umgebung.
+- `wild`: düster, gewagt, makaber oder absurd. Solche Fragen erscheinen in
+  keinem anderen Deck.
+
+Eine Frage wird einmal gespeichert und kann mehreren Decks zugeordnet sein.
+
+## Tiefe
+
+- `1`: wenig öffentliche Preisgabe.
+- `2`: verlangt eine persönliche Einordnung.
+- `3`: kann Verletzlichkeit, Konflikt, Angst, Verlust oder folgenreiche
+  Preisgabe betreffen.
+
+Tiefe und Ton sind getrennt. Die normale Wiedergabe nutzt derzeit 1 und 2; 3
+bleibt im Korpus und in der Stöberansicht.
 
 ## Schlagwörter
 
@@ -32,7 +53,8 @@ Sparsam verwenden, die meisten Fragen brauchen null oder eins. Die Schlüssel si
 
 - `icebreaker`: sicher mit völlig Fremden in den ersten fünf Minuten.
 - `reflective`: verlangt einen Blick nach innen; eine Denkpause ist zu erwarten.
-- `spicy`: gewagt oder emotional mutig; wird aus `family`-Gerätepaketen ausgeschlossen. Niemals bei `family` oder `work`.
+- `spicy`: gewagt oder gesellschaftlich riskant. Erfordert `decks: [wild]`.
+- `dark`: düsterer oder makaberer Ton. Erfordert `decks: [wild]`.
 - `hypothetical`: Gedankenspiele ("wenn…", "was würdest du…").
 - `memory`: fragt nach einem konkreten erinnerten Moment.
 - `wouldyourather`: eine erzwungene Wahl zwischen genau zwei Möglichkeiten.

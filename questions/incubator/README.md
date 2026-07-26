@@ -1,10 +1,10 @@
 # Language incubator
 
-New languages start here, in `questions/incubator/{lang}/`, using the exact same file structure as a shipped language (`STYLE.md`, `denylist.txt`, one YAML file per category). Incubator languages are validated by CI but **excluded** from website payloads and device bundles.
+New languages start here, in `questions/incubator/{lang}/`, using the exact same file structure as a shipped language (`STYLE.md`, `denylist.txt`, and `questions.yaml`). Incubator languages are validated by CI but **excluded** from website payloads and device bundles.
 
 A language graduates (its directory moves to `questions/{lang}/`) when it has:
 
-1. **≥ 150 questions with ≥ 20 per category**, written natively (not machine-translated; see [docs/languages.md](../../docs/languages.md)).
+1. **≥ 150 unique questions with ≥ 20 eligible for each deck**, written natively (not machine-translated; see [docs/languages.md](../../docs/languages.md)).
 2. **A named maintainer** listed in `docs/languages.md` who is a fluent speaker and commits to reviewing submissions.
 3. Its own **`STYLE.md`** and **`denylist.txt`**.
 
