@@ -2,7 +2,8 @@
 
 **Status: no schematic capture yet.** This file describes the current rev A
 blocks so later pin planning and pricing start from the same assumptions. KiCad
-work begins only after the physical model gate. Licensed
+work begins after the USB breadboard firmware rig and power-path bench pass.
+Licensed
 [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
 Before schematic capture, resolve the power-path, protection, antenna, and test

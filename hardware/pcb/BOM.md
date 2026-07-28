@@ -8,7 +8,7 @@ BOM. For development-board and physical-model purchases, use
 | Ref | Part | Package | Candidate MPN | Qty | Single-unit indication |
 |---|---|---|---|---:|---:|
 | U1 | ESP32-S3 module, 16 MB flash | module | ESP32-S3-WROOM-1-N16 | 1 | 3.50 EUR |
-| DISP1 | 2.13″, 250 × 122 e-paper panel | 24-pin FPC | GDEY0213B74 | 1 | 5.00 EUR |
+| DISP1 | 2.13″, 250 × 122 e-paper panel | 24-pin FPC | [GDEY0213B74](https://www.buy-lcd.com/products/213-inch-250x122-raspberry-pi-epd-electronic-epaper-price-tag) | 1 | about 5–9 EUR |
 | J2 | 24-pin, 0.5 mm FPC connector | SMD | AFC01-S24FCA-00 | 1 | 0.40 EUR |
 | SW1 | Six-position SP6T absolute rotary selector | through-hole | Alps Alpine SRBV160803 | 1 | 9.07 USD at qty 1; 4.39 USD at qty 250 |
 | SW2 | Sealed SPST-NO tact switch, 2 N | 6.2 × 6.2 mm SMD | C&K KSC321GLFS | 1 | 0.413 EUR |
@@ -25,6 +25,14 @@ BOM. For development-board and physical-model purchases, use
 
 The OLED, OLED rail, OLED load switch, EC11 encoder, and encoder push switch are
 deleted.
+
+The roughly 20 EUR Waveshare HAT is a reusable development module, not the
+production display cost. The target board uses the bare GDEY0213B74 panel,
+listed at 5.36 USD by Good Display in July 2026, plus the FPC connector and
+roughly 0.50 EUR of SSD1680 support components. Allow about 6–10 EUR for the
+display-specific parts at prototype quantities, before PCB assembly, shipping,
+tax, yield loss, and a protective lens. Request a manufacturer quote once the
+expected production quantity is known.
 
 SRBV160803 is the compact study candidate, not a production commitment. It is
 not ingress rated. C&K MA06L1NCGF is an IP67 six-position comparison part, but

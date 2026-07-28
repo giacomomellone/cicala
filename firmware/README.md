@@ -1,62 +1,94 @@
 # Firmware
 
-**Status: structure only.** The buildable ESP-IDF skeleton is phase C of the [handoff specification](../Tischkarte%20—%20Project%20handoff%20specification.md) §8; this directory currently documents the architecture so the site, tools and hardware can proceed against a stable contract. CI (`firmware.yml`) activates `idf.py build` automatically once `firmware/CMakeLists.txt` lands.
+**Status: structure only.** There is no buildable firmware project yet. Initial
+development targets the USB-powered breadboard rig in
+[prototype_bom.md](../docs/prototype_bom.md).
 
 ## Target
 
-- **ESP-IDF v5.3+**, target `esp32s3`, 16 MB flash.
-- Displays: GDEY0213B74 2.13″ e-paper (SSD1680, SPI) + 0.91″ OLED (SSD1306, I²C).
-- Input: one EC11 rotary encoder (quadrature on PCNT) with push button.
+- ESP32-S3 DevKitC-1-N8R8 for breadboard development.
+- ESP32-S3-WROOM-1-N16 on the later target PCB.
+- One 2.13-inch, 250 × 122 e-paper display over SPI.
+- Six one-hot selector inputs and one independent Next button.
+- No OLED, encoder, depth control, or user-facing status LED.
 
-## Hard rules (from docs/design.md; not negotiable in code review)
+ESP-IDF and Zephyr both support the ESP32-S3 development board. The repository
+has not selected one yet. Existing `just fw-build` and `just fw-flash` recipes
+are inactive placeholders written for ESP-IDF; choose the framework before
+creating the buildable skeleton.
 
-- The e-paper shows **only questions**. Menus, logos, status, progress: all of it belongs on the OLED.
-- The OLED is dark whenever hands are off the device.
-- Fully functional out of the box with the factory-preloaded database; Wi-Fi optional forever.
-- Sync runs opportunistically while charging and never interrupts use.
+Zephyr also has in-tree SSD1680/SSD16xx support and an exact
+`waveshare_epaper_gdey0213b74` configuration for the planned
+GDEY0213B74/FPC-A002 panel. Using it on the ESP32-S3 requires a project
+devicetree overlay for the selected SPI and GPIO pins, not a new display driver.
 
-## State machine (table-driven switch in `main/state_machine.c`)
+## Interaction contract
 
+- E-paper shows one question and no status or menu UI.
+- The physical selector is the active deck. Read it at boot and after every
+  selector wake instead of restoring a remembered deck.
+- A selector change must remain stable for about 600 ms before drawing.
+- Every Next press duration has the same meaning and draws exactly once.
+- Normal playback includes depths 1 and 2. Depth 3 is never drawn
+  automatically.
+- The current question persists on e-paper while power is removed.
+- Wi-Fi remains optional. Sync runs only during an explicit service or charging
+  flow and never interrupts tabletop use.
+
+## State outline
+
+```text
+BOOT
+  → read selector
+  → keep the existing e-paper question, or draw if the display is uninitialized
+
+SELECTOR_CHANGE
+  → wait for one stable valid position
+  → draw from that deck
+  → refresh e-paper
+
+NEXT
+  → debounce
+  → draw from the selected deck
+  → refresh e-paper
+
+IDLE
+  → enter deep sleep
+
+WAKE
+  → read the physical selector again
+  → handle selector change or Next
 ```
-SLEEP → WAKE(last question)
-WAKE → BROWSE_CATEGORY   (knob turn: OLED scrolls category names)
-     → SHOW_QUESTION     (press: qdb_next(category), e-paper partial refresh)
-     → MENU              (long-press 1.5 s: OLED menu, 10 s timeout)
-MENU → {SYNC, PORTAL, LANGUAGE, INFO}
-any  → SLEEP             (30 s idle; OLED off, question persists on e-paper)
-```
 
-E-paper writes happen **only** in `SHOW_QUESTION`: partial refresh per question, full refresh every 10th partial or on entering sleep (ghost-clear counter lives in the `epaper` component).
+Zero or several active selector contacts are invalid states. Firmware must not
+guess a deck; it should wait for one stable contact and retain the displayed
+question.
 
 ## Planned layout
 
-```
+```text
 firmware/
-├── CMakeLists.txt          # phase C
-├── main/                   # app entry + state_machine.c
+├── build-system files      # ESP-IDF or Zephyr, decision open
+├── main/                   # application entry and state transitions
 ├── components/
-│   ├── epaper/             # SSD1680 SPI, full+partial refresh, ghost-clear
-│   │                       # counter, UTF-8 layout, bundled latin+latin-ext font
-│   ├── oled/               # SSD1306 I²C status/menu display
-│   ├── input/              # EC11 quadrature on PCNT + debounced button,
-│   │                       # short/long press events
-│   ├── qdb/                # question store: LittleFS mount, bundle parser
-│   │                       # (docs/sync_protocol.md), qdb_next(category) with
-│   │                       # on-flash shuffle bag; up to two installed language
-│   │                       # bundles, active language switchable in the menu
-│   ├── sync/               # HTTPS manifest check, per-language bundle download,
-│   │                       # ed25519 verify (trusted_key.h from tools/keygen.py),
-│   │                       # atomic swap in LittleFS
-│   ├── portal/             # SoftAP + DNS-hijack captive portal for Wi-Fi
-│   │                       # credentials AND language selection
-│   └── power/              # deep sleep, wake on knob GPIO, battery ADC
-└── partitions.csv          # nvs / phy / factory + ota_0 + ota_1 (A/B) /
-                            # littlefs ≥ 4 MB (room for two language bundles)
+│   ├── epaper/             # SPI driver, text layout, full/partial refresh
+│   ├── input/              # six selector GPIOs and debounced Next GPIO
+│   ├── qdb/                # TKB2 parser and per-deck shuffle bags
+│   ├── sync/               # optional signed bundle download and atomic swap
+│   ├── portal/             # service-only Wi-Fi and language setup
+│   └── power/              # deep sleep, wake sources, and later battery sensing
+└── partition definition    # sized for firmware and language bundles
 ```
 
-Config via `Kconfig`: pins, category list mirror, manifest URL, embedded ed25519 public key, factory-preloaded languages.
+Pin assignments remain open until the breadboard wiring is documented. Keep
+them configurable so the same application logic can move to the target PCB.
 
-## Acceptance targets (documented now, tested in phase C+)
+## Breadboard acceptance
 
-- Deep sleep < 30 µA; wake-to-question < 1 s; ≥ 4 weeks standby on 500 mAh.
-- `idf.py build` green in CI; `qdb` round-trips real bundles from `tools/build_bundle.py` (host-side unit test + on-target) for en and de.
+- Firmware flashes, logs, and debugs over the DevKitC USB connection.
+- All six selector positions and invalid contact combinations are tested.
+- One physical press produces one Next event.
+- Real English and German TKB2 bundles round-trip through the question store.
+- Every released question fits at the fixed minimum type size.
+- Partial and full refresh behavior is tested over a representative run.
+- Wi-Fi and bundle sync work from USB power before battery measurements begin.

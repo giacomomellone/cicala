@@ -1,3 +1,8 @@
 # power
 
-Deep sleep after 30 s idle (wake on knob GPIO), battery voltage via ADC for the menu's battery item. Targets (acceptance tests in phase C+): deep sleep < 30 µA, wake-to-question < 1 s, ≥ 4 weeks standby on the 500 mAh cell.
+Start with USB-powered breadboard development. Add deep sleep and wake from the
+six selector inputs and Next after the basic input/display loop works.
+
+Battery sensing, charging-state behavior, and the below-30-µA whole-device
+sleep target belong to the later power-path bench. The input and display logic
+must not depend on a battery being present.

@@ -1,3 +1,10 @@
 # qdb
 
-Question store: mounts LittleFS, parses the `.tkb` bundle format ([docs/sync_protocol.md](../../../docs/sync_protocol.md)), and serves `qdb_next(category)` with an on-flash shuffle bag (no repeats until a category is exhausted). Supports up to two installed language bundles; the active language switches in the menu. `family`-safe builds exclude questions with the spicy flag. Lands in phase C with a host-side round-trip test against `tools/build_bundle.py` output.
+Mount the question storage, parse the TKB2 bundle format described in
+[sync_protocol.md](../../../docs/sync_protocol.md), and provide the next
+eligible question for a selected deck without repeats until that deck's shuffle
+bag is exhausted.
+
+Normal playback excludes depth 3. Dark and spicy questions remain exclusive to
+the Wild deck. Host-side tests must round-trip real bundles produced by
+`tools/build_bundle.py`.

@@ -1,7 +1,8 @@
 # Device prototype direction
 
-This is the description for the next physical study. It is not a finished
-industrial design and does not authorize firmware work.
+This is the description for the staged device prototype. It is not a finished
+industrial design. Firmware and electrical work begin on a USB-powered
+breadboard before PCB layout, enclosure integration, or 3D printing.
 
 !!! warning "Concept renders, not manufacturing data"
 
@@ -99,7 +100,8 @@ model.
 with a 16-week factory lead time beyond stock. It is an active standard part,
 but it is uncommon and materially more expensive than an EC11 encoder.
 
-Use it for both weighted models. Check:
+Use one sample in the electrical bench rig, connected to the breadboard with
+soldered wires. Before enclosure integration, check:
 
 - whether the detent feels deliberate at table scale;
 - whether the two hard stops are clear;
@@ -155,10 +157,10 @@ open.
 
 ![Exploded concept without an OLED or rotary encoder](assets/device-prototype/exploded.webp)
 
-## Electrical description for a later rev A
+## Electrical contract
 
-No schematic or firmware is part of this iteration. The later board description
-must account for:
+The breadboard firmware rig exercises the input and display behavior before a
+custom schematic. The later rev A board must account for:
 
 - ESP32-S3-WROOM-1-N16 and the GDEY0213B74 e-paper circuit;
 - six one-hot selector contacts and one independent Next wake input;
@@ -182,21 +184,42 @@ depth metadata. Normal playback excludes depth 3. See
 
 ### 1. Website
 
-The website is the first test rig. It ships all six deck choices, overlapping
-membership, Wild tone, the New People default, and the depth 1–2 playback cap.
-Watch whether people can choose a useful deck without reading documentation.
+The website exercises all six deck choices, overlapping membership, Wild tone,
+the New People default, and the depth 1–2 playback cap.
 
-### 2. Non-functional model — two days
+### 2. USB-powered breadboard and firmware
 
-Build two weighted shells with real SRBV160803 switches, real button caps, and
-paper question inserts. One shell may use a flat face and one a 3-degree
-incline. Run at least five small table sessions without explaining the controls
-first.
+Use an ESP32-S3 DevKitC, an assembled 2.13-inch e-paper module, and the candidate
+six-position SRBV160803 and KSC321G controls connected with soldered wires. A
+six-way DIP switch and through-hole button are optional bring-up substitutes.
+Develop and test flashing, storage, deck selection, button debounce, rendering,
+refresh policy, and optional Wi-Fi sync while powered from USB. The
+[prototype BOM](prototype_bom.md) is the order list for this stage.
 
 Gate:
 
+- every selector input maps to the intended deck;
+- zero or several active selector inputs fail safely;
+- one button press advances exactly once;
+- every released English and German question fits;
+- partial updates remain readable through a representative run;
+- firmware can be flashed and debugged without extra programming hardware.
+
+### 3. Battery and power-path bench
+
+Add a protected cell and a charger with a real system power path only after the
+charge current is supported by the selected cell data sheet. Prove charging
+under system load, USB/battery handover, Wi-Fi peaks, cutoff behavior, brownout
+margin, and sleep current before laying out the complete board.
+
+### 4. Controls, PCB, and enclosure integration
+
+Import manufacturer STEP models, place the already tested controls, PCB, and
+battery, then build the first printed enclosure.
+
+Run table sessions without explaining the controls first. Check:
+
 - people can map every detent to the intended label;
-- they understand that turning draws from another deck;
 - they distinguish New People from Close;
 - Wild is chosen deliberately rather than mistaken for Random;
 - the extra Next button does not make the face look like a control panel;
@@ -204,24 +227,9 @@ Gate:
 - question type is readable from ordinary seats.
 
 If deck choice takes more attention than rejecting a poor question with Next,
-reduce or remove the selector before custom electronics.
-
-### 3. Display and type rig
-
-Only after the model gate, drive the exact e-paper panel and render the released
-English and German corpora. Test every question at a fixed minimum type size.
-Do not include a status display.
-
-Gate: every released question fits; partial updates remain readable through a
-representative run; a full refresh is scheduled by observed ghosting rather
-than by idle time.
-
-### 4. Power path, rev A, and EVT
-
-Prove charging with system load, Wi-Fi peaks, cutoff behavior, and sleep current
-before laying out the complete board. Import manufacturer STEP models into the
-case before board order. EVT covers drop, selector life, button overload,
-pocket lint, radio performance, and small spills.
+reduce or remove the selector before ordering another PCB revision. EVT then
+covers drop, selector life, button overload, pocket lint, radio performance,
+and small spills.
 
 ## Acceptance targets
 
