@@ -34,7 +34,8 @@ manifest:
         # build fails on a missing module rather than importing all ~60.
         name-allowlist:
           - cmsis
-          - hal_espressif   # SoC HAL + Wi-Fi blobs
+          - hal_espressif   # SoC HAL + Wi-Fi blobs; carries its own xtensa core config
+          - hal_xtensa      # xtensa/config/core.h for qemu_xtensa/dc233c host tests
           - picolibc        # default libc
           - mbedtls         # TLS for the sync flow
           - littlefs        # question bundle storage

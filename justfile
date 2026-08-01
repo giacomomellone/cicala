@@ -11,11 +11,23 @@ prettier := "website/node_modules/.bin/prettier"
 
 board    := "esp32s3_devkitc/esp32s3/procpu"
 
+# Zephyr SDK. It lives outside the default search paths (~, /opt, /usr/local),
+# so exporting this is what lets a build find it; `setup.sh -c` additionally
+# registers it in the CMake package registry. Override for another location:
+#   just sdk=~/somewhere/zephyr-sdk-1.0.1 fw-build
+sdk := env("ZEPHYR_SDK_INSTALL_DIR", home_dir() / "Projects/zephyr-sdk-1.0.1")
+export ZEPHYR_SDK_INSTALL_DIR := sdk
+
+# Zephyr's espressif SoC CMake looks for esptool on PATH, not in the venv, so
+# a plain `west build` fails with "esptool>=5.0.2 not found in PATH" even with
+# it installed. Putting .venv/bin first also covers west, ruff and mkdocs.
+export PATH := justfile_directory() / ".venv/bin:" + env("PATH")
+
 # Host test platform. native_sim is faster and is the only one that emulates
 # GPIO, but it builds on Linux only — so qemu_xtensa (full kernel, target
 # architecture, runs on macOS) is the default. Override for a Linux host:
 #   just simboard=native_sim fw-test
-simboard := "qemu_xtensa"
+simboard := "qemu_xtensa/dc233c"
 
 # Zephyr's CI image, for the native_sim suites on a non-Linux host.
 # Note: amd64 only, so it runs emulated on Apple Silicon.
@@ -93,9 +105,10 @@ fw-init:
     {{python}} -m pip install -q west
     @if [ ! -d .west ]; then {{west}} init -l firmware; else echo ".west/ exists — skipping init"; fi
     {{west}} update
-    # Zephyr's build scripts need their own python packages (pyelftools,
-    # packaging, pykwalify…). Without these, `west build` fails at cmake time.
-    {{python}} -m pip install -q -r deps/zephyr/scripts/requirements.txt
+    # Python packages for zephyr and every enabled module. This covers both
+    # the build scripts (pyelftools, pykwalify…) and per-SoC tools — esptool
+    # comes from here, and cmake aborts without it.
+    {{west}} packages pip --install
     {{west}} blobs fetch hal_espressif
     @echo
     @echo "workspace ready. next: install the Zephyr SDK, then `just fw-doctor`"
@@ -106,15 +119,17 @@ fw-doctor:
     @echo "west:      $({{west}} --version 2>/dev/null || echo 'MISSING — run just fw-init')"
     @echo "zephyr:    $(cd deps/zephyr 2>/dev/null && git describe --tags 2>/dev/null || echo 'MISSING — run just fw-init')"
     @want=$(cat deps/zephyr/SDK_VERSION 2>/dev/null); \
-     sdk=$(ls -d ~/zephyr-sdk-* 2>/dev/null | head -1); \
-     echo "sdk:       ${sdk:-MISSING — install the Zephyr SDK}${want:+  (zephyr wants $want)}"
+     [ -d "{{sdk}}" ] && s="{{sdk}}" || s="MISSING at {{sdk}}"; \
+     echo "sdk:       ${s}${want:+  (zephyr wants $want)}"
+    @reg=$(cat ~/.cmake/packages/Zephyr-sdk/* 2>/dev/null | head -1); \
+     echo "registered: ${reg:-NO — run '{{sdk}}/setup.sh -c'}"
     @# SDK 1.0 restructured: toolchains under gnu/, host tools under hosttools/.
     @for pair in "esp32s3:xtensa-espressif_esp32s3_zephyr-elf" "dc233c:xtensa-dc233c_zephyr-elf"; do \
         short=${pair%%:*}; tc=${pair#*:}; \
-        g=$(ls ~/zephyr-sdk-*/gnu/$tc/bin/$tc-gdb ~/zephyr-sdk-*/$tc/bin/$tc-gdb 2>/dev/null | head -1); \
-        printf "%-11s%s\n" "$short:" "${g:-MISSING — ./setup.sh -t $tc}"; \
+        g=$(ls "{{sdk}}"/gnu/$tc/bin/$tc-gdb "{{sdk}}"/$tc/bin/$tc-gdb 2>/dev/null | head -1); \
+        printf "%-11s%s\n" "$short:" "${g:-MISSING — {{sdk}}/setup.sh -t $tc}"; \
      done
-    @q=$(ls ~/zephyr-sdk-*/hosttools/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); \
+    @q=$(ls "{{sdk}}"/hosttools/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); \
      q=${q:-$(command -v qemu-system-xtensa 2>/dev/null)}; \
      echo "qemu:      ${q:-MISSING — comes with the SDK hosttools}"
     @echo "cmake:     $(cmake --version 2>/dev/null | head -1 || echo MISSING)"

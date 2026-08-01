@@ -3,9 +3,9 @@
   // Zephyr 4.4.1 requires SDK 1.0.1 exactly (deps/zephyr/SDK_VERSION).
   // SDK 1.0 restructured the tree: toolchains live under gnu/, host tools
   // (qemu, openocd) under hosttools/. `just fw-doctor` prints the real paths.
-  "tischkarte.zephyrSdk": "${env:HOME}/zephyr-sdk-1.0.1",
-  "tischkarte.gdbTarget": "${env:HOME}/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gdb",
-  "tischkarte.gdbSim": "${env:HOME}/zephyr-sdk-1.0.1/gnu/xtensa-dc233c_zephyr-elf/bin/xtensa-dc233c_zephyr-elf-gdb",
+  "tischkarte.zephyrSdk": "${env:HOME}/Projects/zephyr-sdk-1.0.1",
+  "tischkarte.gdbTarget": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gdb",
+  "tischkarte.gdbSim": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-dc233c_zephyr-elf/bin/xtensa-dc233c_zephyr-elf-gdb",
 
   // ------------------------------------------------------------ formatting
   "editor.formatOnSave": true,

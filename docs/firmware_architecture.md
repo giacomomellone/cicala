@@ -266,7 +266,7 @@ so the fallback is a write-coalesced NVS record, not a redesign.
 
 ```mermaid
 flowchart LR
-    A["fsm · qdb · bag · layout<br/><b>no Zephyr headers</b>"] --> H["qemu_xtensa<br/><i>macOS, full kernel</i>"]
+    A["fsm · qdb · bag · layout<br/><b>no Zephyr headers</b>"] --> H["qemu_xtensa/dc233c<br/><i>macOS, full kernel</i>"]
     B["state machine · settle window<br/>drop-during-refresh"] --> N["native_sim<br/><i>Linux only, emulates GPIO</i>"]
     C["timing · power · panel · ghosting"] --> HW["breadboard<br/><i>hardware required</i>"]
 

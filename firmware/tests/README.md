@@ -23,13 +23,13 @@ breadboard acceptance list in [firmware/README.md](../README.md).
 `native_sim` is the fastest option and the only one that emulates GPIO, so the
 suites that drive the selector and Next need it. It builds on Linux hosts only.
 
-`qemu_xtensa` runs a full Zephyr kernel on macOS and matches the target
+`qemu_xtensa/dc233c` runs a full Zephyr kernel on macOS and matches the target
 architecture, which covers everything except the GPIO-driven suites. It is the
 default so the daily loop works without Docker.
 
-The practical split: run `qemu_xtensa` locally, let CI run `native_sim`, and
-keep the GPIO-driven suites in their own directory so a macOS run skipping them
-is obvious rather than silent.
+The practical split: run `qemu_xtensa/dc233c` locally, let CI run `native_sim`,
+and keep the GPIO-driven suites in their own directory so a macOS run skipping
+them is obvious rather than silent.
 
 ## Suites
 

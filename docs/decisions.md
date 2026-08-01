@@ -265,12 +265,18 @@ Accepted cost: the sleep path, which is where the boot-latency budget and the
 30 µA target are decided, is the last thing to be exercised rather than the
 first.
 
-## 2026-08-02: Host tests default to qemu_xtensa, not native_sim
+## 2026-08-02: Host tests default to qemu_xtensa/dc233c
 
 `native_sim` is faster and is the only host platform that emulates GPIO, but it
-builds on Linux only, and development happens on macOS. `qemu_xtensa` runs a
-full Zephyr kernel on macOS and matches the target architecture, so it is the
-default for `just fw-test`. CI overrides it with `just simboard=native_sim`.
+builds on Linux only, and development happens on macOS. `qemu_xtensa/dc233c`
+runs a full Zephyr kernel on macOS and matches the target architecture, so it
+is the default for `just fw-test`. CI overrides it with
+`just simboard=native_sim`.
+
+Board targets need their SoC qualifier under hardware model v2: plain
+`qemu_xtensa` is a board name, not a target, and twister rejects it. The
+dc233c core configuration comes from the `hal_xtensa` module, which the
+manifest's module allowlist has to include.
 
 Suites that drive the selector and Next need emulated GPIO and are kept in
 their own directory, so a local run that cannot execute them is visible rather
