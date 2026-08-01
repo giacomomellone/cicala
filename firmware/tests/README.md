@@ -36,7 +36,7 @@ them is obvious rather than silent.
 | Suite | Covers | Platform | Status |
 |---|---|---|---|
 | `smoke` | The harness itself builds and runs | any | present |
-| `fsm` | Transition table, timeouts, fail-state entry | any | planned |
+| `fsm` | Transition table, timeouts, fail-state entry | any | present |
 | `bag` | No repeat within a cycle, recent ring, fingerprint invalidation | any | planned |
 | `qdb` | TKB2 parse, deck mask, depth filter, round-trip of real bundles | any | planned |
 | `layout` | UTF-8 word wrap, German coverage, longest question fits | any | planned |

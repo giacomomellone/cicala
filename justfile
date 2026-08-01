@@ -221,14 +221,16 @@ fmt: fmt-fw fmt-py fmt-web fmt-docs
 # check formatting without writing (what CI runs)
 [group('format')]
 fmt-check:
-    git ls-files '*.c' '*.cpp' '*.h' '*.hpp' | xargs -r clang-format --dry-run --Werror
+    git ls-files --cached --others --exclude-standard \
+        '*.c' '*.cpp' '*.h' '*.hpp' | xargs -r clang-format --dry-run --Werror
     {{ruff}} format --check tools/
     {{prettier}} --check "website/**/*.{ts,astro,css,json}" "docs/**/*.md" "*.md"
 
-# firmware C/C++ — git ls-files keeps this away from deps/ (zephyr)
+# firmware C/C++ — --others picks up new files, --exclude-standard skips deps/
 [group('format')]
 fmt-fw:
-    git ls-files '*.c' '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -i
+    git ls-files --cached --others --exclude-standard \
+        '*.c' '*.cpp' '*.h' '*.hpp' | xargs -r clang-format -i
 
 # python tools
 [group('format')]
