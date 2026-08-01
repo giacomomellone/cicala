@@ -15,10 +15,18 @@ nav:
   - theory: theory.md
   - device prototype: device_prototype.md
   - prototype bom: prototype_bom.md
+  - firmware architecture: firmware_architecture.md
   - decisions: decisions.md
   - languages: languages.md
   - sync protocol: sync_protocol.md
   - votes (v2): votes.md
+
+# Self-hosted mermaid. Material would otherwise lazy-load it from unpkg; its
+# loader is guarded by `typeof mermaid == "undefined"`, and this bundle ends
+# with `globalThis["mermaid"] = ...`, so loading it first skips the CDN.
+# Fetched by `just docs-deps`, gitignored like any other dependency.
+extra_javascript:
+  - assets/javascripts/mermaid.min.js
 
 theme:
   name: material
@@ -38,5 +46,11 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
-  - pymdownx.superfences
   - pymdownx.highlight
+  - pymdownx.superfences:
+      custom_fences:
+        # Architecture diagrams are ```mermaid fences: GitHub renders them
+        # natively and this makes the docs site render them too.
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format

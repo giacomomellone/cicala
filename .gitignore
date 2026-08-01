@@ -30,6 +30,10 @@ firmware/tests/fixtures/
 # mkdocs output
 site/
 
+# vendored docs dependency, fetched by `just docs-deps` (pinned there).
+# Not committed, for the same reason node_modules/ is not.
+docs/assets/javascripts/mermaid.min.js
+
 # os
 .DS_Store
 
