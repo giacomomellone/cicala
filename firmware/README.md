@@ -1,8 +1,8 @@
 # Firmware
 
-**Status: skeleton, no application yet.** The build system, board
-configuration, test harness and tooling exist; `app/src/` is empty. Software
-design is in
+**Status: bring-up.** Build system, board configuration, test harness, the
+`fsm` library and a blinky exist. The application state machine does not yet.
+[FIRMWARE_GUIDE.md](../FIRMWARE_GUIDE.md) is the hands-on tour; the design is
 [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
 [prototype_bom.md](../docs/prototype_bom.md).
@@ -90,7 +90,8 @@ firmware/
 │   ├── prj.conf            # shared config; LATER blocks track the architecture
 │   ├── Kconfig             # settle window, refresh interval, depth cap
 │   ├── boards/             # per-board conf + devicetree overlay
-│   └── src/                # application (empty)
+│   └── src/main.c          # bring-up blinky, not the product
+├── lib/fsm/                # table-driven state machine, C++17
 ├── tests/                  # ztest suites, run by twister
 └── components/             # per-area contracts (README only, pre-Zephyr)
 ```

@@ -5,8 +5,10 @@ which modules depend on Zephyr. Interaction rules are in [design.md](design.md),
 the data contract in [sync_protocol.md](sync_protocol.md), rationale in
 [decisions.md](decisions.md).
 
-**Status: design only.** No application exists yet. Items marked *verify* have
-not been run on hardware.
+**Status: partly built.** `fsm` and a bring-up blinky exist and are tested;
+everything else is design. Items marked *verify* have not been run on hardware.
+`FIRMWARE_GUIDE.md` in the repository root is the hands-on tour of what is
+there.
 
 ## The one constraint
 
@@ -101,13 +103,14 @@ Two contract rules that are easy to violate:
 
 ## Modules
 
-The split that matters is not epaper-versus-input, it is **what needs Zephyr**.
-Everything in the upper box compiles unchanged for the host and is tested
-without hardware.
+The split that matters is not epaper-versus-input, it is **what needs
+hardware**. Everything in the upper box runs under qemu and is tested without a
+board. `fsm` touches Zephyr only for its default clock, which tests override,
+so every timeout is exercised without sleeping.
 
 ```mermaid
 flowchart TB
-    subgraph pure["Zephyr-free · C++17 · host-testable"]
+    subgraph pure["hardware-free · C++17 · runs under qemu"]
         direction LR
         FSM[fsm<br/><i>transition table engine</i>]
         QDB[qdb<br/><i>TKB2 reader, eligibility</i>]
