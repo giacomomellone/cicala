@@ -1,0 +1,80 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "fw: build (esp32s3)",
+      "type": "shell",
+      "command": "just fw-build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "fw: flash",
+      "type": "shell",
+      "command": "just fw-flash",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "fw: monitor",
+      "type": "shell",
+      "command": "just fw-monitor",
+      "problemMatcher": []
+    },
+    {
+      "label": "fw: test",
+      "type": "shell",
+      "command": "just fw-test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "fw: build sim (native_sim)",
+      "type": "shell",
+      "command": "just simboard=native_sim fw-sim",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      // Backgrounded so the debugger can connect while it keeps running. The
+      // problemMatcher pattern below is what tells VSCode the server is up;
+      // without it the launch hangs waiting for the task to "finish".
+      "label": "fw: sim debugserver",
+      "type": "shell",
+      "command": "just fw-sim-debug",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [{ "regexp": ".", "file": 1, "location": 2, "message": 3 }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*(qemu|gdbserver|listening|1234).*"
+        }
+      }
+    },
+    {
+      "label": "fw: openocd server",
+      "type": "shell",
+      "command": ".venv/bin/west debugserver -d build/esp32s3",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": [{ "regexp": ".", "file": 1, "location": 2, "message": 3 }],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*Open On-Chip Debugger.*",
+          "endsPattern": ".*Listening on port 3333.*"
+        }
+      }
+    },
+    {
+      "label": "fmt: all",
+      "type": "shell",
+      "command": "just fmt",
+      "problemMatcher": []
+    },
+    {
+      "label": "test: everything",
+      "type": "shell",
+      "command": "just test",
+      "problemMatcher": []
+    }
+  ]
+}
