@@ -22,10 +22,13 @@ manifest:
     - name: zephyr
       remote: upstream
       revision: v4.2.0
-      path: deps/zephyr
+      # No `deps/` here: path-prefix below applies to this project as well as
+      # to everything its manifest imports. Writing `path: deps/zephyr` too
+      # gets the prefix applied twice and clones into deps/deps/zephyr.
+      path: zephyr
       import:
-        # Everything zephyr's own manifest pulls lands under deps/ too, instead
-        # of scattering modules/ across the repo root.
+        # Puts zephyr and every module it pulls under deps/, instead of
+        # scattering modules/ across the repo root.
         path-prefix: deps
         # Only what an ESP32-S3 build of this application needs. Widen if a
         # build fails on a missing module rather than importing all ~60.
