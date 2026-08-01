@@ -9,7 +9,9 @@ An open-source system for conversation questions, in three parts sharing one dat
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/`, `hardware/` — ESP32-S3 device. Structure and contracts only, no buildable project yet.
+- `firmware/` — ESP32-S3 device, Zephyr. Build system, board config and test harness exist; `app/src/` is empty. Design in `docs/firmware_architecture.md`.
+- `hardware/` — schematic and enclosure. Structure and contracts only.
+- `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.
 
 The governing product principle (docs/design.md): minimize time-to-question, maximize time-in-conversation. Features that increase engagement with the product rather than between people are rejected.
@@ -26,7 +28,19 @@ just data         # regenerate website/src/data/*.json from the database
 just website      # dev server (runs `data` first)
 just test         # validate + tools tests (unittest) + website tests (vitest)
 just docs         # mkdocs serve
+
+just fw-init      # once: west init/update into deps/, fetch espressif blobs
+just fw-build     # build for the esp32s3 devkit
+just fw-sim       # run under qemu on the host
+just fw-test      # ztest suites via twister
+just fmt          # clang-format + ruff + prettier
 ```
+
+**Formatting.** `just fmt` covers firmware (clang-format), `tools/` (ruff) and
+`website/` + docs (prettier). Never format `questions/` — `just fix`
+(`tools/validate.py --fix`) owns that file formatting exactly, and prettier is
+configured to ignore it. Hand-aligned FSM transition tables are wrapped in
+`// clang-format off`.
 
 **Commits.** Conventional commits, enforced by `.githooks/commit-msg` (enabled by `just setup` or `just hooks`). Types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope lowercase (`site`, `questions`, `tools`, `ci`, `fw`, `hw`, `docs`).
 

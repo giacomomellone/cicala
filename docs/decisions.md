@@ -174,3 +174,120 @@ advance to version 2.
 
 Accepted cost: no backward compatibility with the unshipped TKB1 format. This
 is intentional while firmware is still a stub.
+
+## 2026-08-02: Firmware framework is Zephyr
+
+Zephyr rather than ESP-IDF. It has an in-tree SSD16xx driver with a
+`waveshare_epaper_gdey0213b74` configuration for the exact planned panel, zbus
+for decoupled message passing, ztest and twister for host-side tests, and one
+devicetree description that moves from the DevKitC to the rev A board by
+changing an overlay rather than editing code.
+
+The workspace uses west T2 topology: `firmware/west.yml` is the manifest,
+`west init -l firmware` makes the repo root the topdir, and zephyr plus its
+modules land in a gitignored `deps/`. The monorepo therefore stays one
+checkout, and nothing from upstream is committed.
+
+Accepted cost: `just fw-build`/`fw-flash` and `.github/workflows/firmware.yml`
+were written for ESP-IDF. The justfile is rewritten here; the workflow is a
+separate pass. The Zephyr revision is pinned in the manifest and bumping it is
+a deliberate act.
+
+## 2026-08-02: C++17 for application logic, C for Zephyr glue
+
+`Fsm`, `qdb`, the bag and text layout are C++17. Files that use
+`ZBUS_CHAN_DEFINE`, `ZBUS_MSG_INIT`, ISR registration and devicetree glue stay
+C. The reason is mechanical rather than stylistic: several of those macros
+expand to out-of-order designated initializers, which C accepts and C++17
+rejects. Keeping them in `.c` means upstream samples paste in unmodified.
+
+Exceptions and RTTI stay disabled and nothing allocates, so the C++ surface
+costs no binary size beyond vtables. Objects are constructed inside `main()`
+rather than as globals, because a static constructor runs before device
+drivers are ready.
+
+Accepted cost: two languages in one component directory, and a rule that has
+to be explained to every contributor.
+
+## 2026-08-02: Deep sleep is a reboot, so retained state lives in RTC memory
+
+Below 30 µA on the ESP32-S3 means deep sleep, which does not preserve SRAM or
+thread stacks. Every wake runs the bootloader and `main()` from the top. The
+shuffle bag, the recent ring, the current question, the partial-refresh counter
+and the bundle fingerprint therefore live in RTC slow memory — about 512 bytes
+against an 8 KB budget. NVS holds only slow-moving configuration.
+
+This settles the flash-wear question in the bag's favour: Next costs no flash
+write, so button life rather than flash endurance bounds the device.
+
+Accepted cost: the bag resets when the cell is removed or goes flat, and "next
+question in under 1 s" becomes a boot-time budget covering ROM boot, Zephyr
+init, selector read, draw and panel refresh. It has to be measured on the
+breadboard rather than assumed.
+
+## 2026-08-02: A Next press during a refresh is dropped, not queued
+
+A panel refresh blocks for 0.3–2 s. Queueing presses that arrive during one
+would replay them afterwards as a burst of draws nobody saw, consuming
+questions from the bag invisibly. `app` stays awake during the refresh and
+discards the press instead. One press produces one question and one refresh.
+
+Accepted cost: a press during a refresh does nothing at all, with no
+acknowledgement, because the device has no status surface to acknowledge it on.
+
+## 2026-08-02: A cold boot draws immediately
+
+A device with a valid selector and no retained question draws and does a full
+refresh, because panel content is unknown after a cold boot. A device out of
+the box shows a question without being touched.
+
+With an invalid selector — zero or several contacts — nothing is drawn and
+nothing is guessed. On a cold boot that means the panel stays blank until one
+contact settles.
+
+Accepted cost: packaging has to account for the first question being visible
+before anyone interacts with the device.
+
+## 2026-08-02: The breadboard stage does not sleep
+
+`CONFIG_PM` stays off until input, display and storage are correct. A board
+that resets on every press is harder to bring up than one that stays awake.
+Retained state still lives in its RTC sections from the first commit, so
+enabling deep sleep later is a configuration change rather than a rewrite.
+
+Accepted cost: the sleep path, which is where the boot-latency budget and the
+30 µA target are decided, is the last thing to be exercised rather than the
+first.
+
+## 2026-08-02: Host tests default to qemu_xtensa, not native_sim
+
+`native_sim` is faster and is the only host platform that emulates GPIO, but it
+builds on Linux only, and development happens on macOS. `qemu_xtensa` runs a
+full Zephyr kernel on macOS and matches the target architecture, so it is the
+default for `just fw-test`. CI overrides it with `just simboard=native_sim`.
+
+Suites that drive the selector and Next need emulated GPIO and are kept in
+their own directory, so a local run that cannot execute them is visible rather
+than silently green.
+
+Accepted cost: two host platforms to keep working, and the GPIO-driven suites
+do not run on a developer machine without Docker.
+
+## 2026-08-02: clang-format for firmware, scoped to repository files
+
+Style is LLVM with Linux brace placement, four-space indent and a 100-column
+limit, which matches the existing `Fsm` sources. `SortIncludes` is off because
+Zephyr headers have ordering requirements. Hand-aligned transition tables are
+wrapped in `// clang-format off`.
+
+Three layers keep it away from Zephyr: `just fmt-fw` drives off `git ls-files`
+so it can only reach tracked files; `deps/.clang-format` sets
+`DisableFormat: true` and is the closest config for anything in the workspace;
+and Zephyr ships its own config. `.clang-format-ignore` was not used because it
+needs clang-format 18 and the system binary is 17.
+
+Dependency justifications: `ruff` (dev-only, formats and lints `tools/`; the
+stdlib-plus-pyyaml-plus-jsonschema runtime policy is unaffected) and
+`prettier` with `prettier-plugin-astro` (dev-only, formats `website/` and
+markdown). `.prettierignore` excludes `questions/`, whose formatting
+`tools/validate.py --fix` owns.
