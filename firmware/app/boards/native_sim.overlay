@@ -26,6 +26,11 @@
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; label = "next"; };
     };
 
+    /* Bring-up blinky pin, so src/main.c builds for the host too. */
+    zephyr,user {
+        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+    };
+
     chosen {
         zephyr,display = &dummy_dc;
     };

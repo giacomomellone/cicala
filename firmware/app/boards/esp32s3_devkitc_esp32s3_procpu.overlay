@@ -19,6 +19,15 @@
     };
 
     /*
+     * Bring-up only, read by src/main.c. The DevKitC-1's single onboard LED is
+     * an addressable WS2812 on GPIO48, so there is no `led0` alias to reuse —
+     * wire a discrete LED and resistor from this pin to GND.
+     */
+    zephyr,user {
+        blink-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+    };
+
+    /*
      * Six one-hot selector contacts, active low with internal pull-ups.
      * Index order is the absolute selector order and must match
      * questions/schema.json x-tischkarte.decks:
