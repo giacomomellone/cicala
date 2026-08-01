@@ -6,9 +6,9 @@
 #
 #   just fw-init     # west init + update + blobs
 #
-# Bump `revision` deliberately and record it in docs/decisions.md — the pin
-# below is a starting point, not necessarily the current release. Check
-# https://github.com/zephyrproject-rtos/zephyr/releases before the first init.
+# Bump `revision` deliberately and record it in docs/decisions.md. The pin
+# below is Zephyr's latest stable as of 2026-08-02, and it requires Zephyr SDK
+# 1.0.1 exactly (see deps/zephyr/SDK_VERSION after the first update).
 
 manifest:
   self:
@@ -21,7 +21,7 @@ manifest:
   projects:
     - name: zephyr
       remote: upstream
-      revision: v4.2.0
+      revision: v4.4.1
       # No `deps/` here: path-prefix below applies to this project as well as
       # to everything its manifest imports. Writing `path: deps/zephyr` too
       # gets the prefix applied twice and clones into deps/deps/zephyr.

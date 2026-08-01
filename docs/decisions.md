@@ -188,10 +188,16 @@ The workspace uses west T2 topology: `firmware/west.yml` is the manifest,
 modules land in a gitignored `deps/`. The monorepo therefore stays one
 checkout, and nothing from upstream is committed.
 
+Pinned at Zephyr v4.4.1 with Zephyr SDK 1.0.1, which `deps/zephyr/SDK_VERSION`
+requires exactly. The SDK moved from 0.x to 1.0 in March 2026 and its release
+assets were renamed, so an older install or a guessed download URL will not
+work. The board target `esp32s3_devkitc/esp32s3/procpu` is verified against the
+v4.4.1 board definition.
+
 Accepted cost: `just fw-build`/`fw-flash` and `.github/workflows/firmware.yml`
 were written for ESP-IDF. The justfile is rewritten here; the workflow is a
-separate pass. The Zephyr revision is pinned in the manifest and bumping it is
-a deliberate act.
+separate pass. Bumping Zephyr means checking `SDK_VERSION` and possibly
+installing a matching SDK, so it stays a deliberate act.
 
 ## 2026-08-02: C++17 for application logic, C for Zephyr glue
 

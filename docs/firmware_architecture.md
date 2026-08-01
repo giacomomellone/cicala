@@ -256,9 +256,11 @@ life rather than flash endurance bounds the device. The active deck has no
 storage at all, which is how "the selector is the deck state" is enforced
 structurally rather than by discipline.
 
-*Verify:* RTC-slow-memory placement under Zephyr's ESP32-S3 port, and
-`PM_STATE_SOFT_OFF` with EXT1 wake on seven pins. Only the structures above
-depend on it, so the fallback is a write-coalesced NVS record, not a redesign.
+*Verify:* the `esp32s3_devkitc/esp32s3/procpu` board lists `retained_mem` as
+supported, so Zephyr's retained-memory API is the likely mechanism rather than
+raw section attributes. Still unconfirmed: `PM_STATE_SOFT_OFF` mapping to deep
+sleep, and EXT1 wake on seven pins. Only the structures above depend on this,
+so the fallback is a write-coalesced NVS record, not a redesign.
 
 ## Testing boundary
 
