@@ -105,11 +105,24 @@ fw-init:
 fw-doctor:
     @echo "west:      $({{west}} --version 2>/dev/null || echo 'MISSING — run just fw-init')"
     @echo "zephyr:    $(cd deps/zephyr 2>/dev/null && git describe --tags 2>/dev/null || echo 'MISSING — run just fw-init')"
-    @sdk=$(ls -d ~/zephyr-sdk-* 2>/dev/null | head -1); echo "sdk:       ${sdk:-MISSING — install the Zephyr SDK}"
+    @want=$(cat deps/zephyr/SDK_VERSION 2>/dev/null); \
+     sdk=$(ls -d ~/zephyr-sdk-* 2>/dev/null | head -1); \
+     echo "sdk:       ${sdk:-MISSING — install the Zephyr SDK}${want:+  (zephyr wants $want)}"
+    @# SDK 1.0 restructured: toolchains under gnu/, host tools under hosttools/.
+    @for pair in "esp32s3:xtensa-espressif_esp32s3_zephyr-elf" "dc233c:xtensa-dc233c_zephyr-elf"; do \
+        short=${pair%%:*}; tc=${pair#*:}; \
+        g=$(ls ~/zephyr-sdk-*/gnu/$tc/bin/$tc-gdb ~/zephyr-sdk-*/$tc/bin/$tc-gdb 2>/dev/null | head -1); \
+        printf "%-11s%s\n" "$short:" "${g:-MISSING — ./setup.sh -t $tc}"; \
+     done
+    @q=$(ls ~/zephyr-sdk-*/hosttools/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); \
+     q=${q:-$(command -v qemu-system-xtensa 2>/dev/null)}; \
+     echo "qemu:      ${q:-MISSING — comes with the SDK hosttools}"
     @echo "cmake:     $(cmake --version 2>/dev/null | head -1 || echo MISSING)"
+    @case "$(cmake --version 2>/dev/null | head -1)" in *"version 4"*) \
+        echo "           note: CMake 4.x drops compat with cmake_minimum_required < 3.5." ; \
+        echo "           If a build dies there: export CMAKE_POLICY_VERSION_MINIMUM=3.5" ;; esac
     @echo "ninja:     $(ninja --version 2>/dev/null || echo MISSING)"
     @echo "dtc:       $(dtc --version 2>/dev/null || echo MISSING)"
-    @q=$(ls ~/zephyr-sdk-*/sysroots/*/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); echo "qemu:      ${q:-MISSING — comes with the SDK}"
     @echo "board:     {{board}}"
     @echo "simboard:  {{simboard}}"
 
