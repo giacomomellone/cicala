@@ -1,0 +1,18 @@
+# Formatting and linting for tools/. Dev-only: the runtime dependency policy
+# (docs/decisions.md) stays stdlib + pyyaml + jsonschema.
+line-length = 100
+target-version = "py313"
+
+exclude = [".venv", "deps", "website", "site"]
+
+[lint]
+select = [
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "I",   # import sorting
+    "UP",  # pyupgrade
+    "B",   # bugbear
+]
+
+[format]
+quote-style = "double"

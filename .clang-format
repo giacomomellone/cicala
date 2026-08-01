@@ -1,0 +1,32 @@
+# Firmware C/C++ style. Applies to repo files only — `deps/` (the west
+# workspace: zephyr and its modules) carries its own DisableFormat config, and
+# `just fmt-fw` drives off `git ls-files`, so nothing outside the repo is
+# reachable either way.
+#
+# Braces follow the Linux convention: own line for functions, classes and
+# namespaces, attached for if/for/while/switch. Hand-aligned tables (the Fsm
+# transition arrays) must be wrapped in `// clang-format off` / `on`.
+---
+Language: Cpp
+BasedOnStyle: LLVM
+
+IndentWidth: 4
+UseTab: Never
+ColumnLimit: 100
+BreakBeforeBraces: Linux
+AccessModifierOffset: -4
+PointerAlignment: Right
+ReferenceAlignment: Pointer
+SpaceAfterCStyleCast: true
+AllowShortFunctionsOnASingleLine: Inline
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+IndentCaseLabels: false
+AlignAfterOpenBracket: Align
+
+# Zephyr headers have ordering requirements (zephyr/kernel.h before several
+# subsystem headers); alphabetical reordering breaks builds.
+SortIncludes: false
+
+# Doxygen-style comment blocks are hand-wrapped.
+ReflowComments: false

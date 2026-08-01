@@ -8,3 +8,7 @@ jsonschema>=4.21
 
 # docs site (mkdocs.yml) — not a tools dependency
 mkdocs-material>=9.5
+
+# dev-only: formatter + linter for tools/ (just fmt-py / just lint-py).
+# Not imported by any tool, so the stdlib+2 runtime policy is intact.
+ruff>=0.6

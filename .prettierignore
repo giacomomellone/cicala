@@ -1,0 +1,21 @@
+# The question database is tool-managed: `just fix` (tools/validate.py --fix)
+# owns its exact formatting, down to the key order and header comment.
+# Prettier must never touch it.
+questions/
+
+# west workspace — zephyr and its modules, not our code
+deps/
+
+# generated
+website/src/data/
+website/dist/
+website/.astro/
+site/
+dist/
+build/
+node_modules/
+.venv/
+package-lock.json
+
+# hand-drawn ASCII diagrams and alignment that prettier would reflow
+docs/assets/

@@ -1,0 +1,38 @@
+# Shared whitespace rules. Every editor honours this without a formatter
+# binary; clang-format / ruff / prettier own the rest per language.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{c,cpp,h,hpp}]
+indent_style = space
+indent_size = 4
+
+[*.{py,ts,tsx,js,mjs,astro,css,json,yml,yaml,md}]
+indent_style = space
+indent_size = 2
+
+[justfile]
+indent_style = space
+indent_size = 4
+
+[*.{conf,overlay,dts,dtsi}]
+indent_style = space
+indent_size = 4
+
+[Makefile]
+indent_style = tab
+
+# Markdown uses trailing double-space for hard line breaks.
+[*.md]
+trim_trailing_whitespace = false
+
+# Tool-managed: validate.py --fix owns the exact formatting.
+[questions/**/*.yaml]
+indent_style = space
+indent_size = 2
+insert_final_newline = true

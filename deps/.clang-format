@@ -1,0 +1,10 @@
+# deps/ is the west workspace (zephyr + modules), cloned by `just fw-init` and
+# gitignored. It is not our code and must never be reformatted.
+#
+# clang-format resolves config by walking up from each file and taking the
+# closest match, so this stops an editor's format-on-save from touching
+# anything under deps/ even though the repo root has a real .clang-format.
+# Zephyr itself ships zephyr/.clang-format; this covers the modules that do not.
+---
+DisableFormat: true
+SortIncludes: false
