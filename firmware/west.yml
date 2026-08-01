@@ -1,0 +1,38 @@
+# West manifest (T2 topology: this repo is the manifest repo).
+#
+#   `west init -l firmware` from the repo root makes the repo root the west
+#   topdir, so .west/ and deps/ land inside the monorepo and stay gitignored.
+#   Zephyr and its modules are never committed here.
+#
+#   just fw-init     # west init + update + blobs
+#
+# Bump `revision` deliberately and record it in docs/decisions.md — the pin
+# below is a starting point, not necessarily the current release. Check
+# https://github.com/zephyrproject-rtos/zephyr/releases before the first init.
+
+manifest:
+  self:
+    path: firmware
+
+  remotes:
+    - name: upstream
+      url-base: https://github.com/zephyrproject-rtos
+
+  projects:
+    - name: zephyr
+      remote: upstream
+      revision: v4.2.0
+      path: deps/zephyr
+      import:
+        # Everything zephyr's own manifest pulls lands under deps/ too, instead
+        # of scattering modules/ across the repo root.
+        path-prefix: deps
+        # Only what an ESP32-S3 build of this application needs. Widen if a
+        # build fails on a missing module rather than importing all ~60.
+        name-allowlist:
+          - cmsis
+          - hal_espressif   # SoC HAL + Wi-Fi blobs
+          - picolibc        # default libc
+          - mbedtls         # TLS for the sync flow
+          - littlefs        # question bundle storage
+          - segger          # RTT, for logging without a UART

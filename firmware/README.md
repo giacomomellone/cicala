@@ -1,6 +1,9 @@
 # Firmware
 
-**Status: structure only.** There is no buildable firmware project yet. Initial
+**Status: skeleton, no application yet.** The build system, board
+configuration, test harness and tooling exist; `app/src/` is empty. Software
+design is in
+[docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
 [prototype_bom.md](../docs/prototype_bom.md).
 
@@ -12,15 +15,28 @@ development targets the USB-powered breadboard rig in
 - Six one-hot selector inputs and one independent Next button.
 - No OLED, encoder, depth control, or user-facing status LED.
 
-ESP-IDF and Zephyr both support the ESP32-S3 development board. The repository
-has not selected one yet. Existing `just fw-build` and `just fw-flash` recipes
-are inactive placeholders written for ESP-IDF; choose the framework before
-creating the buildable skeleton.
-
-Zephyr also has in-tree SSD1680/SSD16xx support and an exact
+Zephyr, not ESP-IDF. It has in-tree SSD1680/SSD16xx support and an exact
 `waveshare_epaper_gdey0213b74` configuration for the planned
-GDEY0213B74/FPC-A002 panel. Using it on the ESP32-S3 requires a project
-devicetree overlay for the selected SPI and GPIO pins, not a new display driver.
+GDEY0213B74/FPC-A002 panel, so the display needs a project devicetree overlay
+for the chosen SPI and GPIO pins rather than a new driver.
+
+Application logic is C++17; files using Zephyr's macro-heavy APIs stay C. See
+the decision log for why.
+
+## Getting started
+
+```sh
+just fw-init      # once: west init + update into deps/, fetch espressif blobs
+just fw-build     # build for the ESP32-S3 devkit
+just fw-flash     # flash over the devkit's USB connection
+just fw-monitor   # serial console
+just fw-sim       # run under qemu on the host
+just fw-test      # ztest suites via twister
+```
+
+The west workspace uses T2 topology: `west.yml` here is the manifest, the repo
+root is the topdir, and Zephyr plus its modules land in a gitignored `deps/`.
+Nothing from upstream is committed.
 
 ## Interaction contract
 
@@ -64,24 +80,30 @@ Zero or several active selector contacts are invalid states. Firmware must not
 guess a deck; it should wait for one stable contact and retain the displayed
 question.
 
-## Planned layout
+## Layout
 
 ```text
 firmware/
-├── build-system files      # ESP-IDF or Zephyr, decision open
-├── main/                   # application entry and state transitions
-├── components/
-│   ├── epaper/             # SPI driver, text layout, full/partial refresh
-│   ├── input/              # six selector GPIOs and debounced Next GPIO
-│   ├── qdb/                # TKB2 parser and per-deck shuffle bags
-│   ├── sync/               # optional signed bundle download and atomic swap
-│   ├── portal/             # service-only Wi-Fi and language setup
-│   └── power/              # deep sleep, wake sources, and later battery sensing
-└── partition definition    # sized for firmware and language bundles
+├── west.yml                # manifest: zephyr revision + module allowlist
+├── app/
+│   ├── CMakeLists.txt
+│   ├── prj.conf            # shared config; LATER blocks track the architecture
+│   ├── Kconfig             # settle window, refresh interval, depth cap
+│   ├── boards/             # per-board conf + devicetree overlay
+│   └── src/                # application (empty)
+├── tests/                  # ztest suites, run by twister
+└── components/             # per-area contracts (README only, pre-Zephyr)
 ```
 
-Pin assignments remain open until the breadboard wiring is documented. Keep
-them configurable so the same application logic can move to the target PCB.
+`components/` holds the written contracts for epaper, input, qdb, sync, portal
+and power. They predate the Zephyr decision and describe responsibilities
+rather than a directory layout; the code lands under `app/src/`.
+
+Pin assignments remain open until the breadboard wiring is documented. They
+live in the board overlay so the same application logic moves to the target PCB
+by changing one file. Two constraints apply when they are chosen: all six
+selector contacts, Next, and VBUS detect must be on RTC-capable GPIOs, or
+EXT1 deep-sleep wake is impossible.
 
 ## Breadboard acceptance
 

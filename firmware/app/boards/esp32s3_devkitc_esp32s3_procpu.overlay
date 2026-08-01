@@ -1,0 +1,95 @@
+/*
+ * ESP32-S3-DevKitC-1 breadboard rig.
+ *
+ * PIN NUMBERS BELOW ARE PLACEHOLDERS. docs/firmware_architecture.md lists pin
+ * assignment as an open item, blocked on the breadboard wiring being
+ * documented. Two hard constraints apply when they are chosen:
+ *
+ *   1. All seven wake inputs (six selector contacts + Next) must be on
+ *      RTC-capable GPIOs, or EXT1 deep-sleep wake is impossible.
+ *   2. VBUS detect must also be RTC-capable.
+ *
+ * A six-way DIP switch and a through-hole button are valid bring-up
+ * substitutes for the SRBV160803 and KSC321G.
+ */
+
+/ {
+    aliases {
+        tk-next = &tk_next;
+    };
+
+    /*
+     * Six one-hot selector contacts, active low with internal pull-ups.
+     * Index order is the absolute selector order and must match
+     * questions/schema.json x-tischkarte.decks:
+     *   0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild
+     */
+    tk_selector: tk-selector {
+        compatible = "gpio-keys";
+        tk_deck_0: deck_0 {
+            gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "new_people";
+        };
+        tk_deck_1: deck_1 {
+            gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "close";
+        };
+        tk_deck_2: deck_2 {
+            gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "family";
+        };
+        tk_deck_3: deck_3 {
+            gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "work";
+        };
+        tk_deck_4: deck_4 {
+            gpios = <&gpio0 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "here";
+        };
+        tk_deck_5: deck_5 {
+            gpios = <&gpio0 16 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "wild";
+        };
+    };
+
+    /* Next is independent of the selector: pressing cannot disturb the deck. */
+    tk_buttons: tk-buttons {
+        compatible = "gpio-keys";
+        tk_next: next {
+            gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            label = "next";
+        };
+    };
+};
+
+/*
+ * GDEY0213B74 / FPC-A002, 250 x 122, SSD1680 controller.
+ *
+ * Zephyr ships the driver, the solomon,ssd1680 binding, and a
+ * waveshare_epaper_gdey0213b74 shield. The shield targets Arduino headers,
+ * which the DevKitC does not have, so the panel is described directly here.
+ */
+&spi2 {
+    status = "okay";
+    pinctrl-0 = <&spim2_default>;
+    pinctrl-names = "default";
+    cs-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+
+    tk_epaper: ssd1680@0 {
+        compatible = "solomon,ssd1680";
+        reg = <0>;
+        spi-max-frequency = <4000000>;
+        width = <250>;
+        height = <122>;
+        dc-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+        reset-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
+        busy-gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;
+        status = "okay";
+    };
+};
+
+/ {
+    chosen {
+        zephyr,display = &tk_epaper;
+    };
+};

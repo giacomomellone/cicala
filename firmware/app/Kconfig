@@ -1,0 +1,51 @@
+# Application Kconfig. Values here are policy the architecture leaves open on
+# purpose — they come from bench measurement, not from a number picked in
+# advance. See docs/firmware_architecture.md "Open items".
+
+mainmenu "tischkarte"
+
+config TK_SELECTOR_SETTLE_MS
+    int "Selector settle window (ms)"
+    default 600
+    help
+      A selector contact transition must be stable for this long before a deck
+      change is published. Ignores make/break chatter and stops the panel from
+      flashing through intermediate positions while the knob is turning.
+
+config TK_NEXT_DEBOUNCE_MS
+    int "Next button debounce (ms)"
+    default 30
+    help
+      One physical press must produce exactly one event. Press duration has no
+      meaning; long press is Next.
+
+config TK_FULL_REFRESH_INTERVAL
+    int "Partial refreshes between full refreshes"
+    default 8
+    help
+      Determine this from ghosting observed on the breadboard panel. A cold
+      boot always uses a full refresh because the panel content is unknown.
+
+config TK_PLAYBACK_DEPTH_MAX
+    int "Maximum editorial depth in normal playback"
+    default 2
+    range 1 3
+    help
+      Depth 3 is never drawn automatically. Changing this away from 2 breaks
+      the consent model in docs/design.md.
+
+config TK_RECENT_RING
+    int "Questions excluded from the start of a new bag cycle"
+    default 20
+    help
+      Shared across all decks, so turning the selector cannot immediately
+      return a question just seen under a different deck.
+
+config TK_REFRESH_MIN_MV
+    int "Minimum cell voltage for a panel refresh (mV)"
+    default 3200
+    help
+      A partial refresh attempted near brownout can leave the panel in a
+      corrupted state. Below this, the previous question stays on screen.
+
+source "Kconfig.zephyr"

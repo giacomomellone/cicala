@@ -1,0 +1,37 @@
+/*
+ * Host build. GPIO is emulated so tests can drive the selector and Next
+ * without hardware; the display is a dummy whose framebuffer the tests read.
+ *
+ * Index order matches the target overlay and questions/schema.json
+ * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
+ */
+
+/ {
+    aliases {
+        tk-next = &tk_next;
+    };
+
+    tk_selector: tk-selector {
+        compatible = "gpio-keys";
+        tk_deck_0: deck_0 { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; label = "new_people"; };
+        tk_deck_1: deck_1 { gpios = <&gpio0 1 GPIO_ACTIVE_LOW>; label = "close"; };
+        tk_deck_2: deck_2 { gpios = <&gpio0 2 GPIO_ACTIVE_LOW>; label = "family"; };
+        tk_deck_3: deck_3 { gpios = <&gpio0 3 GPIO_ACTIVE_LOW>; label = "work"; };
+        tk_deck_4: deck_4 { gpios = <&gpio0 4 GPIO_ACTIVE_LOW>; label = "here"; };
+        tk_deck_5: deck_5 { gpios = <&gpio0 5 GPIO_ACTIVE_LOW>; label = "wild"; };
+    };
+
+    tk_buttons: tk-buttons {
+        compatible = "gpio-keys";
+        tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; label = "next"; };
+    };
+
+    chosen {
+        zephyr,display = &dummy_dc;
+    };
+
+    dummy_dc: dummy_dc {
+        compatible = "zephyr,dummy-dc";
+        status = "okay";
+    };
+};
