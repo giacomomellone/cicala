@@ -1,0 +1,13 @@
+tests:
+  tischkarte.smoke:
+    # qemu_xtensa runs a full Zephyr kernel on macOS and matches the target
+    # architecture. native_sim is faster and can emulate GPIO, but it only
+    # builds on Linux hosts, so it is the CI platform rather than the daily one.
+    platform_allow:
+      - qemu_xtensa
+      - native_sim
+    integration_platforms:
+      - qemu_xtensa
+    tags:
+      - tischkarte
+      - smoke
