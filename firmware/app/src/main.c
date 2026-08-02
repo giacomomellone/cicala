@@ -16,7 +16,7 @@
 
 LOG_MODULE_REGISTER(tk_main, LOG_LEVEL_INF);
 
-#define BLINK_INTERVAL K_MSEC(500)
+#define BLINK_INTERVAL K_MSEC(2000)
 
 static const struct gpio_dt_spec blink = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), blink_gpios);
 

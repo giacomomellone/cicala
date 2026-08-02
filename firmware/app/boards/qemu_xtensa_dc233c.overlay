@@ -1,0 +1,47 @@
+/*
+ * qemu build. The dc233c board has no GPIO controller of its own, so the pins
+ * come from Zephyr's emulated controller — enough for the same source to build
+ * and for gdb to step through the state machine on an Xtensa core.
+ *
+ * Index order matches the target overlay and questions/schema.json
+ * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    aliases {
+        tk-next = &tk_next;
+    };
+
+    gpio0: gpio_emul {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <32>;
+        rising-edge;
+        falling-edge;
+        high-level;
+        low-level;
+    };
+
+    tk_selector: tk-selector {
+        compatible = "gpio-keys";
+        tk_deck_0: deck_0 { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; label = "new_people"; };
+        tk_deck_1: deck_1 { gpios = <&gpio0 1 GPIO_ACTIVE_LOW>; label = "close"; };
+        tk_deck_2: deck_2 { gpios = <&gpio0 2 GPIO_ACTIVE_LOW>; label = "family"; };
+        tk_deck_3: deck_3 { gpios = <&gpio0 3 GPIO_ACTIVE_LOW>; label = "work"; };
+        tk_deck_4: deck_4 { gpios = <&gpio0 4 GPIO_ACTIVE_LOW>; label = "here"; };
+        tk_deck_5: deck_5 { gpios = <&gpio0 5 GPIO_ACTIVE_LOW>; label = "wild"; };
+    };
+
+    tk_buttons: tk-buttons {
+        compatible = "gpio-keys";
+        tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; label = "next"; };
+    };
+
+    /* Bring-up blinky pin, so src/main.c builds for qemu too. */
+    zephyr,user {
+        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+    };
+};
