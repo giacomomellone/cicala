@@ -24,6 +24,20 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 **Docs.** Filenames in `docs/` are snake_case; root `README.md` / `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` keep their conventional names. `mkdocs.yml` runs in strict mode, so a broken internal link fails `just docs-build`. New docs pages need a `nav:` entry.
 
+## Testing
+
+Write tests alongside the code, in the same change, wherever they add value. The bar is whether a test would catch a real regression: logic with branches, parsing and validation, state transitions, format and protocol code, and any bug you fix all qualify. Skip them for glue that only wires existing pieces together, for generated files, and for anything whose only assertion would restate the implementation.
+
+Each part of the tree has a harness already, so a new test almost never needs new infrastructure:
+
+- `tools/` — Python `unittest`, run by `just test-tools`.
+- `website/` — vitest, run by `just test-website`.
+- `firmware/` — ztest suites under `firmware/tests/`, run by `just fw-test` (qemu) or `just fw-test-linux` (native_sim, the only platform that emulates GPIO).
+
+`just test` runs everything that needs no hardware, and is what CI runs. Run it before proposing a change.
+
+Prefer unit tests against the smallest unit that holds the logic — `lib/fsm` is table-driven with an injected clock precisely so it can be tested without a board. Reach for an integration test when the risk lives in the seam between parts rather than inside one: a bundle written by `tools/` and read by the firmware, or a validator run over the real `questions/` database. For anything hardware-dependent, state plainly what was verified on the device and what was not; `docs/firmware_architecture.md` marks unverified items *verify*, and that convention holds elsewhere.
+
 ## Writing Style Rules
 
 Avoid patterns commonly recognized as "AI writing tells." When drafting or editing any text, follow these constraints:
