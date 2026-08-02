@@ -9,6 +9,8 @@ An open-source system for conversation questions: a community-maintained [questi
 - **[design](design.md)**: product and UX rationale. Why a device, the interaction surface, website jobs, non-goals.
 - **[device prototype](device_prototype.md)**: honest feasibility review, proposed enclosure, concept renders, and a gated hardware-development plan.
 - **[prototype bom](prototype_bom.md)**: bench-prototype shopping list with checked order links for DE/EU.
+- **[firmware primer](firmware_primer.md)**: introduction to the device firmware and to Zephyr as this project uses it — build inputs, devicetree, Kconfig, tests, debugging.
+- **[firmware architecture](firmware_architecture.md)**: threads, the messages between them, and which modules depend on Zephyr.
 - **[decisions](decisions.md)**: append-only decision log (ADR-lite), including every dependency justification.
 - **[languages](languages.md)**: multilingual policy. Independent corpora, the incubator, maintainers.
 - **[sync protocol](sync_protocol.md)**: device sync flow and the `.tkb` bundle format, byte by byte.

@@ -15,6 +15,7 @@ nav:
   - theory: theory.md
   - device prototype: device_prototype.md
   - prototype bom: prototype_bom.md
+  - firmware primer: firmware_primer.md
   - firmware architecture: firmware_architecture.md
   - decisions: decisions.md
   - languages: languages.md

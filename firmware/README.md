@@ -2,8 +2,8 @@
 
 **Status: bring-up.** Build system, board configuration, test harness, the
 `fsm` library and a blinky exist. The application state machine does not yet.
-[FIRMWARE_GUIDE.md](../FIRMWARE_GUIDE.md) is the hands-on tour; the design is
-[docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
+[docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
+design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
 [prototype_bom.md](../docs/prototype_bom.md).
 

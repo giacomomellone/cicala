@@ -7,7 +7,7 @@ the data contract in [sync_protocol.md](sync_protocol.md), rationale in
 
 **Status: partly built.** `fsm` and a bring-up blinky exist and are tested;
 everything else is design. Items marked *verify* have not been run on hardware.
-`FIRMWARE_GUIDE.md` in the repository root is the hands-on tour of what is
+The [firmware primer](firmware_primer.md) is the hands-on tour of what is
 there.
 
 ## The one constraint

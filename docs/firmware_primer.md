@@ -1,11 +1,16 @@
-# Firmware guide
+# Firmware primer
 
-A hands-on tour of the Zephyr setup in this repo: what exists, how a build
-actually works, and what to poke at to understand it. Everything here is
-runnable — read it next to a terminal.
+An introduction to the device firmware and to Zephyr as this project uses it:
+what the tree contains, how a build is assembled, and what to read or run to
+understand each piece. Everything here is runnable — read it next to a terminal,
+with the repository root as the working directory.
 
-The design this implements is [docs/firmware_architecture.md](docs/firmware_architecture.md).
-The reasons behind each choice are in [docs/decisions.md](docs/decisions.md).
+The design this implements is [firmware architecture](firmware_architecture.md).
+The reasons behind each choice are in [decisions](decisions.md).
+
+**Status: bring-up.** Build system, board configuration, test harness, the
+`fsm` library and a blinky exist. The application state machine is design only,
+so this primer covers the machinery rather than the product.
 
 ---
 
@@ -26,9 +31,10 @@ firmware/
     └── fsm/                    13 cases, injected clock
 ```
 
-Two things are deliberately absent: the application state machine, and
-`deps/`. The first is next. The second is Zephyr itself — cloned by
-`just fw-init`, gitignored, never committed.
+`deps/` is absent from the tree: it is Zephyr itself, cloned by `just fw-init`,
+gitignored, never committed. The west workspace uses T2 topology — `west.yml`
+is the manifest, the repository root is the topdir, and Zephyr plus its modules
+land in `deps/`.
 
 Quick check that your machine is set up:
 
@@ -137,6 +143,10 @@ host.
 properties that do not deserve a binding of their own. Good for bring-up,
 not where the real selector and panel go — those get proper nodes.
 
+This is also why pin assignments stay open until the breadboard is wired: they
+live in the board overlay, so the same application logic moves to the target
+PCB by changing one file.
+
 ---
 
 ## 5. Kconfig, hands on
@@ -198,6 +208,11 @@ does nothing.
 storage, power management and networking are written out and commented. They
 are the architecture's targets, staged so the tree always builds. Uncomment as
 each component lands.
+
+The module allowlist in `firmware/west.yml` works the same way, one level up:
+it is narrow on purpose, because importing all ~60 Zephyr modules costs several
+GB. A build that fails on a missing upstream header usually wants a name added
+there, followed by `west update`.
 
 ---
 
@@ -265,9 +280,8 @@ specification.
 Four behaviours worth knowing, each covered by a test:
 
 - **A timeout only fires on a self-loop.** A transition that leaves the state
-  wins even on the tick its timeout expires. This is a fix to the original
-  pattern, which checked the timeout first and could send a state that had just
-  succeeded to the fail state instead.
+  wins even on the tick its timeout expires, so a state that has just succeeded
+  is never sent to the fail state instead.
 - **A self-loop does not restart the clock.** Otherwise a state that repeats
   every tick would never reach its timeout.
 - **A transition with no table row goes to the fail state.** That is a table
@@ -311,6 +325,13 @@ it under qemu, and parses the output.
 | `testcase.yaml` | which platforms may run it |
 | `src/main.cpp` | `ZTEST_SUITE` and `ZTEST` cases |
 
+A library added with `add_subdirectory` after `find_package(Zephyr)` needs two
+lines that are easy to miss, because Zephyr collects its own libraries before
+`find_package` returns: `add_dependencies(<lib> zephyr_generated_headers)` so
+it does not compile before the generated headers exist, and
+`target_link_libraries(app PRIVATE <lib>)` so it is actually linked.
+`firmware/lib/fsm/CMakeLists.txt` is the worked example.
+
 **Platforms.** `qemu_xtensa/dc233c` is the default: a full Zephyr kernel on
 macOS, same architecture as the target. `native_sim` is faster and is the only
 host platform that emulates GPIO, but it builds on Linux only — so suites that
@@ -344,52 +365,12 @@ paths that actually exist.
 
 ---
 
-## 10. Errors we already hit
+## 10. Conventions
 
-These all happened while setting this up. If you see one, this is the fix.
-
-**`esptool>=5.0.2 not found in PATH`**
-Zephyr's espressif CMake looks on PATH, not in the venv. The justfile prepends
-`.venv/bin` for every recipe, so use `just fw-build` rather than calling `west`
-directly. If you must call west by hand:
-`PATH="$PWD/.venv/bin:$PATH" .venv/bin/west build …`
-
-**`unrecognized platform - qemu_xtensa`**
-Missing SoC qualifier. Use `qemu_xtensa/dc233c`. See section 3.
-
-**`xtensa/config/core.h: No such file or directory`**
-A module is missing from the allowlist in `firmware/west.yml`. This one was
-`hal_xtensa`. The allowlist is narrow on purpose — importing all ~60 modules
-costs several GB — so widening it when a build fails is the expected workflow.
-Add the name, run `west update` (not `west update <name>`, which refuses for
-imported projects).
-
-**`zephyr/heap_constants.h: No such file or directory`**
-A library added with `add_subdirectory` after `find_package(Zephyr)` misses the
-generated-header dependency, so it can compile before those headers exist.
-`firmware/lib/fsm/CMakeLists.txt` shows the fix:
-`add_dependencies(<lib> zephyr_generated_headers)`.
-
-**`undefined reference to` something in a lib you added**
-Same root cause — Zephyr collects its own libraries before `find_package`
-returns. Link it explicitly: `target_link_libraries(app PRIVATE <lib>)`.
-
-**`invalid application of 'sizeof' to incomplete type`**
-`ARRAY_SIZE(_transitions)` in a constructor defined inline in the class, above
-the table's definition. Define the constructor after the table.
-
-**`ninja: error: loading 'build.ninja'`**
-A build directory left half-configured by an earlier failure. Delete it, or
-build with `-p`.
-
-**CMake 4.x complaining about a minimum required version**
-CMake 4 dropped compatibility with `cmake_minimum_required(VERSION < 3.5)`.
-Zephyr itself is fine; a third-party module might not be. If it happens:
-`export CMAKE_POLICY_VERSION_MINIMUM=3.5`. It has not been needed here.
-
----
-
-## 11. Conventions
+**Always go through `just`.** Zephyr's espressif CMake looks for `esptool` on
+`PATH` rather than in the venv, and every recipe prepends `.venv/bin` for that
+reason. Calling `west` directly works only with the same prefix:
+`PATH="$PWD/.venv/bin:$PATH" .venv/bin/west build …`.
 
 **C++ for logic, C at the Zephyr boundary.** Not stylistic:
 `ZBUS_CHAN_DEFINE`, `ZBUS_MSG_INIT` and several HAL macros expand to
@@ -409,23 +390,3 @@ formatting exactly, and prettier is configured to ignore it.
 
 **Commits** are conventional, enforced by `.githooks/commit-msg`. Scope `fw`
 for firmware.
-
----
-
-## 12. Where to go next
-
-The application state machine is the next piece. The design is settled — see
-the diagrams in [docs/firmware_architecture.md](docs/firmware_architecture.md) —
-and the order that keeps every step testable:
-
-1. **`input`** — six selector GPIOs plus Next, publishing on zbus. Needs
-   `CONFIG_ZBUS=y` and the 600 ms settle. Testable on `native_sim`.
-2. **`qdb`** — TKB2 reader and the drawn-bitmap bag, against real fixtures.
-   No hardware at all.
-3. **`app_fsm`** — the tabletop machine, built on `lib/fsm`. Pure logic given
-   fake input, so it tests under qemu.
-4. **`panel`** — SSD1680 and text layout. The first part that genuinely needs
-   the breadboard.
-
-One loose end: `tools/*.py` predates the formatter and `just fmt-check` fails
-on it. `just fmt-py && just lint-py` cleans it up in a commit of its own.
