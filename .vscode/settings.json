@@ -6,21 +6,34 @@
   "tischkarte.zephyrSdk": "${env:HOME}/Projects/zephyr-sdk-1.0.1",
   "tischkarte.gdbTarget": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gdb",
   "tischkarte.gdbSim": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-dc233c_zephyr-elf/bin/xtensa-dc233c_zephyr-elf-gdb",
-
   // ------------------------------------------------------------ formatting
   "editor.formatOnSave": true,
-  "[c]": { "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd" },
-  "[cpp]": { "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd" },
-  "[python]": { "editor.defaultFormatter": "charliermarsh.ruff" },
-  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[astro]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-  "[markdown]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
-
+  "[c]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[astro]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
   // questions/*.yaml is tool-managed: tools/validate.py --fix owns its exact
   // formatting, key order and header. Never let an editor rewrite it.
-  "[yaml]": { "editor.formatOnSave": false },
-
+  "[yaml]": {
+    "editor.formatOnSave": false
+  },
   // ----------------------------------------------------------------- clangd
   // clangd reads build/esp32s3/compile_commands.json, which `just fw-build`
   // generates. It respects deps/.clang-format (DisableFormat: true), so
@@ -31,7 +44,6 @@
     "--clang-tidy=false",
     "--header-insertion=never"
   ],
-
   // ------------------------------------------------------------------ noise
   // deps/ is the west workspace: zephyr plus modules, several GB, not ours.
   "files.watcherExclude": {
@@ -47,12 +59,12 @@
     "website/dist": true,
     "dist": true
   },
-
   "files.associations": {
     "*.overlay": "dts",
     "*.dtsi": "dts",
     "prj.conf": "properties",
     "*.conf": "properties",
     "Kconfig*": "kconfig"
-  }
+  },
+  "cmake.sourceDirectory": "${workspaceFolder}/firmware/app"
 }

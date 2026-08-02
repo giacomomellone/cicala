@@ -1,0 +1,23 @@
+{
+  // For the Microsoft C/C++ extension, which ships with the cppdbg debugger
+  // the launch configs use and so is always installed here.
+  //
+  // Without this it parses sources with a guessed default configuration and
+  // every CONFIG_* symbol comes up undefined, because those live in the
+  // generated autoconf.h that Zephyr force-includes via -imacros rather than
+  // in any header the source #includes. Pointing at the build's
+  // compile_commands.json gives it the real per-file command line, -imacros
+  // and all, so `just fw-build` is what keeps IntelliSense honest.
+  "version": 4,
+  "configurations": [
+    {
+      "name": "zephyr (esp32s3)",
+      "compileCommands": "${workspaceFolder}/build/esp32s3/compile_commands.json",
+      // Only consulted for files absent from compile_commands.json — a new
+      // source before its first build, say. Real builds override all of it.
+      "includePath": ["${workspaceFolder}/firmware/**"],
+      "cStandard": "c11",
+      "cppStandard": "c++17"
+    }
+  ]
+}

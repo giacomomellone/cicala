@@ -3,38 +3,69 @@
 
 set shell := ["bash", "-cu"]
 
-python   := ".venv/bin/python"
-mkdocs   := ".venv/bin/mkdocs"
-ruff     := ".venv/bin/ruff"
-west     := ".venv/bin/west"
+python := ".venv/bin/python"
+mkdocs := ".venv/bin/mkdocs"
+ruff := ".venv/bin/ruff"
+west := ".venv/bin/west"
 prettier := "website/node_modules/.bin/prettier"
+board := "esp32s3_devkitc/esp32s3/procpu"
 
-board    := "esp32s3_devkitc/esp32s3/procpu"
+# Serial port of the devkit's UART jack (the CP2102 bridge), which is where
+# the console lands because the board's chosen console is uart0. With both
+# cables in, the *other* jack is native USB and shows up as cu.usbmodem*: it
+# carries JTAG, not the console, and esptool cannot talk to it. Hence matching
+# usbserial specifically rather than taking whatever appears first.
+#
+# Left to esptool, the probe walks every port on the machine, Bluetooth ones
+# included, and connects to whichever answers first. Override for a second
+# board, or when the glob picks the wrong one:
+#   just port=/dev/cu.usbserial-0002 fw-flash
+#
+# `|| true` so a machine with no board attached still parses the justfile;
+# the empty result then means "let esptool guess", and the flags below drop
+# out entirely rather than passing a blank --port, which would fail outright.
+
+port := env("ESPTOOL_PORT", shell("ls /dev/cu.usbserial-* /dev/cu.SLAB_USBtoUART 2>/dev/null | head -1 || true"))
+portflag := if port == "" { "" } else { "--esp-device " + port }
+monport := if port == "" { "" } else { "-p " + port }
+
+# The native-USB jack, where the debug build puts its console (see
+# firmware/app/debug.overlay). Same device OpenOCD debugs through: the
+# USB-Serial-JTAG peripheral serves a CDC-ACM and the JTAG interface at once,
+# so one cable carries both and neither disturbs the other.
+
+usbport := env("TK_USB_PORT", shell("ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true"))
+usbmonport := if usbport == "" { "" } else { "-p " + usbport }
 
 # Zephyr SDK. It lives outside the default search paths (~, /opt, /usr/local),
 # so exporting this is what lets a build find it; `setup.sh -c` additionally
 # registers it in the CMake package registry. Override for another location:
 #   just sdk=~/somewhere/zephyr-sdk-1.0.1 fw-build
+
 sdk := env("ZEPHYR_SDK_INSTALL_DIR", home_dir() / "Projects/zephyr-sdk-1.0.1")
 export ZEPHYR_SDK_INSTALL_DIR := sdk
 
 # Zephyr's espressif SoC CMake looks for esptool on PATH, not in the venv, so
 # a plain `west build` fails with "esptool>=5.0.2 not found in PATH" even with
 # it installed. Putting .venv/bin first also covers west, ruff and mkdocs.
+
 export PATH := justfile_directory() / ".venv/bin:" + env("PATH")
 
 # Host test platform. native_sim is faster and is the only one that emulates
 # GPIO, but it builds on Linux only — so qemu_xtensa (full kernel, target
 # architecture, runs on macOS) is the default. Override for a Linux host:
 #   just simboard=native_sim fw-test
+
 simboard := "qemu_xtensa/dc233c"
 
 # Zephyr's CI image, for the native_sim suites on a non-Linux host.
 # Note: amd64 only, so it runs emulated on Apple Silicon.
+
 ci_image := "ghcr.io/zephyrproject-rtos/ci:latest"
 
 # Self-hosted so the docs site loads nothing from a CDN, matching `font: false`
 # in mkdocs.yml. Pinned: Material's loader expects the global this build sets.
+
 mermaid_version := "11.16.0"
 
 [private]
@@ -63,27 +94,27 @@ hooks:
 # validate the question database (schema, dedup, denylist, origin refs)
 [group('database')]
 validate:
-    {{python}} tools/validate.py
+    {{ python }} tools/validate.py
 
 # assign ids/dates to new questions and normalize file formatting
 [group('database')]
 fix:
-    {{python}} tools/validate.py --fix
+    {{ python }} tools/validate.py --fix
 
 # regenerate website/src/data/*.json from the database
 [group('database')]
 data:
-    {{python}} tools/build_site_data.py
+    {{ python }} tools/build_site_data.py
 
 # build per-language device bundles + manifest (unsigned dev build)
 [group('database')]
 bundle:
-    {{python}} tools/build_bundle.py
+    {{ python }} tools/build_bundle.py
 
 # generate the ed25519 bundle-signing keypair (see docs/sync_protocol.md)
 [group('database')]
 keygen:
-    {{python}} tools/keygen.py
+    {{ python }} tools/keygen.py
 
 # ----------------------------------------------------------------- website
 
@@ -102,34 +133,44 @@ website-build: data
 # one-time: clone zephyr + modules into deps/ and fetch the espressif blobs
 [group('firmware')]
 fw-init:
-    {{python}} -m pip install -q west
-    @if [ ! -d .west ]; then {{west}} init -l firmware; else echo ".west/ exists — skipping init"; fi
-    {{west}} update
+    {{ python }} -m pip install -q west
+    @if [ ! -d .west ]; then {{ west }} init -l firmware; else echo ".west/ exists — skipping init"; fi
+    {{ west }} update
     # Python packages for zephyr and every enabled module. This covers both
     # the build scripts (pyelftools, pykwalify…) and per-SoC tools — esptool
     # comes from here, and cmake aborts without it.
-    {{west}} packages pip --install
-    {{west}} blobs fetch hal_espressif
+    {{ west }} packages pip --install
+    {{ west }} blobs fetch hal_espressif
+    just _west-build-dir build/esp32s3
     @echo
     @echo "workspace ready. next: install the Zephyr SDK, then `just fw-doctor`"
+
+# `west espressif monitor` locates the build through west's build.dir-fmt
+# config, not through a flag — its own -d means --enable-address-decoding.
+# With dir-fmt unset it looks in ./build and dies with "could not find build
+# configuration". Takes the dir so the debug monitor decodes addresses against
+# the -O0 elf rather than the -Os one. Idempotent; writes .west/config.
+[private]
+_west-build-dir dir:
+    @{{ west }} config build.dir-fmt {{ dir }}
 
 # print the toolchain/workspace state — run this when a build fails oddly
 [group('firmware')]
 fw-doctor:
-    @echo "west:      $({{west}} --version 2>/dev/null || echo 'MISSING — run just fw-init')"
+    @echo "west:      $({{ west }} --version 2>/dev/null || echo 'MISSING — run just fw-init')"
     @echo "zephyr:    $(cd deps/zephyr 2>/dev/null && git describe --tags 2>/dev/null || echo 'MISSING — run just fw-init')"
     @want=$(cat deps/zephyr/SDK_VERSION 2>/dev/null); \
-     [ -d "{{sdk}}" ] && s="{{sdk}}" || s="MISSING at {{sdk}}"; \
+     [ -d "{{ sdk }}" ] && s="{{ sdk }}" || s="MISSING at {{ sdk }}"; \
      echo "sdk:       ${s}${want:+  (zephyr wants $want)}"
     @reg=$(cat ~/.cmake/packages/Zephyr-sdk/* 2>/dev/null | head -1); \
-     echo "registered: ${reg:-NO — run '{{sdk}}/setup.sh -c'}"
+     echo "registered: ${reg:-NO — run '{{ sdk }}/setup.sh -c'}"
     @# SDK 1.0 restructured: toolchains under gnu/, host tools under hosttools/.
     @for pair in "esp32s3:xtensa-espressif_esp32s3_zephyr-elf" "dc233c:xtensa-dc233c_zephyr-elf"; do \
         short=${pair%%:*}; tc=${pair#*:}; \
-        g=$(ls "{{sdk}}"/gnu/$tc/bin/$tc-gdb "{{sdk}}"/$tc/bin/$tc-gdb 2>/dev/null | head -1); \
-        printf "%-11s%s\n" "$short:" "${g:-MISSING — {{sdk}}/setup.sh -t $tc}"; \
+        g=$(ls "{{ sdk }}"/gnu/$tc/bin/$tc-gdb "{{ sdk }}"/$tc/bin/$tc-gdb 2>/dev/null | head -1); \
+        printf "%-11s%s\n" "$short:" "${g:-MISSING — {{ sdk }}/setup.sh -t $tc}"; \
      done
-    @q=$(ls "{{sdk}}"/hosttools/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); \
+    @q=$(ls "{{ sdk }}"/hosttools/usr/bin/qemu-system-xtensa 2>/dev/null | head -1); \
      q=${q:-$(command -v qemu-system-xtensa 2>/dev/null)}; \
      echo "qemu:      ${q:-MISSING — comes with the SDK hosttools}"
     @echo "cmake:     $(cmake --version 2>/dev/null | head -1 || echo MISSING)"
@@ -138,35 +179,113 @@ fw-doctor:
         echo "           If a build dies there: export CMAKE_POLICY_VERSION_MINIMUM=3.5" ;; esac
     @echo "ninja:     $(ninja --version 2>/dev/null || echo MISSING)"
     @echo "dtc:       $(dtc --version 2>/dev/null || echo MISSING)"
-    @echo "board:     {{board}}"
-    @echo "simboard:  {{simboard}}"
+    @echo "board:     {{ board }}"
+    @echo "simboard:  {{ simboard }}"
+    @# The console is uart0, so the cable belongs in the UART jack: that one
+    @# shows up as cu.usbserial-*, the native-USB jack as cu.usbmodem*.
+    @echo "port:      {{ if port == '' { 'auto (esptool probes every port, Bluetooth included)' } else { port } }}"
+    @p=$(ls /dev/cu.usbserial-* /dev/cu.SLAB_USBtoUART /dev/tty.usbserial-* 2>/dev/null | tr '\n' ' '); \
+     echo "  detected: ${p:-none — is the cable in the UART jack, not the USB one?}"
+    @# The USB jack: JTAG for OpenOCD, and the debug build's console.
+    @echo "usbport:   {{ if usbport == '' { 'none — USB jack not connected; no JTAG, no debug console' } else { usbport } }}"
 
 # build for the ESP32-S3 devkit
 [group('firmware')]
 fw-build:
-    {{west}} build -b {{board}} firmware/app -d build/esp32s3
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3
+
+# Changes land in build/esp32s3/zephyr/.config, which fw-clean and pristine
+# rebuilds discard — copy anything worth keeping into firmware/app/prj.conf.
+
+# open the kconfig menu for the devkit build (q to quit, s to save)
+[group('firmware')]
+fw-menuconfig: fw-build
+    {{ west }} build -t menuconfig -d build/esp32s3
 
 # flash the devkit over its USB connection
 [group('firmware')]
 fw-flash: fw-build
-    {{west}} flash -d build/esp32s3
+    {{ west }} flash --no-rebuild -d build/esp32s3 {{ portflag }}
+
+# Separate build dir rather than one dir reconfigured back and forth:
+# EXTRA_CONF_FILE is cached by cmake, so dropping the flag later would
+# silently keep -O0.
+
+# build with debug.conf + debug.overlay merged in (-O0, console on USB jack)
+[group('firmware')]
+fw-build-debug:
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-debug -- \
+        -DEXTRA_CONF_FILE=debug.conf -DEXTRA_DTC_OVERLAY_FILE=debug.overlay
+
+# flash the -O0 image — what the VSCode debug configs expect on the chip
+[group('firmware')]
+fw-flash-debug: fw-build-debug
+    {{ west }} flash --no-rebuild -d build/esp32s3-debug {{ portflag }}
 
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
-fw-monitor:
-    {{west}} espressif monitor -d build/esp32s3
+fw-monitor: (_west-build-dir "build/esp32s3")
+    {{ west }} espressif monitor {{ monport }}
+
+# Reads the CDC-ACM on the USB jack, which is where debug.overlay puts the
+# console. Safe to open mid-session: that jack has no auto-reset circuit, so
+# unlike fw-monitor it cannot reset the chip out from under gdb.
+#
+# For the -Os build this prints nothing — its console is on the UART jack.
+
+# serial monitor for the debug build, usable while debugging (ctrl-] to exit)
+[group('firmware')]
+fw-monitor-debug: (_west-build-dir "build/esp32s3-debug")
+    {{ west }} espressif monitor {{ usbmonport }}
+
+# OpenOCD on :3333 over the DevKitC's built-in USB-JTAG. That peripheral is on
+# the *USB* jack, while the console and flashing are on the *UART* jack, so
+# debugging wants both cables connected at once. Started for you by the
+# "devkit: debug (OpenOCD)" launch config; run it here to keep one server up
+# across repeated reflashes and use the "attach" config instead.
+#
+# --config replaces Zephyr's board openocd.cfg, which only works with
+# Espressif's OpenOCD fork and not the upstream build the SDK ships. The
+# replacement explains itself.
+#
+# Serves the -O0 build, matching the elf the launch configs hand to gdb.
+
+# OpenOCD gdb server on :3333 for the devkit (built-in USB-JTAG)
+[group('firmware')]
+fw-debugserver: fw-build-debug
+    {{ west }} debugserver --no-rebuild -d build/esp32s3-debug \
+        --config firmware/app/support/esp32s3_builtin_jtag.cfg
+
+# What the "devkit: debug (OpenOCD)" launch config runs, as one just process
+# so the -O0 build happens once: just runs a dependency at most once per
+# invocation, but VSCode chaining two tasks means two invocations and two
+# builds. The --no-rebuild flags above stop west re-running cmake on top of
+# that, which was another two.
+
+# flash the -O0 image and serve it over JTAG — one build, not four
+[group('firmware')]
+fw-debug: fw-flash-debug fw-debugserver
 
 # run the application on the host under qemu (ctrl-a x to exit)
 [group('firmware')]
 fw-sim:
-    {{west}} build -b {{simboard}} firmware/app -d build/sim
-    {{west}} build -t run -d build/sim
+    {{ west }} build -b {{ simboard }} firmware/app -d build/sim
+    {{ west }} build -t run -d build/sim
 
-# same, halted waiting for a debugger on :1234 (see .vscode/launch.json)
+# Same debug.conf and same separate-build-dir reasoning as the devkit pair
+# above: -Os reads every local as <optimized out>, and EXTRA_CONF_FILE is
+# cached by cmake, so sharing build/sim would leave fw-sim silently at -O0.
+#
+# qemu always halts at the reset vector, so the first thing the debugger shows
+# is reset_vector.S rather than main. That is the CPU at PC 0, not a fault —
+# the launch config arms a breakpoint on main, so one continue lands there.
+
+# same at -O0, halted waiting for a debugger on :1234 (see .vscode/launch.json)
 [group('firmware')]
 fw-sim-debug:
-    {{west}} build -b {{simboard}} firmware/app -d build/sim
-    {{west}} build -t debugserver -d build/sim
+    {{ west }} build -b {{ simboard }} firmware/app -d build/sim-debug -- \
+        -DEXTRA_CONF_FILE=debug.conf
+    {{ west }} build -t debugserver -d build/sim-debug
 
 # delete all firmware build output
 [group('firmware')]
@@ -182,7 +301,7 @@ test: validate test-tools test-website
 # tools test suite (python unittest)
 [group('tests')]
 test-tools:
-    {{python}} -m unittest discover tools/tests
+    {{ python }} -m unittest discover tools/tests
 
 # website test suite (vitest)
 [group('tests')]
@@ -202,13 +321,13 @@ fw-fixtures: bundle
 # firmware suites under qemu (one suite: just fw-test bag)
 [group('tests')]
 fw-test suite="": fw-fixtures
-    {{west}} twister -T firmware/tests{{ if suite == "" { "" } else { "/" + suite } }} \
-        -p {{simboard}} --inline-logs -O build/twister
+    {{ west }} twister -T firmware/tests{{ if suite == "" { "" } else { "/" + suite } }} \
+        -p {{ simboard }} --inline-logs -O build/twister
 
 # firmware suites on native_sim in docker — the GPIO-driven ones qemu can't run
 [group('tests')]
 fw-test-linux suite="": fw-fixtures
-    docker run --rm --platform linux/amd64 -v "$PWD:/work" -w /work {{ci_image}} \
+    docker run --rm --platform linux/amd64 -v "$PWD:/work" -w /work {{ ci_image }} \
         bash -lc "west twister -T firmware/tests{{ if suite == '' { '' } else { '/' + suite } }} \
         -p native_sim --inline-logs -O build/twister-linux"
 
@@ -223,8 +342,8 @@ fmt: fmt-fw fmt-py fmt-web fmt-docs
 fmt-check:
     git ls-files --cached --others --exclude-standard \
         '*.c' '*.cpp' '*.h' '*.hpp' | xargs -r clang-format --dry-run --Werror
-    {{ruff}} format --check tools/
-    {{prettier}} --check "website/**/*.{ts,astro,css,json}" "docs/**/*.md" "*.md"
+    {{ ruff }} format --check tools/
+    {{ prettier }} --check "website/**/*.{ts,astro,css,json}" "docs/**/*.md" "*.md"
 
 # firmware C/C++ — --others picks up new files, --exclude-standard skips deps/
 [group('format')]
@@ -235,22 +354,22 @@ fmt-fw:
 # python tools
 [group('format')]
 fmt-py:
-    {{ruff}} format tools/
+    {{ ruff }} format tools/
 
 # lint python tools
 [group('format')]
 lint-py:
-    {{ruff}} check tools/
+    {{ ruff }} check tools/
 
 # website typescript / astro / css
 [group('format')]
 fmt-web:
-    {{prettier}} --write "website/**/*.{ts,astro,css,json}"
+    {{ prettier }} --write "website/**/*.{ts,astro,css,json}"
 
 # markdown and workflow yaml (never questions/ — validate.py --fix owns those)
 [group('format')]
 fmt-docs:
-    {{prettier}} --write "docs/**/*.md" "*.md" ".github/**/*.yml"
+    {{ prettier }} --write "docs/**/*.md" "*.md" ".github/**/*.yml"
 
 # -------------------------------------------------------------------- docs
 
@@ -259,9 +378,9 @@ fmt-docs:
 docs-deps:
     @mkdir -p docs/assets/javascripts
     @if [ ! -f docs/assets/javascripts/mermaid.min.js ]; then \
-        echo "fetching mermaid {{mermaid_version}}…"; \
+        echo "fetching mermaid {{ mermaid_version }}…"; \
         curl -sSL --fail -o docs/assets/javascripts/mermaid.min.js \
-            "https://unpkg.com/mermaid@{{mermaid_version}}/dist/mermaid.min.js"; \
+            "https://unpkg.com/mermaid@{{ mermaid_version }}/dist/mermaid.min.js"; \
     fi
     @grep -q 'globalThis\["mermaid"\]' docs/assets/javascripts/mermaid.min.js \
         || { echo "mermaid bundle does not set the global Material checks for"; exit 1; }
@@ -269,9 +388,9 @@ docs-deps:
 # live-preview the docs at http://127.0.0.1:8000
 [group('docs')]
 docs: docs-deps
-    {{mkdocs}} serve
+    {{ mkdocs }} serve
 
 # build the docs site into site/
 [group('docs')]
 docs-build: docs-deps
-    {{mkdocs}} build
+    {{ mkdocs }} build

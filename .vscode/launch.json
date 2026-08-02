@@ -2,22 +2,27 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // Host debugging. `just fw-sim-debug` builds for qemu and starts a gdb
-      // server on :1234 with the CPU halted, so breakpoints in main() hit.
+      // Host debugging. `just fw-sim-debug` builds for qemu at -O0 and starts
+      // a gdb server on :1234 with the CPU halted, so breakpoints in main()
+      // hit and locals are readable rather than <optimized out>.
       "name": "sim: debug (qemu)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/sim/zephyr/zephyr.elf",
+      "program": "${workspaceFolder}/build/sim-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "${config:tischkarte.gdbSim}",
       "miDebuggerServerAddress": "localhost:1234",
-      "preLaunchTask": "fw: sim debugserver",
       "stopAtConnect": true,
+      "preLaunchTask": "fw: sim debugserver",
       "setupCommands": [
         { "text": "set print pretty on" },
         { "text": "set confirm off" }
-      ]
+      ],
+      // A halted Xtensa core sits at its reset vector, so the first frame is
+      // always reset_vector.S and never main. This arms a one-shot breakpoint
+      // there instead, making the first continue land in application code.
+      "postRemoteConnectCommands": [{ "text": "tbreak main" }]
     },
     {
       // On-target debugging over the DevKitC's built-in USB-JTAG. No external
@@ -25,18 +30,31 @@
       "name": "devkit: debug (OpenOCD)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/esp32s3/zephyr/zephyr.elf",
+      "program": "${workspaceFolder}/build/esp32s3-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "${config:tischkarte.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "preLaunchTask": "fw: openocd server",
-      "stopAtConnect": true,
+      // Free-run after connecting. `monitor reset halt` below still resets the
+      // core cleanly, but cppdbg resumes it instead of leaving you parked in
+      // reset_vector.S — the session starts with the app actually running, and
+      // stops only where you put a breakpoint. Set true to park at reset.
+      "stopAtConnect": false,
+      // Anything needing the target must NOT go here: setupCommands run
+      // before cppdbg connects to the server, and gdb answers a `monitor`
+      // sent that early with "not supported by this target".
       "setupCommands": [
         { "text": "set remote hardware-watchpoint-limit 2" },
-        { "text": "monitor reset halt" },
-        { "text": "flushregs" },
         { "text": "set print pretty on" }
+      ],
+      // Run once the remote is attached, which is what `monitor` needs.
+      "postRemoteConnectCommands": [
+        { "text": "monitor reset halt" },
+        // `flushregs` is a deprecated alias in the SDK's gdb 16.2 and warns
+        // on every launch; this is the name it forwards to. Needed because
+        // the reset above invalidates gdb's cached register values.
+        { "text": "maintenance flush register-cache" }
       ],
       "logging": { "engineLogging": false }
     },
@@ -47,13 +65,17 @@
       "name": "devkit: attach (OpenOCD already running)",
       "type": "cppdbg",
       "request": "launch",
-      "program": "${workspaceFolder}/build/esp32s3/zephyr/zephyr.elf",
+      "program": "${workspaceFolder}/build/esp32s3-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
       "miDebuggerPath": "${config:tischkarte.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "stopAtConnect": true,
-      "setupCommands": [{ "text": "monitor halt" }, { "text": "flushregs" }]
+      // Same split as above: `monitor` needs the remote to exist first.
+      "postRemoteConnectCommands": [
+        { "text": "monitor halt" },
+        { "text": "maintenance flush register-cache" }
+      ]
     },
     {
       // Linux hosts only — native_sim produces a plain host executable, so it

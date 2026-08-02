@@ -51,9 +51,35 @@
       }
     },
     {
+      "label": "fw: flash (debug -O0)",
+      "type": "shell",
+      "command": "just fw-flash-debug",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      // The one to open during a debug session. Reads the CDC-ACM on the USB
+      // jack, where debug.overlay puts the console; "fw: monitor" would open
+      // the UART jack and reset the chip out from under gdb.
+      "label": "fw: monitor (debug, USB jack)",
+      "type": "shell",
+      "command": "just fw-monitor-debug",
+      "presentation": { "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      // Via just, not west directly: the justfile is what exports
+      // ZEPHYR_SDK_INSTALL_DIR and puts .venv/bin on PATH, and west needs both.
+      //
+      // fw-debug flashes then serves, so the image on the chip is the same
+      // -O0 build as the elf gdb reads symbols from. Skip that and breakpoints
+      // land on the wrong lines with no visible complaint from either side.
+      //
+      // One task rather than dependsOn: each VSCode task is its own `just`
+      // process, and just only dedupes dependencies within one invocation, so
+      // chaining them built twice.
       "label": "fw: openocd server",
       "type": "shell",
-      "command": ".venv/bin/west debugserver -d build/esp32s3",
+      "command": "just fw-debug",
       "isBackground": true,
       "problemMatcher": {
         "pattern": [{ "regexp": ".", "file": 1, "location": 2, "message": 3 }],
