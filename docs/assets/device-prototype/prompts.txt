@@ -1,69 +1,74 @@
 Prototype render prompts
 ========================
 
-These concept renders were regenerated with OpenAI's built-in image-generation
-tool on 2026-08-04. Mode: precise-object-edit of the 2026-07-26 renders. They
-communicate design intent and are not evidence of engineering or manufacture.
+These concept renders were updated with OpenAI's built-in image-generation
+tool on 2026-08-05. Mode: precise-object-edit of the 2026-08-04 two-button
+renders. They communicate design intent and are not evidence of engineering or
+manufacture.
 
-The regenerated hero was also supplied as the exterior-design reference for
-the tabletop and exploded views. The tabletop image received one follow-up edit
-to put the finger clearly on Category. The exploded image received one
-follow-up edit to align both tactile switches with the button openings.
+The hero first received a control-hierarchy edit. A targeted follow-up changed
+the oversized round Next cap into the final restrained rounded pill. The final
+hero was then supplied as the exterior-design reference for the tabletop and
+exploded views.
 
 hero.webp
 ---------
 
-> Regenerate the Tischkarte documentation product render while preserving the
-> warm off-white studio backdrop, warm-ivory matte pebble enclosure, landscape
-> orientation, recessed 2.13-inch black-and-white e-paper, subtle 3-degree
-> incline, realistic assembly gaps, centered USB-C lower edge, three-quarter
-> top view, materials, and lighting. Remove the entire rotary selector,
-> pointer knob, arc, tick marks, and all six category labels printed on the
-> shell. Add exactly two matching low-profile round charcoal buttons close
-> together in a horizontal pair above the display. Label the left button
-> exactly “category” and the right button exactly “next” in small lowercase
-> white sans-serif text. On the e-paper show a small active-category line
-> reading exactly “here” above the question “What could we do here tonight that
-> we would remember in a year?” Use crisp dark type on passive e-paper. Exactly
-> one display and exactly two buttons. No knob, selector, printed category
-> legend, OLED, status rail, slider, touchscreen, glowing elements, logo,
-> icons, props, hands, extra text, duplicate device, or watermark.
+> Create a clear control hierarchy while keeping the restrained two-button
+> Tischkarte design. Keep both controls close together above the display. Make
+> the left Category control a distinctly smaller-diameter, lower, nearly flush
+> round charcoal button. Remove “category” from its cap and print the exact
+> lowercase word “category” in small crisp charcoal sans-serif type on the
+> warm-ivory shell immediately beneath it. Make the right Next control clearly
+> dominant but calm: a low horizontal rounded-pill charcoal button, roughly
+> twice the Category button's width and about 1.35 times its height, with a
+> shallow concave top, subtle tactile rim, modest elevation, and the exact
+> lowercase word “next” centered in white. Change only the two caps, their
+> shell openings, spacing needed for the hierarchy, and Category label
+> placement. Preserve the enclosure, one e-paper display, category line “here”,
+> exact question “What could we do here tonight that we would remember in a
+> year?”, USB-C, camera, framing, materials, lighting, shadows, background, and
+> all other geometry. Exactly two controls. No knob, selector, printed category
+> list, OLED, status rail, slider, touchscreen, glowing elements, accent color,
+> arcade styling, icons, extra text, logo, props, hands, duplicate device, or
+> watermark.
 
 tabletop.webp
 -------------
 
-> Regenerate the candid tabletop-use photograph with the new two-button device
-> as the exact design reference. Preserve several adults around a warm oak
-> table at early evening, cropped hands only, the communal overhead
-> three-quarter composition, natural skin and wood texture, restrained warm
-> light, and plausible shadows. Place the warm-ivory landscape device flat in
-> the shared center, fully visible and realistically scaled. It has exactly one
-> e-paper display, centered USB-C lower edge, and exactly two matching charcoal
-> buttons close together above the display: left “category”, right “next”. One
-> relaxed adult index finger clearly presses Category without touching Next.
-> The e-paper shows the small active-category line “new people” above “What did
-> you notice first when you arrived here?” Keep all labels on the device or its
-> display. No rotary knob, selector arc, printed category list, OLED, status
-> rail, slider, phone, cards, bottles, food, extra controls, duplicate device,
-> logos, staged faces, or watermark.
+> Regenerate the tabletop photograph so the device exactly uses the final
+> hero's hierarchical controls. Above the display, keep exactly two controls
+> close together. On the left, show a smaller-diameter, low, nearly flush round
+> charcoal Category button with the exact lowercase shell label “category”
+> immediately beneath it. On the right, show a clearly dominant but restrained
+> low horizontal rounded-pill charcoal Next button, roughly twice Category's
+> width and about 1.35 times its height, with a shallow concave top, subtle
+> tactile rim, modest elevation, and the exact lowercase word “next” centered
+> in white. Preserve one relaxed adult index finger clearly pressing only the
+> small Category button. Preserve the adults, warm oak table, candid framing,
+> lighting, device scale and position, enclosure, USB-C, active category “new
+> people”, exact question “What did you notice first when you arrived here?”,
+> e-paper, shadows, and materials. Exactly two controls. No knob, selector,
+> bright color, arcade styling, extra text, icon, logo, or watermark.
 
 exploded.webp
 -------------
 
-> Regenerate the vertical exploded technical concept using the two-button hero
-> as the exact exterior reference. Preserve the clean warm off-white studio,
-> portrait framing, aligned exploded-CAD composition, and realistic polymer,
-> glass, FR-4, metal, and battery materials. Show, top to bottom: two matching
-> charcoal caps labelled “category” and “next”; a warm-ivory top shell with one
-> e-paper lens opening and exactly two round button openings; a matte lens; one
-> 2.13-inch e-paper panel with a short FPC tail; one compact rounded PCB with an
-> edge-mounted ESP32-S3 module, centered USB-C, e-paper connector, power
-> components, and exactly two identical tactile switches mounted directly
-> beneath the button openings; one protected 30 × 35 × 5 mm LiPo pouch cell;
-> and one warm-ivory bottom shell with screw bosses, gasket channel, and four
-> shallow feet. The display shows small “here” above “What could we do here
-> tonight that we would remember in a year?” Remove the rotary shaft opening,
-> pointer recess, arc, ticks, printed category list, rotary switch, and knob.
-> No encoder, OLED, status rail, slider, arrows, floating labels, development
-> board, duplicate parts, loose wires, logo, or watermark. This is layering
-> intent, not a manufacturing drawing.
+> Regenerate the exploded view so the exterior controls and top shell exactly
+> match the final hero while keeping two identical tactile switches on the PCB.
+> Show a small low round charcoal Category cap on the left and a larger low
+> horizontal rounded-pill charcoal Next cap on the right, both aligned above
+> their shell openings. The Category cap is unlabelled; print the exact
+> lowercase word “category” in small charcoal sans-serif type on the top shell
+> immediately beneath its small opening. The Next cap has a shallow concave top,
+> subtle tactile rim, modest elevation, and the exact lowercase word “next”
+> centered in white. Its shell opening follows the rounded-pill cap. Preserve
+> exactly two identical small sealed tactile switches on the PCB beneath the
+> two controls: hierarchy comes from the external caps, not different
+> electrical switches. Change only the two caps, shell openings, Category shell
+> label, and their alignment. Preserve the vertical exploded composition, top
+> shell, lens, one e-paper with “here” and the exact question, PCB, battery,
+> bottom shell, USB-C, materials, lighting, perspective, background, and
+> spacing. Exactly two controls and two switches. No knob, selector, bright
+> color, arcade styling, extra text, icon, logo, arrows, loose parts, or
+> watermark.

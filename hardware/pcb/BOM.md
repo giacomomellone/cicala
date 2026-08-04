@@ -19,8 +19,8 @@ BOM. For development-board and physical-model purchases, use
 | BT1 | Protected 503035 LiPo, 500 mAh | wire/JST-PH | supplier qualification open | 1 | 4–6 EUR |
 | Q1, L1, D1, D2 | SSD1680 boost circuit | reference packages | per Good Display design | 1 set | 0.50 EUR |
 | — | USB ESD/input protection, VBUS sense, e-paper load switch, switched battery sense, passives, test pads | mixed | open | — | TBD |
-| MECH1 | External Category cap with overload stop | custom | open | 1 | TBD |
-| MECH2 | External Next cap with overload stop | custom | open | 1 | TBD |
+| MECH1 | Small round Category cap with overload stop | custom | open | 1 | TBD |
+| MECH2 | Larger rounded-pill Next cap with shallow concave top and overload stop | custom | open | 1 | TBD |
 
 The OLED, OLED rail, OLED load switch, EC11 encoder, encoder push switch, rotary
 selector, pointer knob, and printed selector bezel are deleted.

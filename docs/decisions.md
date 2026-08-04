@@ -356,3 +356,19 @@ The current USB breadboard and firmware are not changed by this decision. They
 continue to use the six-way DIP switch as six one-hot category inputs and one
 Next button until a second button is available. The input mapping, retained
 category state, state machine, and tests change together in a later commit.
+
+## 2026-08-05: Give Next physical priority over Category
+
+The two controls are adjacent but intentionally unequal. Category uses a small,
+nearly flush round cap with its label printed on the shell. Next uses a larger,
+slightly raised rounded-pill cap with a shallow concave top and its label on the
+cap. Both sit over the same tactile-switch part.
+
+Next is the repeated conversational action; Category is changed occasionally.
+Size, height, and shape communicate that frequency without adding an accent
+color, icon, light, or different switch behavior.
+
+Accepted cost: the two cap geometries need separate tooling and overload stops.
+The physical model must confirm that Category remains easy to press
+deliberately and that the larger Next cap does not dominate the face or cause
+accidental presses.

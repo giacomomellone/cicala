@@ -29,9 +29,9 @@ notifications, or reason to be checked between questions.
 
 ## The complete device interaction
 
-The top face has adjacent Category and Next buttons and one e-paper display.
-The active category is printed on the e-paper rather than around a physical
-selector.
+The top face has a small Category button, a larger primary Next button, and one
+e-paper display. The active category is printed on the e-paper rather than
+around a physical selector.
 
 | Input | Action | Feedback |
 |---|---|---|

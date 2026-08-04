@@ -47,8 +47,10 @@ depth 3 stays out of normal playback.
 ## Proposed form
 
 The face has three elements: e-paper, Category, and Next. The two buttons sit
-close together above the display and use the same shape and travel. Their
-printed labels identify the action; category names are printed by the display.
+close together above the display, but they do not have equal visual weight.
+Category is a small, nearly flush round button with its label printed on the
+shell. Next is a larger, slightly raised rounded pill with a shallow concave
+top and its label on the cap. Category names are printed by the display.
 
 | Property | Study target | Reason |
 |---|---:|---|
@@ -56,8 +58,8 @@ printed labels identify the action; category names are printed by the display.
 | Mass | 80–100 g | Resists one-handed button presses |
 | Orientation | landscape, 3° face incline | Keeps the device readable without becoming a wedge |
 | Display | 2.13″ e-paper behind a matte protective lens | Keeps the category and question visible without power |
-| Category | low-profile round button, left | Advances one category per accepted press |
-| Next | matching low-profile round button, right | Draws one question; no press-duration vocabulary |
+| Category | small, nearly flush round button, left | Secondary action used only when changing context |
+| Next | larger, raised rounded-pill button, right | Frequent primary action; easy to find without reading both labels |
 | Display label | active category in small type above the question | Avoids a printed category ring and supports future languages |
 | Port | centered USB-C on the lower edge | Absent from the main tabletop view |
 | Finish | warm-ivory matte shell; two charcoal buttons | Matches the paper-like website |
@@ -90,8 +92,10 @@ to obtain the category from the DIP switch after every boot.
 
 ## Candidate controls
 
-Use the same sealed tactile switch for both actions so force, travel, height,
-and enclosure detailing match.
+Use the same sealed tactile switch under both actions so force, travel, and
+electrical behavior match. Different external caps create the hierarchy: the
+Category cap is small and low; the Next cap is wider, slightly raised, and
+shallowly concave.
 
 **C&K KSC321GLFS**: IP67 SPST-NO tact switch, 6.2 × 6.2 mm footprint,
 3.5 mm actuator height, 2 N force, and 300,000-cycle rating. Each switch needs
@@ -116,9 +120,9 @@ Start at 16 mm and earn any reduction through CAD.
 | Bottom shell and clearance | 1.8–2.2 mm |
 
 Put both switches in the same control area above the panel and carry button
-loads into the top shell with cap stops. Support the e-paper glass continuously
-around its perimeter. Use four elastomer feet positioned to resist either
-button press.
+loads into the top shell with cap stops sized for their different caps. Support
+the e-paper glass continuously around its perimeter. Use four elastomer feet
+positioned to resist either button press.
 
 Moving category names onto the display removes the replaceable bezel and its
 English-only geometry. It does not solve every language problem: the category
@@ -211,7 +215,9 @@ Run table sessions without explaining the controls first. Check:
 - Wild is chosen deliberately rather than mistaken for Random;
 - the e-paper category line is readable from ordinary seats;
 - the device does not slide, tip, or need to be picked up;
-- the two adjacent buttons do not cause frequent wrong presses.
+- the small Category control is still easy to operate deliberately;
+- the larger Next control is identifiable without reading both labels;
+- the adjacent controls do not cause frequent wrong presses.
 
 If category choice takes more attention than rejecting a poor question with
 Next, revise the cycling interaction before another PCB revision. EVT then
