@@ -5,12 +5,20 @@ project(tischkarte LANGUAGES C CXX)
 
 # Shared, host-testable logic. See docs/firmware_architecture.md "Modules".
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/fsm tk_fsm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/app_fsm tk_app_fsm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/qdb tk_qdb)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/layout tk_layout)
 
-# Application logic is C++17, Zephyr-facing glue is C.
+# Application logic is C++17; the files that use zbus's observer macros stay C,
+# because those expand to out-of-order designated initializers.
 target_sources(app PRIVATE
+    src/app.c
+    src/app_logic.cpp
     src/channels.c
+    src/display.c
     src/input.c
     src/main.c
+    src/panel.cpp
 )
 
 target_include_directories(app PRIVATE include)
@@ -18,4 +26,17 @@ target_include_directories(app PRIVATE include)
 # Explicit: Zephyr collects its own libraries in a loop that has already run by
 # the time find_package(Zephyr) returns, so anything added after has to be
 # linked by hand.
-target_link_libraries(app PRIVATE tk_fsm)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout)
+
+# The factory-preloaded corpus, compiled into the image so a device whose Wi-Fi
+# is never configured still works. Built from the question database by
+# `just fw-fixtures`, which `just fw-build` runs first. When sync lands this is
+# the fallback and the live corpus comes from LittleFS.
+set(corpus ${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures/${CONFIG_TK_CORPUS_LANGUAGE}.tkb2)
+
+if(NOT EXISTS ${corpus})
+  message(FATAL_ERROR
+    "missing ${corpus} — run `just fw-fixtures` (or `just fw-build`, which does)")
+endif()
+
+generate_inc_file_for_target(app ${corpus} ${ZEPHYR_BINARY_DIR}/include/generated/corpus.inc)

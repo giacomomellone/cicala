@@ -18,6 +18,12 @@ ZBUS_CHAN_DEFINE(chan_selector, struct tk_selector_msg, NULL, NULL, ZBUS_OBSERVE
 ZBUS_CHAN_DEFINE(chan_next, struct tk_next_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.timestamp_ms = 0, .duration_ms = 0));
 
+ZBUS_CHAN_DEFINE(chan_question, struct tk_question_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
+                 ZBUS_MSG_INIT(.seq = 0, .deck = 0, .len = 0, .text = {0}));
+
+ZBUS_CHAN_DEFINE(chan_render, struct tk_render_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
+                 ZBUS_MSG_INIT(.seq = 0, .result = 0, .was_full = false));
+
 /*
  * Index order is the absolute selector order and is duplicated in the board
  * overlays' `label` properties and in questions/schema.json. The overlay

@@ -53,8 +53,36 @@ struct tk_next_msg {
     uint32_t duration_ms;
 };
 
+/**
+ * State channel: the question the panel should be showing.
+ *
+ * Carries the text by value rather than a pointer into the bundle. The corpus
+ * can be replaced by a sync between the publish and the render, and a
+ * 128-byte copy is cheaper than the rule that would otherwise be needed about
+ * who may free what.
+ */
+struct tk_question_msg {
+    /** Increments per draw, so a stale render can be told from a current one. */
+    uint32_t seq;
+    uint8_t deck;
+    uint16_t len;
+    char text[CONFIG_TK_MAX_QUESTION_BYTES];
+};
+
+/** Event channel: the display finished with the question it was given. */
+struct tk_render_msg {
+    /** The `seq` of the question this refers to. */
+    uint32_t seq;
+    /** 0, or a negative errno from the panel. */
+    int result;
+    /** True when this was a full refresh rather than a partial one. */
+    bool was_full;
+};
+
 ZBUS_CHAN_DECLARE(chan_selector);
 ZBUS_CHAN_DECLARE(chan_next);
+ZBUS_CHAN_DECLARE(chan_question);
+ZBUS_CHAN_DECLARE(chan_render);
 
 /** Deck name for logs. Returns "?" outside 0..5. */
 const char *tk_deck_name(uint8_t deck);

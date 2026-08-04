@@ -193,7 +193,7 @@ fw-doctor:
 
 # build for the ESP32-S3 devkit
 [group('firmware')]
-fw-build:
+fw-build: fw-fixtures
     {{ west }} build -b {{ board }} firmware/app -d build/esp32s3
 
 # Changes land in build/esp32s3/zephyr/.config, which fw-clean and pristine
@@ -215,7 +215,7 @@ fw-flash: fw-build
 
 # build with debug.conf + debug.overlay merged in (-O0, console on USB jack)
 [group('firmware')]
-fw-build-debug:
+fw-build-debug: fw-fixtures
     {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-debug -- \
         -DEXTRA_CONF_FILE=debug.conf -DEXTRA_DTC_OVERLAY_FILE=debug.overlay
 
@@ -223,6 +223,23 @@ fw-build-debug:
 [group('firmware')]
 fw-flash-debug: fw-build-debug
     {{ west }} flash --no-rebuild -d build/esp32s3-debug {{ portflag }}
+
+# Character-set test pages instead of questions: ASCII, then one page per
+# language, then every diacritic the renderer composes. Next steps through
+# them, and each page is logged so the monitor says what should be on the
+# glass. Its own build dir, so switching back to the real image is not a
+# rebuild — same reasoning as the debug pair above.
+
+# build the charset test image (see CONFIG_TK_DEBUG_CHARSET)
+[group('firmware')]
+fw-build-charset: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-charset -- \
+        -DCONFIG_TK_DEBUG_CHARSET=y
+
+# flash the charset test image, then `just fw-monitor`
+[group('firmware')]
+fw-charset: fw-build-charset
+    {{ west }} flash --no-rebuild -d build/esp32s3-charset {{ portflag }}
 
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
@@ -270,7 +287,7 @@ fw-debug: fw-flash-debug fw-debugserver
 
 # run the application on the host under qemu (ctrl-a x to exit)
 [group('firmware')]
-fw-sim:
+fw-sim: fw-fixtures
     {{ west }} build -b {{ simboard }} firmware/app -d build/sim
     {{ west }} build -t run -d build/sim
 
@@ -284,7 +301,7 @@ fw-sim:
 
 # same at -O0, halted waiting for a debugger on :1234 (see .vscode/launch.json)
 [group('firmware')]
-fw-sim-debug:
+fw-sim-debug: fw-fixtures
     {{ west }} build -b {{ simboard }} firmware/app -d build/sim-debug -- \
         -DEXTRA_CONF_FILE=debug.conf
     {{ west }} build -t debugserver -d build/sim-debug

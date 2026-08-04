@@ -1,0 +1,7 @@
+# The whole application, so it needs the whole application's policy.
+
+mainmenu "tischkarte integration tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"

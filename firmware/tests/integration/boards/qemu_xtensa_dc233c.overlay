@@ -1,10 +1,6 @@
 /*
- * qemu build. The dc233c board has no GPIO controller of its own, so the pins
- * come from Zephyr's emulated controller — enough for the same source to build
- * and for gdb to step through the state machine on an Xtensa core.
- *
- * Index order matches the target overlay and questions/schema.json
- * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
+ * The real board description, minus the board: emulated GPIO for the selector
+ * and Next, and a dummy panel the size of the real one.
  */
 
 #include <zephyr/dt-bindings/gpio/gpio.h>
@@ -43,16 +39,10 @@
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
     };
 
-    /* Bring-up blinky pin, so src/main.c builds for qemu too. */
     zephyr,user {
         blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
     };
 
-    /*
-     * A dummy panel the size of the real one. It discards what it is given, so
-     * `just fw-sim` proves the render path runs end to end without showing
-     * anything — the image itself needs the panel on a bench.
-     */
     tk_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
