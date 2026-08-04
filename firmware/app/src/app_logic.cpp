@@ -119,6 +119,26 @@ public:
         return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
     }
 
+    bool show_category(uint8_t deck) override
+    {
+        const char *label = tk_deck_label(deck);
+
+        struct tk_question_msg msg = {};
+
+        msg.seq = ++_seq;
+        msg.deck = deck;
+        msg.is_category = true;
+
+        while (msg.len < sizeof(msg.text) && label[msg.len] != '\0') {
+            msg.text[msg.len] = label[msg.len];
+            msg.len++;
+        }
+
+        LOG_INF("deck %u %s: showing the name", deck, tk_deck_name(deck));
+
+        return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+    }
+
     bool retained_matches(uint8_t deck) const override
     {
         /*
@@ -208,4 +228,9 @@ bool tk_app_needs_timeout(void)
 int tk_app_state(void)
 {
     return fsm.get_current_state();
+}
+
+bool tk_app_is_busy(void)
+{
+    return fsm.get_current_state() == static_cast<int>(tk::AppFsm::State::REFRESHING);
 }

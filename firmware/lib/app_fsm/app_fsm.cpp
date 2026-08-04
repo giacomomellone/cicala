@@ -16,10 +16,16 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
 //   Current State        Transition              Next State           Timeout
     {STATE(BOOT),        TRANSITION(REPEAT),     STATE(BOOT),         0       },
     {STATE(BOOT),        TRANSITION(RETAINED),   STATE(SHOWING),      0       },
-    {STATE(BOOT),        TRANSITION(CONTINUE),   STATE(DRAWING),      0       },
+    // Boot announces the deck rather than answering with a question nobody
+    // asked for. Press Next and the questions start.
+    {STATE(BOOT),        TRANSITION(CONTINUE),   STATE(CATEGORY),     0       },
+
+    {STATE(CATEGORY),    TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
+    {STATE(CATEGORY),    TRANSITION(FAILED),     STATE(FAIL),         0       },
 
     {STATE(SHOWING),     TRANSITION(REPEAT),     STATE(SHOWING),      0       },
     {STATE(SHOWING),     TRANSITION(REDRAW),     STATE(DRAWING),      0       },
+    {STATE(SHOWING),     TRANSITION(RELABEL),    STATE(CATEGORY),     0       },
 
     {STATE(DRAWING),     TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
     {STATE(DRAWING),     TRANSITION(FAILED),     STATE(FAIL),         0       },
@@ -66,6 +72,16 @@ void AppFsm::on_enter_state(int state)
 
         break;
 
+    case STATE(CATEGORY):
+        // Same stale-render reasoning as DRAWING; both start a refresh.
+        _render_pending = false;
+        _label_ok = _io.show_category(_selector_deck);
+
+        // Claim the deck either way. A failed announcement should not leave
+        // SHOWING convinced the selector has moved and ask again forever.
+        _shown_deck = _selector_deck;
+        break;
+
     case STATE(FAIL):
         // Claim the deck even though nothing was drawn. Without this, SHOWING
         // sees a deck it has not shown, asks for a draw, fails again, and the
@@ -85,6 +101,9 @@ int AppFsm::handle_current_state()
     switch (get_current_state()) {
     case STATE(BOOT):
         return on_boot();
+
+    case STATE(CATEGORY):
+        return on_category();
 
     case STATE(SHOWING):
         return on_showing();
@@ -120,13 +139,25 @@ int AppFsm::on_boot()
     return TRANSITION(CONTINUE);
 }
 
+int AppFsm::on_category()
+{
+    // The announcement itself happened in on_enter_state().
+    return _label_ok ? TRANSITION(CONTINUE) : TRANSITION(FAILED);
+}
+
 int AppFsm::on_showing()
 {
-    // Zero or several contacts is not a deck. Keep the question.
+    // Zero or several contacts is not a deck. Keep whatever is on the panel.
     if (!_selector_valid) {
         return TRANSITION(REPEAT);
     }
 
+    /*
+     * Next before the selector, so a press made while the deck's name is up
+     * gets a question rather than the name again. The two cannot both be
+     * pending in practice — the selector needs 600 ms to settle — but the
+     * order is the rule: Next always means "ask me something".
+     */
     if (_next_pending) {
         _next_pending = false;
 
@@ -134,7 +165,7 @@ int AppFsm::on_showing()
     }
 
     if (_selector_deck != _shown_deck) {
-        return TRANSITION(REDRAW);
+        return TRANSITION(RELABEL);
     }
 
     return TRANSITION(REPEAT);

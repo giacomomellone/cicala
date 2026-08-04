@@ -65,6 +65,16 @@ struct tk_question_msg {
     /** Increments per draw, so a stale render can be told from a current one. */
     uint32_t seq;
     uint8_t deck;
+    /**
+     * True when `text` names the deck rather than asking something.
+     *
+     * Turning the selector puts the deck's name on the panel and leaves it
+     * there until Next is pressed. The panel renders both the same way — a
+     * deck name is short, so the font chooser gives it the largest size on its
+     * own — but the display log says which is which, and a future card that
+     * wanted its own styling would branch here.
+     */
+    bool is_category;
     uint16_t len;
     char text[CONFIG_TK_MAX_QUESTION_BYTES];
 };
@@ -84,8 +94,17 @@ ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
 ZBUS_CHAN_DECLARE(chan_render);
 
-/** Deck name for logs. Returns "?" outside 0..5. */
+/** Deck id for logs, as it appears in questions/schema.json. "?" outside 0..5. */
 const char *tk_deck_name(uint8_t deck);
+
+/**
+ * Deck name as it should be read, for the panel.
+ *
+ * English whatever the corpus language, matching website/src/i18n.ts, where
+ * the German translation deliberately keeps the English deck labels for the
+ * first physical prototype.
+ */
+const char *tk_deck_label(uint8_t deck);
 
 #ifdef __cplusplus
 }

@@ -95,7 +95,7 @@ ZTEST(tk_integration, test_an_invalid_selector_draws_nothing)
     zassert_equal(questions, 0, "a device with no valid deck must not pick one");
 }
 
-ZTEST(tk_integration, test_turning_the_selector_puts_a_question_on_the_panel)
+ZTEST(tk_integration, test_turning_the_selector_puts_the_deck_name_on_the_panel)
 {
     questions = 0;
     renders = 0;
@@ -103,17 +103,55 @@ ZTEST(tk_integration, test_turning_the_selector_puts_a_question_on_the_panel)
     set_contact(2, true);
     k_sleep(SETTLE_WAIT);
 
-    zassert_equal(questions, 1, "one turn is one question");
-    zassert_equal(last_question.deck, 2, "the question came from the selected deck");
+    zassert_equal(questions, 1, "one turn is one card");
+    zassert_equal(last_question.deck, 2);
+    zassert_true(last_question.is_category, "turning the knob names the deck");
     zassert_true(last_question.len > 0);
+    zassert_equal(last_question.text[0], 'f', "deck 2 reads \"family\"");
     zassert_equal(renders, 1, "the display should have been asked to draw it");
     zassert_equal(last_render_result, 0, "the render should have succeeded");
+
+    /* And it stays there. */
+    k_sleep(SETTLE_WAIT);
+    zassert_equal(questions, 1, "the name waits for a press rather than timing out");
+
+    set_contact(2, false);
+    k_sleep(SETTLE_WAIT);
+}
+
+ZTEST(tk_integration, test_next_turns_the_deck_name_into_a_question)
+{
+    set_contact(2, true);
+    k_sleep(SETTLE_WAIT);
+    zassert_true(last_question.is_category);
+
+    questions = 0;
+
+    set_next(true);
+    k_sleep(K_MSEC(80));
+    set_next(false);
+    k_sleep(PRESS_WAIT);
+
+    zassert_equal(questions, 1, "one press is one question");
+    zassert_false(last_question.is_category, "and a press asks for a real question");
+    zassert_equal(last_question.deck, 2, "from the deck that was named");
+    zassert_true(last_question.len > 0);
+
+    set_contact(2, false);
+    k_sleep(SETTLE_WAIT);
 }
 
 ZTEST(tk_integration, test_next_draws_a_different_question)
 {
     set_contact(1, true);
     k_sleep(SETTLE_WAIT);
+
+    /* First press turns the deck name into a question; compare from there. */
+    set_next(true);
+    k_sleep(K_MSEC(80));
+    set_next(false);
+    k_sleep(PRESS_WAIT);
+    zassert_false(last_question.is_category);
 
     questions = 0;
 
@@ -141,7 +179,7 @@ ZTEST(tk_integration, test_next_draws_a_different_question)
     k_sleep(SETTLE_WAIT);
 }
 
-ZTEST(tk_integration, test_crossing_decks_draws_once_from_the_deck_it_lands_on)
+ZTEST(tk_integration, test_crossing_decks_names_only_the_deck_it_lands_on)
 {
     questions = 0;
 
@@ -155,8 +193,9 @@ ZTEST(tk_integration, test_crossing_decks_draws_once_from_the_deck_it_lands_on)
     set_contact(5, true);
     k_sleep(SETTLE_WAIT);
 
-    zassert_equal(questions, 1, "one sweep is one question, not three");
-    zassert_equal(last_question.deck, 5, "from the deck the knob stopped on");
+    zassert_equal(questions, 1, "one sweep is one card, not three");
+    zassert_true(last_question.is_category, "and it names where the knob stopped");
+    zassert_equal(last_question.deck, 5);
 
     set_contact(5, false);
     k_sleep(SETTLE_WAIT);

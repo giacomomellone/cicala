@@ -48,8 +48,9 @@ static void display_thread(void *p1, void *p2, void *p3)
         const int64_t started = k_uptime_get();
         const int result = tk_panel_render(question.text, question.len);
 
-        LOG_INF("%s refresh of seq %u took %lld ms (%d)", was_full ? "full" : "partial",
-                question.seq, k_uptime_get() - started, result);
+        LOG_INF("%s refresh of %s seq %u took %lld ms (%d)", was_full ? "full" : "partial",
+                question.is_category ? "deck name" : "question", question.seq,
+                k_uptime_get() - started, result);
 
         const struct tk_render_msg done = {
             .seq = question.seq,

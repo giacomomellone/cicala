@@ -59,7 +59,12 @@ than a rebuild.
 
 ## Interaction contract
 
-- E-paper shows one question and no status or menu UI.
+- E-paper shows one question, or the name of the deck just selected, and no
+  status or menu UI.
+- Turning the selector puts the deck's name on the panel and leaves it there.
+  Next is what asks for a question. This is why the deck names need not be
+  printed on the case — and why a second button could replace the rotary
+  selector, since a deck you can read on the glass needs no labelled detent.
 - The physical selector is the active deck. Read it at boot and after every
   selector wake instead of restoring a remembered deck.
 - A selector change must remain stable for about 600 ms before drawing.

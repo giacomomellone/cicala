@@ -1,7 +1,11 @@
 /*
  * The tabletop state machine. No board, no display, no channels: the fake Io
- * below counts draws and the clock is injected, so the five-second refresh
- * timeout is tested without waiting five seconds.
+ * below counts what was asked for and the clock is injected, so the refresh
+ * timeout is tested without waiting for it.
+ *
+ * The shape to keep in mind: turning the selector announces the deck's name
+ * and leaves it up, and Next is what asks for a question. So a deck change and
+ * a press do different things, and the machine has a state for each.
  */
 
 #include <zephyr/ztest.h>
@@ -19,8 +23,11 @@ class FakeIo : public AppIo
 {
 public:
     int draws = 0;
+    int labels = 0;
     int last_deck = -1;
+    int last_labelled_deck = -1;
     bool draw_succeeds = true;
+    bool label_succeeds = true;
     bool retained = false;
     int retained_deck = -1;
 
@@ -29,6 +36,13 @@ public:
         draws++;
         last_deck = deck;
         return draw_succeeds;
+    }
+
+    bool show_category(uint8_t deck) override
+    {
+        labels++;
+        last_labelled_deck = deck;
+        return label_succeeds;
     }
 
     bool retained_matches(uint8_t deck) const override
@@ -54,8 +68,8 @@ protected:
 /**
  * Tick until the state stops moving.
  *
- * The real loop does the same thing between zbus messages: one event can walk
- * the machine through several states (a press is SHOWING, DRAWING, REFRESHING)
+ * The real loop does the same between zbus messages: one event can walk the
+ * machine through several states — a press is SHOWING, DRAWING, REFRESHING —
  * and it must not stop halfway.
  */
 void settle(TestAppFsm &fsm)
@@ -73,10 +87,26 @@ void settle(TestAppFsm &fsm)
     zassert_unreachable("state machine did not settle");
 }
 
-/** Boot to the steady state with `deck` selected and a question drawn. */
+/** Boot with `deck` selected, through the deck name, to the steady state. */
 void boot_to_showing(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
 {
     fsm.post_selector(deck, true);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+
+    fsm.post_render(true);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+    zassert_equal(io.labels, 1, "boot announces the deck");
+    zassert_equal(io.draws, 0, "and does not ask a question yet");
+}
+
+/** Boot, then press Next so a question is what is on the panel. */
+void boot_to_question(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
+{
+    boot_to_showing(fsm, io, deck);
+
+    fsm.post_next();
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
@@ -100,9 +130,10 @@ ZTEST(tk_app_fsm, test_boot_waits_for_a_valid_selector)
 
     zassert_equal(fsm.get_current_state(), STATE(BOOT));
     zassert_equal(io.draws, 0, "a mid-travel selector must not pick a deck");
+    zassert_equal(io.labels, 0, "nor name one");
 }
 
-ZTEST(tk_app_fsm, test_boot_with_nothing_retained_draws)
+ZTEST(tk_app_fsm, test_boot_announces_the_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -111,8 +142,9 @@ ZTEST(tk_app_fsm, test_boot_with_nothing_retained_draws)
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
-    zassert_equal(io.draws, 1);
-    zassert_equal(io.last_deck, 4);
+    zassert_equal(io.labels, 1);
+    zassert_equal(io.last_labelled_deck, 4);
+    zassert_equal(io.draws, 0, "the first question waits for a press");
 }
 
 ZTEST(tk_app_fsm, test_boot_with_a_retained_question_draws_nothing)
@@ -128,25 +160,10 @@ ZTEST(tk_app_fsm, test_boot_with_a_retained_question_draws_nothing)
 
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
     zassert_equal(io.draws, 0, "e-paper kept the question; waking must be free");
+    zassert_equal(io.labels, 0);
 }
 
-ZTEST(tk_app_fsm, test_a_retained_question_from_another_deck_is_not_reused)
-{
-    FakeIo io;
-    io.retained = true;
-    io.retained_deck = 2;
-
-    TestAppFsm fsm(io);
-
-    /* Selector moved while the device was asleep. */
-    fsm.post_selector(5, true);
-    settle(fsm);
-
-    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
-    zassert_equal(io.last_deck, 5);
-}
-
-ZTEST(tk_app_fsm, test_next_draws_again_from_the_same_deck)
+ZTEST(tk_app_fsm, test_next_asks_for_a_question)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -157,36 +174,82 @@ ZTEST(tk_app_fsm, test_next_draws_again_from_the_same_deck)
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
-    zassert_equal(io.draws, 2);
+    zassert_equal(io.draws, 1);
     zassert_equal(io.last_deck, 1);
+    zassert_equal(io.labels, 1, "and does not repeat the deck name");
 }
 
-ZTEST(tk_app_fsm, test_turning_the_selector_draws_from_the_new_deck)
+ZTEST(tk_app_fsm, test_next_keeps_asking_from_the_same_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
 
-    boot_to_showing(fsm, io, 1);
+    boot_to_question(fsm, io, 3);
 
-    fsm.post_selector(3, true);
+    fsm.post_next();
     settle(fsm);
 
     zassert_equal(io.draws, 2);
     zassert_equal(io.last_deck, 3);
+    zassert_equal(io.labels, 1, "the name is announced once, when the deck changes");
 }
 
-ZTEST(tk_app_fsm, test_an_invalid_selector_keeps_the_question)
+ZTEST(tk_app_fsm, test_turning_the_selector_announces_the_new_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
 
-    boot_to_showing(fsm, io, 1);
+    boot_to_question(fsm, io, 1);
+
+    fsm.post_selector(3, true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+    zassert_equal(io.labels, 2);
+    zassert_equal(io.last_labelled_deck, 3);
+    zassert_equal(io.draws, 1, "turning the knob is not a request for a question");
+}
+
+ZTEST(tk_app_fsm, test_the_deck_name_stays_until_next)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    boot_to_question(fsm, io, 1);
+
+    fsm.post_selector(5, true);
+    settle(fsm);
+    fsm.post_render(true);
+    settle(fsm);
+
+    // Sitting there does not turn the name into a question.
+    for (int i = 0; i < 5; i++) {
+        settle(fsm);
+    }
+
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+    zassert_equal(io.draws, 1, "the name stays up until someone asks");
+
+    fsm.post_next();
+    settle(fsm);
+
+    zassert_equal(io.draws, 2);
+    zassert_equal(io.last_deck, 5, "and the question comes from the deck just named");
+}
+
+ZTEST(tk_app_fsm, test_an_invalid_selector_keeps_what_is_on_the_panel)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    boot_to_question(fsm, io, 1);
 
     fsm.post_selector(0, false);
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
     zassert_equal(io.draws, 1, "an invalid selector is not a deck change");
+    zassert_equal(io.labels, 1);
 }
 
 ZTEST(tk_app_fsm, test_a_press_during_a_refresh_is_dropped)
@@ -194,7 +257,7 @@ ZTEST(tk_app_fsm, test_a_press_during_a_refresh_is_dropped)
     FakeIo io;
     TestAppFsm fsm(io);
 
-    boot_to_showing(fsm, io, 1);
+    boot_to_question(fsm, io, 1);
 
     fsm.post_next();
     settle(fsm);
@@ -268,12 +331,12 @@ ZTEST(tk_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
 
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING),
                   "the machine must still be waiting on the panel it just asked to draw");
-    zassert_equal(io.draws, 2);
+    zassert_equal(io.draws, 1);
 
     fsm.post_render(true);
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
-    zassert_equal(io.draws, 2, "and exactly one question was drawn for that press");
+    zassert_equal(io.draws, 1, "and exactly one question was drawn for that press");
 }
 
 ZTEST(tk_app_fsm, test_a_failed_render_fails_without_waiting)
@@ -297,7 +360,9 @@ ZTEST(tk_app_fsm, test_an_empty_deck_fails_once_and_settles)
 
     TestAppFsm fsm(io);
 
-    fsm.post_selector(5, true);
+    boot_to_showing(fsm, io, 5);
+
+    fsm.post_next();
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
@@ -311,7 +376,9 @@ ZTEST(tk_app_fsm, test_an_empty_deck_is_retried_on_the_next_press)
 
     TestAppFsm fsm(io);
 
-    fsm.post_selector(5, true);
+    boot_to_showing(fsm, io, 5);
+
+    fsm.post_next();
     settle(fsm);
     zassert_equal(io.draws, 1);
 
@@ -321,6 +388,21 @@ ZTEST(tk_app_fsm, test_an_empty_deck_is_retried_on_the_next_press)
 
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
     zassert_equal(io.draws, 2);
+}
+
+ZTEST(tk_app_fsm, test_a_deck_name_that_cannot_be_shown_does_not_loop)
+{
+    FakeIo io;
+    io.label_succeeds = false;
+
+    TestAppFsm fsm(io);
+
+    fsm.post_selector(2, true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING),
+                  "it should fail through to the steady state");
+    zassert_equal(io.labels, 1, "and not keep trying to announce the same deck");
 }
 
 ZTEST(tk_app_fsm, test_only_refreshing_asks_the_loop_to_stay_awake)

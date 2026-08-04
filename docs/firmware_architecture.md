@@ -330,9 +330,12 @@ stateDiagram-v2
     [*] --> BOOT
     BOOT --> BOOT: REPEAT — selector invalid, no timeout
     BOOT --> SHOWING: RETAINED — panel already holds this deck
-    BOOT --> DRAWING: CONTINUE — nothing retained
+    BOOT --> CATEGORY: CONTINUE — announce the deck
+    CATEGORY --> REFRESHING: CONTINUE
+    CATEGORY --> FAIL: FAILED
     SHOWING --> SHOWING: REPEAT — idle → deep sleep
-    SHOWING --> DRAWING: REDRAW — Next, or deck changed
+    SHOWING --> CATEGORY: RELABEL — the selector moved
+    SHOWING --> DRAWING: REDRAW — Next
     DRAWING --> REFRESHING: CONTINUE
     DRAWING --> FAIL: FAILED — deck yields nothing
     REFRESHING --> REFRESHING: REPEAT — refresh timeout
@@ -342,8 +345,19 @@ stateDiagram-v2
 ```
 
 Transitions are named for what happened, not for where they lead — the table
-owns the destinations. `REDRAW` and `RETAINED` exist because `SHOWING` and
-`BOOT` each have two ways out and `CONTINUE` cannot mean both.
+owns the destinations. `REDRAW`, `RELABEL` and `RETAINED` exist because
+`SHOWING` and `BOOT` have more than one way out and `CONTINUE` cannot mean all
+of them.
+
+**Turning the selector announces the deck; Next asks a question.** The deck's
+name goes on the panel and stays there until someone presses. That is what
+makes the deck legible without printing the six names on the case — and it is
+what would let a second button replace the rotary selector entirely, since a
+deck you can read on the glass does not need a labelled detent.
+
+`SHOWING` checks Next before the selector, so a press made while the name is up
+gets a question rather than the name again. In practice the two cannot both be
+pending — the selector needs 600 ms to settle — but the order is the rule.
 
 The table above is `firmware/lib/app_fsm/app_fsm.cpp` line for line, and
 `firmware/tests/app_fsm` drives every edge in it with a fake display and an
@@ -352,6 +366,7 @@ injected clock.
 | State | Handler | Leaves when |
 |---|---|---|
 | `BOOT` | `on_boot()` | the selector reads one valid position |
+| `CATEGORY` | `on_category()` | immediately — the deck's name is sent in `on_enter_state()` |
 | `SHOWING` | `on_showing()` | Next arrives, or the deck differs from the one on screen |
 | `DRAWING` | `on_drawing()` | immediately — the draw itself happens in `on_enter_state()` |
 | `REFRESHING` | `on_refreshing()` | the display reports back, or `CONFIG_TK_REFRESH_TIMEOUT_MS` passes |
