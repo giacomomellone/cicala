@@ -56,6 +56,16 @@ bool tk_app_needs_timeout(void);
 /** Current state, as an AppFsm::State value. For logging. */
 int tk_app_state(void);
 
+/**
+ * True while the panel is being refreshed.
+ *
+ * A press arriving now is deliberately dropped — a full refresh takes seconds
+ * and honouring presses made during it would spend them drawing questions
+ * nobody has read. Exposed so the drop can be reported rather than being
+ * silent, which from the table looks like a button that does not work.
+ */
+bool tk_app_is_busy(void);
+
 #ifdef __cplusplus
 }
 #endif

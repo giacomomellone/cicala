@@ -26,7 +26,13 @@ LOG_MODULE_REGISTER(tk_main, LOG_LEVEL_INF);
  */
 static const struct gpio_dt_spec blink = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), blink_gpios);
 
-static void on_next(const struct zbus_channel *chan)
+/*
+ * Follows what actually reached the panel, not what was pressed. Toggling on
+ * chan_next instead looks right and is a lie: a press made during a refresh is
+ * deliberately dropped, and an LED that winks at it tells the table the button
+ * worked when nothing is going to happen.
+ */
+static void on_drawn(const struct zbus_channel *chan)
 {
     ARG_UNUSED(chan);
 
@@ -35,8 +41,8 @@ static void on_next(const struct zbus_channel *chan)
     }
 }
 
-ZBUS_LISTENER_DEFINE(main_blink, on_next);
-ZBUS_CHAN_ADD_OBS(chan_next, main_blink, 4);
+ZBUS_LISTENER_DEFINE(main_blink, on_drawn);
+ZBUS_CHAN_ADD_OBS(chan_question, main_blink, 4);
 
 int main(void)
 {

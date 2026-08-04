@@ -75,8 +75,19 @@ static void app_thread(void *p1, void *p2, void *p3)
         }
 
         if (chan == &chan_selector) {
+            /*
+             * Not gated on the refresh, unlike a press. The selector is state
+             * rather than an event — it *is* the deck — so a knob turned
+             * during a refresh is a deck that really did change, and the
+             * machine picks it up as soon as the panel is free. Dropping it
+             * would leave the panel naming a deck the switch is no longer on.
+             */
             tk_app_post_selector(msg.selector.deck, msg.selector.valid);
         } else if (chan == &chan_next) {
+            if (tk_app_is_busy()) {
+                LOG_INF("press ignored: the panel is still refreshing");
+            }
+
             tk_app_post_next();
         } else if (chan == &chan_render) {
             tk_app_post_render(msg.render.result == 0, msg.render.seq);
