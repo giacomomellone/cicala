@@ -1,0 +1,9 @@
+# The application's policy symbols: the bag's bitmap width and the ring size
+# are CONFIG_TK_* values, and a suite that copied them would stop testing the
+# device's actual behaviour the moment one changed.
+
+mainmenu "tischkarte qdb tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"
