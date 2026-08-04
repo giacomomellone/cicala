@@ -23,6 +23,93 @@ config TK_NEXT_DEBOUNCE_MS
       gpio-keys driver, so this must match `debounce-interval-ms` in the board
       overlay — devicetree is processed before Kconfig and cannot read it.
 
+config TK_CORPUS_LANGUAGE
+    string "Language of the corpus compiled into the image"
+    default "en"
+    help
+      The factory-preloaded question set, so a device whose Wi-Fi is never
+      configured still works. Must match a bundle built by `just fw-fixtures`.
+
+config TK_PANEL_MARGIN_PX
+    int "Blank border around the text (pixels)"
+    default 10
+    help
+      Without this the text runs to the physical edge of the glass, which reads
+      as a fault rather than as a margin. Ten pixels is one character cell.
+
+config TK_PANEL_COLUMNS
+    int "Characters per line the panel fits"
+    default 23
+    help
+      (250 - 2 * margin) / 10, the cell width of cfb_font_1016. At 23 columns
+      the longest shipped question needs five lines. panel.cpp BUILD_ASSERTs
+      that this agrees with the margin and the display width, so a wrong value
+      fails the build rather than the glass.
+
+config TK_PANEL_LINES
+    int "Lines of text the panel fits"
+    default 6
+    help
+      (122 - 2 * margin) / 16, the cell height of cfb_font_1016. Six lines
+      against the five the corpus needs.
+
+config TK_PANEL_AUTOSIZE
+    bool "Pick the largest font each question fits in"
+    default y
+    help
+      CFB ships three sizes — 10x16, 15x24 and 20x32. Choosing the biggest one
+      a question fits in uses the whole panel instead of leaving a band of
+      white under every short question. Against the shipped corpus that is
+      about a third of questions at 15x24 and a handful at 20x32; the rest fall
+      back to 10x16, the size the layout suite checks every question against.
+
+      Turn off to render everything at 10x16.
+
+config TK_PANEL_MAX_LEADING_PCT
+    int "Most extra space between lines, as a percentage of the font height"
+    default 50
+    range 0 100
+    help
+      A question rarely fills its font's last line, and stacking the lines
+      solid leaves that slack as a band of white above and below. Sharing it
+      between the lines instead uses the panel: across the shipped corpus that
+      lifts vertical fill from 66% to 82% on average.
+
+      Capped, because past a point the lines stop reading as one question and
+      start looking like separate sentences. Set to 0 to set the text solid,
+      which is worth comparing on real hardware — spreading lines apart is not
+      the same as setting them larger, and only a font between 15x24 and 20x32
+      would do that.
+
+config TK_PANEL_BOLD
+    bool "Thicken glyphs by overdrawing"
+    default y
+    help
+      cfb_font_1016 is a one-pixel-stroke terminal font, and on e-paper at
+      arm's length it reads thin. Drawing each glyph twice, one pixel apart,
+      doubles the stroke without a second font in flash. Turn off to compare.
+
+config TK_DEBUG_CHARSET
+    bool "Show character-set test pages instead of questions"
+    default n
+    help
+      Replaces the drawn question with a series of test pages — ASCII, then one
+      per language, then every diacritic the renderer composes. Next steps
+      through them and each page is also logged, so `just fw-monitor` says what
+      the panel should be showing. For checking glyphs and accents on real
+      hardware; never enabled in a shipped build.
+
+config TK_REFRESH_TIMEOUT_MS
+    int "How long to wait for the display before giving up (ms)"
+    default 15000
+    help
+      Only there so a dead panel cannot wedge the device, so it should sit well
+      clear of the slowest honest refresh — a full update on the GDEY0213B74 is
+      seconds. Too short is much worse than too long: the state machine gives
+      up, a late render then arrives for a question nobody is waiting for, and
+      presses get dropped. Measure with `just fw-monitor`, which logs every
+      refresh duration.
+
 config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
     default 8
@@ -44,6 +131,28 @@ config TK_RECENT_RING
     help
       Shared across all decks, so turning the selector cannot immediately
       return a question just seen under a different deck.
+
+      The smallest shipped deck is the same size as this ring (Here has 20
+      eligible questions in English and 12 in German), so the ring can exclude
+      an entire deck. The bag relaxes it rather than failing; see lib/qdb.
+
+config TK_MAX_QUESTIONS
+    int "Largest corpus the bag can track"
+    default 512
+    help
+      Sets the width of the per-deck drawn bitmap kept in RTC memory: one bit
+      per question per deck, so 512 costs 384 bytes of the 8 KB available.
+      English ships 240. A bundle with more questions than this is rejected at
+      open() rather than silently half-tracked.
+
+config TK_MAX_QUESTION_BYTES
+    int "Largest question the device will render (UTF-8 bytes)"
+    default 128
+    help
+      Bounds the copy that travels on chan_question. The longest shipped
+      question is 94 bytes (German); the qdb suite asserts the real bundles
+      fit, so a corpus change that breaks this fails a test rather than a
+      device.
 
 config TK_REFRESH_MIN_MV
     int "Minimum cell voltage for a panel refresh (mV)"
