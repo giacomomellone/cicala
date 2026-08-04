@@ -64,6 +64,26 @@ just fw-flash       # back to the real thing
 It builds into `build/esp32s3-charset/`, so switching back is a flash rather
 than a rebuild.
 
+## Measuring refresh and ghosting
+
+`CONFIG_TK_DEBUG_SOAK=y` makes the device press its own Next button every few
+seconds, and `app/soak.conf` suppresses full refreshes while it does. That
+produces the long chain of partial refreshes that ghosting has to be watched
+accumulating in — the measurement `CONFIG_TK_FULL_REFRESH_INTERVAL` is waiting
+on, and one nobody wants to make by pressing a button forty times.
+
+```sh
+just fw-soak        # build + flash, then leave it running
+just fw-monitor     # every refresh logs its position in the chain
+just fw-flash       # back to the real thing
+```
+
+Set the DIP switch to a deck before flashing; the chain starts itself from the
+first render and keeps going until the board is reflashed. The same console
+output carries refresh durations and, once a minute, thread stack high-water
+marks. The full procedure, including what to write down, is in
+[docs/hardware_wiring.md](../docs/hardware_wiring.md).
+
 ## Interaction contract
 
 - E-paper shows one question, or the name of the deck just selected, and no
@@ -152,21 +172,29 @@ and how the DIP switch, button and e-paper HAT connect are in
 
 The short version: selector 0..5 are GPIO 4, 5, 6, 7, 15, 16 and Next is
 GPIO 17 — all inside GPIO0..21, the ESP32-S3's RTC-capable range, without which
-EXT1 deep-sleep wake is impossible. VBUS detect is unassigned and carries the
-same constraint. The panel avoids GPIO19 and GPIO20: they are the native USB
-pair the debug console and JTAG share.
+EXT1 deep-sleep wake is impossible. VBUS detect and battery sense are reserved
+on GPIO21 and GPIO1 under the same constraint, and neither is wired yet. The
+panel avoids GPIO19 and GPIO20: they are the native USB pair the debug console
+and JTAG share.
 
 ## Breadboard acceptance
 
-Confirmed on the rig, with a six-way DIP switch on the selector pins and a
-tactile button on Next: the firmware flashes, the console reports deck changes
-and presses, and the input path behaves as the suites describe. Everything
-below that is not about input remains unverified on hardware.
+The rig runs with a six-way DIP switch on the selector pins, a tactile button
+on Next, and the e-paper HAT wired to the panel pins.
 
-- Firmware flashes, logs, and debugs over the DevKitC USB connection.
-- All six selector positions and invalid contact combinations are tested.
-- One physical press produces one Next event.
-- Real English and German TKB2 bundles round-trip through the question store.
-- Every released question fits at the fixed minimum type size.
-- Partial and full refresh behavior is tested over a representative run.
-- Wi-Fi and bundle sync work from USB power before battery measurements begin.
+| Item | Confirmed by |
+|---|---|
+| Firmware flashes, logs, and debugs over the DevKitC USB connection | the rig |
+| All six selector positions and invalid contact combinations | the rig |
+| One physical press produces one Next event | the rig |
+| A press draws a question and the panel shows it | the rig |
+| Real English and German TKB2 bundles round-trip through the question store | the suites, against bundles built from the database |
+| Every released question fits at the fixed minimum type size | the suites, at the real panel geometry |
+| Partial and full refresh behavior over a representative run | nothing yet — `just fw-soak` is the run |
+| Wi-Fi and bundle sync from USB power | nothing yet — `sync` is still design |
+
+Two of these are honest only with their qualifier. The bundle and layout rows
+are checked off the host suites against the corpus the device ships, which
+proves the text fits and not that it reads well on the glass; and the refresh
+row needs a number, not a yes — see "Bench measurements" in
+[docs/hardware_wiring.md](../docs/hardware_wiring.md).

@@ -5,9 +5,15 @@ is. The shopping list is [prototype bom](prototype_bom.md), the object this
 becomes is [device prototype](device_prototype.md), and the firmware that
 drives it is [firmware architecture](firmware_architecture.md).
 
-**Status:** the selector, the Next button and the bring-up LED are wired and
-confirmed working. The panel wiring below is derived from the devicetree and
-the Waveshare pinout but has not been on a bench yet.
+**Status:** the whole rig is wired and drawing questions. The selector, Next
+and the bring-up LED behave as the suites describe, and the panel has been on
+the bench long enough to find a real bug in the refresh sequence — the
+blanking sandwich described below was diagnosed on the glass, not in a test.
+
+What has *not* happened is measurement. Nothing on this page has been timed, no
+ghosting has been counted, and the Kconfig values that depend on both are still
+the numbers someone picked before there was a panel to look at. "Bench
+measurements" at the end of this page is the procedure for fixing that.
 
 This is the current compatibility rig, not the target enclosure. The default
 [device prototype](device_prototype.md) uses Category and Next buttons, but the
@@ -247,3 +253,66 @@ just fw-monitor
 - Sweeping the switch across several positions in one motion produces one deck
   change, not three.
 - With the panel wired, each of the above draws a question on the display.
+
+## Bench measurements
+
+Three Kconfig values are guesses waiting on this rig. They are guesses on
+purpose — each one is a property of the physical panel, and picking a number in
+advance would have meant pretending otherwise — but the Stage 1 gate in
+[prototype bom](prototype_bom.md) does not close until they are measured.
+
+Each run below wants both USB cables in and `just fw-monitor` open.
+
+### 1. Ghosting, for `CONFIG_TK_FULL_REFRESH_INTERVAL`
+
+E-paper leaves a faint trace of what it was showing, and a partial refresh does
+not clear it. The question is how many partials the panel tolerates before that
+residue is visible from across a table, because that count is how often a full
+refresh has to interrupt.
+
+```sh
+just fw-soak
+just fw-monitor
+```
+
+The soak image presses its own Next button every five seconds with full
+refreshes suppressed, so the chain builds up while nobody is at the board. Each
+refresh logs where it sits:
+
+```
+[tk_soak] full refresh of seq 1; the chain starts here
+[tk_soak] partial #1 of seq 2
+[tk_soak] partial #2 of seq 3
+```
+
+Set the DIP switch to one deck before flashing, then leave it. Look at the
+panel every so often and write down the number on the console at the point the
+glass stops looking clean — from a normal seat at the table, not from six
+inches away. That number, less a margin, is what goes in
+`firmware/Kconfig.policy`.
+
+`just fw-flash` returns the board to the real firmware.
+
+### 2. Refresh duration, for `CONFIG_TK_REFRESH_TIMEOUT_MS`
+
+The same console gives this away for free, from the line `display.c` logs after
+every render:
+
+```
+[tk_display] partial refresh of question seq 2 took 412 ms (0)
+```
+
+The timeout exists only so a dead panel cannot wedge the device, so it wants to
+sit well clear of the slowest honest refresh — which is a *full* one, and the
+soak run only produces one of those at boot. Note the full figure from the
+first line of the run, take the partials from the rest, and set the timeout
+several times the larger.
+
+The same output carries stack high-water marks once a minute, which is what the
+board conf's promise to tighten stacks before the power bench is waiting on.
+
+### 3. Accents, with `just fw-charset`
+
+Not a number, but the same trip to the bench. The charset image draws every
+diacritic the renderer composes; photograph the pages and judge whether the
+marks sit where they should. Details in `firmware/README.md`.
