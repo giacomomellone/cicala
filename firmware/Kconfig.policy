@@ -99,6 +99,28 @@ config TK_DEBUG_CHARSET
       the panel should be showing. For checking glyphs and accents on real
       hardware; never enabled in a shipped build.
 
+config TK_DEBUG_SOAK
+    bool "Press Next automatically, forever"
+    default n
+    help
+      Turns the device into its own operator: every completed refresh schedules
+      the next press, so the panel redraws unattended for as long as it is
+      powered. It exists to measure TK_FULL_REFRESH_INTERVAL, which needs a
+      long unbroken chain of partial refreshes to watch ghosting accumulate in.
+
+      Set by app/soak.conf, which also suppresses full refreshes for the length
+      of the run. Never enabled in a shipped build.
+
+config TK_DEBUG_SOAK_INTERVAL_MS
+    int "Wait between a finished refresh and the next automatic press (ms)"
+    default 5000
+    depends on TK_DEBUG_SOAK
+    help
+      Long enough to read the question, short enough that forty refreshes take
+      four minutes. Measured from the end of one refresh rather than on a fixed
+      period, so a slow panel spaces the run out instead of having presses
+      dropped.
+
 config TK_REFRESH_TIMEOUT_MS
     int "How long to wait for the display before giving up (ms)"
     default 15000
@@ -114,8 +136,13 @@ config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
     default 8
     help
-      Determine this from ghosting observed on the breadboard panel. A cold
-      boot always uses a full refresh because the panel content is unknown.
+      Determine this from ghosting observed on the breadboard panel: `just
+      fw-soak` drives the chain unattended and logs the count each refresh sits
+      at, so the number to put here is the one on the console when the glass
+      stops being clean. Still a guess until that run happens.
+
+      A cold boot always uses a full refresh because the panel content is
+      unknown.
 
 config TK_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"

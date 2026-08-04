@@ -1,0 +1,56 @@
+/*
+ * The real board description, minus the board: emulated GPIO for the selector
+ * and Next, and a dummy panel the size of the real one.
+ */
+
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/input/input-event-codes.h>
+
+/ {
+    aliases {
+        tk-next = &tk_next;
+    };
+
+    gpio0: gpio_emul {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <32>;
+        rising-edge;
+        falling-edge;
+        high-level;
+        low-level;
+    };
+
+    tk_selector: tk-selector {
+        compatible = "gpio-keys";
+        debounce-interval-ms = <30>;
+        tk_deck_0: deck_0 { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_0>; label = "new_people"; };
+        tk_deck_1: deck_1 { gpios = <&gpio0 1 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_1>; label = "close"; };
+        tk_deck_2: deck_2 { gpios = <&gpio0 2 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_2>; label = "family"; };
+        tk_deck_3: deck_3 { gpios = <&gpio0 3 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_3>; label = "work"; };
+        tk_deck_4: deck_4 { gpios = <&gpio0 4 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_4>; label = "here"; };
+        tk_deck_5: deck_5 { gpios = <&gpio0 5 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_5>; label = "wild"; };
+    };
+
+    tk_buttons: tk-buttons {
+        compatible = "gpio-keys";
+        debounce-interval-ms = <30>;
+        tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
+    };
+
+    zephyr,user {
+        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+    };
+
+    tk_dummy: dummy_dc {
+        compatible = "zephyr,dummy-dc";
+        width = <250>;
+        height = <122>;
+        status = "okay";
+    };
+
+    chosen {
+        zephyr,display = &tk_dummy;
+    };
+};

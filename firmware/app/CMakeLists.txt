@@ -21,6 +21,10 @@ target_sources(app PRIVATE
     src/panel.cpp
 )
 
+# Bench instrumentation, and the only source that is not in every image: it
+# presses Next by itself, which no shipped device should do. See soak.conf.
+target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
+
 target_include_directories(app PRIVATE include)
 
 # Explicit: Zephyr collects its own libraries in a loop that has already run by

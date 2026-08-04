@@ -241,6 +241,24 @@ fw-build-charset: fw-fixtures
 fw-charset: fw-build-charset
     {{ west }} flash --no-rebuild -d build/esp32s3-charset {{ portflag }}
 
+# The device presses its own Next button every few seconds, with full refreshes
+# suppressed, so a chain of partial refreshes builds up while nobody is at the
+# board. That chain is the only way to see where ghosting starts, which is the
+# number CONFIG_TK_FULL_REFRESH_INTERVAL is supposed to hold. The console
+# reports the count and the duration of every refresh; the procedure for
+# reading them is in docs/hardware_wiring.md.
+
+# build the soak image (see firmware/app/soak.conf)
+[group('firmware')]
+fw-build-soak: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-soak -- \
+        -DEXTRA_CONF_FILE=soak.conf
+
+# flash the soak image, then `just fw-monitor` and leave it running
+[group('firmware')]
+fw-soak: fw-build-soak
+    {{ west }} flash --no-rebuild -d build/esp32s3-soak {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")
