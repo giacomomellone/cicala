@@ -1,0 +1,8 @@
+# The panel geometry and the refresh interval are CONFIG_TK_* values, and this
+# suite is about the device's actual settings rather than a copy of them.
+
+mainmenu "tischkarte panel tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"

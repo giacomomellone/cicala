@@ -1,0 +1,12 @@
+tests:
+  tischkarte.panel:
+    # Needs a display, which the overlay provides as a dummy the same size as
+    # the real panel.
+    platform_allow:
+      - qemu_xtensa/dc233c
+      - native_sim
+    integration_platforms:
+      - qemu_xtensa/dc233c
+    tags:
+      - tischkarte
+      - panel

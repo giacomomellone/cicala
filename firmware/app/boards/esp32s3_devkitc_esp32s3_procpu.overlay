@@ -103,33 +103,70 @@
 };
 
 /*
- * GDEY0213B74 / FPC-A002, 250 x 122, SSD1680 controller.
+ * Waveshare 2.13 inch e-Paper HAT — 250 x 122, SSD1680 controller.
  *
- * Zephyr ships the driver, the solomon,ssd1680 binding, and a
- * waveshare_epaper_gdey0213b74 shield. The shield targets Arduino headers,
- * which the DevKitC does not have, so the panel is described directly here.
+ * The compatible below matches the V3 and V4 revisions, which are the ones
+ * sold now. Older stock is not the same panel and will not init with this
+ * profile; check the marking on the board and switch the compatible to match:
+ *
+ *   V3 / V4   gooddisplay,gdey0213b74 + solomon,ssd1680   250 x 122   (here)
+ *   V2        gooddisplay,gdeh0213b72 + solomon,ssd1675a  250 x 120
+ *   V1        gooddisplay,gdeh0213b1  + solomon,ssd1673   250 x 120
+ *
+ * The older two are 120 rows rather than 122, so CONFIG_TK_PANEL_LINES stays
+ * at 7 either way but the height property has to change with the compatible.
+ *
+ * Zephyr ships the driver and a waveshare_epaper_gdey0213b74 shield. The
+ * shield targets Arduino headers the DevKitC does not have, so the panel is
+ * described here —
+ * but the structure is copied from it, because in this Zephyr the driver sits
+ * behind MIPI-DBI rather than on SPI directly. The display node is a child of
+ * a `zephyr,mipi-dbi-spi` node that owns the SPI bus and the D/C and reset
+ * pins; putting those properties on the display node itself is the older
+ * binding and does not bind at all here.
+ *
+ * The `full` and `partial` children are not decoration: ssd16xx offers partial
+ * refresh only when a partial profile exists, and then selects between them by
+ * whether blanking is on. See app/src/panel.cpp.
  */
 &spi2 {
     status = "okay";
     pinctrl-0 = <&spim2_default>;
     pinctrl-names = "default";
     cs-gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
-
-    tk_epaper: ssd1680@0 {
-        compatible = "solomon,ssd1680";
-        reg = <0>;
-        spi-max-frequency = <4000000>;
-        width = <250>;
-        height = <122>;
-        dc-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
-        /* Not 19 and 20: those are native USB D-/D+. See the header. */
-        reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
-        busy-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
-        status = "okay";
-    };
 };
 
 / {
+    tk_mipi_dbi: mipi-dbi {
+        compatible = "zephyr,mipi-dbi-spi";
+        spi-dev = <&spi2>;
+        dc-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
+        /* Not 19 and 20: those are native USB D-/D+. See the header. */
+        reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+        status = "okay";
+
+        tk_epaper: ssd16xxfb@0 {
+            compatible = "gooddisplay,gdey0213b74", "solomon,ssd1680";
+            reg = <0>;
+            mipi-max-frequency = <4000000>;
+            width = <250>;
+            height = <122>;
+            busy-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
+            tssv = <0x80>;
+            status = "okay";
+
+            full {
+                border-waveform = <0x05>;
+            };
+
+            partial {
+                border-waveform = <0x3c>;
+            };
+        };
+    };
+
     chosen {
         zephyr,display = &tk_epaper;
     };

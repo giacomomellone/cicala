@@ -1,0 +1,21 @@
+/*
+ * A dummy display the same size as the real panel.
+ *
+ * It accepts writes and discards them, so this cannot check pixels — what it
+ * does check is that the whole CFB path runs, that every shipped question
+ * renders without an error, and that the full/partial policy alternates. The
+ * image itself needs the panel on a bench.
+ */
+
+/ {
+    tk_dummy: dummy_dc {
+        compatible = "zephyr,dummy-dc";
+        width = <250>;
+        height = <122>;
+        status = "okay";
+    };
+
+    chosen {
+        zephyr,display = &tk_dummy;
+    };
+};
