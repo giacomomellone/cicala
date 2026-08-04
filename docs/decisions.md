@@ -372,3 +372,26 @@ Accepted cost: the two cap geometries need separate tooling and overload stops.
 The physical model must confirm that Category remains easy to press
 deliberately and that the larger Next cap does not dominate the face or cause
 accidental presses.
+
+## 2026-08-05: VBUS detect takes GPIO21, battery sense GPIO1
+
+The two power inputs are assigned before the circuit that reads them exists.
+Deep sleep needs every wake input inside GPIO0–21, and by the time the panel,
+the six selector contacts, Next and the bring-up LED are placed, that range has
+three pins left: GPIO1, GPIO14 and GPIO21.
+
+Battery sense picks first because it has the tighter constraint. It has to be
+sampled during a sync, when the radio is up, and the ESP32-S3's ADC2 shares
+hardware with Wi-Fi — readings taken then can fail. That restricts it to ADC1,
+GPIO1 to GPIO10, of which everything but GPIO1 is already spoken for or a
+strapping pin. VBUS detect is an ordinary digital input, so it takes GPIO21 and
+leaves the last ADC1 channel to the measurement that has nowhere else to go.
+
+Neither pin gets a devicetree node yet, because nothing reads them and an
+unused node rots. The assignment lives in the overlay header and the wiring
+doc.
+
+Accepted cost: one free RTC-capable pin remains, GPIO14, so anything else
+needing a wake input competes with a second analogue measurement for it. On the
+target PCB the bring-up LED goes away and GPIO2 returns to ADC1, which is the
+slack if battery sense turns out to need a companion.

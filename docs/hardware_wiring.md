@@ -83,14 +83,39 @@ Every pin below is chosen, not arbitrary. Two constraints drive the whole map:
 | 18 | e-paper D/C | out | active high |
 | 8 | e-paper RST | out | active low; **not 19** |
 | 9 | e-paper BUSY | in | active high; **not 20** |
-| — | VBUS detect | in | unassigned; must land on 1, 14 or 21 |
+| 21 | VBUS detect | in | reserved, not wired yet — see below |
+| 1 | battery sense | in, ADC1_CH0 | reserved, not wired yet — see below |
 
 Deliberately avoided: GPIO0 and GPIO3 are strapping pins, GPIO26–32 are the SPI
 flash, GPIO33–37 are the octal PSRAM on the N8R8, GPIO43/44 are the UART0
 console, and GPIO48 is the onboard WS2812.
 
-That leaves **GPIO1, 14 and 21** free and RTC-capable. VBUS detect has to come
-out of that set.
+That left **GPIO1, 14 and 21** free and RTC-capable, and the two power inputs
+now claim two of them. Neither is wired on the rig or present in the
+devicetree; they are reserved so the deep-sleep work does not find the range
+full. GPIO14 is what remains.
+
+### Why those two, and not the other way round
+
+The ESP32-S3 has two ADCs and only one of them is usable here: **ADC2 shares
+its hardware with Wi-Fi**, so a reading taken while the radio is up can fail.
+Battery voltage has to be sampled during a sync, which is precisely when the
+radio is up, so it needs ADC1 — GPIO1 to GPIO10.
+
+Of those ten, seven are already the selector and the panel, GPIO2 is the
+bring-up LED, and GPIO3 is a strapping pin. **GPIO1 is the only ADC1 channel
+left**, which is why battery sense takes it rather than the roomier-looking
+GPIO21.
+
+VBUS detect is a digital input with no such constraint, so it takes GPIO21 and
+leaves the last ADC1 channel to the measurement that cannot go anywhere else.
+
+### Wiring VBUS when the time comes
+
+VBUS is 5 V and the pin is 3.3 V tolerant only, so it needs a divider. Not
+100k/100k: 2.5 V sits under the ESP32-S3's V_IH of 0.75 × VDD ≈ 2.48 V by too
+little to trust across tolerance and supply droop. **100k/150k** puts it at
+3.0 V with margin at both ends.
 
 The index order of the selector is the deck order in
 `questions/schema.json` → `x-tischkarte.decks`, and it is duplicated in the

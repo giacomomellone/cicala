@@ -539,8 +539,12 @@ that would be hard to add later.
 *Verify:* the `esp32s3_devkitc/esp32s3/procpu` board lists `retained_mem` as
 supported, so Zephyr's retained-memory API is the likely mechanism rather than
 raw section attributes. Still unconfirmed: `PM_STATE_SOFT_OFF` mapping to deep
-sleep, and EXT1 wake on seven pins. Only the structures above depend on this,
-so the fallback is a write-coalesced NVS record, not a redesign.
+sleep, and EXT1 wake on eight pins — the six selector contacts, Next, and VBUS
+detect, which is now reserved on GPIO21 alongside battery sense on GPIO1. All
+eight are inside the RTC-capable range, which is the precondition; whether the
+SoC will arm that many at once is the open question. Only the structures above
+depend on this, so the fallback is a write-coalesced NVS record, not a
+redesign.
 
 ## Testing boundary
 
@@ -574,10 +578,11 @@ suites that drive the selector and Next run in the default macOS loop.
   wake input, retain the category in RTC state, define the New People cold
   default, and test dropped Category presses during refresh. This waits for a
   second physical button.
-- VBUS detect has no pin yet. The six selector contacts and Next are assigned
-  in the devkit overlay, all inside the ESP32-S3's RTC-capable GPIO0..21, and
-  VBUS must land there too or EXT1 wake is impossible.
 - Full-refresh interval, from observed ghosting rather than a chosen number.
+  `just fw-soak` produces the chain to watch it in and logs the count each
+  refresh sits at; the procedure is in [hardware wiring](hardware_wiring.md).
+  The same console output gives the refresh durations that
+  `CONFIG_TK_REFRESH_TIMEOUT_MS` is currently guessing at.
 - The bundled font. Zephyr's CFB fonts are 10x16 monospace and cover ASCII
   only, so `lib/layout` decomposes accented letters into a base glyph plus a
   mark that `app/src/panel.cpp` draws itself — enough for German, French,
