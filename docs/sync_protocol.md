@@ -32,6 +32,22 @@ release firmware rejects it.
 
 ## TKB2 bundle
 
+**TKB** is the Tischkarte Bundle: the device's copy of the question database,
+in the only shape a microcontroller wants to read it. **2** is the format
+version, carried in the magic bytes — version 1 existed briefly and stored one
+record per question per deck, which duplicated the text.
+
+Two file extensions appear, and they are the same data in different states:
+
+| | What | Where |
+|---|---|---|
+| `.tkb` | The published bundle: gzip around the binary below | `dist/bundles/`, the website, a device download |
+| `.tkb2` | The binary itself, decompressed | what the device stores, and what the firmware suites embed |
+
+The gzip is transport only. A device that reboots on every press must not
+re-inflate the corpus each time, so `SWAP` decompresses once and stores the raw
+image.
+
 A `.tkb` file is a deterministic gzip stream (`mtime=0`) around this flat
 binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
@@ -77,6 +93,27 @@ Its deck mask is `00000011` and metadata is `00000001`.
 
 `tools/build_bundle.py` contains `parse_bundle()`, the executable reference
 decoder. The tools unit suite round-trips both shipped languages.
+
+### Two decoders
+
+There are now two implementations of this format, and a change to it has to
+land in both:
+
+| | Where | Used by |
+|---|---|---|
+| Writer + reference decoder | `tools/build_bundle.py` | the bundle build, the tools suite |
+| Device reader | `firmware/lib/qdb/` | the firmware |
+
+They are checked against each other rather than against the spec alone: the
+firmware suites run the real bundles that `build_bundle.py` emits, and
+`firmware/tests/qdb` additionally decodes the worked example above byte for
+byte. A format change that updates only one side fails there.
+
+The device reader is stricter than the writer needs to be — it validates every
+declared length against the buffer at `open()` and rejects a bundle with
+trailing bytes — because it is the side that reads files arriving over the
+network. How it works is described under "qdb — the question store" in
+[firmware_architecture.md](firmware_architecture.md).
 
 ## Later device flow
 

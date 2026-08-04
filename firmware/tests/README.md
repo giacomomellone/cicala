@@ -44,10 +44,16 @@ The practical split: run `qemu_xtensa/dc233c` locally, let CI run `native_sim`.
 | `smoke` | The harness itself builds and runs | any | present |
 | `fsm` | Transition table, timeouts, fail-state entry | any | present |
 | `input` | Settle window, detent crossing, invalid selector, Next debounce | any | present |
-| `bag` | No repeat within a cycle, recent ring, fingerprint invalidation | any | planned |
-| `qdb` | TKB2 parse, deck mask, depth filter, round-trip of real bundles | any | planned |
-| `layout` | UTF-8 word wrap, German coverage, longest question fits | any | planned |
-| `app` | Drop during refresh, boot with a retained question | any | planned |
+| `app_fsm` | Every edge of the tabletop machine, drop during refresh, refresh timeout | any | present |
+| `qdb` | TKB2 parse, deck mask, depth filter, no repeat within a cycle, recent ring, fingerprint invalidation | any | present |
+| `layout` | UTF-8, accent decomposition, word wrap, every shipped question fits | any | present |
+| `panel` | Refresh policy, marks, every shipped question renders | any | present |
+| `integration` | GPIO to panel through the real threads and channels | any | present |
+
+`integration` is the one that checks seams rather than pieces: it builds every
+application source except `main.c`, drives the emulated selector and Next, and
+watches what reaches `chan_question` and `chan_render`. When something works in
+isolation but not on the device, that is the suite to extend.
 
 ## Fixtures
 

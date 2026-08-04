@@ -8,10 +8,10 @@ with the repository root as the working directory.
 The design this implements is [firmware architecture](firmware_architecture.md).
 The reasons behind each choice are in [decisions](decisions.md).
 
-**Status: bring-up.** Build system, board configuration, test harness, the
-`fsm` library, and the selector and Next button exist. The application state
-machine is design only, so this primer covers the machinery rather than the
-product.
+**Status: the tabletop loop works.** Turning the selector or pressing Next
+draws a question and renders it. Deep sleep, the power path, Wi-Fi sync and the
+setup portal are still design, so this primer covers the machinery as much as
+the product.
 
 ---
 
@@ -26,16 +26,22 @@ firmware/
 │   ├── prj.conf                shared config, all boards
 │   ├── Kconfig                 pulls in ../Kconfig.policy
 │   ├── boards/                 per-board config + devicetree overlay
-│   ├── include/                channels.h, input.h
+│   ├── include/                channels.h, input.h, panel.h, app_logic.h
 │   └── src/
 │       ├── channels.c          zbus channel definitions
 │       ├── input.c             selector one-hot + settle, Next
-│       └── main.c              console reporter, not the product
-├── lib/fsm/                    table-driven state machine, C++17
-└── tests/
-    ├── smoke/                  proves the harness works
-    ├── fsm/                    13 cases, injected clock
-    └── input/                  7 cases, emulated GPIO
+│       ├── app.c               the app thread and its subscriber
+│       ├── app_logic.cpp       state machine + question store behind a C API
+│       ├── display.c           the display thread
+│       ├── panel.cpp           CFB, refresh policy, accent marks
+│       └── main.c              boot only; the threads do the work
+├── lib/                        hardware-free C++17
+│   ├── fsm/                    table-driven state machine
+│   ├── app_fsm/                the tabletop machine built on it
+│   ├── qdb/                    TKB2 reader and shuffle bag
+│   └── layout/                 UTF-8, accents, word wrap
+└── tests/                      smoke, fsm, input, app_fsm, qdb,
+                                layout, panel, integration
 ```
 
 `deps/` is absent from the tree: it is Zephyr itself, cloned by `just fw-init`,

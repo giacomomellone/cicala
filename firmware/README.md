@@ -1,8 +1,8 @@
 # Firmware
 
-**Status: bring-up.** Build system, board configuration, test harness, the
-`fsm` library, and the selector and Next button exist — `just fw-monitor` shows
-deck changes and presses. The application state machine does not yet.
+**Status: the tabletop loop works.** Turning the selector or pressing Next
+draws a question from the compiled-in corpus and renders it on the e-paper.
+Still missing: deep sleep and the power path, Wi-Fi sync, and the setup portal.
 [docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
 design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
@@ -12,7 +12,7 @@ development targets the USB-powered breadboard rig in
 
 - ESP32-S3 DevKitC-1-N8R8 for breadboard development.
 - ESP32-S3-WROOM-1-N16 on the later target PCB.
-- One 2.13-inch, 250 × 122 e-paper display over SPI.
+- Waveshare 2.13-inch e-Paper HAT, 250 × 122, SSD1680 (V3/V4 revisions).
 - Six one-hot selector inputs and one independent Next button.
 - No OLED, encoder, depth control, or user-facing status LED.
 
@@ -38,6 +38,24 @@ just fw-test      # ztest suites via twister
 The west workspace uses T2 topology: `west.yml` here is the manifest, the repo
 root is the topdir, and Zephyr plus its modules land in a gitignored `deps/`.
 Nothing from upstream is committed.
+
+## Checking glyphs on hardware
+
+`CONFIG_TK_DEBUG_CHARSET=y` replaces the drawn question with a series of test
+pages — ASCII, then one per language, then every diacritic the renderer
+composes. Next steps through them and wraps around, and each page is logged as
+it is drawn, so `just fw-monitor` says what the panel should be showing. Useful
+for photographing accents and for judging a font change; never enabled in a
+shipped build.
+
+```sh
+just fw-charset     # build + flash the test image
+just fw-monitor     # each page is logged as it is drawn
+just fw-flash       # back to the real thing
+```
+
+It builds into `build/esp32s3-charset/`, so switching back is a flash rather
+than a rebuild.
 
 ## Interaction contract
 
@@ -92,12 +110,20 @@ firmware/
 │   ├── prj.conf            # shared config; LATER blocks track the architecture
 │   ├── Kconfig             # pulls in ../Kconfig.policy
 │   ├── boards/             # per-board conf + devicetree overlay
-│   ├── include/            # channels.h, input.h
-│   └── src/                # channels.c, input.c, main.c
-├── lib/fsm/                # table-driven state machine, C++17
+│   ├── include/            # channels.h, input.h, panel.h, app_logic.h
+│   └── src/                # zbus glue: app, display, input, panel, channels
+├── lib/                    # hardware-free C++17, shared with the suites
+│   ├── fsm/                # table-driven state machine
+│   ├── app_fsm/            # the tabletop machine built on it
+│   ├── qdb/                # TKB2 reader and shuffle bag
+│   └── layout/             # UTF-8, accent decomposition, word wrap
 ├── tests/                  # ztest suites, run by twister
 └── components/             # per-area contracts (README only, pre-Zephyr)
 ```
+
+Everything under `lib/` builds without a Zephyr header, which is what lets the
+suites run it on the host. `app/src/` is the glue that gives it channels,
+threads and a display.
 
 `Kconfig.policy` sits above `app/` because the test suites source the same file
 the application does; a suite that copied the settle window would keep passing
@@ -108,11 +134,15 @@ and power. They predate the Zephyr decision and describe responsibilities
 rather than a directory layout; the code lands under `app/src/`.
 
 Pins live in the board overlay so the same application logic moves to the
-target PCB by changing one file. Selector 0..5 are GPIO 4, 5, 6, 7, 15, 16 and
-Next is GPIO 17 — all inside GPIO0..21, the ESP32-S3's RTC-capable range,
-without which EXT1 deep-sleep wake is impossible. VBUS detect is unassigned and
-carries the same constraint. The panel deliberately avoids GPIO19 and GPIO20:
-they are the native USB pair that the debug console and JTAG share.
+target PCB by changing one file. The full map, the reasoning behind each pin,
+and how the DIP switch, button and e-paper HAT connect are in
+[docs/hardware_wiring.md](../docs/hardware_wiring.md).
+
+The short version: selector 0..5 are GPIO 4, 5, 6, 7, 15, 16 and Next is
+GPIO 17 — all inside GPIO0..21, the ESP32-S3's RTC-capable range, without which
+EXT1 deep-sleep wake is impossible. VBUS detect is unassigned and carries the
+same constraint. The panel avoids GPIO19 and GPIO20: they are the native USB
+pair the debug console and JTAG share.
 
 ## Breadboard acceptance
 

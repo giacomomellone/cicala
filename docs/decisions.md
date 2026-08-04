@@ -303,3 +303,31 @@ stdlib-plus-pyyaml-plus-jsonschema runtime policy is unaffected) and
 `prettier` with `prettier-plugin-astro` (dev-only, formats `website/` and
 markdown). `.prettierignore` excludes `questions/`, whose formatting
 `tools/validate.py --fix` owns.
+
+## 2026-08-04: A bespoke binary bundle rather than a standard container
+
+The question bundle stays the flat TKB2 binary in `sync_protocol.md` instead of
+CBOR, MessagePack, protobuf or SQLite. Reviewed when the name turned out to be
+undocumented and a standard format was floated as an alternative.
+
+The format has exactly one writer (`tools/build_bundle.py`) and one reader
+(`firmware/lib/qdb/`), both in this repo, and no third party ever parses it.
+That removes interoperability — the usual reason to pick a standard — from the
+argument, and leaves cost. A standard container needs a parser on the device:
+zcbor or nanopb is a new module in `west.yml` and flash spent on generality the
+device does not use. The current reader is about 120 lines, allocates nothing,
+and hands out questions as pointers into the mapped bundle. SQLite for 240
+read-only records on an MCU is not a serious option.
+
+The signing pipeline also prefers a plain byte range: ed25519 over the raw
+SHA-256 of the file, with no canonicalisation question to get wrong.
+
+Accepted cost: no off-the-shelf tooling can open a bundle, so the format is
+only as debuggable as `parse_bundle()` makes it, and the two decoders have to
+be changed together. The firmware suites decode real bundles the writer emits,
+which is what catches a one-sided change.
+
+Naming: TKB is the Tischkarte Bundle and the trailing digit is the format
+version. Nothing had recorded that, which is what prompted this entry. The name
+is internal — no release has ever published a bundle — so renaming it remains a
+mechanical change across about fifteen files if a better one turns up.

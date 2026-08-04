@@ -9,7 +9,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/` — ESP32-S3 device, Zephyr. Build system, board config, test harness, `lib/fsm`, and the selector and Next button exist; the application state machine does not. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
+- `firmware/` — ESP32-S3 device, Zephyr. The tabletop loop works: selector and Next in, question out on the e-paper. Deep sleep, power, sync and the portal are still design. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.
