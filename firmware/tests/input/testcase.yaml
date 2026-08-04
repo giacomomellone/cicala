@@ -1,0 +1,14 @@
+tests:
+  tischkarte.input:
+    # Both platforms emulate GPIO: native_sim does, and so does
+    # qemu_xtensa/dc233c, because boards/qemu_xtensa_dc233c.overlay
+    # instantiates a zephyr,gpio-emul controller. The driver is selected by the
+    # devicetree node, not by the host, so this suite runs on macOS.
+    platform_allow:
+      - qemu_xtensa/dc233c
+      - native_sim
+    integration_platforms:
+      - qemu_xtensa/dc233c
+    tags:
+      - tischkarte
+      - input

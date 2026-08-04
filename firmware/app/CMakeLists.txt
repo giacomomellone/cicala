@@ -8,6 +8,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/fsm tk_fsm)
 
 # Application logic is C++17, Zephyr-facing glue is C.
 target_sources(app PRIVATE
+    src/channels.c
+    src/input.c
     src/main.c
 )
 

@@ -9,8 +9,9 @@ The design this implements is [firmware architecture](firmware_architecture.md).
 The reasons behind each choice are in [decisions](decisions.md).
 
 **Status: bring-up.** Build system, board configuration, test harness, the
-`fsm` library and a blinky exist. The application state machine is design only,
-so this primer covers the machinery rather than the product.
+`fsm` library, and the selector and Next button exist. The application state
+machine is design only, so this primer covers the machinery rather than the
+product.
 
 ---
 
@@ -19,16 +20,22 @@ so this primer covers the machinery rather than the product.
 ```
 firmware/
 ├── west.yml                    manifest: zephyr revision + module allowlist
+├── Kconfig.policy              our own settings (CONFIG_TK_*), shared with tests
 ├── app/
 │   ├── CMakeLists.txt
 │   ├── prj.conf                shared config, all boards
-│   ├── Kconfig                 our own settings (CONFIG_TK_*)
+│   ├── Kconfig                 pulls in ../Kconfig.policy
 │   ├── boards/                 per-board config + devicetree overlay
-│   └── src/main.c              bring-up blinky
+│   ├── include/                channels.h, input.h
+│   └── src/
+│       ├── channels.c          zbus channel definitions
+│       ├── input.c             selector one-hot + settle, Next
+│       └── main.c              console reporter, not the product
 ├── lib/fsm/                    table-driven state machine, C++17
 └── tests/
     ├── smoke/                  proves the harness works
-    └── fsm/                    13 cases, injected clock
+    ├── fsm/                    13 cases, injected clock
+    └── input/                  7 cases, emulated GPIO
 ```
 
 `deps/` is absent from the tree: it is Zephyr itself, cloned by `just fw-init`,
@@ -100,8 +107,9 @@ sed -n '15,45p' deps/zephyr/boards/espressif/esp32s3_devkitc/esp32s3_devkitc_pro
 ```
 
 You will see an `aliases` block with `watchdog0` and not much else. In
-particular there is no `led0`, which is why blinky here does not use the usual
-`DT_ALIAS(led0)` — the DevKitC-1's only onboard LED is an addressable WS2812.
+particular there is no `led0`, which is why the bring-up LED here does not use
+the usual `DT_ALIAS(led0)` — the DevKitC-1's only onboard LED is an addressable
+WS2812, so ours is a discrete one on a pin we name.
 
 **Look at what we add:**
 
@@ -127,7 +135,8 @@ zephyr,user {
 };
 ```
 
-Change `2` to `4`, rebuild, and grep the generated header:
+Change `2` to `21` — not to one of the pins the selector, Next or the panel
+already claim — then rebuild and grep the generated header:
 
 ```sh
 just fw-build
@@ -140,12 +149,16 @@ moving the LED is an overlay edit and the same source still builds for the
 host.
 
 `zephyr,user` is a conventional catch-all node for application-specific
-properties that do not deserve a binding of their own. Good for bring-up,
-not where the real selector and panel go — those get proper nodes.
+properties that do not deserve a binding of their own. Good for bring-up, and
+not where the real selector and panel go — those have proper `gpio-keys` and
+`solomon,ssd1680` nodes in the same overlay.
 
-This is also why pin assignments stay open until the breadboard is wired: they
-live in the board overlay, so the same application logic moves to the target
-PCB by changing one file.
+The pins in that overlay are chosen, not arbitrary. Every selector contact and
+Next sits on GPIO0..21, the ESP32-S3's RTC-capable range, because EXT1
+deep-sleep wake works on no other pins; and the panel avoids GPIO19/20, which
+are the native USB pair the debug console and JTAG both use. They stay in the
+overlay rather than in C so the same application logic moves to the target PCB
+by changing one file.
 
 ---
 
@@ -325,6 +338,10 @@ it under qemu, and parses the output.
 | `testcase.yaml` | which platforms may run it |
 | `src/main.cpp` | `ZTEST_SUITE` and `ZTEST` cases |
 
+A suite that needs the application's own `CONFIG_TK_*` values adds a `Kconfig`
+with `rsource "../../Kconfig.policy"`, the same file `app/Kconfig` pulls in, so
+changing the settle window changes what the test asserts.
+
 A library added with `add_subdirectory` after `find_package(Zephyr)` needs two
 lines that are easy to miss, because Zephyr collects its own libraries before
 `find_package` returns: `add_dependencies(<lib> zephyr_generated_headers)` so
@@ -333,10 +350,13 @@ it does not compile before the generated headers exist, and
 `firmware/lib/fsm/CMakeLists.txt` is the worked example.
 
 **Platforms.** `qemu_xtensa/dc233c` is the default: a full Zephyr kernel on
-macOS, same architecture as the target. `native_sim` is faster and is the only
-host platform that emulates GPIO, but it builds on Linux only — so suites that
-drive the selector and Next need it, and that is what `just fw-test-linux`
-(Docker) and CI are for.
+macOS, same architecture as the target. `native_sim` is faster and builds on
+Linux only, which is what `just fw-test-linux` (Docker) and CI are for.
+
+Emulated GPIO is available on both. `CONFIG_GPIO_EMUL` is selected by a
+`zephyr,gpio-emul` node in the devicetree, not by the host, so a suite that
+drives the selector and Next — `tests/input` — runs under qemu on macOS like
+any other. Its overlay is `tests/input/boards/qemu_xtensa_dc233c.overlay`.
 
 **Fixtures.** `qdb` tests will run against real question bundles rather than
 hand-written bytes. `just fw-fixtures` builds them from the question database

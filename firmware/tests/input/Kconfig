@@ -1,0 +1,8 @@
+# The application's policy symbols, so the suite tests the window the device
+# actually ships with instead of a number copied into the test.
+
+mainmenu "tischkarte input tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"

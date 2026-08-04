@@ -1,17 +1,32 @@
 /*
  * ESP32-S3-DevKitC-1 breadboard rig.
  *
- * PIN NUMBERS BELOW ARE PLACEHOLDERS. docs/firmware_architecture.md lists pin
- * assignment as an open item, blocked on the breadboard wiring being
- * documented. Two hard constraints apply when they are chosen:
+ * Pin assignment, and why each one:
  *
- *   1. All seven wake inputs (six selector contacts + Next) must be on
- *      RTC-capable GPIOs, or EXT1 deep-sleep wake is impossible.
- *   2. VBUS detect must also be RTC-capable.
+ *   selector 0..5   GPIO 4, 5, 6, 7, 15, 16
+ *   Next            GPIO 17
+ *   blink           GPIO 2
+ *   e-paper         GPIO 10 CS, 11 MOSI, 12 SCLK, 13 MISO (the board's own
+ *                   spim2_default), 18 D/C, 8 RESET, 9 BUSY
+ *   VBUS detect     unassigned; RTC-capable when it is
+ *
+ * The binding constraint is deep sleep: all seven wake inputs, and later VBUS
+ * detect, must be RTC-capable or EXT1 wake is impossible. On the ESP32-S3 that
+ * means GPIO0..21, which every input above satisfies. Avoided within that
+ * range: GPIO0 and GPIO3 are strapping pins, and GPIO19/GPIO20 are the native
+ * USB D-/D+ pair — the same peripheral app/debug.overlay puts the debug
+ * console on and OpenOCD debugs through, so the panel's RESET and BUSY sit on
+ * 8 and 9 instead.
  *
  * A six-way DIP switch and a through-hole button are valid bring-up
- * substitutes for the SRBV160803 and KSC321G.
+ * substitutes for the SRBV160803 and KSC321G. Wire each one to GND: the pins
+ * are active low with internal pull-ups, so closed reads as pressed.
+ *
+ * The one number here still taken on faith is the panel wiring, which has not
+ * been on a bench yet.
  */
+
+#include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
     aliases {
@@ -35,28 +50,41 @@
      */
     tk_selector: tk-selector {
         compatible = "gpio-keys";
+        /*
+         * Per-contact debounce, done by the in-tree driver. The 600 ms
+         * one-hot settle on top of it is CONFIG_TK_SELECTOR_SETTLE_MS in
+         * src/input.c — devicetree is processed before Kconfig, so a policy
+         * value cannot be referenced from here.
+         */
+        debounce-interval-ms = <30>;
         tk_deck_0: deck_0 {
             gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_0>;
             label = "new_people";
         };
         tk_deck_1: deck_1 {
             gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_1>;
             label = "close";
         };
         tk_deck_2: deck_2 {
             gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_2>;
             label = "family";
         };
         tk_deck_3: deck_3 {
             gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_3>;
             label = "work";
         };
         tk_deck_4: deck_4 {
             gpios = <&gpio0 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_4>;
             label = "here";
         };
         tk_deck_5: deck_5 {
             gpios = <&gpio0 16 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_BTN_5>;
             label = "wild";
         };
     };
@@ -64,8 +92,11 @@
     /* Next is independent of the selector: pressing cannot disturb the deck. */
     tk_buttons: tk-buttons {
         compatible = "gpio-keys";
+        /* Matches CONFIG_TK_NEXT_DEBOUNCE_MS; see the note above. */
+        debounce-interval-ms = <30>;
         tk_next: next {
             gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_KEY_ENTER>;
             label = "next";
         };
     };
@@ -91,8 +122,9 @@
         width = <250>;
         height = <122>;
         dc-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
-        reset-gpios = <&gpio0 19 GPIO_ACTIVE_LOW>;
-        busy-gpios = <&gpio0 20 GPIO_ACTIVE_HIGH>;
+        /* Not 19 and 20: those are native USB D-/D+. See the header. */
+        reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
+        busy-gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>;
         status = "okay";
     };
 };

@@ -1,6 +1,5 @@
 /*
- * Host build. GPIO is emulated so tests can drive the selector and Next
- * without hardware; the display is a dummy whose framebuffer the tests read.
+ * Same nodes as firmware/app/boards/native_sim.overlay, minus the blink pin.
  *
  * Index order matches the target overlay and questions/schema.json
  * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
@@ -9,10 +8,6 @@
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
-    aliases {
-        tk-next = &tk_next;
-    };
-
     tk_selector: tk-selector {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
@@ -28,19 +23,5 @@
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
-    };
-
-    /* Bring-up blinky pin, so src/main.c builds for the host too. */
-    zephyr,user {
-        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
-    };
-
-    chosen {
-        zephyr,display = &dummy_dc;
-    };
-
-    dummy_dc: dummy_dc {
-        compatible = "zephyr,dummy-dc";
-        status = "okay";
     };
 };

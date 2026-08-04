@@ -5,10 +5,10 @@ which modules depend on Zephyr. Interaction rules are in [design.md](design.md),
 the data contract in [sync_protocol.md](sync_protocol.md), rationale in
 [decisions.md](decisions.md).
 
-**Status: partly built.** `fsm` and a bring-up blinky exist and are tested;
-everything else is design. Items marked *verify* have not been run on hardware.
-The [firmware primer](firmware_primer.md) is the hands-on tour of what is
-there.
+**Status: partly built.** `fsm`, `chan_selector`, `chan_next` and the input
+component that feeds them exist and are tested; everything else is design.
+Items marked *verify* have not been run on hardware. The
+[firmware primer](firmware_primer.md) is the hands-on tour of what is there.
 
 ## The one constraint
 
@@ -269,21 +269,27 @@ so the fallback is a write-coalesced NVS record, not a redesign.
 
 ```mermaid
 flowchart LR
-    A["fsm · qdb · bag · layout<br/><b>no Zephyr headers</b>"] --> H["qemu_xtensa/dc233c<br/><i>macOS, full kernel</i>"]
-    B["state machine · settle window<br/>drop-during-refresh"] --> N["native_sim<br/><i>Linux only, emulates GPIO</i>"]
+    A["fsm · qdb · bag · layout<br/><b>no Zephyr headers</b>"] --> H
+    B["state machine · settle window<br/>drop-during-refresh<br/><i>gpio-emul</i>"] --> H["qemu_xtensa/dc233c<br/><i>macOS, full kernel</i>"]
+    B --> N["native_sim<br/><i>Linux only, faster</i>"]
     C["timing · power · panel · ghosting"] --> HW["breadboard<br/><i>hardware required</i>"]
 
     classDef t fill:#eef1f4,stroke:#8a97a6
     class H,N,HW t
 ```
 
+Emulated GPIO is not a `native_sim` feature: `CONFIG_GPIO_EMUL` follows a
+`zephyr,gpio-emul` devicetree node and works on either host platform, so the
+suites that drive the selector and Next run in the default macOS loop.
+
 `qdb` suites run against real bundles built from the question database by
 `just fw-fixtures`, not hand-written bytes.
 
 ## Open items
 
-- Pin assignments. Constraint: all six selector contacts, Next and VBUS must be
-  RTC-capable GPIOs, or EXT1 wake is impossible.
+- VBUS detect has no pin yet. The six selector contacts and Next are assigned
+  in the devkit overlay, all inside the ESP32-S3's RTC-capable GPIO0..21, and
+  VBUS must land there too or EXT1 wake is impossible.
 - Full-refresh interval, from observed ghosting rather than a chosen number.
 - Bundled font and its German coverage.
 - Whether `build_bundle.py` should assert the device's text buffer size so an

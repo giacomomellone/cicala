@@ -1,16 +1,25 @@
 /*
- * Host build. GPIO is emulated so tests can drive the selector and Next
- * without hardware; the display is a dummy whose framebuffer the tests read.
+ * Same nodes as firmware/app/boards/qemu_xtensa_dc233c.overlay, minus the
+ * blink pin the suite has no use for. The pins are emulator indices; the
+ * suite drives them with gpio_emul_input_set().
  *
  * Index order matches the target overlay and questions/schema.json
  * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
  */
 
+#include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
-    aliases {
-        tk-next = &tk_next;
+    gpio0: gpio_emul {
+        compatible = "zephyr,gpio-emul";
+        gpio-controller;
+        #gpio-cells = <2>;
+        ngpios = <32>;
+        rising-edge;
+        falling-edge;
+        high-level;
+        low-level;
     };
 
     tk_selector: tk-selector {
@@ -28,19 +37,5 @@
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
-    };
-
-    /* Bring-up blinky pin, so src/main.c builds for the host too. */
-    zephyr,user {
-        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
-    };
-
-    chosen {
-        zephyr,display = &dummy_dc;
-    };
-
-    dummy_dc: dummy_dc {
-        compatible = "zephyr,dummy-dc";
-        status = "okay";
     };
 };

@@ -51,9 +51,11 @@ export ZEPHYR_SDK_INSTALL_DIR := sdk
 
 export PATH := justfile_directory() / ".venv/bin:" + env("PATH")
 
-# Host test platform. native_sim is faster and is the only one that emulates
-# GPIO, but it builds on Linux only — so qemu_xtensa (full kernel, target
-# architecture, runs on macOS) is the default. Override for a Linux host:
+# Host test platform. native_sim is faster but builds on Linux only, so
+# qemu_xtensa (full kernel, target architecture, runs on macOS) is the default.
+# Both emulate GPIO — CONFIG_GPIO_EMUL follows a zephyr,gpio-emul devicetree
+# node, not the host — so the selector and Next suites run either way.
+# Override for a Linux host:
 #   just simboard=native_sim fw-test
 
 simboard := "qemu_xtensa/dc233c"
@@ -318,13 +320,13 @@ fw-fixtures: bundle
     done
     @ls -l firmware/tests/fixtures/
 
-# firmware suites under qemu (one suite: just fw-test bag)
+# firmware suites under qemu (one suite: just fw-test input)
 [group('tests')]
 fw-test suite="": fw-fixtures
     {{ west }} twister -T firmware/tests{{ if suite == "" { "" } else { "/" + suite } }} \
         -p {{ simboard }} --inline-logs -O build/twister
 
-# firmware suites on native_sim in docker — the GPIO-driven ones qemu can't run
+# firmware suites on native_sim in docker — what CI runs
 [group('tests')]
 fw-test-linux suite="": fw-fixtures
     docker run --rm --platform linux/amd64 -v "$PWD:/work" -w /work {{ ci_image }} \

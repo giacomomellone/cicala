@@ -9,7 +9,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/` — ESP32-S3 device, Zephyr. Build system, board config, test harness, `lib/fsm` and a bring-up blinky exist; the application state machine does not. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
+- `firmware/` — ESP32-S3 device, Zephyr. Build system, board config, test harness, `lib/fsm`, and the selector and Next button exist; the application state machine does not. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.
@@ -32,7 +32,7 @@ Each part of the tree has a harness already, so a new test almost never needs ne
 
 - `tools/` — Python `unittest`, run by `just test-tools`.
 - `website/` — vitest, run by `just test-website`.
-- `firmware/` — ztest suites under `firmware/tests/`, run by `just fw-test` (qemu) or `just fw-test-linux` (native_sim, the only platform that emulates GPIO).
+- `firmware/` — ztest suites under `firmware/tests/`, run by `just fw-test` (qemu) or `just fw-test-linux` (native_sim, Linux only). Both platforms emulate GPIO: `CONFIG_GPIO_EMUL` follows a `zephyr,gpio-emul` devicetree node, not the host.
 
 `just test` runs everything that needs no hardware, and is what CI runs. Run it before proposing a change.
 
