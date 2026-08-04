@@ -12,6 +12,12 @@ of the six channels. Still design: `sync`, `portal`, `power`, deep sleep, and
 the retained state that depends on it. Items marked *verify* have not been run
 on hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
+This document follows the code that exists: six one-hot category inputs from
+the current DIP switch and one Next button. The target enclosure has adjacent
+Category and Next buttons. Its input mapping and retained category state are a
+later firmware change, after a second button is available; the sections below
+must not be read as rev A schematic requirements.
+
 ## The one constraint
 
 Below 30 µA means deep sleep, and on the ESP32-S3 deep sleep is a reboot: SRAM
@@ -352,8 +358,9 @@ of them.
 **Turning the selector announces the deck; Next asks a question.** The deck's
 name goes on the panel and stays there until someone presses. That is what
 makes the deck legible without printing the six names on the case — and it is
-what would let a second button replace the rotary selector entirely, since a
-deck you can read on the glass does not need a labelled detent.
+what lets the target Category button replace the rotary selector, since a deck
+you can read on the glass does not need a labelled detent. The current input
+path remains the DIP switch until the hardware and tests change together.
 
 `SHOWING` checks Next before the selector, so a press made while the name is up
 gets a question rather than the name again. In practice the two cannot both be
@@ -563,6 +570,10 @@ suites that drive the selector and Next run in the default macOS loop.
 
 ## Open items
 
+- Category-button transition: replace the six one-hot selector inputs with one
+  wake input, retain the category in RTC state, define the New People cold
+  default, and test dropped Category presses during refresh. This waits for a
+  second physical button.
 - VBUS detect has no pin yet. The six selector contacts and Next are assigned
   in the devkit overlay, all inside the ESP32-S3's RTC-capable GPIO0..21, and
   VBUS must land there too or EXT1 wake is impossible.

@@ -13,6 +13,11 @@ draws a question and renders it. Deep sleep, the power path, Wi-Fi sync and the
 setup portal are still design, so this primer covers the machinery as much as
 the product.
 
+This primer describes the current DIP-switch breadboard and its code. The
+[device prototype](device_prototype.md) now targets adjacent Category and Next
+buttons, but that input transition waits until a second physical button is
+available.
+
 ---
 
 ## 1. What is here

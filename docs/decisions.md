@@ -331,3 +331,28 @@ Naming: TKB is the Tischkarte Bundle and the trailing digit is the format
 version. Nothing had recorded that, which is what prompted this entry. The name
 is internal — no release has ever published a bundle — so renaming it remains a
 mechanical change across about fifteen files if a better one turns up.
+
+## 2026-08-04: Replace the rotary selector with a Category button
+
+The default enclosure has two adjacent buttons, Category and Next. Category
+cycles through `new_people`, `close`, `family`, `work`, `here`, and `wild`; the
+e-paper names the active category. Next draws from the category shown. This
+supersedes the 2026-07-26 six-position selector and English-bezel decisions for
+the target product. It also supersedes the question-only e-paper rule from the
+OLED deletion decision: the OLED stays deleted, while the active category now
+shares the e-paper with the question.
+
+Removing the knob deletes the shaft opening, labelled arc, uncommon SP6T part,
+rotational load, and selector-specific ingress path. Category names move into
+the existing language and font system. The question screen keeps the active
+category visible so category state remains readable without power.
+
+Accepted cost: category choice becomes sequential and software-retained rather
+than mechanically absolute. Reaching a category may take five presses, and
+each visible update costs an e-paper refresh. The two-button interaction must
+pass a physical study before schematic capture.
+
+The current USB breadboard and firmware are not changed by this decision. They
+continue to use the six-way DIP switch as six one-hot category inputs and one
+Next button until a second button is available. The input mapping, retained
+category state, state machine, and tests change together in a later commit.

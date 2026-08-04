@@ -4,7 +4,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo. The product's core asset. Licensed [CC0](LICENSE-QUESTIONS): every question is dedicated to the public domain.
 2. **[Website](website/)**: a free, static front-end to the database. No accounts. Anyone can play, save favorites, and contribute questions.
-3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display, a six-position absolute deck selector, and a separate Next button. [Firmware](firmware/) remains a structure-only stub.
+3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Category and Next buttons. The current [firmware](firmware/) breadboard still uses a six-way DIP switch for category selection.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 

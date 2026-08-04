@@ -29,25 +29,29 @@ notifications, or reason to be checked between questions.
 
 ## The complete device interaction
 
-The top face has a six-position absolute rotary selector, a separate Next
-button, and one e-paper display.
+The top face has adjacent Category and Next buttons and one e-paper display.
+The active category is printed on the e-paper rather than around a physical
+selector.
 
 | Input | Action | Feedback |
 |---|---|---|
-| Rotate to a detent | Select `new people`, `close`, `family`, `work`, `here`, or `wild` | The shaft points at a printed English label. After the contacts remain stable for about 600 ms, the e-paper draws a question from that deck |
+| Press Category | Advance through `new people`, `close`, `family`, `work`, `here`, and `wild` | Replace the old question with the selected category name; Wild wraps to New People |
 | Press Next | Draw another eligible question | One e-paper refresh |
 | Hold Next | Same as a short press | One e-paper refresh; press duration has no second meaning |
-| Leave it alone | Sleep | The question and selector position remain readable |
+| Leave it alone | Sleep | The question and active category remain readable on e-paper |
 | Connect USB while holding Next | Enter service setup | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
 
 Hard rules:
 
-- E-paper shows a question and nothing else: no logo, number, category, status,
-  menu, progress, or follow-up nudge.
-- The physical selector is the deck state. Firmware must read it on every wake
-  rather than restoring a remembered deck.
-- A selector change draws a question. Requiring an extra press would add an
-  avoidable step.
+- E-paper shows the active category and either its question or a category-only
+  selection screen: no logo, number, status, menu, progress, or follow-up
+  nudge.
+- Category advances one step in a fixed cycle. Next always draws from the
+  category printed on the panel.
+- The active category is retained with the other RTC state and defaults to New
+  People after total state loss.
+- A press discarded during an e-paper refresh changes neither the display nor
+  hidden category state.
 - Long press is not Favorite. The device has no way to confirm a save without
   adding status UI, and a hidden saved collection would introduce a mode.
 - Wi-Fi is optional. Sync runs while charging and never interrupts use.
@@ -55,7 +59,7 @@ Hard rules:
 ## Six decks
 
 Decks are eligibility lenses, not mutually exclusive folders. One stored
-question may be eligible for several selector positions.
+question may be eligible for several category choices.
 
 | Deck | Assumption |
 |---|---|
@@ -98,7 +102,7 @@ before it earns a component.
 
 Navigation is play / browse / contribute / device.
 
-1. The player: one question in dominant type, a six-position deck selector,
+1. The player: one question in dominant type, a six-choice deck control,
    Next, save, and share. It uses depths 1 and 2 and defaults to New People.
 2. Browse: all questions, including depth 3, with deck and editorial metadata.
 3. Contribution: one question stored once, with one or more eligible decks and

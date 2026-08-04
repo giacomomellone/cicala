@@ -9,13 +9,18 @@ drives it is [firmware architecture](firmware_architecture.md).
 confirmed working. The panel wiring below is derived from the devicetree and
 the Waveshare pinout but has not been on a bench yet.
 
+This is the current compatibility rig, not the target enclosure. The default
+[device prototype](device_prototype.md) uses Category and Next buttons, but the
+firmware still needs the six-way DIP switch until a second button is available
+and the input path is changed in code.
+
 ## Parts
 
 | Part | Role |
 |---|---|
 | ESP32-S3-DevKitC-1-N8R8 | The firmware target. 8 MB flash, 8 MB PSRAM, native USB and a CP2102 UART bridge |
 | Waveshare 2.13-inch e-Paper HAT | 250 × 122 display, SSD1680 controller, 3.3 V logic |
-| Six-way DIP switch | Stands in for the SRBV160803 rotary selector |
+| Six-way DIP switch | Supplies the six one-hot category inputs expected by the current firmware |
 | Tactile push-button | Stands in for the KSC321G |
 | LED + 330 Ω resistor | Bring-up confirm; not on the final device |
 | Breadboard and jumpers | — |

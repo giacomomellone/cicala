@@ -10,10 +10,12 @@ manufacturing dimension.
 Envelope requirements from the product design ([docs/design.md](../../docs/design.md)):
 
 - Pocketable; the e-paper window is the face. The device lies flat mid-table like a place card.
-- One six-position absolute rotary selector with a visible pointer and replaceable English bezel.
-- One separate low-profile Next button. The cap needs an overload stop independent of the PCB.
+- Two adjacent low-profile buttons, Category on the left and Next on the right.
+  Each cap needs an overload stop independent of the PCB.
+- The active category is printed on the e-paper above the question; no category
+  legend is printed on the shell.
 - USB-C on the bottom edge; no visible LEDs on the tabletop faces.
 - Battery: 503035 LiPo (30 × 35 × 5 mm) behind the display stack.
 - Two-part, reopenable shell; no destructive adhesive for the cell, display, or PCB.
 - E-paper glass supported around its perimeter and protected from spills and point loads.
-- A tested ingress path around the selector shaft, Next cap, lens, USB opening, and shell seam.
+- Tested ingress paths around both button caps, the lens, USB opening, and shell seam.

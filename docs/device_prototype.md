@@ -1,183 +1,154 @@
 # Device prototype direction
 
-This is the description for the staged device prototype. It is not a finished
-industrial design. Firmware and electrical work begin on a USB-powered
-breadboard before PCB layout, enclosure integration, or 3D printing.
+This is the default direction for the staged device prototype. It is not a
+finished industrial design. Firmware and electrical work still begin on the
+existing USB-powered breadboard before PCB layout, enclosure integration, or
+3D printing.
 
 !!! warning "Concept renders, not manufacturing data"
 
     The renders communicate layout and use. They do not replace CAD, component
     drawings, tolerance analysis, antenna work, or a verified PCB.
 
-![Warm-ivory device with one e-paper display, a six-position selector, and a separate Next button](assets/device-prototype/hero.webp)
+!!! note "The breadboard still uses the DIP switch"
+
+    The current firmware reads six one-hot category inputs from the six-way DIP
+    switch and one Next button. That rig and its code remain unchanged until a
+    second physical button is available. The two-button interface below is the
+    target product design, not a description of the current wiring.
+
+![Warm-ivory device with one e-paper display and adjacent Category and Next buttons](assets/device-prototype/hero.webp)
 
 ## Evaluation of the proposal
 
-The OLED should go. Its category preview is redundant once a fixed selector
-points at a printed label. A generic follow-up belongs in the question text or
-in the people listening. Wi-Fi, language, and maintenance are easier on a phone
-than on a narrow status display. Removing the OLED also removes a competing
-surface, its driver, rail, load switch, window, and layout work.
+The rotary selector should go. Its fixed labels take most of the space above
+the display, freeze the category count and language into the enclosure, and
+add a shaft, seal, mechanical support, and uncommon switch. The firmware
+already proves that a category name can be rendered on e-paper. Printing the
+active category there removes the need for a labelled detent.
 
-Three parts of the earlier proposal should not be built yet:
+The device instead has two adjacent buttons:
 
-1. **A public depth slider is ambiguous.** Its proposed benefit is giving
-   someone a low-cost way to set a boundary. On a date or at work, moving a
-   control toward “light” may itself feel like a public rejection. The device
-   should initially mix editorial depths 1 and 2 and let Next reject a prompt
-   without explanation. Depth 3 stays out of normal playback.
-2. **Six deck labels are not a validated taxonomy.** `new people`, `close`,
-   `family`, `work`, `here`, and `wild` make sense as contexts, but a physical
-   selector freezes the count. Use a replaceable printed bezel and do not order
-   custom hardware until people can distinguish New People from Close and
-   understand Wild without an explanation.
-3. **The compact selector is not sealed.** Alps Alpine SRBV160803 is a useful
-   model part, not a final ingress solution. A sealed C&K MA06L1NCGF exists, but
-   it costs roughly 27.55 EUR in single quantity and has worse availability.
-   An enclosure shaft seal may preserve the compact part, but its torque and
-   spill behavior need physical testing.
+- **Category** advances through the six categories in a fixed order and shows
+  the selected name on the e-paper;
+- **Next** draws a question from the category named on the display.
 
-Two controls may also look more complicated than one push encoder. The added
-Next button is still the clearer choice because the selector remains absolute:
-pressing cannot disturb the selected deck, and every press duration means the
-same thing.
+The change trades a mechanically visible selection for software state. It also
+makes reaching a particular category sequential: Wild can be five presses away
+from New People. The physical study must measure whether that delay and the
+e-paper refresh are acceptable. A knob should not return unless the two-button
+study shows a concrete problem that outweighs its size and mechanical cost.
+
+The earlier OLED and public depth-slider proposals remain rejected. Category
+feedback belongs on the e-paper. Wi-Fi, language, and maintenance remain phone
+or service-flow concerns. Normal playback mixes editorial depths 1 and 2;
+depth 3 stays out of normal playback.
 
 ## Proposed form
 
-The face has three elements: e-paper, an absolute selector, and Next. The
-display shows only the question.
+The face has three elements: e-paper, Category, and Next. The two buttons sit
+close together above the display and use the same shape and travel. Their
+printed labels identify the action; category names are printed by the display.
 
 | Property | Study target | Reason |
 |---|---:|---|
-| Envelope | about 84 × 56 × 16 mm | Allows a real six-position switch, readable labels, button, and the 59.2 × 29.2 mm panel |
-| Mass | 80–100 g | Resists one-handed rotation and button presses |
+| Envelope | about 84 × 56 × 16 mm | Allows the 59.2 × 29.2 mm panel, readable button labels, and finger clearance |
+| Mass | 80–100 g | Resists one-handed button presses |
 | Orientation | landscape, 3° face incline | Keeps the device readable without becoming a wedge |
-| Display | 2.13″ e-paper behind a matte protective lens | Persistent question surface |
-| Selector | six-position absolute rotary switch with fixed stops | Position remains visible without power and cannot wrap |
-| Next | separate low-profile round button | One action with no press-duration vocabulary |
-| Legend | replaceable English bezel: `new people · close · family · work · here · wild` | Initial study needs readable words, not untested icons |
+| Display | 2.13″ e-paper behind a matte protective lens | Keeps the category and question visible without power |
+| Category | low-profile round button, left | Advances one category per accepted press |
+| Next | matching low-profile round button, right | Draws one question; no press-duration vocabulary |
+| Display label | active category in small type above the question | Avoids a printed category ring and supports future languages |
 | Port | centered USB-C on the lower edge | Absent from the main tabletop view |
-| Finish | warm-ivory matte shell; charcoal knob and button | Matches the paper-like website |
+| Finish | warm-ivory matte shell; two charcoal buttons | Matches the paper-like website |
 
-The size is a planning envelope. Component drawings and a label legibility test
-may change it.
+The size is a planning envelope. Component drawings, button-label legibility,
+and the e-paper layout test may change it.
 
-![People using the OLED-free prototype at a table](assets/device-prototype/tabletop.webp)
+![People using the two-button prototype at a table](assets/device-prototype/tabletop.webp)
 
-## How the selector aligns with the labels
+## How category selection works
 
-This is a stepped rotary switch, not a free-spinning potentiometer or a
-software encoder. The switch supplies six electrical positions, tactile index
-points, and end stops. SRBV160803 indexes every 30 degrees, so its six centers
-occupy a 150-degree arc. It does not wrap from Wild to New People.
+The order stays `new people`, `close`, `family`, `work`, `here`, `wild`.
+Category advances one step and wraps from Wild to New People. A category press
+replaces the old question with the new category name; another Category press
+continues cycling, while Next draws from the category currently shown. A
+question screen keeps the active category in a small line above the question.
 
-Alignment is mechanical:
+This gives every state a visible result:
 
-- the PCB footprint fixes the switch body;
-- the D-flat shaft fixes the knob angle;
-- a keyed knob or pointer marks the selected center;
-- the bezel artwork is dimensioned from the manufacturer's index angle;
-- the enclosure prevents the switch body from rotating under torque.
+- an accepted Category press changes the name on the e-paper;
+- an accepted Next press changes the question under that name;
+- a press discarded during a panel refresh changes neither the display nor the
+  stored category;
+- removing power leaves the last category and question readable on the panel.
 
-The first paper bezel should include center ticks as well as words. A jig sets
-the shaft to its first hard stop before the knob is pressed on. The model study
-must test tolerance at both end labels. A label ring that only looks aligned in
-the middle is a failed design.
-
-The switch has one common and six contacts. The simple electrical contract is
-one GPIO per position with pull resistors. Six GPIOs cost more pins than an
-encoder, but avoid ADC thresholds, calibration, and remembered software state.
-A coded sealed switch could reduce pin use later; it is not needed for the
-model.
+The eventual two-button firmware will retain the category alongside the other
+RTC state and default to New People after total state loss. That behavior is
+not implemented in this documentation change. The current firmware continues
+to obtain the category from the DIP switch after every boot.
 
 ## Candidate controls
 
-### Compact study selector
-
-**Alps Alpine SRBV160803**: SP6T, six positions, 30 ± 3 degree indexing,
-30 ± 15 mN·m torque, 15 mm D-flat shaft, 16.2 × 18.5 × 7.5 mm body, and
-10,000-cycle life. Mouser listed 213 in stock at 9.07 USD each in July 2026,
-with a 16-week factory lead time beyond stock. It is an active standard part,
-but it is uncommon and materially more expensive than an EC11 encoder.
-
-Use one sample in the electrical bench rig, connected to the breadboard with
-soldered wires. Before enclosure integration, check:
-
-- whether the detent feels deliberate at table scale;
-- whether the two hard stops are clear;
-- whether the 15 mm shaft can be shortened or buried without weakening the
-  pointer;
-- whether the body and antenna can coexist;
-- whether a shaft lip seal adds unacceptable torque.
-
-### Sealed comparison
-
-**C&K MA06L1NCGF**: SP6T, fixed index stops, 36-degree indexing, flatted
-10.16 mm shaft, 10.42 mm depth behind panel, and IP67 shaft/panel sealing.
-Mouser France listed 69 at 27.55 EUR each in July 2026; current factory lead
-time was 17–19 weeks. It is too costly to assume for production, but one sample
-can establish the size and feel of a genuinely sealed control.
-
-### Next input
+Use the same sealed tactile switch for both actions so force, travel, height,
+and enclosure detailing match.
 
 **C&K KSC321GLFS**: IP67 SPST-NO tact switch, 6.2 × 6.2 mm footprint,
-3.5 mm actuator height, 2 N force, and 300,000-cycle rating. It needs an
-external button cap with a mechanical stop so enclosure loads do not crush the
-switch. Mouser listed 5,732 at 0.413 EUR each in July 2026.
+3.5 mm actuator height, 2 N force, and 300,000-cycle rating. Each switch needs
+an external button cap with its own mechanical stop so enclosure loads do not
+crush the switch.
 
 IP67 at the component does not make the assembled enclosure IP67. The lens,
-USB opening, shell seam, selector shaft, and button-cap interface need their
-own paths and tests.
+USB opening, shell seam, and both button-cap interfaces need their own paths
+and tests.
 
 ## Mechanical stack
 
-The previous 14 mm target assumed a low encoder and OLED rail. Six fixed
-contacts and a separate button change the stack. Start at 16 mm and earn any
-reduction through CAD.
+Start at 16 mm and earn any reduction through CAD.
 
 | Layer | Planning allowance |
 |---|---:|
 | Top shell, lens, display support | 1.8–2.2 mm |
 | E-paper plus compliant perimeter support | 1.0–1.5 mm |
 | PCB | 1.0–1.2 mm |
-| Local electronics | 2.5–3.2 mm |
+| Local electronics and tactile switches | 2.5–3.5 mm |
 | Protected 503035 cell | 5.0–5.5 mm |
 | Bottom shell and clearance | 1.8–2.2 mm |
 
-The switch and cell cannot stack. Put the selector beside the display/cell
-stack and carry rotational loads into a chassis boss, not through solder
-joints. Support the e-paper glass continuously around its perimeter. Use four
-elastomer feet positioned to resist selector torque and the Next press.
+Put both switches in the same control area above the panel and carry button
+loads into the top shell with cap stops. Support the e-paper glass continuously
+around its perimeter. Use four elastomer feet positioned to resist either
+button press.
 
-The legend should be a replaceable laser-printed or UV-printed insert for the
-study. This accepts the first prototype's English-only cost without pretending
-that six tiny icons are language-neutral. A future language variant can change
-the bezel, but long labels, right-to-left scripts, and character coverage remain
-open.
+Moving category names onto the display removes the replaceable bezel and its
+English-only geometry. It does not solve every language problem: the category
+line still needs tested fonts, right-to-left layout, and enough width for the
+longest released label.
 
-![Exploded concept without an OLED or rotary encoder](assets/device-prototype/exploded.webp)
+![Exploded concept with two tactile buttons and no rotary control](assets/device-prototype/exploded.webp)
 
 ## Electrical contract
 
-The breadboard firmware rig exercises the input and display behavior before a
-custom schematic. The later rev A board must account for:
+The later two-button rev A board must account for:
 
 - ESP32-S3-WROOM-1-N16 and the GDEY0213B74 e-paper circuit;
-- six one-hot selector contacts and one independent Next wake input;
+- one Category wake input and one independent Next wake input;
+- retained category state with a defined New People cold default;
 - an integrated charging power path or a validated load-sharing circuit;
 - USB-C input and ESD protection, VBUS detection, and switched battery sensing;
 - a protected 503035 cell with charge current set from its data sheet;
 - e-paper power gating and a measured whole-device sleep budget below 30 µA;
-- antenna keep-out clear of the display, battery, selector metal, and copper;
+- antenna keep-out clear of the display, battery, button hardware, and copper;
 - hidden development pads, with no extra user-facing controls.
 
-The selector is read after every wake. A contact transition must settle for
-about 600 ms before it draws, which ignores make/break chatter and avoids
-flashing through intermediate questions. There is no stored category, session
-counter, escalation state, or Favorite event.
+The current DevKitC overlay is deliberately different: six active-low,
+one-hot DIP-switch inputs provide the category and one tactile input provides
+Next. It remains the firmware contract until the second button is on the bench.
+Changing that input model, retained state, channels, and tests is a later code
+change.
 
-The question bundle stores each question once with a six-bit deck mask and
-depth metadata. Normal playback excludes depth 3. See
+The question bundle still stores each question once with a six-bit deck mask
+and depth metadata. Normal playback excludes depth 3. See
 [sync_protocol.md](sync_protocol.md).
 
 ## Validation sequence
@@ -187,67 +158,82 @@ depth metadata. Normal playback excludes depth 3. See
 The website exercises all six deck choices, overlapping membership, Wild tone,
 the New People default, and the depth 1–2 playback cap.
 
-### 2. USB-powered breadboard and firmware
+### 2. Current USB-powered breadboard and firmware
 
-Use an ESP32-S3 DevKitC, an assembled 2.13-inch e-paper module, and the candidate
-six-position SRBV160803 and KSC321G controls connected with soldered wires. A
-six-way DIP switch and through-hole button are optional bring-up substitutes.
-Develop and test flashing, storage, deck selection, button debounce, rendering,
-refresh policy, and optional Wi-Fi sync while powered from USB. The
-[prototype BOM](prototype_bom.md) is the order list for this stage.
+Keep using the ESP32-S3 DevKitC, assembled 2.13-inch e-paper module, six-way
+DIP switch, and existing through-hole Next button. Do not change the firmware
+input contract merely to match a render. Develop and test flashing, storage,
+current deck selection, button debounce, rendering, refresh policy, and
+optional Wi-Fi sync while powered from USB. The
+[prototype BOM](prototype_bom.md) describes this rig.
 
 Gate:
 
-- every selector input maps to the intended deck;
-- zero or several active selector inputs fail safely;
-- one button press advances exactly once;
+- every DIP-switch input maps to the intended deck;
+- zero or several active inputs fail safely;
+- one Next press advances exactly once;
 - every released English and German question fits;
 - partial updates remain readable through a representative run;
 - firmware can be flashed and debugged without extra programming hardware.
 
-### 3. Battery and power-path bench
+### 3. Two-button interaction bench
+
+After a second button is available, replace the DIP-switch input contract in a
+separate firmware change and test the Category path before schematic capture.
+
+Gate:
+
+- Category advances exactly one deck in the fixed order and wraps once;
+- the displayed category always matches the deck used by Next;
+- a discarded press during refresh does not change hidden state;
+- cold-state loss defaults visibly to New People;
+- repeated category changes do not make the e-paper flash or ghost
+  unacceptably;
+- Category and Next are distinguishable without explanation.
+
+### 4. Battery and power-path bench
 
 Add a protected cell and a charger with a real system power path only after the
 charge current is supported by the selected cell data sheet. Prove charging
 under system load, USB/battery handover, Wi-Fi peaks, cutoff behavior, brownout
 margin, and sleep current before laying out the complete board.
 
-### 4. Controls, PCB, and enclosure integration
+### 5. Controls, PCB, and enclosure integration
 
-Import manufacturer STEP models, place the already tested controls, PCB, and
-battery, then build the first printed enclosure.
+Import manufacturer STEP models, place the tested buttons, PCB, and battery,
+then build the first printed enclosure.
 
 Run table sessions without explaining the controls first. Check:
 
-- people can map every detent to the intended label;
+- people understand that Category cycles and Next draws;
+- they can reach the intended category without losing track of the order;
 - they distinguish New People from Close;
 - Wild is chosen deliberately rather than mistaken for Random;
-- the extra Next button does not make the face look like a control panel;
+- the e-paper category line is readable from ordinary seats;
 - the device does not slide, tip, or need to be picked up;
-- question type is readable from ordinary seats.
+- the two adjacent buttons do not cause frequent wrong presses.
 
-If deck choice takes more attention than rejecting a poor question with Next,
-reduce or remove the selector before ordering another PCB revision. EVT then
-covers drop, selector life, button overload, pocket lint, radio performance,
-and small spills.
+If category choice takes more attention than rejecting a poor question with
+Next, revise the cycling interaction before another PCB revision. EVT then
+covers drop, button life, cap overload, pocket lint, radio performance, and
+small spills.
 
 ## Acceptance targets
 
 | Area | Target |
 |---|---|
-| First question | already visible |
+| First question | already visible, with its active category |
 | Next question | readable in under 1 s on a partial refresh |
-| State at zero power | active deck and current question are readable |
+| Category change | displayed category changes once per accepted press |
+| State at zero power | active category and current question are readable |
 | Sleep current | below 30 µA measured at the cell |
-| Stability | no slide or tip during one-handed selection or Next |
-| Text | all released questions fit at the fixed minimum size |
+| Stability | no slide or tip during a one-handed button press |
+| Text | all released questions and category labels fit at their fixed minimum sizes |
 | Ingress | no path from a small tabletop spill to PCB or cell |
 | Service | cell, display, and PCB replaceable without destructive adhesive |
 
 ## Primary references
 
-- [Alps Alpine SRBV series](https://tech.alpsalpine.com/e/products/category/switches/sub/04/series/srbv/)
-- [C&K MA06L1NCGF](https://www.ckswitches.com/products/switches/product-details/Rotary/M/MA06L1NCGF/)
 - [C&K KSC321GLFS](https://www.ckswitches.com/products/switches/product-details/Tactile/KSC3/KSC321GLFS/)
 - [Good Display GDEY0213B74](https://www.good-display.com/product/391.html)
 - [Espressif ESP32-S3-WROOM-1/1U data sheet](https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf)

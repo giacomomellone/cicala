@@ -8,6 +8,13 @@ design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Ini
 development targets the USB-powered breadboard rig in
 [prototype_bom.md](../docs/prototype_bom.md).
 
+The target enclosure now uses adjacent Category and Next buttons. This
+directory deliberately still implements the available bench hardware: a
+six-way DIP switch supplies the category and one button supplies Next. Treat
+the interaction contract below as the current firmware behavior, not the rev A
+input design. The transition waits for a second physical button and changes
+the implementation and tests together.
+
 ## Target
 
 - ESP32-S3 DevKitC-1-N8R8 for breadboard development.
