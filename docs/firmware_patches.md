@@ -26,6 +26,15 @@ The symbol skips all three. The controller keeps power through deep sleep, so
 its RAM still holds what is on the glass, and the refresh after a wake can be a
 622 ms partial instead of a 2315 ms full one.
 
+One thing is still cleared: the rows past the last whole page. The controller
+addresses RAM eight rows at a time, 122 is 15 pages and two rows over, and
+`ssd16xx_get_capabilities()` rounds the resolution it reports *down* to 120 —
+so nothing in the ordinary refresh path ever writes those last two rows. The
+init clear rounds up instead, and was the only thing that ever defined them.
+Suppressing it left them as the controller powered up: a two-pixel strip of
+noise along one edge that no later refresh could reach. They are not part of
+the image being preserved, so the patch clears those rows alone.
+
 It is safe after a power cycle too, where the RAM contents *are* undefined: the
 application forces a full refresh whenever the retained block did not survive,
 and the driver's full-refresh path writes both RAM buffers, so a known state is

@@ -10,7 +10,7 @@
 
 patches:
   - path: zephyr/ssd16xx-preserve-image-on-init.patch
-    sha256sum: 8106b049773a8afc24a6bb57637ec5dab53abe95cea4f2ff885039350a7d4ff5
+    sha256sum: 059abf38a079f3860b616f9838041e556c78574b770aaac261a1575e1072f89d
     # The project's path in the workspace, not its manifest name: west.yml
     # gives every project a `deps/` prefix, and a patch whose module does not
     # resolve is skipped in silence rather than reported.

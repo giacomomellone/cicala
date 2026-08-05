@@ -26,10 +26,46 @@ index 097351fec5e..04d254f8f89 100644
 +	  must perform one full refresh before its first partial one - it has to
 +	  distinguish the two cases anyway to know what the panel is showing.
 diff --git a/drivers/display/ssd16xx.c b/drivers/display/ssd16xx.c
-index 0b9a3559dd5..7bf0e0f28fd 100644
+index 0b9a3559dd5..460d91bbc7c 100644
 --- a/drivers/display/ssd16xx.c
 +++ b/drivers/display/ssd16xx.c
-@@ -865,26 +865,38 @@ static int ssd16xx_controller_init(const struct device *dev)
+@@ -611,7 +611,8 @@ static int ssd16xx_set_orientation(const struct device *dev,
+ 	return 0;
+ }
+ 
+-static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
++static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd,
++				   uint16_t first_page)
+ {
+ 	const struct ssd16xx_config *config = dev->config;
+ 	uint16_t panel_h = config->height / EPD_PANEL_NUMOF_ROWS_PER_PAGE;
+@@ -633,14 +634,14 @@ static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_set_ram_param(dev, SSD16XX_PANEL_FIRST_PAGE,
++	err = ssd16xx_set_ram_param(dev, first_page,
+ 				    panel_h - 1, last_gate,
+ 				    SSD16XX_PANEL_FIRST_GATE);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_set_ram_ptr(dev, SSD16XX_PANEL_FIRST_PAGE, last_gate);
++	err = ssd16xx_set_ram_ptr(dev, first_page, last_gate);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+@@ -655,7 +656,7 @@ static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
+ 	} else {
+ 		memset(clear_page, 0xff, sizeof(clear_page));
+ 	}
+-	for (int h = 0; h < panel_h; h++) {
++	for (int h = first_page; h < panel_h; h++) {
+ 		size_t x = config->width;
+ 
+ 		while (x) {
+@@ -865,26 +866,66 @@ static int ssd16xx_controller_init(const struct device *dev)
  	data->blanking_on = false;
  	data->profile = SSD16XX_PROFILE_INVALID;
  
@@ -65,7 +101,8 @@ index 0b9a3559dd5..7bf0e0f28fd 100644
 -		return err;
 -	}
 +	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
-+		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM);
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM,
++					      SSD16XX_PANEL_FIRST_PAGE);
 +		if (err < 0) {
 +			return err;
 +		}
@@ -73,14 +110,41 @@ index 0b9a3559dd5..7bf0e0f28fd 100644
 -	err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
 -	if (err < 0) {
 -		return err;
-+		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM,
++					      SSD16XX_PANEL_FIRST_PAGE);
++		if (err < 0) {
++			return err;
++		}
++	} else if (config->height % EPD_PANEL_NUMOF_ROWS_PER_PAGE) {
++		/*
++		 * The rows past the last whole page fall outside the resolution
++		 * this driver reports, so nothing in the ordinary refresh path
++		 * ever writes them - the clear above is the only thing that
++		 * does. Preserving the image must not preserve those, because
++		 * they are not part of it: left as the controller powered up,
++		 * they show as a strip of noise along one edge that no later
++		 * refresh can reach.
++		 *
++		 * Clear them alone, and leave the image itself untouched.
++		 */
++		const uint16_t first_unused =
++			config->height / EPD_PANEL_NUMOF_ROWS_PER_PAGE;
++
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM,
++					      first_unused);
++		if (err < 0) {
++			return err;
++		}
++
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM,
++					      first_unused);
 +		if (err < 0) {
 +			return err;
 +		}
  	}
  
  	if (config->rotation == 0U) {
-@@ -902,9 +914,11 @@ static int ssd16xx_controller_init(const struct device *dev)
+@@ -902,9 +943,11 @@ static int ssd16xx_controller_init(const struct device *dev)
  		return err;
  	}
  
