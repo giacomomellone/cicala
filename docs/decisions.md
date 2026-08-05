@@ -258,12 +258,16 @@ before anyone interacts with the device.
 
 `CONFIG_PM` stays off until input, display and storage are correct. A board
 that resets on every press is harder to bring up than one that stays awake.
-Retained state still lives in its RTC sections from the first commit, so
-enabling deep sleep later is a configuration change rather than a rewrite.
-
 Accepted cost: the sleep path, which is where the boot-latency budget and the
 30 µA target are decided, is the last thing to be exercised rather than the
 first.
+
+*Corrected 2026-08-05.* This entry originally claimed retained state had lived
+in its RTC sections since the first commit, so that enabling deep sleep would
+be a configuration change rather than a rewrite. That was not true: `Bag::State`
+was an ordinary `.bss` object, and `app_logic.cpp` said so. The claim made the
+remaining work look smaller than it was. See the 2026-08-05 entry on retained
+memory.
 
 ## 2026-08-02: Host tests default to qemu_xtensa/dc233c
 
@@ -395,3 +399,36 @@ Accepted cost: one free RTC-capable pin remains, GPIO14, so anything else
 needing a wake input competes with a second analogue measurement for it. On the
 target PCB the bring-up LED goes away and GPIO2 returns to ADC1, which is the
 slack if battery sense turns out to need a companion.
+
+## 2026-08-05: Deep sleep is spiked before storage, on a branch
+
+The 2026-08-02 entry above put `CONFIG_PM` behind input, display *and* storage
+being correct. Storage has not been started, so by that ordering the sleep path
+waits for LittleFS, NVS and sync. It is being spiked now instead, ahead of all
+three.
+
+The reason is the cost that entry accepted: the sleep path is where the
+boot-latency budget and the wake mechanism are decided, and it was scheduled
+last. The first bench run turned two of those from theory into arithmetic. A
+partial refresh takes 622 ms of a 1 s budget, leaving roughly 380 ms for ROM
+boot, Zephyr init, selector read and draw. And the six selector contacts cannot
+be armed as EXT1 wake sources the way the architecture describes: a deck is
+selected by *holding* one contact closed, so that pin is low for as long as the
+device sits on the table, and a device armed to wake on it never sleeps. The
+mask has to be computed at sleep time from the current selector position.
+
+Both are the kind of finding that changes a design rather than a line, and
+finding them after sync and the portal are written means rewriting sync and the
+portal.
+
+What the original entry protects is the everyday build: a board that reboots on
+every press is miserable to bring up. That is preserved. `CONFIG_PM` stays off
+in `prj.conf`, so `just fw-build` still produces a board that stays awake; the
+spike proves the mechanism on a branch and merges the parts that stand on their
+own. Retained memory is the first of those, and it is worth having before deep
+sleep exists: without it every boot redraws a question the panel is already
+showing, which now has a measured price of 2315 ms.
+
+Accepted cost: two config paths to keep working until the spike lands for real,
+and a decision entry that contradicts the ordering of an earlier one rather
+than replacing it.
