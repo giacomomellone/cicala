@@ -121,6 +121,28 @@ config TK_DEBUG_SOAK_INTERVAL_MS
       period, so a slow panel spaces the run out instead of having presses
       dropped.
 
+config TK_DEBUG_SOAK_REBOOT
+    bool "Reboot part-way through a soak run"
+    default n
+    depends on TK_DEBUG_SOAK
+    select REBOOT
+    help
+      Deep sleep is a reboot, so a warm reboot is the closest thing to a wake
+      that exists before CONFIG_PM does. Turning this on makes a soak run
+      exercise the retained block over and over unattended: the shuffle bag,
+      the refresh counter and the question on the glass either come back or
+      they do not, and the boot log says which.
+
+      Warm, not cold — a cold reset takes the RTC domain with it.
+
+config TK_DEBUG_SOAK_REBOOT_EVERY
+    int "Presses between reboots"
+    default 3
+    depends on TK_DEBUG_SOAK_REBOOT
+    help
+      Small enough that a run produces reboots quickly, large enough that the
+      questions either side of one can be compared.
+
 config TK_REFRESH_TIMEOUT_MS
     int "How long to wait for the display before giving up (ms)"
     default 15000

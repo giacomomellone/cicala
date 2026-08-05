@@ -268,6 +268,7 @@ What the first soak run found, on a Waveshare 2.13-inch V4:
 | Partial refresh duration | 622 ms, ±2 ms across 193 of them | clears the 1 s target in [device prototype](device_prototype.md) |
 | Full refresh duration | 2315 ms at boot | `TK_REFRESH_TIMEOUT_MS` stays at 15 s, now with a known margin |
 | Peak thread stack | logging 89%, everything else 18–38% | `LOG_PROCESS_THREAD_STACK_SIZE` = 2048 |
+| RTC memory across a warm reboot | kept, three times running | the retained block works on the chip |
 
 The interval sits three times under what the panel actually tolerated. That
 margin is for the conditions the run did not cover — a cold room, a different
@@ -328,7 +329,36 @@ several times the larger.
 The same output carries stack high-water marks once a minute, which is what the
 board conf's promise to tighten stacks before the power bench is waiting on.
 
-### 3. Accents, with `just fw-charset`
+### 3. What survives a reboot, with `just fw-retain`
+
+Deep sleep is a reboot, so everything the device is supposed to remember
+between presses lives in RTC memory. This is the image that checks it: the soak
+build, warm-rebooting itself every three presses.
+
+```sh
+just fw-retain
+just fw-monitor
+```
+
+Each reboot should print, in order:
+
+```
+rst:0xc (RTC_SW_CPU_RST)
+<inf> tk_main: reset: software
+<inf> tk_app: retained state: kept across the reboot
+```
+
+and then continue the run — same `seq` sequence, same partial-refresh count,
+no full refresh, and nothing drawn until the next scheduled press. A question
+redrawn at boot, a count restarting at zero, or `cold boot, starting a fresh
+cycle` all mean the block did not survive.
+
+**The reset button does not test this.** A reset through the DevKitC's EN pin
+reports as `rst:0x1 (POWERON)` and clears the RTC domain, so the firmware
+correctly reports a cold boot. That is not a failure; it is what a power-on is
+supposed to do.
+
+### 4. Accents, with `just fw-charset`
 
 Not a number, but the same trip to the bench. The charset image draws every
 diacritic the renderer composes; photograph the pages and judge whether the

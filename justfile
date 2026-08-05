@@ -259,6 +259,26 @@ fw-build-soak: fw-fixtures
 fw-soak: fw-build-soak
     {{ west }} flash --no-rebuild -d build/esp32s3-soak {{ portflag }}
 
+# The same image, rebooting itself every few presses. Deep sleep is a reboot,
+# so this is the closest thing to a wake that exists before CONFIG_PM does: the
+# shuffle bag, the refresh counter and the question on the glass either come
+# back across it or they do not, and the boot log says which.
+#
+# Note that a reset from the board's own EN pin reports as POWERON and takes
+# the RTC domain with it, so pressing the button proves nothing here. Only a
+# warm reset from software does.
+
+# build the self-rebooting soak image (see CONFIG_TK_DEBUG_SOAK_REBOOT)
+[group('firmware')]
+fw-build-retain: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-retain -- \
+        -DEXTRA_CONF_FILE=soak.conf -DCONFIG_TK_DEBUG_SOAK_REBOOT=y
+
+# flash it, then `just fw-monitor` and watch what survives each reboot
+[group('firmware')]
+fw-retain: fw-build-retain
+    {{ west }} flash --no-rebuild -d build/esp32s3-retain {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")

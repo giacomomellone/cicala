@@ -80,11 +80,30 @@ just fw-monitor     # every refresh logs its position in the chain
 just fw-flash       # back to the real thing
 ```
 
-Set the DIP switch to a deck before flashing; the chain starts itself from the
-first render and keeps going until the board is reflashed. The same console
-output carries refresh durations and, once a minute, thread stack high-water
-marks. The full procedure, including what to write down, is in
+Set the DIP switch to a deck before flashing; the chain starts itself and keeps
+going until the board is reflashed. The same console output carries refresh
+durations and, once a minute, thread stack high-water marks. The full
+procedure, including what to write down, is in
 [docs/hardware_wiring.md](../docs/hardware_wiring.md).
+
+## Checking what survives a reboot
+
+Deep sleep is a reboot, so everything the device remembers between presses
+lives in RTC memory. `just fw-retain` is the same soak image warm-rebooting
+itself every three presses, which is the closest thing to a wake that exists
+before `CONFIG_PM` does.
+
+```sh
+just fw-retain
+just fw-monitor     # every reboot says what came back
+```
+
+The boot line after each one should read `retained state: kept across the
+reboot`, and the run should continue — same sequence, same refresh count, no
+full refresh, nothing redrawn.
+
+The reset button does not test this: an EN-pin reset reports as `POWERON` and
+clears the RTC domain, which is what a power-on is meant to do.
 
 ## Interaction contract
 

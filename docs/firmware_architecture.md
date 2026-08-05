@@ -544,6 +544,41 @@ zeroed. The check is not decoration: `Bag::State` carries `recent_len` and
 `recent_next`, which index fixed arrays without bounds checks of their own, so
 a block of garbage accepted as state is an out-of-bounds write.
 
+```mermaid
+flowchart TB
+    BOOT([boot]) --> LOAD["retained_load()"]
+    LOAD --> Q{"magic · version<br/>size · payload hash<br/>all agree?"}
+
+    Q -- no --> ZERO["zero the block"]
+    ZERO --> COLD["**cold boot**
+    fresh shuffle cycle
+    next refresh is full
+    draw a question"]
+
+    Q -- yes --> WAKE{"was a question
+    on the glass,
+    from this deck?"}
+
+    WAKE -- yes --> FREE["**free wake**
+    bag continues · counter continues
+    nothing drawn at all"]
+    WAKE -- no --> DRAW["**wake**
+    bag continues · counter continues
+    draw, partial refresh"]
+
+    COLD --> SEAL
+    FREE --> SEAL
+    DRAW --> SEAL["seal after each render"]
+
+    classDef q fill:#f7f5f1,stroke:#9a8f7d
+    classDef bad fill:#f4efe6,stroke:#b0a086
+    class Q,WAKE q
+    class ZERO,COLD bad
+```
+
+The right-hand path is the one that pays for the whole mechanism. A cold boot
+costs a 2315 ms full refresh; a free wake costs nothing at all.
+
 `retained_matches()` therefore answers truthfully, and a wake to a question the
 panel already holds costs no refresh. A deck name does not count — waking to
 one means the selector was turned and Next never pressed, so the name stays up
@@ -556,11 +591,39 @@ as supported, so Zephyr's driver API is available; the section attribute is
 used instead because it hands out a struct rather than a read/write interface,
 and the bag mutates in place.
 
-*Still unconfirmed:* that the contents actually survive a wake on the chip,
-which needs `CONFIG_PM`; `PM_STATE_SOFT_OFF` mapping to deep sleep; and EXT1
-wake, which cannot be armed the way this document used to describe — see below.
-Only the structures above depend on the mechanism, so the fallback is a
-write-coalesced NVS record, not a redesign.
+*Verified on hardware*, with `just fw-retain` — the soak image rebooting itself
+every three presses, since a warm reboot is what a deep-sleep wake will be.
+Across three consecutive reboots:
+
+```
+rst:0xc (RTC_SW_CPU_RST)
+<inf> tk_main: reset: software
+<inf> tk_app: retained state: kept across the reboot
+<inf> tk_soak: partial #6 of seq 7      <- before
+rst:0xc (RTC_SW_CPU_RST)
+<inf> tk_soak: partial #7 of seq 8      <- after
+```
+
+Four things in that, and all four are the point:
+
+- the bag kept drawing new questions rather than restarting its cycle;
+- `seq` continued rather than resetting to 1;
+- the refresh counter continued, so **no full refresh followed any reboot** —
+  the 2315 ms this was built to avoid;
+- nothing was drawn at boot at all. The first question after each reboot
+  arrives one soak interval later, not immediately, which is
+  `retained_matches()` sending `BOOT` straight to `SHOWING`.
+
+*The reset button proves nothing here.* A reset through the DevKitC's EN pin
+reports as `rst:0x1 (POWERON)`, takes the RTC domain with it, and the firmware
+correctly says `cold boot, starting a fresh cycle`. Only a warm reset from
+software keeps RTC memory, which is why the check needs an image that reboots
+itself rather than a finger on the button.
+
+*Still unconfirmed:* `PM_STATE_SOFT_OFF` mapping to real deep sleep rather than
+light sleep, whether a genuine wake behaves like the warm reboot tested here,
+and EXT1 wake — which cannot be armed the way this document used to describe.
+See below.
 
 ### The selector cannot be a plain EXT1 wake source
 
@@ -574,6 +637,30 @@ A rotary switch breaks before it makes, so turning the knob releases the old
 contact — no wake, nothing is listening for it — and then closes a new one,
 which is in the mask and is the wake. Next is open when unpressed, so it needs
 no special handling.
+
+```mermaid
+flowchart LR
+    subgraph rest["at rest, deck 2 selected"]
+        direction TB
+        P0["GPIO4 · deck 0 — open, high"]:::armed
+        P2["GPIO6 · deck 2 — CLOSED, low"]:::held
+        P5["GPIO16 · deck 5 — open, high"]:::armed
+        PN["GPIO17 · Next — open, high"]:::armed
+    end
+
+    rest --> MASK["EXT1 mask = every pin that is high<br/><i>ANY_LOW</i>"]
+    MASK --> SLEEP([deep sleep])
+    SLEEP --> W1["knob leaves 2<br/><i>nothing happens — 2 is not armed</i>"]
+    W1 --> W2["knob reaches 3<br/><i>GPIO7 goes low</i>"]
+    W2 --> WAKE([wake])
+    SLEEP --> NX["Next pressed<br/><i>GPIO17 goes low</i>"] --> WAKE
+
+    classDef armed fill:#eef1f4,stroke:#8a97a6
+    classDef held fill:#f4efe6,stroke:#b0a086
+```
+
+Arming the closed pin is the mistake: it is already low, so the wake condition
+is satisfied before sleep is entered and the device never stays asleep.
 
 VBUS detect joins the mask with the opposite polarity, since plugging in drives
 it high.

@@ -22,8 +22,10 @@
  * Never enabled in a shipped build.
  */
 
+#include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/reboot.h>
 #include <zephyr/zbus/zbus.h>
 
 #include "channels.h"
@@ -37,6 +39,9 @@ static K_WORK_DELAYABLE_DEFINE(press_work, press);
 /** Cleared by every press, set by the render that should follow it. */
 static bool rendered;
 
+/** Presses since this boot. Deliberately not retained: it counts a run. */
+static uint32_t presses;
+
 /**
  * Ask for another question.
  *
@@ -48,12 +53,29 @@ static void press(struct k_work *work)
 {
     ARG_UNUSED(work);
 
-    if (!rendered) {
+    if (!rendered && presses > 0) {
         /* The fallback below fired: nothing rendered after the last press. */
         LOG_WRN("no refresh followed the last press; pressing again");
     }
 
     rendered = false;
+    presses++;
+
+#ifdef CONFIG_TK_DEBUG_SOAK_REBOOT
+    if (presses > CONFIG_TK_DEBUG_SOAK_REBOOT_EVERY) {
+        /*
+         * Deep sleep is a reboot, so this is the closest thing to a wake that
+         * exists before CONFIG_PM does: the state that is supposed to outlive
+         * one either comes back or it does not, and the boot log says which.
+         *
+         * Warm rather than cold. A cold reset takes the RTC domain down with
+         * it, which is the one thing this must not do.
+         */
+        LOG_INF("rebooting after %u presses to check what survives", presses - 1);
+        k_sleep(K_MSEC(50)); // let the log drain
+        sys_reboot(SYS_REBOOT_WARM);
+    }
+#endif
 
     /*
      * Re-arm before publishing, at twice the interval, as a fallback. The
@@ -105,3 +127,20 @@ ZBUS_LISTENER_DEFINE(tk_soak_obs, on_render);
 
 /* 3 is the app thread's subscription and 4 is taken in the test suites. */
 ZBUS_CHAN_ADD_OBS(chan_render, tk_soak_obs, 5);
+
+/**
+ * Arm the first press without waiting for a render.
+ *
+ * The chain is driven by renders, and a boot does not always produce one: with
+ * retained state a wake to a question the panel already holds draws nothing at
+ * all, which is the whole point of it. Waiting for a render there would leave
+ * the run stopped before it started.
+ */
+static int soak_start(void)
+{
+    (void) k_work_reschedule(&press_work, K_MSEC(CONFIG_TK_DEBUG_SOAK_INTERVAL_MS));
+
+    return 0;
+}
+
+SYS_INIT(soak_start, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

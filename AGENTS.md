@@ -24,6 +24,12 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 **Docs.** Filenames in `docs/` are snake_case; root `README.md` / `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` keep their conventional names. `mkdocs.yml` runs in strict mode, so a broken internal link fails `just docs-build`. New docs pages need a `nav:` entry.
 
+## Coding
+
+- Follow clean coding practices
+- Always update the docs when modifying the architecture, use mermaid diagrams to explain data flow and other useful diagrams
+- Make use of comments, be clear and use plain simple english
+
 ## Testing
 
 Write tests alongside the code, in the same change, wherever they add value. The bar is whether a test would catch a real regression: logic with branches, parsing and validation, state transitions, format and protocol code, and any bug you fix all qualify. Skip them for glue that only wires existing pieces together, for generated files, and for anything whose only assertion would restate the implementation.

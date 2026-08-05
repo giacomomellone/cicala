@@ -9,6 +9,7 @@
  */
 
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/hwinfo.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/zbus/zbus.h>
@@ -44,9 +45,54 @@ static void on_drawn(const struct zbus_channel *chan)
 ZBUS_LISTENER_DEFINE(main_blink, on_drawn);
 ZBUS_CHAN_ADD_OBS(chan_question, main_blink, 4);
 
+/**
+ * Say why the chip started.
+ *
+ * Retained state survives some of these and not others, and which is which is
+ * a property of the silicon rather than of this firmware: a software restart
+ * and a deep-sleep wake keep RTC memory, a power-on reset does not, and the
+ * reset pin is the one nobody should have to guess about. Printing the cause
+ * next to whether the block survived makes every reset an experiment that
+ * reports its own result — including, later, the one that matters, when this
+ * line reads `low-power wake`.
+ */
+static void log_reset_cause(void)
+{
+    uint32_t cause = 0;
+
+    if (hwinfo_get_reset_cause(&cause) != 0) {
+        LOG_INF("reset: cause not available on this target");
+        return;
+    }
+
+    /* Cleared so the next boot reports its own cause rather than the union of
+     * every cause since power-on. */
+    (void) hwinfo_clear_reset_cause();
+
+    if (cause == 0) {
+        LOG_INF("reset: none reported");
+    } else if (cause & RESET_POR) {
+        LOG_INF("reset: power-on — RTC memory is not expected to survive this");
+    } else if (cause & RESET_LOW_POWER_WAKE) {
+        LOG_INF("reset: low-power wake");
+    } else if (cause & RESET_SOFTWARE) {
+        LOG_INF("reset: software");
+    } else if (cause & RESET_PIN) {
+        LOG_INF("reset: pin");
+    } else if (cause & RESET_BROWNOUT) {
+        LOG_WRN("reset: brownout");
+    } else if (cause & RESET_WATCHDOG) {
+        LOG_WRN("reset: watchdog");
+    } else {
+        LOG_INF("reset: cause 0x%08x", cause);
+    }
+}
+
 int main(void)
 {
     LOG_INF("tischkarte on %s", CONFIG_BOARD_TARGET);
+
+    log_reset_cause();
 
     if (gpio_is_ready_dt(&blink)) {
         (void) gpio_pin_configure_dt(&blink, GPIO_OUTPUT_INACTIVE);
