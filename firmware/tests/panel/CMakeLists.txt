@@ -6,16 +6,18 @@ project(tischkarte_panel LANGUAGES C CXX)
 set(TK_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 
 # The application's own panel source, not a copy.
 target_sources(app PRIVATE
     src/main.cpp
     ${TK_APP}/src/panel.cpp
+    ${TK_APP}/src/retained_block.cpp
 )
 
 target_include_directories(app PRIVATE ${TK_APP}/include)
-target_link_libraries(app PRIVATE tk_layout tk_qdb)
+target_link_libraries(app PRIVATE tk_layout tk_qdb tk_retained)
 
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 

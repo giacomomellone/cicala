@@ -43,6 +43,7 @@
 #include <zephyr/logging/log.h>
 
 #include "layout.hpp"
+#include "retained_block.hpp"
 
 LOG_MODULE_REGISTER(tk_panel, LOG_LEVEL_INF);
 
@@ -131,7 +132,15 @@ BUILD_ASSERT(kLines <= tk::kMaxLines, "layout cannot return that many lines");
 tk::Glyph glyphs[tk::kMaxGlyphs];
 tk::Layout layout;
 
-uint16_t partial_since_full;
+/*
+ * In RTC memory rather than here, because deep sleep makes every press a
+ * reboot: a counter in .bss would reset on each one, every wake would take the
+ * full refresh a cold boot needs, and CONFIG_TK_FULL_REFRESH_INTERVAL would
+ * describe nothing. The measured cost of getting this wrong is 2315 ms against
+ * 622 ms, on every question.
+ */
+uint16_t &partial_since_full = tk_retained().partial_since_full;
+
 uint8_t last_font_height;
 bool ready;
 
@@ -402,9 +411,16 @@ int tk_panel_init(void)
         ready = true;
     }
 
-    // The panel holds whatever it was showing when power went away, including
-    // across a flash. Start from a known image.
-    partial_since_full = CONFIG_TK_FULL_REFRESH_INTERVAL;
+    /*
+     * On a cold boot the panel holds whatever it was showing when power went
+     * away, including across a flash, and this firmware has no record of it —
+     * so the next render has to be a full one. On a wake it does have a
+     * record, and forcing a full refresh there would spend 2315 ms undoing the
+     * partial-refresh policy this counter exists to implement.
+     */
+    if (!tk_retained_survived()) {
+        partial_since_full = CONFIG_TK_FULL_REFRESH_INTERVAL;
+    }
 
     return 0;
 }

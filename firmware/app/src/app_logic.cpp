@@ -17,6 +17,7 @@
 #include "app_fsm.hpp"
 #include "channels.h"
 #include "qdb.hpp"
+#include "retained_block.hpp"
 
 LOG_MODULE_REGISTER(tk_app, LOG_LEVEL_INF);
 
@@ -28,13 +29,13 @@ const uint8_t corpus[] = {
 };
 
 /*
- * Bag state belongs in RTC slow memory, so a Next press survives the reboot
- * that deep sleep really is. CONFIG_PM is off for the breadboard stage and
- * retained_mem is still unverified on this board, so for now it is ordinary
- * .bss: the cycle resets on every reboot rather than persisting. Moving it is
- * a change of section attribute, not of structure.
+ * Bag state lives in RTC slow memory, so the no-repeat cycle survives the
+ * reboot that deep sleep really is. CONFIG_PM is still off for the breadboard
+ * stage, so nothing sleeps yet — but a reset button and a deep-sleep wake are
+ * the same event as far as this is concerned, which is what makes it testable
+ * before the sleep path exists.
  */
-tk::Bag::State bag_state;
+tk::Bag::State &bag_state = tk_retained().bag;
 
 uint32_t random_u32(void *ctx)
 {
@@ -116,6 +117,9 @@ public:
 
         LOG_INF("deck %u %s: %.*s", deck, tk_deck_name(deck), (int) msg.len, msg.text);
 
+        _last_deck = deck;
+        _last_was_question = true;
+
         return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
     }
 
@@ -136,27 +140,57 @@ public:
 
         LOG_INF("deck %u %s: showing the name", deck, tk_deck_name(deck));
 
+        _last_deck = deck;
+        _last_was_question = false;
+
         return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
     }
 
     bool retained_matches(uint8_t deck) const override
     {
         /*
-         * Always false for now. The panel does hold its image without power,
-         * but knowing *which* question is on it needs the retained-memory work
-         * that comes with deep sleep. Until then every boot draws, which is
-         * correct — just not yet free.
+         * Only a question counts. Waking to a deck name means the selector was
+         * turned and Next never pressed, so the panel is mid-conversation with
+         * someone and the name has to stay up — but it is not an answer, and
+         * the state machine would be wrong to treat it as one.
+         *
+         * Consulted only from BOOT, which is entered once and never returned
+         * to, so this always describes the previous session rather than
+         * something this boot drew.
          */
-        ARG_UNUSED(deck);
+        const tk::Retained &block = tk_retained();
 
-        return false;
+        return tk_retained_survived() && block.showing_question && block.deck == deck;
     }
 
     /** The seq of the question most recently published. */
     uint32_t last_seq() const { return _seq; }
 
+    /** Continue the sequence across a wake rather than restarting it at 1. */
+    void adopt_seq(uint32_t seq) { _seq = seq; }
+
+    /**
+     * Record what is now on the glass, and stamp it for the next boot.
+     *
+     * Called after a render succeeds rather than after a publish: what the
+     * next boot needs to know is what the panel is actually showing, and a
+     * question that failed to render is not it.
+     */
+    void remember()
+    {
+        tk::Retained &block = tk_retained();
+
+        block.deck = _last_deck;
+        block.showing_question = _last_was_question;
+        block.seq = _seq;
+
+        tk_retained_seal();
+    }
+
 private:
     uint32_t _seq = 0;
+    uint8_t _last_deck = 0;
+    bool _last_was_question = false;
 #ifdef CONFIG_TK_DEBUG_CHARSET
     uint8_t _page = 0;
 #endif
@@ -174,10 +208,22 @@ int tk_app_init(void)
         return -EINVAL;
     }
 
-    io.bag.bind(io.qdb);
+    /*
+     * bind() wipes the bag when the bundle it describes is not the one in
+     * flash, which on a cold boot is every time: retained_load() has already
+     * zeroed the block, so the fingerprint is 0 and matches nothing.
+     */
+    const bool kept = io.bag.bind(io.qdb);
+
+    if (tk_retained_survived()) {
+        io.adopt_seq(tk_retained().seq);
+    }
 
     LOG_INF("corpus: %u questions, %.*s, version %.*s", io.qdb.count(), io.qdb.language_len(),
             io.qdb.language(), io.qdb.version_len(), io.qdb.version());
+    LOG_INF("retained state: %s", !tk_retained_survived() ? "cold boot, starting a fresh cycle"
+                                  : kept                  ? "kept across the reboot"
+                                                          : "discarded, the bundle changed");
 
     return 0;
 }
@@ -197,6 +243,12 @@ void tk_app_post_render(bool ok, uint32_t seq)
     if (seq != io.last_seq()) {
         LOG_WRN("late render for seq %u, waiting on %u — discarded", seq, io.last_seq());
         return;
+    }
+
+    if (ok) {
+        // The panel's refresh counter has settled by now — the render is what
+        // moved it — so this stamp covers that as well as the question.
+        io.remember();
     }
 
     fsm.post_render(ok);

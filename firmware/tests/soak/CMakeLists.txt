@@ -9,6 +9,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm tk_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/app_fsm tk_app_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 
 # The soak image, minus app/src/main.c: the whole application plus the driver
 # under test, which is the combination `just fw-soak` flashes.
@@ -20,11 +21,12 @@ target_sources(app PRIVATE
     ${TK_APP}/src/display.c
     ${TK_APP}/src/input.c
     ${TK_APP}/src/panel.cpp
+    ${TK_APP}/src/retained_block.cpp
     ${TK_APP}/src/soak.c
 )
 
 target_include_directories(app PRIVATE ${TK_APP}/include)
-target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
 
 set(corpus ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures/en.tkb2)
 

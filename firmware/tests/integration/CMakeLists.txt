@@ -9,6 +9,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm tk_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/app_fsm tk_app_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 
 # Every application source except main.c, whose only job is starting the input
 # layer — which this suite does itself, after arranging the pins.
@@ -20,10 +21,11 @@ target_sources(app PRIVATE
     ${TK_APP}/src/display.c
     ${TK_APP}/src/input.c
     ${TK_APP}/src/panel.cpp
+    ${TK_APP}/src/retained_block.cpp
 )
 
 target_include_directories(app PRIVATE ${TK_APP}/include)
-target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
 
 set(corpus ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures/en.tkb2)
 
