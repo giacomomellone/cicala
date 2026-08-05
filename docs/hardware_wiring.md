@@ -238,15 +238,26 @@ Measured on a Waveshare 2.13-inch V4:
 
 | Measurement | Result | Where it went |
 |---|---|---|
-| Partial refreshes before ghosting | 193, minor artefacts, still readable | `TK_FULL_REFRESH_INTERVAL` = 64 |
+| Partial refreshes before ghosting | visible at 64 in ordinary use | `TK_FULL_REFRESH_INTERVAL` = 16 |
 | Partial refresh duration | 622 ms, ±2 ms across 193 of them | clears the 1 s target in [device prototype](device_prototype.md) |
-| Full refresh duration | 2315 ms at boot | `TK_REFRESH_TIMEOUT_MS` stays at 15 s, now with a known margin |
+| Full refresh duration | not measured — see below | `TK_REFRESH_TIMEOUT_MS` stays at 15 s |
+| Refresh after a deep-sleep wake | 624 ms, against 2919 ms before the panel patch | [patching zephyr](firmware_patches.md) |
 | Peak thread stack | logging 89%, everything else 18–38% | `LOG_PROCESS_THREAD_STACK_SIZE` = 2048 |
 | RTC memory across a warm reboot | kept, three times running | the retained block works on the chip |
 
-The full-refresh interval sits three times under what the panel tolerated, a
-margin for conditions the run did not cover: a cold room, a different panel
-batch.
+The soak run reached 193 consecutive partials with only minor artefacts, and 64
+was first chosen as three times under that. Ghosting turned out to be obvious
+on the glass well before 64 — the run's "minor artefacts" are a more forgiving
+standard than a question somebody is reading at a table. The 193 is the ceiling
+to stay under, not the target to approach.
+
+The full-refresh duration is listed as unmeasured on purpose. `ssd16xx` waits
+on the BUSY pin before each command rather than after, so a full refresh is
+started and never waited on: the application times it at 19 ms for something
+the panel spends roughly two seconds doing. The 2315 ms recorded here
+previously was the application waiting out the driver's own init clear, which
+[the panel patch](firmware_patches.md) has since removed. Measuring it properly
+means watching BUSY, not the log.
 
 The procedures below repeat any of it. Each wants both USB cables in and
 `just fw-monitor` open.

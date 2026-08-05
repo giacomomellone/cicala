@@ -64,8 +64,12 @@ than a rebuild.
 `CONFIG_TK_DEBUG_SOAK=y` makes the device press its own Next button every few
 seconds, and `app/soak.conf` suppresses full refreshes while it does. That
 produces the long chain of partial refreshes that ghosting has to be watched
-accumulating in — the measurement `CONFIG_TK_FULL_REFRESH_INTERVAL` is waiting
-on, and one nobody wants to make by pressing a button forty times.
+accumulating in, without anyone pressing a button forty times.
+
+The run put the panel's ceiling at 193 consecutive partials. What settled
+`CONFIG_TK_FULL_REFRESH_INTERVAL` at 16 was the glass rather than the run:
+ghosting is plain at 64 in ordinary use, which is a harsher test than "minor
+artefacts" under a soak.
 
 ```sh
 just fw-soak        # build + flash, then leave it running
