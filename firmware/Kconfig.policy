@@ -6,22 +6,15 @@
 # application builds with: a suite that hardcoded 600 ms would keep passing
 # after someone changed the window.
 
-config TK_SELECTOR_SETTLE_MS
-    int "Selector settle window (ms)"
-    default 600
-    help
-      A selector contact transition must be stable for this long before a deck
-      change is published. Ignores make/break chatter and stops the panel from
-      flashing through intermediate positions while the knob is turning.
-
-config TK_NEXT_DEBOUNCE_MS
-    int "Next button debounce (ms)"
+config TK_BUTTON_DEBOUNCE_MS
+    int "Category and Next debounce (ms)"
     default 30
     help
-      One physical press must produce exactly one event. Press duration has no
-      meaning; long press is Next. The debounce itself is done by the in-tree
-      gpio-keys driver, so this must match `debounce-interval-ms` in the board
-      overlay — devicetree is processed before Kconfig and cannot read it.
+      One physical press must produce exactly one event, on either button.
+      Press duration has no meaning: a long press means the same as a short
+      one. The debounce itself is done by the in-tree gpio-keys driver, so this
+      must match `debounce-interval-ms` in the board overlay — devicetree is
+      processed before Kconfig and cannot read it.
 
 config TK_CORPUS_LANGUAGE
     string "Language of the corpus compiled into the image"
@@ -142,6 +135,30 @@ config TK_DEBUG_SOAK_REBOOT_EVERY
     help
       Small enough that a run produces reboots quickly, large enough that the
       questions either side of one can be compared.
+
+config TK_SLEEP
+    bool "Enter deep sleep when the table goes quiet"
+    default n
+    select POWEROFF
+    select PM
+    help
+      Below 30 uA means deep sleep, and on the ESP32-S3 deep sleep is a reboot:
+      SRAM and every thread stack are gone, and waking runs main() from the top.
+      Everything that has to outlive that is already in RTC memory, so this is
+      the switch that starts using it.
+
+      Off by default. A board that reboots on every press is harder to bring up
+      than one that stays awake, and the console goes with it.
+
+config TK_SLEEP_IDLE_MS
+    int "Quiet time before sleeping (ms)"
+    default 2000
+    depends on TK_SLEEP
+    help
+      Measured from the last press, deck change or refresh. A shipped device
+      wants this short, since the panel holds its image and waking is a whole
+      boot either way. Longer is easier to work with on a bench, where a device
+      that sleeps between two console lines is hard to talk to.
 
 config TK_REFRESH_TIMEOUT_MS
     int "How long to wait for the display before giving up (ms)"

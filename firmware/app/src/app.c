@@ -20,7 +20,7 @@ LOG_MODULE_DECLARE(tk_app, LOG_LEVEL_INF);
 #define APP_PRIORITY 5
 
 ZBUS_MSG_SUBSCRIBER_DEFINE(app_sub);
-ZBUS_CHAN_ADD_OBS(chan_selector, app_sub, 3);
+ZBUS_CHAN_ADD_OBS(chan_category, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_next, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_render, app_sub, 3);
 
@@ -34,14 +34,14 @@ static void app_thread(void *p1, void *p2, void *p3)
         return;
     }
 
-    /* Run once before waiting: the selector was read at boot, and its value is
-     * already sitting in chan_selector as state rather than as an event. */
+    /* Run once before waiting: tk_app_init() has already announced the active
+     * deck, which is what lets BOOT leave on the first pass. */
     tk_app_run();
 
     while (true) {
         const struct zbus_channel *chan;
         union {
-            struct tk_selector_msg selector;
+            struct tk_category_msg category;
             struct tk_next_msg next;
             struct tk_render_msg render;
         } msg;
@@ -74,15 +74,14 @@ static void app_thread(void *p1, void *p2, void *p3)
             continue;
         }
 
-        if (chan == &chan_selector) {
+        if (chan == &chan_category) {
             /*
-             * Not gated on the refresh, unlike a press. The selector is state
-             * rather than an event — it *is* the deck — so a knob turned
-             * during a refresh is a deck that really did change, and the
-             * machine picks it up as soon as the panel is free. Dropping it
-             * would leave the panel naming a deck the switch is no longer on.
+             * Not gated on the refresh, unlike a press. A Category press
+             * changes which deck is active whether or not the panel is free,
+             * and the machine names it as soon as it is. Dropping it would
+             * leave the panel showing a deck the device is no longer on.
              */
-            tk_app_post_selector(msg.selector.deck, msg.selector.valid);
+            tk_app_post_category();
         } else if (chan == &chan_next) {
             if (tk_app_is_busy()) {
                 LOG_INF("press ignored: the panel is still refreshing");

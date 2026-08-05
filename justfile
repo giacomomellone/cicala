@@ -279,6 +279,21 @@ fw-build-retain: fw-fixtures
 fw-retain: fw-build-retain
     {{ west }} flash --no-rebuild -d build/esp32s3-retain {{ portflag }}
 
+# Deep sleep. The device powers down when the table goes quiet and every wake
+# runs main() from the top, so the console restarts with each press. The
+# default image never sleeps; this is the one that does.
+
+# build the sleeping image (see firmware/app/sleep.conf)
+[group('firmware')]
+fw-build-sleep: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-sleep -- \
+        -DEXTRA_CONF_FILE=sleep.conf -DEXTRA_DTC_OVERLAY_FILE=sleep.overlay
+
+# flash the sleeping image, then `just fw-monitor`
+[group('firmware')]
+fw-sleep: fw-build-sleep
+    {{ west }} flash --no-rebuild -d build/esp32s3-sleep {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")

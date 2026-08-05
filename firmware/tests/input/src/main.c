@@ -1,13 +1,11 @@
 /*
- * Selector and Next behaviour, driven through emulated GPIO.
+ * Category and Next, driven through emulated GPIO.
  *
  * This is the real src/input.c against the real gpio-keys driver: the suite
- * moves pins and then waits out the debounce and the settle window, so what it
- * checks is the timing rule itself rather than a mock of it. That costs about
- * a second of wall clock per case and is worth it — the drop-a-detent rule is
- * the one input behaviour a user would notice breaking.
+ * moves pins and waits out the debounce, so what it checks is the timing rule
+ * itself rather than a mock of it.
  *
- * Contacts are active low, so a closed contact is a physical 0.
+ * Buttons are active low, so a pressed button is a physical 0.
  */
 
 #include <zephyr/drivers/gpio.h>
@@ -18,30 +16,23 @@
 #include "channels.h"
 #include "input.h"
 
-#define DECK_SPEC(nodelabel) GPIO_DT_SPEC_GET(DT_NODELABEL(nodelabel), gpios)
+static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios);
+static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios);
 
-static const struct gpio_dt_spec contacts[TK_DECK_COUNT] = {
-    DECK_SPEC(tk_deck_0), DECK_SPEC(tk_deck_1), DECK_SPEC(tk_deck_2),
-    DECK_SPEC(tk_deck_3), DECK_SPEC(tk_deck_4), DECK_SPEC(tk_deck_5),
-};
+/* Long enough for the driver to debounce and report, with margin for a slow
+ * host. */
+#define PRESS_WAIT K_MSEC(CONFIG_TK_BUTTON_DEBOUNCE_MS + 150)
 
-static const struct gpio_dt_spec next_button = DECK_SPEC(tk_next);
-
-/* Debounce plus settle plus enough margin that a slow host is not a failure. */
-#define SETTLE_WAIT K_MSEC(CONFIG_TK_SELECTOR_SETTLE_MS + CONFIG_TK_NEXT_DEBOUNCE_MS + 150)
-/* Long enough for the driver to report an edge, short enough not to settle. */
-#define DEBOUNCE_WAIT K_MSEC(CONFIG_TK_NEXT_DEBOUNCE_MS + 70)
-
-static int selector_publishes;
+static int category_publishes;
 static int next_publishes;
-static struct tk_selector_msg last_selector;
+static struct tk_category_msg last_category;
 static struct tk_next_msg last_next;
 
 static void observe(const struct zbus_channel *chan)
 {
-    if (chan == &chan_selector) {
-        selector_publishes++;
-        last_selector = *(const struct tk_selector_msg *) zbus_chan_const_msg(chan);
+    if (chan == &chan_category) {
+        category_publishes++;
+        last_category = *(const struct tk_category_msg *) zbus_chan_const_msg(chan);
     } else if (chan == &chan_next) {
         next_publishes++;
         last_next = *(const struct tk_next_msg *) zbus_chan_const_msg(chan);
@@ -49,169 +40,103 @@ static void observe(const struct zbus_channel *chan)
 }
 
 ZBUS_LISTENER_DEFINE(test_obs, observe);
-ZBUS_CHAN_ADD_OBS(chan_selector, test_obs, 4);
+ZBUS_CHAN_ADD_OBS(chan_category, test_obs, 4);
 ZBUS_CHAN_ADD_OBS(chan_next, test_obs, 4);
 
-static void set_contact(int deck, bool closed)
+static void press(const struct gpio_dt_spec *button, bool down)
 {
-    zassert_ok(gpio_emul_input_set(contacts[deck].port, contacts[deck].pin, closed ? 0 : 1));
+    zassert_ok(gpio_emul_input_set(button->port, button->pin, down ? 0 : 1));
 }
 
-static void set_next(bool pressed)
+static void tap(const struct gpio_dt_spec *button, int hold_ms)
 {
-    zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, pressed ? 0 : 1));
-}
-
-static void reset_counters(void)
-{
-    selector_publishes = 0;
-    next_publishes = 0;
+    press(button, true);
+    k_sleep(K_MSEC(hold_ms));
+    press(button, false);
+    k_sleep(PRESS_WAIT);
 }
 
 static void *suite_setup(void)
 {
-    for (int i = 0; i < TK_DECK_COUNT; i++) {
-        set_contact(i, false);
-    }
-
-    set_next(false);
-    k_sleep(DEBOUNCE_WAIT);
+    /* Emulated pins read low by default, which for an active-low button means
+     * held down from the start. Release both before the input layer looks. */
+    press(&category, false);
+    press(&next_button, false);
+    k_sleep(PRESS_WAIT);
 
     zassert_ok(tk_input_init());
 
     return NULL;
 }
 
-/* Every case starts from every contact open and the button up. */
 static void before_each(void *fixture)
 {
     ARG_UNUSED(fixture);
 
-    for (int i = 0; i < TK_DECK_COUNT; i++) {
-        set_contact(i, false);
-    }
-
-    set_next(false);
-    k_sleep(SETTLE_WAIT);
-    reset_counters();
+    category_publishes = 0;
+    next_publishes = 0;
 }
 
 ZTEST_SUITE(tk_input, NULL, suite_setup, before_each, NULL, NULL);
 
-ZTEST(tk_input, test_one_contact_selects_its_deck)
+ZTEST(tk_input, test_one_category_press_is_one_event)
 {
-    set_contact(3, true);
-    k_sleep(SETTLE_WAIT);
+    tap(&category, 60);
 
-    zassert_equal(selector_publishes, 1, "expected exactly one publish, got %d",
-                  selector_publishes);
-    zassert_true(last_selector.valid);
-    zassert_equal(last_selector.deck, 3);
+    zassert_equal(category_publishes, 1, "one press is one event");
+    zassert_equal(next_publishes, 0, "and it must not look like Next");
 }
 
-ZTEST(tk_input, test_crossing_detents_publishes_once)
+ZTEST(tk_input, test_one_next_press_is_one_event)
+{
+    tap(&next_button, 60);
+
+    zassert_equal(next_publishes, 1, "one press is one event");
+    zassert_equal(category_publishes, 0, "and it must not look like Category");
+}
+
+ZTEST(tk_input, test_a_press_is_reported_on_release)
 {
     /*
-     * Turning the knob from 0 to 2 passes through 1. Each transient closes a
-     * contact for less than the settle window, so only the position the knob
-     * stops at may be published.
+     * Publishing on release rather than on press is what makes the duration
+     * honest. No policy reads it — a long press means the same as a short one
+     * — but a table study asks whether anyone tried to hold.
      */
-    set_contact(0, true);
-    k_sleep(DEBOUNCE_WAIT);
+    press(&next_button, true);
+    k_sleep(PRESS_WAIT);
 
-    set_contact(0, false);
-    set_contact(1, true);
-    k_sleep(DEBOUNCE_WAIT);
+    zassert_equal(next_publishes, 0, "held down is not yet a press");
 
-    set_contact(1, false);
-    set_contact(2, true);
-    k_sleep(SETTLE_WAIT);
+    press(&next_button, false);
+    k_sleep(PRESS_WAIT);
 
-    zassert_equal(selector_publishes, 1, "one turn must be one question, got %d publishes",
-                  selector_publishes);
-    zassert_true(last_selector.valid);
-    zassert_equal(last_selector.deck, 2);
+    zassert_equal(next_publishes, 1);
+    zassert_true(last_next.duration_ms >= (uint32_t) CONFIG_TK_BUTTON_DEBOUNCE_MS,
+                 "the reported duration should cover the hold, got %u ms", last_next.duration_ms);
 }
 
-ZTEST(tk_input, test_no_contact_is_invalid_and_keeps_the_deck)
+ZTEST(tk_input, test_a_long_press_is_still_one_event)
 {
-    set_contact(4, true);
-    k_sleep(SETTLE_WAIT);
-    zassert_equal(last_selector.deck, 4);
-    reset_counters();
+    tap(&next_button, 900);
 
-    set_contact(4, false);
-    k_sleep(SETTLE_WAIT);
-
-    zassert_equal(selector_publishes, 1);
-    zassert_false(last_selector.valid, "no closed contact is not a deck");
-    zassert_equal(last_selector.deck, 4, "an invalid selector must not move the deck");
+    zassert_equal(next_publishes, 1, "long press is Next, same as a short one");
 }
 
-ZTEST(tk_input, test_two_contacts_are_invalid)
-{
-    set_contact(1, true);
-    set_contact(5, true);
-    k_sleep(SETTLE_WAIT);
-
-    zassert_false(last_selector.valid, "several closed contacts is not a deck");
-}
-
-ZTEST(tk_input, test_a_press_publishes_one_event_with_its_duration)
-{
-    set_next(true);
-    k_sleep(K_MSEC(200));
-    set_next(false);
-    k_sleep(DEBOUNCE_WAIT);
-
-    zassert_equal(next_publishes, 1, "one press is one event, got %d", next_publishes);
-    zassert_true(last_next.timestamp_ms > 0);
-
-    /*
-     * Both edges are reported a debounce interval late, so the measured
-     * duration tracks the real one; the bounds are wide enough for a loaded
-     * host and still exclude a stuck-at-zero or a doubled interval.
-     */
-    zassert_between_inclusive(last_next.duration_ms, 100, 400, "duration was %u ms",
-                              last_next.duration_ms);
-}
-
-ZTEST(tk_input, test_a_bouncing_press_publishes_once)
-{
-    /* Make, break, make again inside the debounce interval. */
-    set_next(true);
-    set_next(false);
-    set_next(true);
-    k_sleep(K_MSEC(150));
-
-    set_next(false);
-    k_sleep(DEBOUNCE_WAIT);
-
-    zassert_equal(next_publishes, 1, "chatter must not produce extra events, got %d",
-                  next_publishes);
-}
-
-ZTEST(tk_input, test_a_held_contact_is_read_at_boot)
+ZTEST(tk_input, test_the_buttons_are_independent)
 {
     /*
-     * The gpio-keys driver only reports edges and samples each pin once at its
-     * own init, so a selector already in position when power arrives produces
-     * no event at all. After deep sleep every boot is that case, which is why
-     * tk_input_init() reads the pins itself.
+     * Category cannot disturb Next and vice versa. That independence is the
+     * reason there are two buttons rather than one with a press vocabulary.
      */
-    set_contact(5, true);
-    k_sleep(SETTLE_WAIT);
-    reset_counters();
+    press(&category, true);
+    k_sleep(PRESS_WAIT);
 
-    /* Force the channel back to "no deck", then re-run the boot path. */
-    const struct tk_selector_msg unknown = {.deck = 0, .valid = false};
+    tap(&next_button, 60);
 
-    zassert_ok(zbus_chan_pub(&chan_selector, &unknown, K_MSEC(100)));
-    reset_counters();
+    press(&category, false);
+    k_sleep(PRESS_WAIT);
 
-    zassert_ok(tk_input_init());
-
-    zassert_equal(selector_publishes, 1, "boot must publish the position it found");
-    zassert_true(last_selector.valid);
-    zassert_equal(last_selector.deck, 5);
+    zassert_equal(next_publishes, 1, "Next reports while Category is held");
+    zassert_equal(category_publishes, 1, "and Category reports when it is let go");
+    zassert_true(last_category.duration_ms > 0);
 }

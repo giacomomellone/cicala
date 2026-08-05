@@ -27,6 +27,11 @@ target_sources(app PRIVATE
 # presses Next by itself, which no shipped device should do. See soak.conf.
 target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
 
+# Deep sleep, likewise out of the default image: it reboots the board on every
+# wake, which is the point and also why bring-up does not want it. See
+# soak.conf's neighbour, sleep.conf.
+target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
+
 target_include_directories(app PRIVATE include)
 
 # Explicit: Zephyr collects its own libraries in a loop that has already run by

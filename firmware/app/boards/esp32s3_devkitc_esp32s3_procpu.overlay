@@ -3,7 +3,7 @@
  *
  * Pin assignment, and why each one:
  *
- *   selector 0..5   GPIO 4, 5, 6, 7, 15, 16
+ *   Category        GPIO 4
  *   Next            GPIO 17
  *   blink           GPIO 2
  *   e-paper         GPIO 10 CS, 11 MOSI, 12 SCLK, 13 MISO (the board's own
@@ -11,7 +11,7 @@
  *   VBUS detect     GPIO 21, reserved
  *   battery sense   GPIO 1, reserved (ADC1_CH0)
  *
- * The binding constraint is deep sleep: all seven wake inputs, and later VBUS
+ * The binding constraint is deep sleep: both buttons, and later VBUS
  * detect, must be RTC-capable or EXT1 wake is impossible. On the ESP32-S3 that
  * means GPIO0..21, which every input above satisfies. Avoided within that
  * range: GPIO0 and GPIO3 are strapping pins, and GPIO19/GPIO20 are the native
@@ -26,18 +26,17 @@
  * detect is digital, so it takes GPIO21 and leaves that channel alone. See
  * docs/hardware_wiring.md, including the divider VBUS needs off the 5 V rail.
  *
- * A six-way DIP switch and a through-hole button are valid bring-up
- * substitutes for the SRBV160803 and KSC321G. Wire each one to GND: the pins
- * are active low with internal pull-ups, so closed reads as pressed.
+ * Two through-hole buttons are valid bring-up substitutes for the KSC321G.
+ * Wire each one to GND: the pins are active low with internal pull-ups, so
+ * closed reads as pressed.
  *
- * The one number here still taken on faith is the panel wiring, which has not
- * been on a bench yet.
  */
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
     aliases {
+        tk-category = &tk_category;
         tk-next = &tk_next;
     };
 
@@ -48,60 +47,31 @@
      */
     zephyr,user {
         blink-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+
+        /*
+         * The onboard addressable LED, which this firmware never drives. Named
+         * here only so main.c can hold the line low: floating, it latches a
+         * colour from noise and keeps it across resets. Not on the target PCB.
+         */
+        ws2812-gpios = <&gpio0 48 GPIO_ACTIVE_HIGH>;
     };
 
     /*
-     * Six one-hot selector contacts, active low with internal pull-ups.
-     * Index order is the absolute selector order and must match
-     * questions/schema.json x-tischkarte.decks:
-     *   0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild
+     * The two buttons. Category advances the deck and shows its name; Next
+     * asks for a question. Nothing else is an input.
+     *
+     * Per-contact debounce is the in-tree driver's, and must match
+     * CONFIG_TK_BUTTON_DEBOUNCE_MS — devicetree is processed before Kconfig,
+     * so a policy value cannot be referenced from here.
      */
-    tk_selector: tk-selector {
-        compatible = "gpio-keys";
-        /*
-         * Per-contact debounce, done by the in-tree driver. The 600 ms
-         * one-hot settle on top of it is CONFIG_TK_SELECTOR_SETTLE_MS in
-         * src/input.c — devicetree is processed before Kconfig, so a policy
-         * value cannot be referenced from here.
-         */
-        debounce-interval-ms = <30>;
-        tk_deck_0: deck_0 {
-            gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_0>;
-            label = "new_people";
-        };
-        tk_deck_1: deck_1 {
-            gpios = <&gpio0 5 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_1>;
-            label = "close";
-        };
-        tk_deck_2: deck_2 {
-            gpios = <&gpio0 6 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_2>;
-            label = "family";
-        };
-        tk_deck_3: deck_3 {
-            gpios = <&gpio0 7 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_3>;
-            label = "work";
-        };
-        tk_deck_4: deck_4 {
-            gpios = <&gpio0 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_4>;
-            label = "here";
-        };
-        tk_deck_5: deck_5 {
-            gpios = <&gpio0 16 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
-            zephyr,code = <INPUT_BTN_5>;
-            label = "wild";
-        };
-    };
-
-    /* Next is independent of the selector: pressing cannot disturb the deck. */
     tk_buttons: tk-buttons {
         compatible = "gpio-keys";
-        /* Matches CONFIG_TK_NEXT_DEBOUNCE_MS; see the note above. */
         debounce-interval-ms = <30>;
+        tk_category: category {
+            gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+            zephyr,code = <INPUT_KEY_MENU>;
+            label = "category";
+        };
         tk_next: next {
             gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
             zephyr,code = <INPUT_KEY_ENTER>;

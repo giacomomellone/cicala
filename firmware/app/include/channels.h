@@ -21,22 +21,21 @@
 extern "C" {
 #endif
 
-/** Number of selector contacts, one per deck. */
+/** Decks, in the order Category advances through them. */
 #define TK_DECK_COUNT 6
 
 /**
- * State channel: which deck the selector is on right now.
+ * Event channel: one Category press happened.
  *
- * The selector *is* the deck — there is no stored copy of this anywhere, by
- * design (docs/firmware_architecture.md, "Where state lives"). Zero or several
- * closed contacts is not a deck, it is `valid = false`, and a reader must keep
- * showing whatever it was showing.
+ * The deck it advances to is not carried here. A button has no position, so
+ * the active deck is remembered in RTC memory and owned by app_logic; this
+ * channel only says that someone asked for the next one.
  */
-struct tk_selector_msg {
-    /** 0..5, matching questions/schema.json x-tischkarte.decks. */
-    uint8_t deck;
-    /** False when zero or several contacts are closed. `deck` is then stale. */
-    bool valid;
+struct tk_category_msg {
+    /** Uptime at the moment the press started. */
+    int64_t timestamp_ms;
+    /** Press to release. Telemetry only, as for Next. */
+    uint32_t duration_ms;
 };
 
 /**
@@ -89,7 +88,7 @@ struct tk_render_msg {
     bool was_full;
 };
 
-ZBUS_CHAN_DECLARE(chan_selector);
+ZBUS_CHAN_DECLARE(chan_category);
 ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
 ZBUS_CHAN_DECLARE(chan_render);

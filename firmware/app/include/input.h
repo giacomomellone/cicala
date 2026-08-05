@@ -1,6 +1,6 @@
 /*
- * Selector and Next button. Turns GPIO edges into the two input channels in
- * channels.h; owns no policy beyond "what counts as a deck change".
+ * The Category and Next buttons. Turns debounced key events into the two input
+ * channels in channels.h and owns no policy of its own.
  */
 
 #pragma once
@@ -10,15 +10,9 @@ extern "C" {
 #endif
 
 /**
- * Seed the selector from the pins and start reporting.
+ * Check both buttons are present and start reporting.
  *
- * The gpio-keys driver only reports *edges*, and it samples each pin once at
- * init to seed its own state, so a contact that is already closed at boot
- * never produces an event. Reading the pins here is what makes "read the
- * selector at boot" true — the wake path in docs/firmware_architecture.md
- * depends on it, since after deep sleep every boot is a cold one.
- *
- * @return 0, or a negative errno if a selector pin is unreadable.
+ * @return 0, or a negative errno if a button pin is not ready.
  */
 int tk_input_init(void);
 

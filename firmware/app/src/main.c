@@ -88,11 +88,36 @@ static void log_reset_cause(void)
     }
 }
 
+/**
+ * Hold the DevKitC's onboard WS2812 data line low.
+ *
+ * GPIO48 drives an addressable LED this firmware never uses. Left as a
+ * floating input it picks up enough noise to clock a colour into the LED's
+ * shift register, which then latches: the light stays on through resets,
+ * because the LED holds its own state rather than the pin holding it.
+ *
+ * Driving the line low stops anything further being clocked in. It cannot turn
+ * off a colour already latched — that needs a zero pixel over RMT, and the
+ * target PCB has no such LED to justify the driver. Power-cycle to clear one.
+ */
+static void hold_onboard_led_quiet(void)
+{
+    /* _OR: only the devkit overlay has this LED. qemu and native_sim do not,
+     * and neither will the target PCB. */
+    static const struct gpio_dt_spec ws2812 =
+        GPIO_DT_SPEC_GET_OR(DT_PATH(zephyr_user), ws2812_gpios, {0});
+
+    if (ws2812.port != NULL && gpio_is_ready_dt(&ws2812)) {
+        (void) gpio_pin_configure_dt(&ws2812, GPIO_OUTPUT_INACTIVE);
+    }
+}
+
 int main(void)
 {
     LOG_INF("tischkarte on %s", CONFIG_BOARD_TARGET);
 
     log_reset_cause();
+    hold_onboard_led_quiet();
 
     if (gpio_is_ready_dt(&blink)) {
         (void) gpio_pin_configure_dt(&blink, GPIO_OUTPUT_INACTIVE);

@@ -149,8 +149,8 @@ public:
     bool retained_matches(uint8_t deck) const override
     {
         /*
-         * Only a question counts. Waking to a deck name means the selector was
-         * turned and Next never pressed, so the panel is mid-conversation with
+         * Only a question counts. Waking to a deck name means Category was
+         * pressed and Next never was, so the panel is mid-conversation with
          * someone and the name has to stay up — but it is not an answer, and
          * the state machine would be wrong to treat it as one.
          *
@@ -225,12 +225,37 @@ int tk_app_init(void)
                                   : kept                  ? "kept across the reboot"
                                                           : "discarded, the bundle changed");
 
+    /*
+     * Announce the deck the device is on before anything else runs. With a
+     * rotary selector this came from reading the pins; with a button it comes
+     * from RTC memory, and on a cold boot the zeroed block makes it New
+     * People. Either way the machine has a valid deck on its first pass, which
+     * is what lets BOOT leave.
+     */
+    const uint8_t deck = tk_retained().active_deck < TK_DECK_COUNT ? tk_retained().active_deck : 0;
+
+    LOG_INF("active deck: %u %s", deck, tk_deck_name(deck));
+
+    fsm.post_selector(deck, true);
+
     return 0;
 }
 
-void tk_app_post_selector(uint8_t deck, bool valid)
+void tk_app_post_category(void)
 {
-    fsm.post_selector(deck, valid);
+    tk::Retained &block = tk_retained();
+
+    /*
+     * Advance and wrap. The deck lives here rather than in the state machine
+     * because it has to survive a wake, and a wake is a fresh boot: the FSM is
+     * told the answer, it does not keep it.
+     */
+    block.active_deck = (uint8_t) ((block.active_deck + 1) % TK_DECK_COUNT);
+    tk_retained_seal();
+
+    LOG_INF("category: deck %u %s", block.active_deck, tk_deck_name(block.active_deck));
+
+    fsm.post_selector(block.active_deck, true);
 }
 
 void tk_app_post_next(void)
@@ -285,4 +310,9 @@ int tk_app_state(void)
 bool tk_app_is_busy(void)
 {
     return fsm.get_current_state() == static_cast<int>(tk::AppFsm::State::REFRESHING);
+}
+
+bool tk_app_is_settled(void)
+{
+    return fsm.get_current_state() == static_cast<int>(tk::AppFsm::State::SHOWING);
 }

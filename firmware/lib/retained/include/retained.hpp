@@ -63,6 +63,15 @@ struct Retained {
     uint8_t deck;
 
     /**
+     * The deck Category has advanced to.
+     *
+     * A button has no position to read, so unlike the rotary selector it
+     * replaced, the active deck has to be remembered. On a cold boot the
+     * zeroed block makes that New People, which is the documented default.
+     */
+    uint8_t active_deck;
+
+    /**
      * What is on the glass.
      *
      * A deck name is not a question: waking to one means the user turned the

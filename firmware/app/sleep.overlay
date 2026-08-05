@@ -1,0 +1,18 @@
+/*
+ * Merged only by `just fw-build-sleep`, alongside sleep.conf.
+ *
+ * Zephyr's ESP32-S3 devicetree offers the CPU two power states: light sleep,
+ * enabled, and deep sleep, disabled and documented as enterable only through
+ * pm_state_force() or sys_poweroff(). With CONFIG_PM on, the idle thread takes
+ * the one it is offered — and light sleep needs an RTC counter this
+ * application has no other use for, so every attempt fails and logs
+ * "Sleep skipped. Make sure RTC counter driver is enabled."
+ *
+ * Light sleep is not what a sub-30 uA budget needs anyway. Removing the state
+ * leaves the idle thread nothing to enter, and src/sleep.c decides when the
+ * device sleeps for real.
+ */
+
+&light_sleep {
+    status = "disabled";
+};

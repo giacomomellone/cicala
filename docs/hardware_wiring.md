@@ -5,15 +5,10 @@ is. The shopping list is [prototype bom](prototype_bom.md), the object this
 becomes is [device prototype](device_prototype.md), and the firmware that
 drives it is [firmware architecture](firmware_architecture.md).
 
-**Status:** the whole rig is wired and drawing questions. Selector, Next, the
+**Status:** the whole rig is wired and drawing questions. Both buttons, the
 bring-up LED and the panel all work, and the refresh policy, timings and RTC
 retention have been measured on it — see "Bench measurements" at the end of
 this page, which is also the procedure for repeating any of them.
-
-This is the current compatibility rig, not the target enclosure. The default
-[device prototype](device_prototype.md) uses Category and Next buttons, but the
-firmware still needs the six-way DIP switch until a second button is available
-and the input path is changed in code.
 
 ## Parts
 
@@ -21,8 +16,7 @@ and the input path is changed in code.
 |---|---|
 | ESP32-S3-DevKitC-1-N8R8 | The firmware target. 8 MB flash, 8 MB PSRAM, native USB and a CP2102 UART bridge |
 | Waveshare 2.13-inch e-Paper HAT | 250 × 122 display, SSD1680 controller, 3.3 V logic |
-| Six-way DIP switch | Supplies the six one-hot category inputs expected by the current firmware |
-| Tactile push-button | Stands in for the KSC321G |
+| Two tactile push-buttons | Category and Next; stand in for the KSC321G |
 | LED + 330 Ω resistor | Bring-up confirm; not on the final device |
 | Breadboard and jumpers | — |
 
@@ -34,7 +28,7 @@ Everything runs at 3.3 V, so no level shifting anywhere.
 flowchart LR
     subgraph esp["ESP32-S3-DevKitC-1"]
         direction TB
-        SEL["GPIO 4 5 6 7 15 16<br/><i>selector</i>"]
+        CAT["GPIO 4<br/><i>Category</i>"]
         NXT["GPIO 17<br/><i>Next</i>"]
         LED["GPIO 2<br/><i>LED</i>"]
         SPI["GPIO 10 11 12 13<br/><i>SPI2</i>"]
@@ -42,19 +36,19 @@ flowchart LR
         USB["USB jacks<br/><i>UART · native</i>"]
     end
 
-    DIP["six-way DIP switch"] --> SEL
-    BTN["tactile button"] --> NXT
+    CB["Category button"] --> CAT
+    BTN["Next button"] --> NXT
     L(["LED + 330 Ω"]) --> LED
     SPI --> EPD["Waveshare 2.13in<br/>e-Paper HAT"]
     CTL --> EPD
-    GND[("− rail")] --- DIP
+    GND[("− rail")] --- CB
     GND --- BTN
     GND --- L
     GND --- EPD
     USB --- HOST["host: flash · console · JTAG"]
 
     classDef x fill:#f7f5f1,stroke:#9a8f7d
-    class DIP,BTN,L,EPD,HOST x
+    class CB,BTN,L,EPD,HOST x
 ```
 
 ## Pin assignment
@@ -69,12 +63,7 @@ Every pin below is chosen, not arbitrary. Two constraints drive the whole map:
 
 | GPIO | Function | Direction | Notes |
 |---:|---|---|---|
-| 4 | selector 0 — new_people | in, pull-up | active low |
-| 5 | selector 1 — close | in, pull-up | active low |
-| 6 | selector 2 — family | in, pull-up | active low |
-| 7 | selector 3 — work | in, pull-up | active low |
-| 15 | selector 4 — here | in, pull-up | active low |
-| 16 | selector 5 — wild | in, pull-up | active low |
+| 4 | Category | in, pull-up | active low |
 | 17 | Next | in, pull-up | active low |
 | 2 | bring-up LED | out | active high |
 | 10 | e-paper CS | out | fixed by the board's `spim2_default` |
@@ -91,8 +80,9 @@ Deliberately avoided: GPIO0 and GPIO3 are strapping pins, GPIO26–32 are the SP
 flash, GPIO33–37 are the octal PSRAM on the N8R8, GPIO43/44 are the UART0
 console, and GPIO48 is the onboard WS2812.
 
-That left **GPIO1, 14 and 21** free and RTC-capable, and the two power inputs
-now claim two of them. Neither is wired on the rig or present in the
+Dropping the rotary selector for a Category button freed GPIO 5, 6, 7, 15 and
+16. With GPIO1, 14 and 21 that leaves eight RTC-capable pins spare, of which
+the two power inputs claim two. Neither is wired on the rig or present in the
 devicetree; they are reserved so the deep-sleep work does not find the range
 full. GPIO14 is what remains.
 
@@ -103,10 +93,10 @@ its hardware with Wi-Fi**, so a reading taken while the radio is up can fail.
 Battery voltage has to be sampled during a sync, which is precisely when the
 radio is up, so it needs ADC1 — GPIO1 to GPIO10.
 
-Of those ten, seven are already the selector and the panel, GPIO2 is the
-bring-up LED, and GPIO3 is a strapping pin. **GPIO1 is the only ADC1 channel
-left**, which is why battery sense takes it rather than the roomier-looking
-GPIO21.
+Of those ten, GPIO4 is Category, GPIO8 to GPIO10 are the panel, GPIO2 is the
+bring-up LED and GPIO3 is a strapping pin. That leaves GPIO1, GPIO5, GPIO6 and
+GPIO7 — and GPIO1 is taken here so the run of three stays contiguous for
+whatever the rev A board needs.
 
 VBUS detect is a digital input with no such constraint, so it takes GPIO21 and
 leaves the last ADC1 channel to the measurement that cannot go anywhere else.
@@ -118,9 +108,9 @@ VBUS is 5 V and the pin is 3.3 V tolerant only, so it needs a divider. Not
 little to trust across tolerance and supply droop. **100k/150k** puts it at
 3.0 V with margin at both ends.
 
-The index order of the selector is the deck order in
-`questions/schema.json` → `x-tischkarte.decks`, and it is duplicated in the
-devicetree `label` properties and in `tk_deck_name()`. All three have to agree.
+The order Category advances through is the deck order in
+`questions/schema.json` → `x-tischkarte.decks`, duplicated in `tk_deck_name()`.
+Both have to agree.
 
 ## Wiring the inputs
 
@@ -131,20 +121,15 @@ pull-down resistors** — adding them does nothing useful.
 Run one jumper from a board **GND** pin to the breadboard's **−** rail, and
 return everything to that rail.
 
-**Six-way DIP switch.** Straddle the centre channel. Each switch has two legs
-directly opposite each other, so there is no ambiguity: one side to its GPIO,
-the other side to the − rail.
-
-**Next button.** A 6 mm tactile switch has four legs in two internally shorted
+**Both buttons.** A 6 mm tactile switch has four legs in two internally shorted
 pairs — the two legs in each row are permanently connected to each other. Use
-two **diagonally opposite** legs, one to GPIO17 and one to the − rail, and
-leave the other two unconnected.
+two **diagonally opposite** legs, one to the GPIO and one to the − rail, and
+leave the other two unconnected. Category goes to GPIO4, Next to GPIO17.
 
-If both chosen legs come from the same pair, GPIO17 sits at ground forever. The
-symptom is silence rather than a stuck reading: the driver samples each pin once
-at init and reports only edges, so a permanently shorted pin produces no `next`
-line at all. Check with a multimeter on continuity — open when unpressed, closed
-when held.
+If both chosen legs come from the same pair, the pin sits at ground forever.
+The symptom is silence rather than a stuck reading: the driver reports only
+edges, so a permanently shorted pin produces no event at all. Check with a
+multimeter on continuity — open when unpressed, closed when held.
 
 **LED.** GPIO2 → 330 Ω resistor → LED anode (long leg); cathode (flat side,
 short leg) → − rail. It is active high, so reversed gives no light and no error
@@ -242,12 +227,10 @@ just fw-flash
 just fw-monitor
 ```
 
-- All six DIP positions produce their deck, one at a time.
-- Two switches on, or none, logs `selector invalid` and the deck does not move.
-- One press produces exactly one `next` line and one LED toggle.
-- Sweeping the switch across several positions in one motion produces one deck
-  change, not three.
-- With the panel wired, each of the above draws a question on the display.
+- Boot logs `active deck: 0 new_people` and the panel shows that name.
+- One Category press names the next deck; six return to where they started.
+- One Next press produces exactly one question and one LED toggle.
+- Holding a button and releasing it counts once, not twice.
 
 ## Bench measurements
 
@@ -290,7 +273,7 @@ refresh logs where it sits:
 [tk_soak] partial #2 of seq 3
 ```
 
-Set the DIP switch to one deck before flashing, then leave it. Look at the
+Leave the board alone once it is flashed. Look at the
 panel every so often and write down the number on the console at the point the
 glass stops looking clean — from a normal seat at the table, not from six
 inches away. That number, less a margin, is what goes in

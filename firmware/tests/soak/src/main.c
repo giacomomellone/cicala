@@ -20,18 +20,11 @@
 #include "channels.h"
 #include "input.h"
 
-#define DECK_SPEC(nodelabel) GPIO_DT_SPEC_GET(DT_NODELABEL(nodelabel), gpios)
+static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios);
 
-static const struct gpio_dt_spec contacts[TK_DECK_COUNT] = {
-    DECK_SPEC(tk_deck_0), DECK_SPEC(tk_deck_1), DECK_SPEC(tk_deck_2),
-    DECK_SPEC(tk_deck_3), DECK_SPEC(tk_deck_4), DECK_SPEC(tk_deck_5),
-};
-
-static const struct gpio_dt_spec next_button = DECK_SPEC(tk_next);
-
-/* Ten presses' worth, plus the settle window the first deck change waits out
- * and a margin for the dummy panel and the logging behind it. */
-#define RUN_WAIT K_MSEC(CONFIG_TK_SELECTOR_SETTLE_MS + 10 * CONFIG_TK_DEBUG_SOAK_INTERVAL_MS + 1000)
+/* Ten presses' worth, plus a margin for the dummy panel and the logging
+ * behind it. */
+#define RUN_WAIT K_MSEC(10 * CONFIG_TK_DEBUG_SOAK_INTERVAL_MS + 1000)
 
 #define EXPECTED_RENDERS 6
 
@@ -72,22 +65,10 @@ ZBUS_LISTENER_DEFINE(test_obs, observe);
 ZBUS_CHAN_ADD_OBS(chan_question, test_obs, 4);
 ZBUS_CHAN_ADD_OBS(chan_render, test_obs, 4);
 
-static void set_contact(int deck, bool closed)
-{
-    zassert_ok(gpio_emul_input_set(contacts[deck].port, contacts[deck].pin, closed ? 0 : 1));
-}
-
 static void *suite_setup(void)
 {
-    /*
-     * Emulated pins read low by default, which for an active-low contact means
-     * every deck closed at once — an invalid selector. Open them all before the
-     * input layer reads them.
-     */
-    for (int i = 0; i < TK_DECK_COUNT; i++) {
-        set_contact(i, false);
-    }
-
+    /* Emulated pins read low by default, which for an active-low button means
+     * held down. Release it before the input layer looks. */
     zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, 1));
     k_sleep(K_MSEC(100));
 
@@ -100,10 +81,8 @@ ZTEST_SUITE(tk_soak, NULL, suite_setup, NULL, NULL, NULL);
 
 ZTEST(tk_soak, test_the_chain_runs_hands_off)
 {
-    /* One deck selected, the way an operator sets the DIP switch before
-     * walking away. Nothing touches the button after this line. */
-    set_contact(2, true);
-
+    /* Nothing is touched at all: the device boots onto its remembered deck,
+     * names it, and the soak driver takes over from there. */
     k_sleep(RUN_WAIT);
 
     zassert_true(renders >= EXPECTED_RENDERS,

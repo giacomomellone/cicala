@@ -432,3 +432,33 @@ showing, which now has a measured price of 2315 ms.
 Accepted cost: two config paths to keep working until the spike lands for real,
 and a decision entry that contradicts the ordering of an earlier one rather
 than replacing it.
+
+## 2026-08-05: One Category button replaces the six selector inputs
+
+The firmware now reads two buttons. Category advances the deck one step and
+wraps from Wild back to New People; Next asks for a question. The six one-hot
+selector contacts, their 600 ms settle window and the invalid-combination
+handling are gone.
+
+`device_prototype.md` has specified Category and Next since the rotary selector
+was dropped from the product; the six-input path was the bench rig catching up,
+and it was waiting on a second physical button. There now is one.
+
+What changes structurally is where the deck lives. A rotary selector holds its
+own state — the knob position *is* the deck, readable at zero power, which is
+why the deck had no storage anywhere. A button has no position, so the active
+deck moved into the retained block in RTC memory, and a cold boot starts on New
+People.
+
+It also simplifies deep sleep. Six contacts with one permanently closed could
+not be armed as EXT1 wake sources without the closed one waking the device
+immediately; two buttons are both open at rest, so both are normally in the
+mask. The live reading stays, because a button held down at the moment of sleep
+has the same problem in miniature.
+
+Freed: GPIO 5, 6, 7, 15 and 16.
+
+Accepted cost: the deck is no longer readable from the device when it is off.
+Someone returning to a device showing a question cannot tell which deck it came
+from without pressing Category, which changes it. The panel shows the name on
+every advance, which is the mitigation the product design already chose.

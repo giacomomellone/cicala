@@ -14,12 +14,6 @@ nothing sleeps, but the state that has to outlive a wake is already in RTC
 memory rather than waiting on it. Items marked *verify* have not been run on
 hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
-This document follows the code that exists: six one-hot category inputs from
-the current DIP switch and one Next button. The target enclosure has adjacent
-Category and Next buttons. Its input mapping and retained category state are a
-later firmware change, after a second button is available; the sections below
-must not be read as rev A schematic requirements.
-
 ## The one constraint
 
 Below 30 µA means deep sleep, and on the ESP32-S3 deep sleep is a reboot: SRAM
@@ -43,7 +37,7 @@ flowchart LR
 
     WQ["`**system workqueue**
     coop -1 · 1.5 KB
-    input.c — debounce · settle`"]
+    input.c — debounce`"]
 
     APP["`**app**
     prio 5 · 2 KB
@@ -57,7 +51,7 @@ flowchart LR
     prio 8 · 12 KB
     portal OR sync`"]:::todo
 
-    WQ -- chan_selector --> APP
+    WQ -- chan_category --> APP
     WQ -- chan_next --> APP
     WQ -. chan_power .-> APP
     WQ -. chan_power .-> NET
@@ -79,7 +73,7 @@ A thread exists only where something must block independently.
 
 | Context | Blocks on | Why not merged |
 |---|---|---|
-| system workqueue | nothing (delayed work) | An input thread would buy nothing; `k_work_reschedule` *is* the 600 ms settle |
+| system workqueue | nothing (delayed work) | An input thread would buy nothing; the `gpio-keys` driver already owns the debounce |
 | `app` | its zbus queue | — |
 | `display` | the panel, 0.3–2 s | So `app` stays awake during a refresh and can drop the Next press |
 | `net` | sockets, TLS | Portal and sync never overlap; one thread saves ~12 KB |
@@ -102,13 +96,13 @@ free to be C++.
 
 | Module | File | In | Out |
 |---|---|---|---|
-| `input` | `app/src/input.c` | GPIO edges via the `gpio-keys` driver | `chan_selector`, `chan_next` |
+| `input` | `app/src/input.c` | key events via the `gpio-keys` driver | `chan_category`, `chan_next` |
 | `app` | `app/src/app.c` | those two channels, plus `chan_render` | calls into `app_logic` |
+| `retained` | `lib/retained/` | the block RTC memory handed back | whether it survived, or a zeroed one |
 | `app_logic` | `app/src/app_logic.cpp` | posts from `app.c` | `chan_question` |
-| `app_fsm` | `lib/app_fsm/` | selector, press, render result | which deck to draw, and when |
+| `app_fsm` | `lib/app_fsm/` | the active deck, a press, a render result | which deck to draw, and when |
 | `qdb` | `lib/qdb/` | a TKB2 byte range, a deck, a depth cap | one question, no repeats |
 | `layout` | `lib/layout/` | UTF-8 text, a column count | lines of base glyph + mark |
-| `retained` | `lib/retained/` | the block RTC memory handed back | whether it survived, or a zeroed one |
 | `panel` | `app/src/panel.cpp` | a question | pixels, and a full/partial choice |
 | `display` | `app/src/display.c` | `chan_question` | `chan_render` |
 | `channels` | `app/src/channels.c` | — | the channel definitions themselves |
@@ -225,7 +219,7 @@ Refusing to answer a press is worse than repeating a question sooner than
 ideal.
 
 The ring is shared across decks rather than kept per deck. Close and New People
-overlap heavily, so a per-deck ring would let turning the selector hand back a
+overlap heavily, so a per-deck ring would let a Category press hand back a
 question just read under the other name.
 
 `fingerprint` is a cheap hash of the bundle's version, language and count.
@@ -240,13 +234,13 @@ hardware RNG.
 
 ## Channels
 
-Two channels are **state** (they hold their last value, so anyone can read
-"what is true now") and three are **events**. That distinction is the domain
-model: the selector *is* the deck, a press *happened*.
+One channel is **state** (it holds its last value, so anyone can read "what is
+true now") and the rest are **events**. That distinction is the domain model:
+the question on the glass *is* something, a press *happened*.
 
 | Channel | Kind | Carries | Published by | Read by | Status |
 |---|---|---|---|---|---|
-| `chan_selector` | state | deck 0–5, valid flag | workqueue | `app` | built |
+| `chan_category` | event | timestamp, press duration | workqueue | `app` | built |
 | `chan_next` | event | timestamp, press duration | workqueue | `app` | built |
 | `chan_question` | state | seq, deck, text | `app` | `display` | built |
 | `chan_render` | event | seq, result, was-full | `display` | `app` | built |
@@ -337,13 +331,13 @@ and each state gets its own `on_*()` handler so the table stays readable.
 ```mermaid
 stateDiagram-v2
     [*] --> BOOT
-    BOOT --> BOOT: REPEAT — selector invalid, no timeout
+    BOOT --> BOOT: REPEAT — no deck yet, no timeout
     BOOT --> SHOWING: RETAINED — panel already holds this deck
     BOOT --> CATEGORY: CONTINUE — announce the deck
     CATEGORY --> REFRESHING: CONTINUE
     CATEGORY --> FAIL: FAILED
     SHOWING --> SHOWING: REPEAT — idle → deep sleep
-    SHOWING --> CATEGORY: RELABEL — the selector moved
+    SHOWING --> CATEGORY: RELABEL — Category advanced the deck
     SHOWING --> DRAWING: REDRAW — Next
     DRAWING --> REFRESHING: CONTINUE
     DRAWING --> FAIL: FAILED — deck yields nothing
@@ -358,16 +352,14 @@ owns the destinations. `REDRAW`, `RELABEL` and `RETAINED` exist because
 `SHOWING` and `BOOT` have more than one way out and `CONTINUE` cannot mean all
 of them.
 
-**Turning the selector announces the deck; Next asks a question.** The deck's
+**Category announces the deck; Next asks a question.** The deck's
 name goes on the panel and stays there until someone presses. That is what
-makes the deck legible without printing the six names on the case — and it is
-what lets the target Category button replace the rotary selector, since a deck
-you can read on the glass does not need a labelled detent. The current input
-path remains the DIP switch until the hardware and tests change together.
+makes the deck legible without printing the six names on the case, which is
+what lets one button reach all six: a deck you can read on the glass does not
+need a labelled detent.
 
-`SHOWING` checks Next before the selector, so a press made while the name is up
-gets a question rather than the name again. In practice the two cannot both be
-pending — the selector needs 600 ms to settle — but the order is the rule.
+`SHOWING` checks Next before a deck change, so a press made while the name is
+up gets a question rather than the name again.
 
 The table above is `firmware/lib/app_fsm/app_fsm.cpp` line for line, and
 `firmware/tests/app_fsm` drives every edge in it with a fake display and an
@@ -375,15 +367,16 @@ injected clock.
 
 | State | Handler | Leaves when |
 |---|---|---|
-| `BOOT` | `on_boot()` | the selector reads one valid position |
+| `BOOT` | `on_boot()` | a deck is known, which is immediate — it comes from RTC memory |
 | `CATEGORY` | `on_category()` | immediately — the deck's name is sent in `on_enter_state()` |
 | `SHOWING` | `on_showing()` | Next arrives, or the deck differs from the one on screen |
 | `DRAWING` | `on_drawing()` | immediately — the draw itself happens in `on_enter_state()` |
 | `REFRESHING` | `on_refreshing()` | the display reports back, or `CONFIG_TK_REFRESH_TIMEOUT_MS` passes |
 | `FAIL` | `on_fail()` | immediately |
 
-`BOOT` has no timeout, so a device with a broken or mid-travel selector waits
-indefinitely while keeping the panel readable. `REFRESHING` has one, so a dead
+`BOOT` has no timeout. The deck comes from RTC memory and is known immediately,
+so it is never waited on in practice; the state stays because a corpus that
+fails to open is still a reason not to draw. `REFRESHING` has one, so a dead
 panel cannot wedge the device.
 
 Two rules are in the handlers rather than the table, because they are about
@@ -392,7 +385,7 @@ what the machine remembers rather than where it goes:
 - **A press that lands during `REFRESHING` is dropped, not queued.** A panel
   takes up to two seconds; honouring presses made during it would spend that
   time drawing questions nobody has read.
-- **Entering `FAIL` adopts the selector's deck as the one on screen.** Without
+- **Entering `FAIL` adopts the active deck as the one on screen.** Without
   that, a deck yielding nothing would leave `SHOWING` looking at a deck it has
   not drawn, ask again, fail again, and spin. Adopting it means the device sits
   on the previous question until the user presses or turns something.
@@ -466,9 +459,8 @@ sequenceDiagram
     Note over APP,DSP: a press arriving between 11 and 17 is dropped
 ```
 
-Turning the selector is the same path with the 600 ms settle inserted before
-`chan_selector`, so crossing three detents produces one question rather than
-three.
+A Category press is the same path, ending in the deck's name rather than a
+question.
 
 ## The wake path
 
@@ -486,7 +478,7 @@ sequenceDiagram
 
     HW->>Z: EXT1 wake (a reboot, not a resume)
     Z->>A: main()
-    A->>A: read six selector GPIOs
+    A->>A: read the active deck from RTC memory
     A->>Q: draw(deck, depth ≤ 2)
     Q-->>A: question
     A->>D: chan_question
@@ -496,9 +488,8 @@ sequenceDiagram
     Note over HW,D: under 1 s, end to end
 ```
 
-Turning the selector follows the same path with the 600 ms settle inserted
-before the draw, so crossing three detents produces one question rather than
-three.
+A Category press follows the same path, advancing the retained deck and drawing
+its name rather than a question.
 
 ## Where state lives
 
@@ -513,22 +504,25 @@ flowchart LR
     bundle version`"]
     LFS["`**LittleFS**
     decompressed TKB2 corpus`"]
-    NONE["`**nowhere**
+    ACT["`**RTC slow memory**
     active deck`"]
 
     RTC -- lost when --> B1[cell removed or flat]
     NVS -- lost when --> B2[factory reset]
     LFS -- replaced by --> B3[atomic sync swap]
-    NONE -- re-read from GPIO --> B4[every boot, by design]
+    ACT -- lost when --> B1
 
     classDef k fill:#f7f5f1,stroke:#9a8f7d
-    class RTC,NVS,LFS,NONE k
+    class RTC,NVS,LFS,ACT k
 ```
 
 Keeping the bag out of NVS means a Next press costs no flash write, so button
-life rather than flash endurance bounds the device. The active deck has no
-storage at all, which is how "the selector is the deck state" is enforced
-structurally rather than by discipline.
+life rather than flash endurance bounds the device.
+
+The active deck is in RTC memory rather than nowhere. A rotary selector would
+have held its own state — the knob position *is* the deck, readable at zero
+power — and a button does not, so the deck it advances to has to be remembered.
+A cold block makes that New People.
 
 **The retained block is built.** `lib/retained` owns one struct — the bag's
 state, the partial-refresh counter, and what the panel is currently showing —
@@ -581,7 +575,7 @@ costs a 2315 ms full refresh; a free wake costs nothing at all.
 
 `retained_matches()` therefore answers truthfully, and a wake to a question the
 panel already holds costs no refresh. A deck name does not count — waking to
-one means the selector was turned and Next never pressed, so the name stays up
+one means Category was pressed and Next never was, so the name stays up
 rather than being read as an answer.
 
 *Verified at link time:* the block lands at `0x50000000`, which is
@@ -619,14 +613,11 @@ here.
 
 ### The EXT1 wake mask
 
-The mask is computed at sleep time from the current selector reading: every pin
-that is currently high, which is the five open contacts plus Next, armed for
-ANY_LOW. The closed contact is left out — it is already low, and arming it
-would satisfy the wake condition before sleep is even entered.
-
-A rotary switch breaks before it makes, so turning the knob releases the old
-contact, which nothing is listening for, and then closes a new one, which is in
-the mask and is the wake.
+The mask is computed at sleep time from a live reading: every pin currently
+high, armed for ANY_LOW. Both buttons are open at rest, so both are normally in
+it. A button held down at the moment of sleep is already low and is left out,
+because arming it would satisfy the wake condition before sleep is entered —
+and leaving it out means the other button still wakes the device.
 
 ```mermaid
 flowchart LR
@@ -652,10 +643,8 @@ flowchart LR
 VBUS detect joins the mask with the opposite polarity, since plugging in drives
 it high.
 
-Two consequences worth stating: the wake mask is state that has to be
-recomputed on every sleep rather than configured once, and a device whose
-selector is between detents has no closed contact, so it arms all six and wakes
-on whichever is reached first — which is the behaviour wanted anyway.
+The consequence worth stating: the mask is state recomputed on every sleep
+rather than configured once.
 
 ## Testing boundary
 
@@ -678,17 +667,13 @@ looks right is a bench question.
 
 Emulated GPIO is not a `native_sim` feature: `CONFIG_GPIO_EMUL` follows a
 `zephyr,gpio-emul` devicetree node and works on either host platform, so the
-suites that drive the selector and Next run in the default macOS loop.
+suites that drive the two buttons run in the default macOS loop.
 
 `qdb` suites run against real bundles built from the question database by
 `just fw-fixtures`, not hand-written bytes.
 
 ## Open items
 
-- Category-button transition: replace the six one-hot selector inputs with one
-  wake input, retain the category in RTC state, define the New People cold
-  default, and test dropped Category presses during refresh. This waits for a
-  second physical button.
 - The refresh counter has to reach RTC memory before the full-refresh interval
   means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
   always refreshes fully — correct today, and wrong the moment deep sleep makes

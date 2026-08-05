@@ -1,6 +1,6 @@
 # Firmware
 
-**Status: the tabletop loop works.** Turning the selector or pressing Next
+**Status: the tabletop loop works.** Pressing Category or Next
 draws a question from the compiled-in corpus and renders it on the e-paper, and
 the shuffle bag and refresh counter now live in RTC memory so a reboot does not
 restart them. Still missing: deep sleep itself and the power path, Wi-Fi sync,
@@ -10,19 +10,12 @@ design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Ini
 development targets the USB-powered breadboard rig in
 [prototype_bom.md](../docs/prototype_bom.md).
 
-The target enclosure now uses adjacent Category and Next buttons. This
-directory deliberately still implements the available bench hardware: a
-six-way DIP switch supplies the category and one button supplies Next. Treat
-the interaction contract below as the current firmware behavior, not the rev A
-input design. The transition waits for a second physical button and changes
-the implementation and tests together.
-
 ## Target
 
 - ESP32-S3 DevKitC-1-N8R8 for breadboard development.
 - ESP32-S3-WROOM-1-N16 on the later target PCB.
 - Waveshare 2.13-inch e-Paper HAT, 250 × 122, SSD1680 (V3/V4 revisions).
-- Six one-hot selector inputs and one independent Next button.
+- Two buttons: Category advances the deck, Next asks a question.
 - No OLED, encoder, depth control, or user-facing status LED.
 
 Zephyr, not ESP-IDF. It has in-tree SSD1680/SSD16xx support and an exact
@@ -39,7 +32,7 @@ the decision log for why.
 just fw-init      # once: west init + update into deps/, fetch espressif blobs
 just fw-build     # build for the ESP32-S3 devkit
 just fw-flash     # flash over the devkit's USB connection
-just fw-monitor   # serial console: deck changes and Next presses
+just fw-monitor   # serial console: deck changes and presses
 just fw-sim       # run under qemu on the host
 just fw-test      # ztest suites via twister
 ```
@@ -80,7 +73,7 @@ just fw-monitor     # every refresh logs its position in the chain
 just fw-flash       # back to the real thing
 ```
 
-Set the DIP switch to a deck before flashing; the chain starts itself and keeps
+The chain starts itself at boot and keeps
 going until the board is reflashed. The same console output carries refresh
 durations and, once a minute, thread stack high-water marks. The full
 procedure, including what to write down, is in
@@ -109,13 +102,13 @@ Use the image rather than the reset button: an EN-pin reset reports as
 
 - E-paper shows one question, or the name of the deck just selected, and no
   status or menu UI.
-- Turning the selector puts the deck's name on the panel and leaves it there.
-  Next is what asks for a question. This is why the deck names need not be
-  printed on the case — and why a second button could replace the rotary
-  selector, since a deck you can read on the glass needs no labelled detent.
-- The physical selector is the active deck. Read it at boot and after every
-  selector wake instead of restoring a remembered deck.
-- A selector change must remain stable for about 600 ms before drawing.
+- Category puts the deck's name on the panel and leaves it there. Next is what
+  asks for a question. This is why the deck names need not be printed on the
+  case: a deck you can read on the glass needs no labelled detent, which is
+  what lets one button reach all six.
+- Category advances one step and wraps from Wild back to New People.
+- The active deck is remembered in RTC memory, because a button has no position
+  to read. A cold boot starts on New People.
 - Every Next press duration has the same meaning and draws exactly once.
 - Normal playback includes depths 1 and 2. Depth 3 is never drawn
   automatically.
@@ -127,37 +120,30 @@ Use the image rather than the reset button: an EN-pin reset reports as
 
 ```text
 BOOT
-  → read selector
-  → keep the existing e-paper question, or draw if the display is uninitialized
+  → read the active deck from RTC memory (New People if there is none)
+  → keep the question already on the e-paper, or name the deck
 
-SELECTOR_CHANGE
-  → wait for one stable valid position
-  → draw from that deck
-  → refresh e-paper
+CATEGORY
+  → advance one deck, wrapping
+  → put its name on the e-paper
 
 NEXT
-  → debounce
-  → draw from the selected deck
+  → draw from the active deck
   → refresh e-paper
 
 IDLE
   → enter deep sleep
 
 WAKE
-  → read the physical selector again
-  → handle selector change or Next
+  → a fresh boot, from the top
 ```
-
-Zero or several active selector contacts are invalid states. Firmware must not
-guess a deck; it should wait for one stable contact and retain the displayed
-question.
 
 ## Layout
 
 ```text
 firmware/
 ├── west.yml                # manifest: zephyr revision + module allowlist
-├── Kconfig.policy          # settle window, refresh interval, depth cap
+├── Kconfig.policy          # debounce, refresh interval, depth cap
 ├── app/
 │   ├── CMakeLists.txt
 │   ├── prj.conf            # shared config; LATER blocks track the architecture
@@ -180,8 +166,8 @@ suites run it on the host. `app/src/` is the glue that gives it channels,
 threads and a display.
 
 `Kconfig.policy` sits above `app/` because the test suites source the same file
-the application does; a suite that copied the settle window would keep passing
-after someone changed it.
+the application does; a suite that copied the debounce would keep passing after
+someone changed it.
 
 `components/` holds the written contracts for epaper, input, qdb, sync, portal
 and power. They predate the Zephyr decision and describe responsibilities
@@ -189,25 +175,25 @@ rather than a directory layout; the code lands under `app/src/`.
 
 Pins live in the board overlay so the same application logic moves to the
 target PCB by changing one file. The full map, the reasoning behind each pin,
-and how the DIP switch, button and e-paper HAT connect are in
+and how the two buttons and the e-paper HAT connect are in
 [docs/hardware_wiring.md](../docs/hardware_wiring.md).
 
-The short version: selector 0..5 are GPIO 4, 5, 6, 7, 15, 16 and Next is
-GPIO 17 — all inside GPIO0..21, the ESP32-S3's RTC-capable range, without which
-EXT1 deep-sleep wake is impossible. VBUS detect and battery sense are reserved
+The short version: Category is GPIO 4 and Next is GPIO 17 — both inside
+GPIO0..21, the ESP32-S3's RTC-capable range, without which EXT1 deep-sleep
+wake is impossible. VBUS detect and battery sense are reserved
 on GPIO21 and GPIO1 under the same constraint, and neither is wired yet. The
 panel avoids GPIO19 and GPIO20: they are the native USB pair the debug console
 and JTAG share.
 
 ## Breadboard acceptance
 
-The rig runs with a six-way DIP switch on the selector pins, a tactile button
-on Next, and the e-paper HAT wired to the panel pins.
+The rig runs with a tactile button on each of Category and Next, and the
+e-paper HAT wired to the panel pins.
 
 | Item | Confirmed by |
 |---|---|
 | Firmware flashes, logs, and debugs over the DevKitC USB connection | the rig |
-| All six selector positions and invalid contact combinations | the rig |
+| Category advances and wraps through all six decks | the rig |
 | One physical press produces one Next event | the rig |
 | A press draws a question and the panel shows it | the rig |
 | Real English and German TKB2 bundles round-trip through the question store | the suites, against bundles built from the database |

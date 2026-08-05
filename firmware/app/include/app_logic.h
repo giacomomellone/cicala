@@ -23,7 +23,15 @@ extern "C" {
  */
 int tk_app_init(void);
 
-void tk_app_post_selector(uint8_t deck, bool valid);
+/**
+ * One Category press happened: advance to the next deck and name it.
+ *
+ * Wraps from Wild back to New People. The deck is remembered in RTC memory
+ * rather than read from a pin, because a button has no position and, once deep
+ * sleep exists, every press starts from a fresh boot.
+ */
+void tk_app_post_category(void);
+
 void tk_app_post_next(void);
 
 /**
@@ -65,6 +73,16 @@ int tk_app_state(void);
  * silent, which from the table looks like a button that does not work.
  */
 bool tk_app_is_busy(void);
+
+/**
+ * True when the question on the panel is settled and nothing is pending.
+ *
+ * This is the only state it is safe to sleep from. Every other one is
+ * mid-decision: BOOT is still waiting for a valid selector reading, DRAWING and
+ * REFRESHING have work in flight, and sleeping through any of them would
+ * abandon it — and, since a wake is a fresh boot, lose it.
+ */
+bool tk_app_is_settled(void);
 
 #ifdef __cplusplus
 }
