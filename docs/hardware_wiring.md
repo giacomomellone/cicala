@@ -5,15 +5,10 @@ is. The shopping list is [prototype bom](prototype_bom.md), the object this
 becomes is [device prototype](device_prototype.md), and the firmware that
 drives it is [firmware architecture](firmware_architecture.md).
 
-**Status:** the whole rig is wired and drawing questions. The selector, Next
-and the bring-up LED behave as the suites describe, and the panel has been on
-the bench long enough to find a real bug in the refresh sequence — the
-blanking sandwich described below was diagnosed on the glass, not in a test.
-
-What has *not* happened is measurement. Nothing on this page has been timed, no
-ghosting has been counted, and the Kconfig values that depend on both are still
-the numbers someone picked before there was a panel to look at. "Bench
-measurements" at the end of this page is the procedure for fixing that.
+**Status:** the whole rig is wired and drawing questions. Selector, Next, the
+bring-up LED and the panel all work, and the refresh policy, timings and RTC
+retention have been measured on it — see "Bench measurements" at the end of
+this page, which is also the procedure for repeating any of them.
 
 This is the current compatibility rig, not the target enclosure. The default
 [device prototype](device_prototype.md) uses Category and Next buttons, but the
@@ -256,11 +251,7 @@ just fw-monitor
 
 ## Bench measurements
 
-Three Kconfig values were guesses waiting on this rig. They were guesses on
-purpose — each one is a property of the physical panel, and picking a number in
-advance would have meant pretending otherwise.
-
-What the first soak run found, on a Waveshare 2.13-inch V4:
+Measured on a Waveshare 2.13-inch V4:
 
 | Measurement | Result | Where it went |
 |---|---|---|
@@ -270,16 +261,12 @@ What the first soak run found, on a Waveshare 2.13-inch V4:
 | Peak thread stack | logging 89%, everything else 18–38% | `LOG_PROCESS_THREAD_STACK_SIZE` = 2048 |
 | RTC memory across a warm reboot | kept, three times running | the retained block works on the chip |
 
-The interval sits three times under what the panel actually tolerated. That
-margin is for the conditions the run did not cover — a cold room, a different
-panel batch — rather than for the one it did.
+The full-refresh interval sits three times under what the panel tolerated, a
+margin for conditions the run did not cover: a cold room, a different panel
+batch.
 
-The stack figure was the surprise. Every application thread had two thirds of
-its stack spare while Zephyr's own logging thread had 112 bytes, which is not
-enough to add a log line to this firmware safely.
-
-The procedures below are how to repeat any of it. Each wants both USB cables in
-and `just fw-monitor` open.
+The procedures below repeat any of it. Each wants both USB cables in and
+`just fw-monitor` open.
 
 ### 1. Ghosting, for `CONFIG_TK_FULL_REFRESH_INTERVAL`
 
@@ -353,10 +340,9 @@ no full refresh, and nothing drawn until the next scheduled press. A question
 redrawn at boot, a count restarting at zero, or `cold boot, starting a fresh
 cycle` all mean the block did not survive.
 
-**The reset button does not test this.** A reset through the DevKitC's EN pin
-reports as `rst:0x1 (POWERON)` and clears the RTC domain, so the firmware
-correctly reports a cold boot. That is not a failure; it is what a power-on is
-supposed to do.
+Use the image rather than the reset button: an EN-pin reset reports as
+`rst:0x1 (POWERON)` and clears the RTC domain, which is what a power-on should
+do.
 
 ### 4. Accents, with `just fw-charset`
 

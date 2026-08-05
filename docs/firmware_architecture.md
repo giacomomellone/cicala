@@ -604,39 +604,29 @@ rst:0xc (RTC_SW_CPU_RST)
 <inf> tk_soak: partial #7 of seq 8      <- after
 ```
 
-Four things in that, and all four are the point:
+The bag continued its cycle, `seq` continued, the refresh counter continued so
+no full refresh followed a reboot, and nothing was drawn at boot — the first
+question arrives one soak interval later, which is `retained_matches()` sending
+`BOOT` straight to `SHOWING`.
 
-- the bag kept drawing new questions rather than restarting its cycle;
-- `seq` continued rather than resetting to 1;
-- the refresh counter continued, so **no full refresh followed any reboot** —
-  the 2315 ms this was built to avoid;
-- nothing was drawn at boot at all. The first question after each reboot
-  arrives one soak interval later, not immediately, which is
-  `retained_matches()` sending `BOOT` straight to `SHOWING`.
-
-*The reset button proves nothing here.* A reset through the DevKitC's EN pin
-reports as `rst:0x1 (POWERON)`, takes the RTC domain with it, and the firmware
-correctly says `cold boot, starting a fresh cycle`. Only a warm reset from
-software keeps RTC memory, which is why the check needs an image that reboots
-itself rather than a finger on the button.
+Only a warm reset keeps RTC memory. A reset through the DevKitC's EN pin
+reports as `rst:0x1 (POWERON)` and clears it, so the check needs an image that
+reboots itself.
 
 *Still unconfirmed:* `PM_STATE_SOFT_OFF` mapping to real deep sleep rather than
-light sleep, whether a genuine wake behaves like the warm reboot tested here,
-and EXT1 wake — which cannot be armed the way this document used to describe.
-See below.
+light sleep, and whether a genuine wake behaves like the warm reboot tested
+here.
 
-### The selector cannot be a plain EXT1 wake source
+### The EXT1 wake mask
 
-A deck is selected by *holding* one contact closed. That pin is low for as long
-as the device sits on the table, so arming all six for EXT1 ANY_LOW gives a
-device that wakes the instant it sleeps, forever.
+The mask is computed at sleep time from the current selector reading: every pin
+that is currently high, which is the five open contacts plus Next, armed for
+ANY_LOW. The closed contact is left out — it is already low, and arming it
+would satisfy the wake condition before sleep is even entered.
 
-The mask has to be computed at sleep time from the current selector reading:
-arm the five *open* contacts plus Next, and leave out the one that is closed.
 A rotary switch breaks before it makes, so turning the knob releases the old
-contact — no wake, nothing is listening for it — and then closes a new one,
-which is in the mask and is the wake. Next is open when unpressed, so it needs
-no special handling.
+contact, which nothing is listening for, and then closes a new one, which is in
+the mask and is the wake.
 
 ```mermaid
 flowchart LR
@@ -658,9 +648,6 @@ flowchart LR
     classDef armed fill:#eef1f4,stroke:#8a97a6
     classDef held fill:#f4efe6,stroke:#b0a086
 ```
-
-Arming the closed pin is the mistake: it is already low, so the wake condition
-is satisfied before sleep is entered and the device never stays asleep.
 
 VBUS detect joins the mask with the opposite polarity, since plugging in drives
 it high.

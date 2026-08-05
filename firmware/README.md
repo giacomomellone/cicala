@@ -102,8 +102,8 @@ The boot line after each one should read `retained state: kept across the
 reboot`, and the run should continue — same sequence, same refresh count, no
 full refresh, nothing redrawn.
 
-The reset button does not test this: an EN-pin reset reports as `POWERON` and
-clears the RTC domain, which is what a power-on is meant to do.
+Use the image rather than the reset button: an EN-pin reset reports as
+`POWERON` and clears the RTC domain.
 
 ## Interaction contract
 

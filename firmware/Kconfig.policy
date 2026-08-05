@@ -168,16 +168,13 @@ config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
     default 64
     help
-      Measured, not chosen. A `just fw-soak` run on the Waveshare 2.13-inch V4
-      reached 193 consecutive partial refreshes with only minor artefacts and
-      the question still comfortably readable, so the panel tolerates far more
-      than the 8 this held before anyone had looked at one.
+      Measured. A `just fw-soak` run on the Waveshare 2.13-inch V4 reached 193
+      consecutive partial refreshes with only minor artefacts and the question
+      still comfortably readable.
 
-      64 sits about three times under that, and the margin is for what the run
-      did not cover rather than what it did: ghosting is temperature and
-      batch dependent, and a device on a cold table has not been tested. It is
-      still eight times the old value, which is the difference between a full
-      refresh interrupting an evening and never seeing one.
+      64 sits about three times under that. The margin covers what the run did
+      not: ghosting is temperature and batch dependent, and a device on a cold
+      table has not been tested.
 
       A cold boot always uses a full refresh because the panel content is
       unknown. Once deep sleep lands, every wake is a cold boot, so the counter
