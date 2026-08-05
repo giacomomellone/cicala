@@ -10,7 +10,7 @@
 
 patches:
   - path: zephyr/ssd16xx-preserve-image-on-init.patch
-    sha256sum: 059abf38a079f3860b616f9838041e556c78574b770aaac261a1575e1072f89d
+    sha256sum: a72af82552bee82bb99a2379f9855194e3406134fab95dc3bc7f1df270112895
     # The project's path in the workspace, not its manifest name: west.yml
     # gives every project a `deps/` prefix, and a patch whose module does not
     # resolve is skipped in silence rather than reported.
@@ -26,3 +26,10 @@ patches:
       before the application's own refresh even starts, and the retained
       partial-refresh counter ends up describing a panel state that no longer
       exists. CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT skips both steps.
+
+      CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET then puts back the one of the
+      three the first symbol skips that an application may still need: the
+      RES# pulse, without which a controller left in its own deep sleep mode
+      never hears the bus again. It also separates the reset skip from the
+      clear skip, which were introduced together and never told apart — see
+      docs/decisions.md.

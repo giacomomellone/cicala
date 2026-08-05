@@ -492,3 +492,21 @@ Deep sleep isolates every GPIO. The panel's RESET line is active low and the con
 RESET, CS and D/C are driven to their inactive level and held with `rtc_gpio_hold_en()` before `sys_poweroff()`, and released at `PRE_KERNEL_2` alongside the button pads. All three are RTC-capable (GPIO 8, 10, 18), which is what makes it possible at all.
 
 Ghosting after a wake was fixed by this and the reset-pulse skip together, in one flash. Which of the two was load-bearing is not known; separating them means a run on the `fw-retain` image, which reboots without deep sleep.
+
+## 2026-08-06: The panel controller is asked to sleep, behind a switch that is off
+
+`sys_poweroff()` stops the SoC and nothing else. The SSD1680 is a separate chip on its own rail, and Zephyr's `ssd16xx` never issues command `0x10`: `SSD16XX_CMD_SLEEP_MODE` is defined in `ssd16xx_regs.h` and used nowhere in the driver. So through every deep sleep the controller has been sitting in whatever state the last refresh left it in.
+
+`CONFIG_PM_DEVICE` does not cover this, despite `sleep.conf` having claimed it did. `lib/os/poweroff.c` locks interrupts and calls `z_sys_poweroff()` without touching device PM, and `ssd16xx` defines no PM action for it to call in any case. The comment has been corrected; the symbol stays for `PM_STATE` handling.
+
+`CONFIG_TK_PANEL_DEEP_SLEEP` sends the controller into deep sleep mode 1 — RAM retained — from `sleep_now()`, before the control pins are parked, since holding CS would take the bus away mid-command. Mode 2 drops the RAM, which is the image on the glass.
+
+Waking it needs the hardware reset the `ssd16xx` patch removed: a controller in deep sleep ignores SPI, and RES# is the only way back. The patch therefore grew a second symbol, `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET`, which restores the pulse while still skipping the clear and the update. `TK_PANEL_DEEP_SLEEP` selects it.
+
+Off by default, because both halves of the trade are unmeasured. What it saves is unknown: a meter with 0.1 mA steps read zero across the panel's VCC in deep sleep, which bounds the draw under roughly 50 µA and rules out a controller that is fully awake, but does not distinguish 3 µA from 45 µA against a 30 µA whole-device budget. What it costs is also unknown: the patch's own comment holds that a hardware reset returns the SSD1680's RAM to defaults, and if that is right then every wake falls back to a 2315 ms full refresh and this is not worth having.
+
+The two are worth settling together, on the power mule rather than the DevKitC — the devkit's USB bridge, regulator and LED swamp any sub-milliamp figure taken at the board level.
+
+Splitting the symbol also settles the older question above: the reset skip and the clear skip arrived in one flash and were never told apart. `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET=y` with `TK_PANEL_DEEP_SLEEP=n` is the reset skip alone, which is the isolation that run needed.
+
+Accepted cost: a third Kconfig combination that nothing on the bench has yet run, and a patch that now carries two symbols into every Zephyr version bump instead of one.

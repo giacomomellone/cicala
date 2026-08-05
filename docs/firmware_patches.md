@@ -15,6 +15,7 @@ re-check at the next version bump. Keep the list short.
 | Patch | Symbol it adds | Why |
 |---|---|---|
 | `zephyr/ssd16xx-preserve-image-on-init.patch` | `CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT` | Keeps the panel image across a deep-sleep wake |
+| the same patch | `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET` | Puts the reset pulse back, for a controller that has been told to sleep |
 
 `ssd16xx` clears both controller RAM buffers, pulses the hardware reset and
 drives a full update from its init function, unconditionally. On this device a
@@ -45,6 +46,28 @@ Enabled in `firmware/app/sleep.conf` only — the awake image never reboots, so
 it has nothing to preserve. `app/src/sleep.c` carries an `#error` if the symbol
 is missing, because Kconfig only *warns* when a `.conf` assigns a symbol that
 does not exist and that warning scrolls past in the middle of a build.
+
+### The second symbol
+
+`CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET` gives one of those three steps back:
+the reset pulse, while still skipping the clear and the update.
+
+It exists for `CONFIG_TK_PANEL_DEEP_SLEEP`, which sends the controller into its
+own deep sleep mode on the way down. A controller in that mode ignores SPI
+entirely — RES# is the only thing that revives it — so skipping the pulse would
+leave every command after the wake falling on a chip that is not listening.
+`TK_PANEL_DEEP_SLEEP` therefore `select`s it, and neither is on by default.
+
+Whether the image survives that reset is the open question, and the reason the
+combination is not shipped. If the RAM does not survive, preserving the image
+and sleeping the controller cannot both be had.
+
+Splitting the symbol has a second use. The reset skip and the clear skip
+arrived in one flash and were never told apart, so which of them fixed the
+ghosting after a wake is unknown — recorded in
+[decisions](decisions.md). Building with
+`CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET=y` and `TK_PANEL_DEEP_SLEEP=n`
+isolates them.
 
 ## Applying and dropping
 

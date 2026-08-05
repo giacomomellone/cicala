@@ -150,6 +150,31 @@ config TK_SLEEP
       Off by default. A board that reboots on every press is harder to bring up
       than one that stays awake, and the console goes with it.
 
+config TK_PANEL_DEEP_SLEEP
+    bool "Put the panel controller to sleep too"
+    default n
+    depends on TK_SLEEP
+    select SSD16XX_PRESERVE_IMAGE_HW_RESET
+    help
+      sys_poweroff() stops the SoC and nothing else. The SSD1680 is a separate
+      chip on its own rail, and Zephyr's ssd16xx driver never issues command
+      0x10 — SSD16XX_CMD_SLEEP_MODE is defined in ssd16xx_regs.h and used
+      nowhere — so through every deep sleep the controller sits in whatever
+      state the last refresh left it in. CONFIG_PM_DEVICE does not change
+      that: sys_poweroff() runs no device hooks, and the driver defines no PM
+      action for them to run.
+
+      Turning this on sends the controller into its deep sleep mode 1 (RAM
+      retained) on the way down, and takes the hardware reset pulse back at
+      init so it can be revived — which is what the select above is for, since
+      a sleeping controller ignores the bus.
+
+      Off by default, and a bench question rather than a settled one. The
+      saving has not been measured and neither has the cost: the reset that
+      wakes the controller may take the RAM with it, in which case every wake
+      falls back to a full refresh and this is not worth having. Measure both
+      before shipping it. See docs/hardware_wiring.md, "Bench measurements".
+
 config TK_SLEEP_IDLE_MS
     int "Quiet time before sleeping (ms)"
     default 2000

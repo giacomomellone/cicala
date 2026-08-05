@@ -27,8 +27,10 @@
 #include <esp_sleep.h>
 
 #include <zephyr/drivers/gpio.h>
+#include <zephyr/drivers/mipi_dbi.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 #include <zephyr/sys/poweroff.h>
 #include <zephyr/sys/util.h>
 #include <zephyr/zbus/zbus.h>
@@ -77,6 +79,78 @@ static const struct gpio_dt_spec panel_pins[] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(tk_mipi_dbi), dc_gpios),
     GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi2), cs_gpios, 0),
 };
+
+#if IS_ENABLED(CONFIG_TK_PANEL_DEEP_SLEEP)
+
+#define TK_PANEL_NODE DT_CHOSEN(zephyr_display)
+
+/*
+ * From ssd16xx_regs.h, which is private to the driver and cannot be included
+ * from here. Two constants rather than a fourth patch to export them.
+ *
+ * Mode 1 rather than mode 2: mode 2 drops the RAM, which is the image on the
+ * glass and the whole reason the panel is worth keeping powered at all.
+ */
+#define TK_SSD16XX_CMD_SLEEP_MODE 0x10
+#define TK_SSD16XX_SLEEP_MODE_DSM1 0x01
+
+static const struct device *const panel_bus = DEVICE_DT_GET(DT_PARENT(TK_PANEL_NODE));
+
+/*
+ * The same bus configuration ssd16xx builds for itself, from the same node.
+ * It has to match: a different word size or CS policy addresses a controller
+ * that is not the one the driver has been talking to.
+ */
+static const struct mipi_dbi_config panel_dbi = {
+    .mode = MIPI_DBI_MODE_SPI_4WIRE,
+    .config = MIPI_DBI_SPI_CONFIG_DT(
+        TK_PANEL_NODE, SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_HOLD_ON_CS | SPI_LOCK_ON, 0),
+};
+
+static const struct gpio_dt_spec panel_busy = GPIO_DT_SPEC_GET(TK_PANEL_NODE, busy_gpios);
+
+/**
+ * Send the controller into deep sleep mode 1.
+ *
+ * Only ever reached from a settled state, so the panel should be idle already;
+ * the BUSY poll is there because a command issued mid-update is ignored, and
+ * being ignored here looks exactly like working until the current is measured.
+ *
+ * Waking it again is the hardware reset ssd16xx performs at init, which
+ * CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET exists to put back. Without that
+ * symbol the controller would sleep and never be spoken to again.
+ */
+static void panel_controller_sleep(void)
+{
+    const uint8_t mode = TK_SSD16XX_SLEEP_MODE_DSM1;
+
+    for (int waited = 0; gpio_pin_get_dt(&panel_busy) > 0; waited++) {
+        if (waited >= CONFIG_TK_REFRESH_TIMEOUT_MS) {
+            LOG_ERR("panel still busy; leaving the controller awake");
+            return;
+        }
+
+        k_msleep(1);
+    }
+
+    const int err =
+        mipi_dbi_command_write(panel_bus, &panel_dbi, TK_SSD16XX_CMD_SLEEP_MODE, &mode, 1);
+
+    (void) mipi_dbi_release(panel_bus, &panel_dbi);
+
+    if (err != 0) {
+        LOG_ERR("could not sleep the panel controller: %d", err);
+        return;
+    }
+
+    LOG_INF("panel controller in deep sleep mode 1");
+}
+
+#else
+
+static void panel_controller_sleep(void) {}
+
+#endif /* CONFIG_TK_PANEL_DEEP_SLEEP */
 
 static void sleep_now(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(idle_work, sleep_now);
@@ -222,6 +296,11 @@ static void sleep_now(struct k_work *work)
     }
 
     hold_wake_pins(mask);
+
+    /* Before the pins are parked: this is the last thing that uses the bus,
+     * and holding CS would take it away mid-command. */
+    panel_controller_sleep();
+
     hold_panel_pins();
 
     /*
@@ -235,9 +314,24 @@ static void sleep_now(struct k_work *work)
 
     LOG_INF("sleeping, wake on any of GPIO mask %llx", mask);
 
-    /* The log is deferred, so give the backend a moment before the core stops
-     * existing. Everything worth keeping is already in RTC memory. */
-    k_sleep(K_MSEC(50));
+    /*
+     * Flush, rather than wait and hope.
+     *
+     * Logging is deferred, and the processing thread is woken either by
+     * CONFIG_LOG_PROCESS_TRIGGER_THRESHOLD messages piling up — ten — or by
+     * its own CONFIG_LOG_PROCESS_THREAD_SLEEP_MS tick, which is a second. The
+     * sleep path emits two messages. Two never reaches ten, so nothing wakes
+     * the thread, and the sleep this used to do was fifty milliseconds against
+     * a thousand: the core stopped existing with both lines still in the
+     * buffer, and the console simply ended after the last refresh.
+     *
+     * log_panic() puts the backends into synchronous mode and drains what is
+     * queued, which is what a shutdown path wants — there is no later.
+     *
+     * Everything worth keeping is already in RTC memory; this is only so the
+     * bench can see where the device went.
+     */
+    log_panic();
 
     sys_poweroff();
 }
@@ -293,6 +387,20 @@ SYS_INIT(sleep_release_holds, PRE_KERNEL_2, 0);
  */
 static int sleep_start(void)
 {
+    /*
+     * Which panel policy this image was built with, said once per boot — which
+     * on a sleeping image is once per press, and is the line that tells a
+     * failed revival apart from a working one. A controller that never came
+     * back out of its deep sleep still logs a normal refresh: SPI writes carry
+     * no acknowledgement, so the driver cannot know the glass did not move.
+     * Without this the console reads identically in both cases.
+     */
+    if (IS_ENABLED(CONFIG_TK_PANEL_DEEP_SLEEP)) {
+        LOG_INF("panel policy: controller sleeps, revived by the reset at init");
+    } else {
+        LOG_INF("panel policy: controller left awake through sleep");
+    }
+
     (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
 
     return 0;
