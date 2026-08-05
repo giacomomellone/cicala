@@ -1,8 +1,10 @@
 # Firmware
 
 **Status: the tabletop loop works.** Turning the selector or pressing Next
-draws a question from the compiled-in corpus and renders it on the e-paper.
-Still missing: deep sleep and the power path, Wi-Fi sync, and the setup portal.
+draws a question from the compiled-in corpus and renders it on the e-paper, and
+the shuffle bag and refresh counter now live in RTC memory so a reboot does not
+restart them. Still missing: deep sleep itself and the power path, Wi-Fi sync,
+and the setup portal.
 [docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
 design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
@@ -148,7 +150,8 @@ firmware/
 │   ├── fsm/                # table-driven state machine
 │   ├── app_fsm/            # the tabletop machine built on it
 │   ├── qdb/                # TKB2 reader and shuffle bag
-│   └── layout/             # UTF-8, accent decomposition, word wrap
+│   ├── layout/             # UTF-8, accent decomposition, word wrap
+│   └── retained/           # what survives a wake, and how that is known
 ├── tests/                  # ztest suites, run by twister
 └── components/             # per-area contracts (README only, pre-Zephyr)
 ```

@@ -6,11 +6,13 @@ the data contract in [sync_protocol.md](sync_protocol.md), the pins and the
 board in [hardware wiring](hardware_wiring.md), rationale in
 [decisions.md](decisions.md).
 
-**Status: the tabletop loop is built.** `input`, `app_fsm`, `qdb` with its
-bag, `layout` and the panel all exist and are tested, wired together by four
-of the six channels. Still design: `sync`, `portal`, `power`, deep sleep, and
-the retained state that depends on it. Items marked *verify* have not been run
-on hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
+**Status: the tabletop loop is built, and its state now survives a reboot.**
+`input`, `app_fsm`, `qdb` with its bag, `layout`, `retained` and the panel all
+exist and are tested, wired together by four of the six channels. Still design:
+`sync`, `portal`, `power`, and deep sleep itself — `CONFIG_PM` is off, so
+nothing sleeps, but the state that has to outlive a wake is already in RTC
+memory rather than waiting on it. Items marked *verify* have not been run on
+hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
 This document follows the code that exists: six one-hot category inputs from
 the current DIP switch and one Next button. The target enclosure has adjacent
@@ -106,6 +108,7 @@ free to be C++.
 | `app_fsm` | `lib/app_fsm/` | selector, press, render result | which deck to draw, and when |
 | `qdb` | `lib/qdb/` | a TKB2 byte range, a deck, a depth cap | one question, no repeats |
 | `layout` | `lib/layout/` | UTF-8 text, a column count | lines of base glyph + mark |
+| `retained` | `lib/retained/` | the block RTC memory handed back | whether it survived, or a zeroed one |
 | `panel` | `app/src/panel.cpp` | a question | pixels, and a full/partial choice |
 | `display` | `app/src/display.c` | `chan_question` | `chan_render` |
 | `channels` | `app/src/channels.c` | — | the channel definitions themselves |
@@ -527,24 +530,58 @@ life rather than flash endurance bounds the device. The active deck has no
 storage at all, which is how "the selector is the deck state" is enforced
 structurally rather than by discipline.
 
-**As built, none of the retained state is retained.** `Bag::State` is an
-ordinary `.bss` object in `app_logic.cpp`, so a power cycle restarts the
-no-repeat cycle, and `retained_matches()` always answers false, so every boot
-redraws a question the panel was already showing. Both are correct for a device
-with no deep sleep and both cost one refresh; moving the struct to RTC memory
-is a section attribute, not a redesign. The `fingerprint` field already exists
-and already discards stale bitmaps when a bundle changes, which is the part
-that would be hard to add later.
+**The retained block is built.** `lib/retained` owns one struct — the bag's
+state, the partial-refresh counter, and what the panel is currently showing —
+and `app/src/retained_block.cpp` places it in `.rtc_noinit`, a NOLOAD section
+inside `rtc_slow_seg` that nothing zeroes at startup. `.rtc.bss` would survive
+the sleep and then be cleared on the way back up, which retains the memory and
+discards the point of it.
 
-*Verify:* the `esp32s3_devkitc/esp32s3/procpu` board lists `retained_mem` as
-supported, so Zephyr's retained-memory API is the likely mechanism rather than
-raw section attributes. Still unconfirmed: `PM_STATE_SOFT_OFF` mapping to deep
-sleep, and EXT1 wake on eight pins — the six selector contacts, Next, and VBUS
-detect, which is now reserved on GPIO21 alongside battery sense on GPIO1. All
-eight are inside the RTC-capable range, which is the precondition; whether the
-SoC will arm that many at once is the open question. Only the structures above
-depend on this, so the fallback is a write-coalesced NVS record, not a
-redesign.
+RTC memory holds whatever it held, and a cold power-on is not distinguishable
+from a wake by content alone, so the block carries a magic number, a layout
+version, its own size and a hash of the payload. Anything failing that check is
+zeroed. The check is not decoration: `Bag::State` carries `recent_len` and
+`recent_next`, which index fixed arrays without bounds checks of their own, so
+a block of garbage accepted as state is an out-of-bounds write.
+
+`retained_matches()` therefore answers truthfully, and a wake to a question the
+panel already holds costs no refresh. A deck name does not count — waking to
+one means the selector was turned and Next never pressed, so the name stays up
+rather than being read as an answer.
+
+*Verified at link time:* the block lands at `0x50000000`, which is
+`rtc_slow_ram`, and takes `rtc_slow_seg` from 36 to 488 bytes of the 8 KB
+available. The `esp32s3_devkitc/esp32s3/procpu` board also lists `retained_mem`
+as supported, so Zephyr's driver API is available; the section attribute is
+used instead because it hands out a struct rather than a read/write interface,
+and the bag mutates in place.
+
+*Still unconfirmed:* that the contents actually survive a wake on the chip,
+which needs `CONFIG_PM`; `PM_STATE_SOFT_OFF` mapping to deep sleep; and EXT1
+wake, which cannot be armed the way this document used to describe — see below.
+Only the structures above depend on the mechanism, so the fallback is a
+write-coalesced NVS record, not a redesign.
+
+### The selector cannot be a plain EXT1 wake source
+
+A deck is selected by *holding* one contact closed. That pin is low for as long
+as the device sits on the table, so arming all six for EXT1 ANY_LOW gives a
+device that wakes the instant it sleeps, forever.
+
+The mask has to be computed at sleep time from the current selector reading:
+arm the five *open* contacts plus Next, and leave out the one that is closed.
+A rotary switch breaks before it makes, so turning the knob releases the old
+contact — no wake, nothing is listening for it — and then closes a new one,
+which is in the mask and is the wake. Next is open when unpressed, so it needs
+no special handling.
+
+VBUS detect joins the mask with the opposite polarity, since plugging in drives
+it high.
+
+Two consequences worth stating: the wake mask is state that has to be
+recomputed on every sleep rather than configured once, and a device whose
+selector is between detents has no closed contact, so it arms all six and wakes
+on whichever is reached first — which is the behaviour wanted anyway.
 
 ## Testing boundary
 
