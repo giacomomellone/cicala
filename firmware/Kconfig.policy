@@ -129,20 +129,38 @@ config TK_REFRESH_TIMEOUT_MS
       clear of the slowest honest refresh — a full update on the GDEY0213B74 is
       seconds. Too short is much worse than too long: the state machine gives
       up, a late render then arrives for a question nobody is waiting for, and
-      presses get dropped. Measure with `just fw-monitor`, which logs every
-      refresh duration.
+      presses get dropped.
+
+      Measured on the Waveshare 2.13-inch V4: a partial refresh takes 622 ms,
+      steady to within 2 ms across 193 of them, and the full refresh at boot
+      takes 2315 ms. The full one is the case this has to clear.
+
+      15 s is therefore about six and a half times the slowest honest refresh,
+      and it stays there rather than being tightened onto the measurement.
+      E-paper slows down markedly in the cold and this rig has only been run at
+      room temperature, so the margin covers a condition that has not been
+      tested. Nothing is paid for it: the timeout is reached only when a panel
+      has actually failed, and then it costs a few seconds once.
 
 config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
-    default 8
+    default 64
     help
-      Determine this from ghosting observed on the breadboard panel: `just
-      fw-soak` drives the chain unattended and logs the count each refresh sits
-      at, so the number to put here is the one on the console when the glass
-      stops being clean. Still a guess until that run happens.
+      Measured, not chosen. A `just fw-soak` run on the Waveshare 2.13-inch V4
+      reached 193 consecutive partial refreshes with only minor artefacts and
+      the question still comfortably readable, so the panel tolerates far more
+      than the 8 this held before anyone had looked at one.
+
+      64 sits about three times under that, and the margin is for what the run
+      did not cover rather than what it did: ghosting is temperature and
+      batch dependent, and a device on a cold table has not been tested. It is
+      still eight times the old value, which is the difference between a full
+      refresh interrupting an evening and never seeing one.
 
       A cold boot always uses a full refresh because the panel content is
-      unknown.
+      unknown. Once deep sleep lands, every wake is a cold boot, so the counter
+      has to live in RTC memory or this number stops meaning anything — see
+      docs/firmware_architecture.md, "Where state lives".
 
 config TK_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"

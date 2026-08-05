@@ -578,11 +578,12 @@ suites that drive the selector and Next run in the default macOS loop.
   wake input, retain the category in RTC state, define the New People cold
   default, and test dropped Category presses during refresh. This waits for a
   second physical button.
-- Full-refresh interval, from observed ghosting rather than a chosen number.
-  `just fw-soak` produces the chain to watch it in and logs the count each
-  refresh sits at; the procedure is in [hardware wiring](hardware_wiring.md).
-  The same console output gives the refresh durations that
-  `CONFIG_TK_REFRESH_TIMEOUT_MS` is currently guessing at.
+- The refresh counter has to reach RTC memory before the full-refresh interval
+  means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
+  always refreshes fully — correct today, and wrong the moment deep sleep makes
+  every press a cold boot, because every question would then cost a 2.3 s full
+  refresh instead of 622 ms. It is already listed under "Where state lives"; the
+  measured numbers are what make it load-bearing rather than tidy.
 - The bundled font. Zephyr's CFB fonts are 10x16 monospace and cover ASCII
   only, so `lib/layout` decomposes accented letters into a base glyph plus a
   mark that `app/src/panel.cpp` draws itself — enough for German, French,

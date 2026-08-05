@@ -256,12 +256,29 @@ just fw-monitor
 
 ## Bench measurements
 
-Three Kconfig values are guesses waiting on this rig. They are guesses on
+Three Kconfig values were guesses waiting on this rig. They were guesses on
 purpose — each one is a property of the physical panel, and picking a number in
-advance would have meant pretending otherwise — but the Stage 1 gate in
-[prototype bom](prototype_bom.md) does not close until they are measured.
+advance would have meant pretending otherwise.
 
-Each run below wants both USB cables in and `just fw-monitor` open.
+What the first soak run found, on a Waveshare 2.13-inch V4:
+
+| Measurement | Result | Where it went |
+|---|---|---|
+| Partial refreshes before ghosting | 193, minor artefacts, still readable | `TK_FULL_REFRESH_INTERVAL` = 64 |
+| Partial refresh duration | 622 ms, ±2 ms across 193 of them | clears the 1 s target in [device prototype](device_prototype.md) |
+| Full refresh duration | 2315 ms at boot | `TK_REFRESH_TIMEOUT_MS` stays at 15 s, now with a known margin |
+| Peak thread stack | logging 89%, everything else 18–38% | `LOG_PROCESS_THREAD_STACK_SIZE` = 2048 |
+
+The interval sits three times under what the panel actually tolerated. That
+margin is for the conditions the run did not cover — a cold room, a different
+panel batch — rather than for the one it did.
+
+The stack figure was the surprise. Every application thread had two thirds of
+its stack spare while Zephyr's own logging thread had 112 bytes, which is not
+enough to add a log line to this firmware safely.
+
+The procedures below are how to repeat any of it. Each wants both USB cables in
+and `just fw-monitor` open.
 
 ### 1. Ghosting, for `CONFIG_TK_FULL_REFRESH_INTERVAL`
 

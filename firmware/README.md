@@ -190,7 +190,7 @@ on Next, and the e-paper HAT wired to the panel pins.
 | A press draws a question and the panel shows it | the rig |
 | Real English and German TKB2 bundles round-trip through the question store | the suites, against bundles built from the database |
 | Every released question fits at the fixed minimum type size | the suites, at the real panel geometry |
-| Partial and full refresh behavior over a representative run | nothing yet — `just fw-soak` is the run |
+| Partial and full refresh behavior over a representative run | the rig — 193 partials clean at 622 ms, full refresh 2315 ms |
 | Wi-Fi and bundle sync from USB power | nothing yet — `sync` is still design |
 
 Two of these are honest only with their qualifier. The bundle and layout rows
