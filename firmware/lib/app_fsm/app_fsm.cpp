@@ -16,6 +16,12 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
 //   Current State        Transition              Next State           Timeout
     {STATE(BOOT),        TRANSITION(REPEAT),     STATE(BOOT),         0       },
     {STATE(BOOT),        TRANSITION(RETAINED),   STATE(SHOWING),      0       },
+    // A wake by Next: the press that ended the sleep was asking for a
+    // question, so answer it. Without this the machine would announce the deck
+    // first and reach the question only on a second press — and REFRESHING
+    // drops presses made during the announcement, so that second press would
+    // be swallowed too.
+    {STATE(BOOT),        TRANSITION(REDRAW),     STATE(DRAWING),      0       },
     // Boot announces the deck rather than answering with a question nobody
     // asked for. Press Next and the questions start.
     {STATE(BOOT),        TRANSITION(CONTINUE),   STATE(CATEGORY),     0       },
@@ -126,6 +132,21 @@ int AppFsm::on_boot()
     // left readable. There is nothing better to do than keep the last question.
     if (!_selector_valid) {
         return TRANSITION(REPEAT);
+    }
+
+    /*
+     * Before the retained check, not after: waking by Next onto a panel that
+     * already holds a question is the ordinary case, and taking RETAINED there
+     * would decide the panel is right and draw nothing — which is precisely
+     * the press the user just made.
+     */
+    if (_next_pending) {
+        _next_pending = false;
+        // Claim the deck, or SHOWING will see one it has not announced and
+        // relabel over the question that is about to be drawn.
+        _shown_deck = _selector_deck;
+
+        return TRANSITION(REDRAW);
     }
 
     if (_io.retained_matches(_selector_deck)) {

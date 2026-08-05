@@ -18,6 +18,7 @@
 #include "channels.h"
 #include "qdb.hpp"
 #include "retained_block.hpp"
+#include "sleep.h"
 
 LOG_MODULE_REGISTER(tk_app, LOG_LEVEL_INF);
 
@@ -224,6 +225,29 @@ int tk_app_init(void)
     LOG_INF("retained state: %s", !tk_retained_survived() ? "cold boot, starting a fresh cycle"
                                   : kept                  ? "kept across the reboot"
                                                           : "discarded, the bundle changed");
+
+    /*
+     * The press that ended the sleep, replayed here rather than arriving as an
+     * event: EXT1 consumed it before the kernel existed. See app/include/sleep.h.
+     *
+     * Category is applied to the retained deck before it is announced, so the
+     * wake advances the deck exactly as a press on a waking device would. Next
+     * is handed to the machine, which answers it from BOOT.
+     */
+    const enum tk_wake_source woke_by = tk_wake_button();
+
+    if (woke_by == TK_WAKE_CATEGORY) {
+        tk::Retained &block = tk_retained();
+
+        block.active_deck = (uint8_t) ((block.active_deck + 1) % TK_DECK_COUNT);
+        tk_retained_seal();
+
+        LOG_INF("woken by Category");
+    } else if (woke_by == TK_WAKE_NEXT) {
+        LOG_INF("woken by Next");
+
+        fsm.post_next();
+    }
 
     /*
      * Announce the deck the device is on before anything else runs. With a

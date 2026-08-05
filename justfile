@@ -143,9 +143,29 @@ fw-init:
     # comes from here, and cmake aborts without it.
     {{ west }} packages pip --install
     {{ west }} blobs fetch hal_espressif
+    just fw-patch
     just _west-build-dir build/esp32s3
     @echo
     @echo "workspace ready. next: install the Zephyr SDK, then `just fw-doctor`"
+
+# Local changes to the Zephyr tree. deps/ is gitignored and `west update`
+# checks the pinned revision back out, so anything we change there has to be
+# reapplied — after an update, and after a `west patch clean`. See
+# firmware/patches.yml for what is patched and why.
+
+# reapply the local Zephyr patches (run after any `west update`)
+[group('firmware')]
+fw-patch:
+    {{ west }} patch -b patches -l patches.yml apply
+
+# Destructive: `west patch clean` is `git checkout .` plus `git clean -d -f -x`
+# inside deps/zephyr, so it discards *any* local edit there, not only ours.
+# Nothing in deps/ is committed to this repo, so nothing unique is lost.
+
+# drop the local Zephyr patches, restoring the pinned tree
+[group('firmware')]
+fw-unpatch:
+    {{ west }} patch -b patches -l patches.yml clean
 
 # `west espressif monitor` locates the build through west's build.dir-fmt
 # config, not through a flag — its own -d means --enable-address-decoding.

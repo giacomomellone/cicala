@@ -1,0 +1,97 @@
+diff --git a/drivers/display/Kconfig.ssd16xx b/drivers/display/Kconfig.ssd16xx
+index 097351fec5e..04d254f8f89 100644
+--- a/drivers/display/Kconfig.ssd16xx
++++ b/drivers/display/Kconfig.ssd16xx
+@@ -15,3 +15,22 @@ config SSD16XX
+ 	select MIPI_DBI
+ 	help
+ 	  Enable driver for SSD16XX compatible controller.
++
++config SSD16XX_PRESERVE_IMAGE_ON_INIT
++	bool "Leave the panel image untouched at init"
++	depends on SSD16XX
++	help
++	  By default the driver clears both controller RAM buffers at init and
++	  performs a full update, so the panel is blank once init returns. On a
++	  system that reboots with the panel still powered - an e-paper device
++	  waking from deep sleep, where the wake is a reset - that discards the
++	  image the panel was holding and costs a full refresh on every wake.
++
++	  Enable this to skip both the clear and the update. The controller keeps
++	  whatever its RAM held across the reset, which is what makes a partial
++	  refresh after the reboot meaningful.
++
++	  Only safe when the controller keeps power across the reset. After a
++	  true power cycle the RAM contents are undefined, so the application
++	  must perform one full refresh before its first partial one - it has to
++	  distinguish the two cases anyway to know what the panel is showing.
+diff --git a/drivers/display/ssd16xx.c b/drivers/display/ssd16xx.c
+index 0b9a3559dd5..7bf0e0f28fd 100644
+--- a/drivers/display/ssd16xx.c
++++ b/drivers/display/ssd16xx.c
+@@ -865,26 +865,38 @@ static int ssd16xx_controller_init(const struct device *dev)
+ 	data->blanking_on = false;
+ 	data->profile = SSD16XX_PROFILE_INVALID;
+ 
+-	err = mipi_dbi_reset(config->mipi_dev, SSD16XX_RESET_DELAY);
+-	if (err < 0) {
+-		return err;
+-	}
++	/*
++	 * The hardware reset returns the controller to its defaults - including,
++	 * on at least the SSD1680, its RAM. That is exactly the state a caller
++	 * preserving the image across a reboot is trying to keep, and the
++	 * controller has its own power-on reset for the case where it has just
++	 * been powered up, so the pulse is skipped rather than made conditional
++	 * on something the driver cannot see.
++	 */
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
++		err = mipi_dbi_reset(config->mipi_dev, SSD16XX_RESET_DELAY);
++		if (err < 0) {
++			return err;
++		}
+ 
+-	k_msleep(SSD16XX_RESET_DELAY);
++		k_msleep(SSD16XX_RESET_DELAY);
++	}
+ 
+ 	err = ssd16xx_set_profile(dev, SSD16XX_PROFILE_FULL);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM);
+-	if (err < 0) {
+-		return err;
+-	}
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM);
++		if (err < 0) {
++			return err;
++		}
+ 
+-	err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
+-	if (err < 0) {
+-		return err;
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
++		if (err < 0) {
++			return err;
++		}
+ 	}
+ 
+ 	if (config->rotation == 0U) {
+@@ -902,9 +914,11 @@ static int ssd16xx_controller_init(const struct device *dev)
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_update_display(dev);
+-	if (err < 0) {
+-		return err;
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
++		err = ssd16xx_update_display(dev);
++		if (err < 0) {
++			return err;
++		}
+ 	}
+ 
+ 	return 0;

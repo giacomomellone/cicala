@@ -35,8 +35,19 @@
 
 #include "app_logic.h"
 #include "channels.h"
+#include "sleep.h"
 
 LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
+
+/*
+ * Kconfig only warns when a .conf assigns a symbol that does not exist, so
+ * without this an unpatched workspace builds a sleeping image whose panel goes
+ * white on every wake — and the warning scrolls past in the middle of a build.
+ * See firmware/patches.yml.
+ */
+#ifndef CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT
+#error "sleeping image needs the ssd16xx patch — run `just fw-patch`"
+#endif
 
 /*
  * Every input that should bring the device back. Same nodes input.c reads, so
@@ -48,8 +59,71 @@ static const struct gpio_dt_spec wake_pins[] = {
     GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios),
 };
 
+/*
+ * The panel's control lines.
+ *
+ * Deep sleep isolates every GPIO, which leaves these floating for as long as
+ * the device is asleep. RESET is active low and the panel keeps its own power,
+ * so a floating line that drifts below the input threshold resets the
+ * controller — and with it the RAM that CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT
+ * exists to keep. CS floating is the same argument one step removed: selected
+ * by accident, noise on the clock is a command.
+ *
+ * All three are RTC-capable (GPIO 8, 10 and 18), which is what makes holding
+ * them possible at all.
+ */
+static const struct gpio_dt_spec panel_pins[] = {
+    GPIO_DT_SPEC_GET(DT_NODELABEL(tk_mipi_dbi), reset_gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(tk_mipi_dbi), dc_gpios),
+    GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi2), cs_gpios, 0),
+};
+
 static void sleep_now(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(idle_work, sleep_now);
+
+/** Latched at PRE_KERNEL_1, read by the app thread. See sleep.h. */
+static enum tk_wake_source wake_button = TK_WAKE_NONE;
+
+enum tk_wake_source tk_wake_button(void)
+{
+    return wake_button;
+}
+
+/**
+ * Read the wake mask before anything else can disturb it.
+ *
+ * PRE_KERNEL_1 so it runs ahead of sleep_release_holds() below: the hold is a
+ * property of the same RTC domain the wake status lives in, and reading first
+ * costs nothing while assuming they are independent would have to be checked
+ * against the silicon.
+ *
+ * A boot that was not a wake leaves this at TK_WAKE_NONE, which is what a
+ * power-on and the reset button both are.
+ */
+static int latch_wake_button(void)
+{
+    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_EXT1) {
+        return 0;
+    }
+
+    const uint64_t mask = esp_sleep_get_ext1_wakeup_status();
+
+    /* Next first: with both bits set it is the one that answers. */
+    if (mask & BIT64(wake_pins[1].pin)) {
+        wake_button = TK_WAKE_NEXT;
+    } else if (mask & BIT64(wake_pins[0].pin)) {
+        wake_button = TK_WAKE_CATEGORY;
+    } else {
+        /* EXT1 fired with no pin of ours in the mask. Nothing else is armed,
+         * so this should be unreachable; say so rather than silently treating
+         * it as a cold boot. */
+        LOG_WRN("woken by EXT1 on an unexpected mask %llx", mask);
+    }
+
+    return 0;
+}
+
+SYS_INIT(latch_wake_button, PRE_KERNEL_1, 0);
 
 /**
  * Which pins can be armed for ANY_LOW right now.
@@ -98,6 +172,23 @@ static void hold_wake_pins(uint64_t mask)
     }
 }
 
+/**
+ * Park the panel's control lines and hold them there.
+ *
+ * Driven to their inactive level first — RESET and CS released, D/C at command
+ * — because the hold latches whatever the pad is doing at the moment it is
+ * applied, not some safe default.
+ */
+static void hold_panel_pins(void)
+{
+    for (size_t i = 0; i < ARRAY_SIZE(panel_pins); i++) {
+        const gpio_num_t pin = (gpio_num_t) panel_pins[i].pin;
+
+        (void) gpio_pin_configure_dt(&panel_pins[i], GPIO_OUTPUT_INACTIVE);
+        (void) rtc_gpio_hold_en(pin);
+    }
+}
+
 static void sleep_now(struct k_work *work)
 {
     ARG_UNUSED(work);
@@ -131,6 +222,7 @@ static void sleep_now(struct k_work *work)
     }
 
     hold_wake_pins(mask);
+    hold_panel_pins();
 
     /*
      * RTC slow memory needs no arrangement here: the ESP32-S3 does not define
@@ -173,12 +265,18 @@ ZBUS_CHAN_ADD_OBS(chan_category, tk_sleep_obs, 6);
  * neither button reaches the application again.
  *
  * Runs before device init, so the pads are free by the time anything claims
- * them.
+ * them — which for the panel's lines is the point twice over: still held, they
+ * would keep RESET released and CS deselected while the SPI driver believed it
+ * was driving them, and the first refresh would go nowhere.
  */
 static int sleep_release_holds(void)
 {
     for (size_t i = 0; i < ARRAY_SIZE(wake_pins); i++) {
         (void) rtc_gpio_hold_dis((gpio_num_t) wake_pins[i].pin);
+    }
+
+    for (size_t i = 0; i < ARRAY_SIZE(panel_pins); i++) {
+        (void) rtc_gpio_hold_dis((gpio_num_t) panel_pins[i].pin);
     }
 
     return 0;

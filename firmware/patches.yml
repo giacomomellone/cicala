@@ -1,0 +1,28 @@
+# Local changes to the west workspace, applied by `just fw-patch`.
+#
+# deps/ is gitignored — Zephyr is cloned, never committed — so a change to a
+# driver has to live here as a patch or it does not survive `just fw-init` on
+# another machine. `west patch apply` is idempotent enough to re-run; `west
+# patch clean` puts the workspace back.
+#
+# Keep this list empty where possible. Every entry is a divergence from the
+# pinned Zephyr that somebody has to re-check at the next version bump.
+
+patches:
+  - path: zephyr/ssd16xx-preserve-image-on-init.patch
+    sha256sum: 8106b049773a8afc24a6bb57637ec5dab53abe95cea4f2ff885039350a7d4ff5
+    # The project's path in the workspace, not its manifest name: west.yml
+    # gives every project a `deps/` prefix, and a patch whose module does not
+    # resolve is skipped in silence rather than reported.
+    module: deps/zephyr
+    author: Giacomo Mellone
+    email: giacomo.mellone@gmail.com
+    date: 2026-08-05
+    upstreamable: true
+    comments: >
+      ssd16xx clears both controller RAM buffers and drives a full update at
+      init, unconditionally. Deep sleep on the ESP32-S3 is a reset, so on this
+      device that wipes the panel on every wake: measured 2314 ms of white
+      before the application's own refresh even starts, and the retained
+      partial-refresh counter ends up describing a panel state that no longer
+      exists. CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT skips both steps.
