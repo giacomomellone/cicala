@@ -183,20 +183,23 @@ config TK_REFRESH_TIMEOUT_MS
 
 config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
-    default 64
+    default 16
     help
-      Measured. A `just fw-soak` run on the Waveshare 2.13-inch V4 reached 193
-      consecutive partial refreshes with only minor artefacts and the question
-      still comfortably readable.
-
-      64 sits about three times under that. The margin covers what the run did
-      not: ghosting is temperature and batch dependent, and a device on a cold
-      table has not been tested.
+      Set from the glass rather than from the soak run. A `just fw-soak` run on
+      the Waveshare 2.13-inch V4 reached 193 consecutive partial refreshes with
+      only minor artefacts, and 64 was picked as three times under that — but
+      ghosting showed in ordinary use well before 64. The run's "minor
+      artefacts" turned out to be a more forgiving standard than a question
+      somebody is reading at a table. 16 is where the panel still looks clean;
+      the 193 stands as a ceiling to stay under, not a target to approach.
 
       A cold boot always uses a full refresh because the panel content is
-      unknown. Once deep sleep lands, every wake is a cold boot, so the counter
-      has to live in RTC memory or this number stops meaning anything — see
-      docs/firmware_architecture.md, "Where state lives".
+      unknown. A deep-sleep wake is also a fresh boot, but not an unknown
+      panel: the controller keeps power and keeps its RAM, so the counter
+      carries on across the wake from RTC memory rather than restarting. Both
+      halves of that are load-bearing — see docs/firmware_architecture.md,
+      "Where state lives", and CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT in
+      firmware/patches.yml.
 
 config TK_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"
