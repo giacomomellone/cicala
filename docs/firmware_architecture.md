@@ -112,7 +112,7 @@ free to be C++.
 | `retained` | `lib/retained/` | the block RTC memory handed back | whether it survived, or a zeroed one |
 | `app_logic` | `app/src/app_logic.cpp` | posts from `app.c` | `chan_question` |
 | `app_fsm` | `lib/app_fsm/` | the active deck, a press, a render result | which deck to draw, and when |
-| `qdb` | `lib/qdb/` | a TKB2 byte range, a deck, a depth cap | one question, no repeats |
+| `qdb` | `lib/qdb/` | a QDB2 byte range, a deck, a depth cap | one question, no repeats |
 | `layout` | `lib/layout/` | UTF-8 text, a column count | lines of base glyph + mark |
 | `panel` | `app/src/panel.cpp` | a question | pixels, and a full/partial choice |
 | `display` | `app/src/display.c` | `chan_question` | `chan_render` |
@@ -145,15 +145,15 @@ English corpus mean nothing once the German one is open.
 flowchart LR
     YAML[/"questions/*.yaml<br/><i>the source of truth</i>"/]
     BUILD["tools/build_bundle.py"]
-    TKB[/"dist/bundles/*.tkb<br/><i>gzip, signed</i>"/]
-    RAW[/"tests/fixtures/*.tkb2<br/><i>decompressed</i>"/]
+    QDB[/"dist/bundles/*.qdb.gz<br/><i>gzip, signed</i>"/]
+    RAW[/"tests/fixtures/*.qdb<br/><i>decompressed</i>"/]
     INC["generate_inc_file_for_target"]
     IMG[("corpus in flash")]
     QDB["qdb::open()"]
 
     YAML --> BUILD
-    BUILD --> TKB
-    TKB -- "just fw-fixtures" --> RAW
+    BUILD --> QDB
+    QDB -- "just fw-fixtures" --> RAW
     RAW --> INC
     INC --> IMG
     IMG --> QDB
@@ -175,7 +175,7 @@ share a header.
 
 ### The reader
 
-`Qdb` is a decoder for the TKB2 format in [sync_protocol.md](sync_protocol.md).
+`Qdb` is a decoder for the QDB2 format in [sync_protocol.md](sync_protocol.md).
 It does not own or copy the bundle — `open()` takes a pointer and a length, and
 every `Question` it hands back points into that buffer. The bundle outlives the
 questions drawn from it.
@@ -305,7 +305,7 @@ flowchart TB
         direction LR
         FSM[fsm<br/><i>transition table engine</i>]
         APPFSM[app_fsm<br/><i>the only decision maker</i>]
-        QDB[qdb<br/><i>TKB2 reader · bag</i>]
+        QDB[qdb<br/><i>QDB2 reader · bag</i>]
         LAY[layout<br/><i>UTF-8 · accents · wrap</i>]
         PFSM[portal_fsm<br/><i>the setup machine</i>]
         PBITS[portal dns · form · page<br/><i>parse · render · escape</i>]
@@ -477,7 +477,7 @@ stateDiagram-v2
 ```
 
 Checks run cheapest-first so a truncated download costs no signature work. Any
-failure leaves the previous bundle in place. The gzip in a `.tkb` is transport
+failure leaves the previous bundle in place. The gzip in a `.qdb.gz` is transport
 only — `SWAP` decompresses, because a device that reboots on every press must
 not re-inflate the bundle each time.
 
@@ -641,7 +641,7 @@ flowchart LR
     Wi-Fi credentials
     language · bundle version`"]
     LFS["`**LittleFS**
-    decompressed TKB2 corpus`"]
+    decompressed QDB2 corpus`"]
     ACT["`**RTC slow memory**
     active deck`"]
 
@@ -837,7 +837,7 @@ suites that drive the two buttons run in the default macOS loop.
   is proposed in [design.md](design.md) under "Deferred work". Three firmware
   constraints are already known and are what would shape it. Per-question
   identity is the first: a hash of the question text avoids a format change and
-  a second decoder, where a TKB3 with IDs does not. A favourites deck means
+  a second decoder, where a QDB3 with IDs does not. A favourites deck means
   `TK_DECK_COUNT` goes from 6 to 7, which Category wraps through and the
   retained per-deck bitmaps grow 64 bytes for, against an 8 KB budget. And
   browsing cannot be rendered the way the three portal pages are: the corpus is

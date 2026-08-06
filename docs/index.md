@@ -14,7 +14,7 @@ An open-source system for conversation questions: a community-maintained [questi
 - **[firmware architecture](firmware_architecture.md)**: threads, the messages between them, and which modules depend on Zephyr.
 - **[decisions](decisions.md)**: append-only decision log (ADR-lite), including every dependency justification.
 - **[languages](languages.md)**: multilingual policy. Independent corpora, the incubator, maintainers.
-- **[sync protocol](sync_protocol.md)**: device sync flow and the `.tkb` bundle format, byte by byte.
+- **[sync protocol](sync_protocol.md)**: device sync flow and the `.qdb.gz` bundle format, byte by byte.
 - **[votes](votes.md)**: the agreed v2 voting design (not built; seams are in place).
 
 ## Elsewhere in the repo

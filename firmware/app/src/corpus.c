@@ -14,11 +14,11 @@
 #include <zephyr/sys/util.h>
 
 static const uint8_t corpus_en[] = {
-#include "en_tkb2.inc"
+#include "en_qdb.inc"
 };
 
 static const uint8_t corpus_de[] = {
-#include "de_tkb2.inc"
+#include "de_qdb.inc"
 };
 
 static const struct {

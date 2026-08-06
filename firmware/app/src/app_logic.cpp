@@ -303,7 +303,7 @@ int tk_app_init(void)
 #endif
 
     if (!open_corpus(io.qdb)) {
-        LOG_ERR("the embedded corpus is not a valid TKB2 bundle");
+        LOG_ERR("the embedded corpus is not a valid QDB2 bundle");
         return -EINVAL;
     }
 

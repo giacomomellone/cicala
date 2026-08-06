@@ -1,5 +1,5 @@
 /*
- * The TKB2 reader and the shuffle bag, run against the real shipped bundles.
+ * The QDB2 reader and the shuffle bag, run against the real shipped bundles.
  *
  * The fixtures are the actual English and German corpora, built from the
  * question database by `just fw-fixtures` and embedded as byte arrays because
@@ -18,11 +18,11 @@ namespace
 {
 
 const uint8_t en_bundle[] = {
-#include "en_tkb2.inc"
+#include "en_qdb.inc"
 };
 
 const uint8_t de_bundle[] = {
-#include "de_tkb2.inc"
+#include "de_qdb.inc"
 };
 
 constexpr uint8_t kWildDeck = 5;
@@ -138,7 +138,7 @@ ZTEST(tk_qdb, test_the_worked_example_from_the_spec_decodes)
 {
     // docs/sync_protocol.md, byte for byte.
     static const uint8_t bundle[] = {
-        'T',  'K', 'B', '2',  0x09, '2',  '0',  '2',  '6',  '.', '0', '7', '.', '2',
+        'Q',  'D', 'B', '2',  0x09, '2',  '0',  '2',  '6',  '.', '0', '7', '.', '2',
         0x02, 'e', 'n', 0x01, 0x00, 0x03, 0x01, 0x20, 0x00, 'W', 'h', 'e', 'n', ' ',
         'd',  'i', 'd', ' ',  'y',  'o',  'u',  ' ',  'l',  'a', 's', 't', ' ', 's',
         'i',  'n', 'g', ' ',  'o',  'u',  't',  ' ',  'l',  'o', 'u', 'd', '?',
@@ -173,7 +173,7 @@ ZTEST(tk_qdb, test_a_damaged_bundle_is_refused)
     }
 
     wrong_magic[3] = '1';
-    zassert_false(qdb.open(wrong_magic, sizeof(wrong_magic)), "TKB1 is not this format");
+    zassert_false(qdb.open(wrong_magic, sizeof(wrong_magic)), "QDB1 is not this format");
 
     zassert_false(qdb.open(en_bundle, sizeof(en_bundle) - 1),
                   "a truncated record runs off the end");

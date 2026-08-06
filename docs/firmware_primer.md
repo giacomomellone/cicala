@@ -43,7 +43,7 @@ firmware/
 ├── lib/                        hardware-free C++17
 │   ├── fsm/                    table-driven state machine
 │   ├── app_fsm/                the tabletop machine built on it
-│   ├── qdb/                    TKB2 reader and shuffle bag
+│   ├── qdb/                    QDB2 reader and shuffle bag
 │   └── layout/                 UTF-8, accents, word wrap
 └── tests/                      smoke, fsm, input, app_fsm, qdb,
                                 layout, panel, integration
@@ -373,7 +373,7 @@ any other. Its overlay is `tests/input/boards/qemu_xtensa_dc233c.overlay`.
 
 **Fixtures.** `qdb` tests will run against real question bundles rather than
 hand-written bytes. `just fw-fixtures` builds them from the question database
-and decompresses them, since the device stores raw TKB2 and the gzip is only a
+and decompresses them, since the device stores raw QDB2 and the gzip is only a
 transport encoding. They are gitignored, so a corpus change is picked up by the
 next run.
 

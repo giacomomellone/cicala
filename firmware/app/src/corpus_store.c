@@ -37,10 +37,10 @@ LOG_MODULE_REGISTER(tk_corpus, LOG_LEVEL_INF);
 static uint8_t corpus_buf[CONFIG_TK_MAX_CORPUS_BYTES];
 static size_t corpus_len;
 
-/** `/corpus/en.tkb2`, and the staging name beside it. */
+/** `/corpus/en.qdb`, and the staging name beside it. */
 static void corpus_path(const char *code, const char *suffix, char *out, size_t out_size)
 {
-    (void) snprintf(out, out_size, TK_CORPUS_DIR "/%s.tkb2%s", code, suffix);
+    (void) snprintf(out, out_size, TK_CORPUS_DIR "/%s.qdb%s", code, suffix);
 }
 
 const uint8_t *tk_corpus_stored(const char *code, size_t *size)

@@ -70,12 +70,12 @@ target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal t
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures)
 
 foreach(lang ${TK_CORPUS_LANGUAGES})
-  if(NOT EXISTS ${fixtures}/${lang}.tkb2)
+  if(NOT EXISTS ${fixtures}/${lang}.qdb)
     message(FATAL_ERROR
-      "missing ${fixtures}/${lang}.tkb2 — run `just fw-fixtures` (or `just fw-build`, which does)")
+      "missing ${fixtures}/${lang}.qdb — run `just fw-fixtures` (or `just fw-build`, which does)")
   endif()
 
   generate_inc_file_for_target(app
-    ${fixtures}/${lang}.tkb2
-    ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_tkb2.inc)
+    ${fixtures}/${lang}.qdb
+    ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_qdb.inc)
 endforeach()

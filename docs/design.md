@@ -165,5 +165,5 @@ It need not reverse the *format* decision, though. Identity can be a hash of
 the question's own text, which needs no format change, no second decoder to
 keep in sync, and no signing-pipeline question — and whose one failure mode is
 that editing a question's wording drops it from a favourites list, which is
-arguably correct. The alternative, a TKB3 with IDs, costs a change in both
+arguably correct. The alternative, a QDB3 with IDs, costs a change in both
 decoders and the spec at once.

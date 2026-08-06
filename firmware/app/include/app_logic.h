@@ -20,7 +20,7 @@ extern "C" {
  * Open the built-in corpus and bind the bag to it.
  *
  * @return 0, or -EINVAL if the embedded bundle does not parse, which would
- *         mean the build embedded something that is not a TKB2 image.
+ *         mean the build embedded something that is not a QDB2 image.
  */
 int tk_app_init(void);
 

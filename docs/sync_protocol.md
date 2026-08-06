@@ -15,7 +15,7 @@ Stable URL: `http://<site-domain>/device/manifest.json`
   "min_fw": "0.1.0",
   "languages": {
     "en": {
-      "url": "http://<site-domain>/device/bundle-en-2026.07.2.tkb2",
+      "url": "http://<site-domain>/device/bundle-en-2026.07.2.qdb",
       "size": 15166,
       "sha256": "9e2f…c41a",
       "sig": "base64-ed25519-signature-of-sha256",
@@ -32,10 +32,10 @@ release firmware rejects it.
 
 Two things here are deliberate and are explained in the decision log.
 
-**`url` points at the raw `.tkb2`, not the gzipped `.tkb`.** Zephyr carries no
+**`url` points at the raw `.qdb`, not the gzipped `.qdb.gz`.** Zephyr carries no
 inflate, and the saving does not justify vendoring one: about 9 KB per language
 per release, on a device that is plugged in when it syncs. `size`, `sha256` and
-`sig` all describe the raw bytes. `.tkb` is still published, for the website and
+`sig` all describe the raw bytes. `.qdb.gz` is still published, for the website and
 for people.
 
 **`http`, not `https`.** The device has no clock, and certificate validation
@@ -44,9 +44,9 @@ is verified against a key compiled into the image. Because an unauthenticated
 transport allows an old but validly signed manifest to be replayed, the device
 **must reject a manifest whose `version` is not newer than the installed one**.
 
-## TKB2 bundle
+## QDB2 bundle
 
-**TKB** is the Tischkarte Bundle: the device's copy of the question database,
+**QDB** is the Tischkarte Bundle: the device's copy of the question database,
 in the only shape a microcontroller wants to read it. **2** is the format
 version, carried in the magic bytes — version 1 existed briefly and stored one
 record per question per deck, which duplicated the text.
@@ -55,18 +55,18 @@ Two file extensions appear, and they are the same data in different states:
 
 | | What | Where |
 |---|---|---|
-| `.tkb` | gzip around the binary below | `dist/bundles/`, the website |
-| `.tkb2` | The binary itself | what a device downloads and stores, and what the firmware suites embed |
+| `.qdb.gz` | gzip around the binary below | `dist/bundles/`, the website |
+| `.qdb` | The binary itself | what a device downloads and stores, and what the firmware suites embed |
 
 The gzip was once the device's transport too, and `SWAP` inflated it. It no
-longer is: devices fetch the `.tkb2` directly. See the decision log.
+longer is: devices fetch the `.qdb` directly. See the decision log.
 
-A `.tkb` file is a deterministic gzip stream (`mtime=0`) around this flat
+A `.qdb.gz` file is a deterministic gzip stream (`mtime=0`) around this flat
 binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
 | Field | Size | Meaning |
 |---|---:|---|
-| magic | 4 | ASCII `TKB2` |
+| magic | 4 | ASCII `QDB2` |
 | version | 1 + n | u8 length, then release version |
 | language | 1 + n | u8 length, then language code |
 | count | 2 | u16 number of unique questions |
@@ -93,7 +93,7 @@ People and Close:
 Its deck mask is `00000011` and metadata is `00000001`.
 
 ```text
-54 4B 42 32                                      "TKB2"
+51 44 42 32                                      "QDB2"
 09 32 30 32 36 2E 30 37 2E 32                    len=9, "2026.07.2"
 02 65 6E                                         len=2, "en"
 01 00                                            count = 1

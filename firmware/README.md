@@ -198,7 +198,7 @@ firmware/
 ├── lib/                    # hardware-free C++17, shared with the suites
 │   ├── fsm/                # table-driven state machine
 │   ├── app_fsm/            # the tabletop machine built on it
-│   ├── qdb/                # TKB2 reader and shuffle bag
+│   ├── qdb/                # QDB2 reader and shuffle bag
 │   ├── layout/             # UTF-8, accent decomposition, word wrap
 │   ├── portal/             # setup machine, DNS codec, form decode, pages
 │   └── retained/           # what survives a wake, and how that is known
@@ -241,7 +241,7 @@ e-paper HAT wired to the panel pins.
 | Category advances and wraps through all six decks | the rig |
 | One physical press produces one Next event | the rig |
 | A press draws a question and the panel shows it | the rig |
-| Real English and German TKB2 bundles round-trip through the question store | the suites, against bundles built from the database |
+| Real English and German QDB2 bundles round-trip through the question store | the suites, against bundles built from the database |
 | Every released question fits at the fixed minimum type size | the suites, at the real panel geometry |
 | Partial and full refresh behavior over a representative run | the rig — 193 partials clean at 622 ms, full refresh 2315 ms |
 | The setup portal raises an access point and serves on 192.168.4.1 | the rig — access point up, DHCP, DNS and HTTP started, card on the panel |

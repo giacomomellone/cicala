@@ -26,7 +26,7 @@ size_t tk_corpus_count(void);
 const char *tk_corpus_language(size_t index);
 
 /**
- * The TKB2 bytes of corpus `index`.
+ * The QDB2 bytes of corpus `index`.
  *
  * @param size receives the length
  * @return the bundle, or NULL past the end

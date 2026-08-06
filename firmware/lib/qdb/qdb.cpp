@@ -40,7 +40,7 @@ bool Qdb::open(const uint8_t *data, size_t size)
         return false;
     }
 
-    if (data[0] != 'T' || data[1] != 'K' || data[2] != 'B' || data[3] != '2') {
+    if (data[0] != 'Q' || data[1] != 'D' || data[2] != 'B' || data[3] != '2') {
         return false;
     }
 

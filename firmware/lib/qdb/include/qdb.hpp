@@ -1,5 +1,5 @@
 /*
- * The question store: a reader for the TKB2 bundle format, and the shuffle bag
+ * The question store: a reader for the QDB2 bundle format, and the shuffle bag
  * that draws from it without repeats.
  *
  * The format is specified in docs/sync_protocol.md and its executable
@@ -52,7 +52,7 @@ class Qdb
 {
 public:
     /**
-     * Point the reader at a decompressed TKB2 image.
+     * Point the reader at a decompressed QDB2 image.
      *
      * Every length in the bundle is checked against `size`, so a truncated or
      * corrupt file is rejected here rather than read off the end later.

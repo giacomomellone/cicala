@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Build per-language device bundles (.tkb) plus the sync manifest.
+"""Build per-language device bundles (.qdb.gz) plus the sync manifest.
 
 Bundle format (docs/sync_protocol.md has the worked example) — gzip of:
 
-  magic        4 bytes  "TKB2"
+  magic        4 bytes  "QDB2"
   version      u8 length + UTF-8 bytes (e.g. "2026.07.1")
   lang         u8 length + UTF-8 bytes (e.g. "en")
   count        u16 LE
@@ -40,7 +40,7 @@ def build_bundle_bytes(
     lang: str, version: str, questions: list[dict], decks: list[str]
 ) -> bytes:
     out = bytearray()
-    out += b"TKB2"
+    out += b"QDB2"
     for s in (version, lang):
         raw = s.encode("utf-8")
         out += struct.pack("<B", len(raw)) + raw
@@ -57,7 +57,7 @@ def build_bundle_bytes(
 
 
 def compress_bundle(raw: bytes) -> bytes:
-    """The .tkb published for the website. Deterministic, so mtime is zeroed."""
+    """The .qdb.gz published for the website. Deterministic, so mtime is zeroed."""
     return gzip.compress(raw, mtime=0)
 
 
@@ -67,8 +67,8 @@ def parse_bundle(blob: bytes):
     Takes either shape: the raw binary a device downloads, or the gzip around
     it that the website publishes.
     """
-    raw = blob if blob[:4] == b"TKB2" else gzip.decompress(blob)
-    if raw[:4] != b"TKB2":
+    raw = blob if blob[:4] == b"QDB2" else gzip.decompress(blob)
+    if raw[:4] != b"QDB2":
         raise ValueError("bad magic")
     pos = 4
 
@@ -125,7 +125,11 @@ def main(argv=None) -> int:
     parser.add_argument("--min-fw", default="0.1.0")
     parser.add_argument("--sign-key", type=Path, default=None,
                         help="ed25519 private key PEM; omit for an unsigned dev build")
-    parser.add_argument("--base-url", default="https://tischkarte.pages.dev/device")
+    # http, not https: the device has no clock and cannot validate a
+    # certificate, so the ed25519 signature is what protects the corpus. See
+    # docs/decisions.md. Note this requires /device/ to be reachable without a
+    # forced redirect to https.
+    parser.add_argument("--base-url", default="http://tischkarte.pages.dev/device")
     args = parser.parse_args(argv)
 
     out_dir = args.out or args.root / "dist" / "bundles"
@@ -139,7 +143,7 @@ def main(argv=None) -> int:
         return 1
     decks = cfg["decks"]
 
-    # schema 3: `url` points at the raw .tkb2 a device downloads, and size,
+    # schema 3: `url` points at the raw .qdb a device downloads, and size,
     # sha256 and sig all describe those bytes. See docs/sync_protocol.md.
     manifest = {"schema": 3, "version": version, "min_fw": args.min_fw, "languages": {}}
     for lang, lang_dir, incubator in validate.discover_languages(args.root):
@@ -163,8 +167,8 @@ def main(argv=None) -> int:
         # Both are published. The device takes the raw one, because Zephyr
         # carries no inflate and the saving is about 9 KB per language per
         # release; the gzip is for the website and for people.
-        raw_name = f"bundle-{lang}-{version}.tkb2"
-        gz_name = f"bundle-{lang}-{version}.tkb"
+        raw_name = f"bundle-{lang}-{version}.qdb"
+        gz_name = f"bundle-{lang}-{version}.qdb.gz"
         (out_dir / raw_name).write_bytes(raw)
         (out_dir / gz_name).write_bytes(gz)
 

@@ -258,7 +258,7 @@ class TestBundle(unittest.TestCase):
             manifest = json.loads((Path(tmp) / "manifest.json").read_text())
             self.assertEqual(manifest["schema"], 3)
             for lang in ("en", "de"):
-                blob = (Path(tmp) / f"bundle-{lang}-test.1.tkb2").read_bytes()
+                blob = (Path(tmp) / f"bundle-{lang}-test.1.qdb").read_bytes()
                 self.assertEqual(len(blob), manifest["languages"][lang]["size"])
                 parsed = build_bundle.parse_bundle(blob)
                 self.assertEqual(parsed["lang"], lang)
@@ -274,7 +274,7 @@ class TestBundle(unittest.TestCase):
 
 
     def test_manifest_describes_the_raw_bundle_a_device_downloads(self):
-        """schema 3: the device takes the .tkb2, and size/sha256/sig cover it.
+        """schema 3: the device takes the .qdb, and size/sha256/sig cover it.
 
         The gzip is still published for the website, so the failure this
         guards against is the manifest quietly pointing at one artifact while
@@ -289,15 +289,15 @@ class TestBundle(unittest.TestCase):
 
             for lang in ("en", "de"):
                 entry = manifest["languages"][lang]
-                raw = (Path(tmp) / f"bundle-{lang}-test.1.tkb2").read_bytes()
-                gz = (Path(tmp) / f"bundle-{lang}-test.1.tkb").read_bytes()
+                raw = (Path(tmp) / f"bundle-{lang}-test.1.qdb").read_bytes()
+                gz = (Path(tmp) / f"bundle-{lang}-test.1.qdb.gz").read_bytes()
 
-                self.assertTrue(entry["url"].endswith(".tkb2"))
+                self.assertTrue(entry["url"].endswith(".qdb"))
                 self.assertEqual(entry["size"], len(raw))
                 self.assertEqual(entry["sha256"], hashlib.sha256(raw).hexdigest())
 
                 # The raw bundle is the format itself, magic and all.
-                self.assertEqual(raw[:4], b"TKB2")
+                self.assertEqual(raw[:4], b"QDB2")
 
                 # Both artifacts are published and carry the same questions.
                 self.assertEqual(gzip.decompress(gz), raw)
@@ -310,8 +310,8 @@ class TestBundle(unittest.TestCase):
             code, _, _ = run_quiet(build_bundle.main,
                                    ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
             self.assertEqual(code, 0)
-            raw = (Path(tmp) / "bundle-en-test.1.tkb2").read_bytes()
-            gz = (Path(tmp) / "bundle-en-test.1.tkb").read_bytes()
+            raw = (Path(tmp) / "bundle-en-test.1.qdb").read_bytes()
+            gz = (Path(tmp) / "bundle-en-test.1.qdb.gz").read_bytes()
 
             self.assertEqual(build_bundle.parse_bundle(raw),
                              build_bundle.parse_bundle(gz))

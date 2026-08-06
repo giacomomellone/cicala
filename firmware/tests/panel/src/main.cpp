@@ -21,11 +21,11 @@ namespace
 {
 
 const uint8_t en_bundle[] = {
-#include "en_tkb2.inc"
+#include "en_qdb.inc"
 };
 
 const uint8_t de_bundle[] = {
-#include "de_tkb2.inc"
+#include "de_qdb.inc"
 };
 
 void *suite_setup(void)

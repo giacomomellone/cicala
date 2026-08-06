@@ -165,14 +165,14 @@ Accepted cost: the first model is not a multilingual industrial design.
 Replaceable bezel artwork adds a part and future scripts may need a larger
 legend or a different layout.
 
-## 2026-07-26: TKB2 stores one question with a deck mask
+## 2026-07-26: QDB2 stores one question with a deck mask
 
 Device bundles store each question once with a six-bit eligibility mask,
 editorial depth, and dark/spicy flags. The physical device no longer needs
 repository IDs or OLED display numbers. Manifest schema and bundle magic both
 advance to version 2.
 
-Accepted cost: no backward compatibility with the unshipped TKB1 format. This
+Accepted cost: no backward compatibility with the unshipped QDB1 format. This
 is intentional while firmware is still a stub.
 
 ## 2026-08-02: Firmware framework is Zephyr
@@ -310,7 +310,7 @@ markdown). `.prettierignore` excludes `questions/`, whose formatting
 
 ## 2026-08-04: A bespoke binary bundle rather than a standard container
 
-The question bundle stays the flat TKB2 binary in `sync_protocol.md` instead of
+The question bundle stays the flat QDB2 binary in `sync_protocol.md` instead of
 CBOR, MessagePack, protobuf or SQLite. Reviewed when the name turned out to be
 undocumented and a standard format was floated as an alternative.
 
@@ -331,7 +331,7 @@ only as debuggable as `parse_bundle()` makes it, and the two decoders have to
 be changed together. The firmware suites decode real bundles the writer emits,
 which is what catches a one-sided change.
 
-Naming: TKB is the Tischkarte Bundle and the trailing digit is the format
+Naming: QDB is the Tischkarte Bundle and the trailing digit is the format
 version. Nothing had recorded that, which is what prompted this entry. The name
 is internal — no release has ever published a bundle — so renaming it remains a
 mechanical change across about fifteen files if a better one turns up.
@@ -632,13 +632,13 @@ This also takes TLS, a CA bundle, and the CA-rotation failure mode out of an ima
 
 ## 2026-08-06: Devices download the raw bundle; gzip stays for the website
 
-`.tkb` is gzip around the binary and the device stores the binary, so something had to inflate it. Zephyr has no compression subsystem in this version, which means vendoring an inflate and finding somewhere to stage 15 KB while it runs.
+`.qdb.gz` is gzip around the binary and the device stores the binary, so something had to inflate it. Zephyr has no compression subsystem in this version, which means vendoring an inflate and finding somewhere to stage 15 KB while it runs.
 
 Measured, that buys nothing. English is 5807 bytes gzipped against 15166 raw, German 3053 against 6809 — about 9 KB per language, once per release, on a device that is plugged into power when it syncs.
 
-So the manifest points devices at the raw `.tkb2` and the signature covers those bytes. `.tkb` continues to be published for the website and for people. Manifest `schema` goes to 3.
+So the manifest points devices at the raw `.qdb` and the signature covers those bytes. `.qdb.gz` continues to be published for the website and for people. Manifest `schema` goes to 3.
 
-This is not a format change: TKB2 is untouched and the two decoders in `tools/build_bundle.py` and `firmware/lib/qdb/` still agree, so the rule that a format change must land in both is not engaged.
+This is not a format change: QDB2 is untouched and the two decoders in `tools/build_bundle.py` and `firmware/lib/qdb/` still agree, so the rule that a format change must land in both is not engaged.
 
 ## 2026-08-06: The corpus goes in a LittleFS partition above the 4 MB line
 

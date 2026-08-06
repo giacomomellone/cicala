@@ -415,9 +415,9 @@ test-website:
 [group('tests')]
 fw-fixtures: bundle
     mkdir -p firmware/tests/fixtures
-    for f in dist/bundles/bundle-*.tkb2; do \
+    for f in dist/bundles/bundle-*.qdb; do \
         lang=$(basename "$f" | cut -d- -f2); \
-        cp "$f" "firmware/tests/fixtures/$lang.tkb2"; \
+        cp "$f" "firmware/tests/fixtures/$lang.qdb"; \
     done
     @ls -l firmware/tests/fixtures/
 
