@@ -416,7 +416,7 @@ fw-test suite="": fw-fixtures
     {{ west }} twister -T firmware/tests{{ if suite == "" { "" } else { "/" + suite } }} \
         -p {{ simboard }} --inline-logs -O build/twister
 
-# firmware suites on native_sim in docker — what CI runs
+# firmware suites on native_sim in docker — the same image and platform CI uses
 [group('tests')]
 fw-test-linux suite="": fw-fixtures
     docker run --rm --platform linux/amd64 -v "$PWD:/work" -w /work {{ ci_image }} \
