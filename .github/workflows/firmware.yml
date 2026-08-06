@@ -1,28 +1,135 @@
 name: firmware
 
+# Also on questions/ and tools/: the corpus is compiled into the image and the
+# suites fold every shipped question at the real panel geometry, so a question
+# too long for the screen, or one with a character the renderer cannot draw,
+# fails here rather than on a table. A question change really can break the
+# firmware.
 on:
   pull_request:
     paths:
       - "firmware/**"
+      - "questions/**"
+      - "tools/**"
+      - ".github/workflows/firmware.yml"
+  push:
+    branches: [main]
+    paths:
+      - "firmware/**"
+      - "questions/**"
+      - "tools/**"
+      - ".github/workflows/firmware.yml"
 
 permissions:
   contents: read
 
+concurrency:
+  group: firmware-${{ github.ref }}
+  cancel-in-progress: true
+
+# Not the ghcr.io/zephyrproject-rtos/ci image the justfile uses locally: it is
+# about 20 GB and a standard runner has ~14 GB free, so every job died in
+# `Initialize containers` with "no space left on device". The setup action
+# installs west and only the toolchains named below, and caches both.
 jobs:
-  build:
+  # The suites, on the platform the tree already calls the CI one. No espressif
+  # blobs and no cross toolchain: native_sim builds with the host compiler.
+  suites:
+    name: suites (native_sim)
     runs-on: ubuntu-latest
-    container: espressif/idf:release-v5.3
     steps:
       - uses: actions/checkout@v4
-      - name: Build firmware (skips while only the phase-C structure stubs exist)
-        shell: bash
+
+      # app-path is the manifest repo, so `west init -l firmware` makes the
+      # checkout the west topdir and deps/ lands inside it — the same shape
+      # `just fw-init` produces locally, and the one .gitignore expects.
+      - name: Set up Zephyr and west
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: firmware
+          toolchains: x86_64-zephyr-elf
+
+      - name: Build the question bundles the suites run against
         run: |
-          if [ -f firmware/CMakeLists.txt ]; then
-            . "$IDF_PATH/export.sh"
-            cd firmware
-            idf.py set-target esp32s3
-            idf.py build
+          pip install --quiet pyyaml jsonschema
+          python3 tools/build_bundle.py
+          mkdir -p firmware/tests/fixtures
+          for f in dist/bundles/bundle-*.tkb; do
+            lang=$(basename "$f" | cut -d- -f2)
+            gzip -dc "$f" > "firmware/tests/fixtures/$lang.tkb2"
+          done
+          ls -l firmware/tests/fixtures/
+
+      - name: Run the suites
+        run: west twister -T firmware/tests -p native_sim --inline-logs -O build/twister
+
+      - name: Keep the twister report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: twister-report
+          path: build/twister/twister.xml
+          if-no-files-found: ignore
+
+  # What native_sim cannot answer: whether the real image links, and whether it
+  # still fits. The second matters more than it looks — sync will add a
+  # filesystem and a signature verifier on top of what is already there.
+  image:
+    name: image (esp32s3)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Zephyr and west
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: firmware
+          toolchains: xtensa-espressif_esp32s3_zephyr-elf
+
+      - name: Fetch the espressif Wi-Fi blobs
+        run: west blobs fetch hal_espressif
+
+      # `west patch apply` fails on an already-patched tree, which is what a
+      # restored cache is. The symbol the patch adds is the honest test of
+      # whether the work is done, so ask that rather than trusting an exit code.
+      - name: Apply the local Zephyr patches
+        run: |
+          if grep -q SSD16XX_PRESERVE_IMAGE_ON_INIT \
+              deps/zephyr/drivers/display/Kconfig.ssd16xx; then
+            echo "patches already applied"
           else
-            echo "firmware/ contains structure stubs only — nothing to build yet."
-            echo "This step activates automatically once firmware/CMakeLists.txt lands (phase C)."
+            west patch -b patches -l patches.yml apply
           fi
+
+      - name: Build the question bundles compiled into the image
+        run: |
+          pip install --quiet pyyaml jsonschema
+          python3 tools/build_bundle.py
+          mkdir -p firmware/tests/fixtures
+          for f in dist/bundles/bundle-*.tkb; do
+            lang=$(basename "$f" | cut -d- -f2)
+            gzip -dc "$f" > "firmware/tests/fixtures/$lang.tkb2"
+          done
+
+      - name: Build for the ESP32-S3 devkit
+        run: west build -b esp32s3_devkitc/esp32s3/procpu firmware/app -d build/esp32s3
+
+      # The partition is 1344 KB (dts/vendor/espressif/partitions_0x0_amp_4M.dtsi).
+      # Reported every run, not only when it fails, so the number moves visibly
+      # rather than being noticed at a flash.
+      - name: Check the image still fits its partition
+        run: |
+          limit=$((1344 * 1024))
+          size=$(stat -c %s build/esp32s3/zephyr/zephyr.bin)
+          pct=$((size * 100 / limit))
+
+          echo "### Image size" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`zephyr.bin\` is $size B of $limit B (${pct}% of slot0_partition)." \
+            >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "$size" -gt "$limit" ]; then
+            echo "::error::zephyr.bin is $size B, over the $limit B slot0_partition"
+            exit 1
+          fi
+
+          echo "zephyr.bin is $size B of $limit B (${pct}%)"

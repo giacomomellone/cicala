@@ -1,0 +1,29 @@
+/*
+ * A dummy display the same size as the real panel, as in the qemu overlay
+ * beside this one. Without it Zephyr falls back to the SDL driver on this
+ * platform, which needs a host library and shows nothing useful anyway.
+ */
+
+/ {
+    tk_dummy: dummy_dc {
+        compatible = "zephyr,dummy-dc";
+        width = <250>;
+        height = <122>;
+        status = "okay";
+    };
+
+    chosen {
+        zephyr,display = &tk_dummy;
+    };
+};
+
+/*
+ * native_sim's own devicetree enables an SDL display and chooses it. Adding a
+ * dummy is not enough: the SDL node stays `okay`, so its driver is still built
+ * and CMake still looks for the host library. Disabling it is what makes the
+ * dummy the only display, and what lets these suites run on a machine with no
+ * SDL at all.
+ */
+&sdl_dc {
+    status = "disabled";
+};
