@@ -497,8 +497,27 @@ The Wi-Fi driver selects `MBEDTLS`, and mbedtls 4 keeps PSA crypto in a separate
 
 This is the widening the manifest comment anticipated — "widen if a build fails on a missing module rather than importing all ~60" — and it costs a longer `just fw-init`.
 
-## 2026-08-06: CONFIG_TK_NET is off in the everyday image
+## 2026-08-06: Wi-Fi ships in the everyday image; the measurement images turn it off
 
-The networking image is 676 KB against a 1344 KB `slot0_partition`; the everyday one is 238 KB. It fits, and it is still not what `just fw-build` should produce, for the reason `CONFIG_TK_SLEEP` is off: the panel and power work measure that image, and a subsystem that adds 438 KB of flash, 50 KB of Wi-Fi heap and eight threads should not appear underneath a refresh measurement.
+It first landed as a build variant, `just fw-net`, on the reasoning that `CONFIG_TK_SLEEP` is off by default. The measured cost then made that look like the wrong axis to split on:
 
-`just fw-net` is the image with a radio in it. `just fw-portal` is the same thing with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture — the gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
+| | without | with | delta |
+|---|---|---|---|
+| flash image | 238 KB | 676 KB | +438 KB, against a 1344 KB slot |
+| dram0_0_seg | 21.1% | 60.6% | +154 KB |
+| iram0_0_seg | 13.8% | 18.4% | +18 KB |
+| threads | 6 | 14 | +8 |
+
+Both fit with room to spare, and a device whose Wi-Fi cannot be configured without a special build is not the device being built. So `just fw-build` carries the radio.
+
+What the original reasoning was actually protecting is narrower than "the everyday image": it is the images that *measure* something. `soak.conf` and `sleep.conf` therefore set `CONFIG_TK_NET=n`, `CONFIG_WIFI=n` and `CONFIG_NETWORKING=n`. A partial refresh has already been seen at 2769 ms during a portal session against the 622 ms this rig recorded without one, and until that is explained a ghosting run must not have a radio in it.
+
+The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf` rather than `prj.conf`. `prj.conf` is shared with qemu and native_sim, `CONFIG_WIFI_ESP32` needs a devicetree node only this SoC has, and putting it there breaks `just fw-sim`. The second Wi-Fi node AP+STA needs is in the matching board overlay for the same reason.
+
+`just fw-portal` remains: the same image with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture. The gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
+
+## 2026-08-06: The qemu overlay had not followed the Category button
+
+`just fw-sim` had been failing since the selector was replaced: `app/boards/qemu_xtensa_dc233c.overlay` still described six selector inputs and defined no `tk-category` alias, which `src/input.c` requires. The suites did not catch it because `tests/input` carries its own overlay, and nothing else builds `firmware/app` for qemu.
+
+Fixed alongside the portal work rather than separately, because `src/net.c` reads the same two aliases to detect the service gesture. The overlay now describes the two buttons the target has.

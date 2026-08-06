@@ -11,8 +11,8 @@ device can be put on a network.** `input`, `app_fsm`, `qdb` with its bag,
 `layout`, `retained`, the panel and the setup `portal` all exist and are
 tested. Still design: `sync`, `power`, and deep sleep itself — `CONFIG_PM` is
 off, so nothing sleeps, but the state that has to outlive a wake is already in
-RTC memory rather than waiting on it. `CONFIG_TK_NET` is off in the everyday
-image for the same reason, and `just fw-net` is the one with a radio in it. Items marked *verify* have not been run on
+RTC memory rather than waiting on it. `CONFIG_TK_NET` is on in the everyday
+image; the images that measure the panel and the power path turn it back off. Items marked *verify* have not been run on
 hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
 ## The one constraint
@@ -474,9 +474,16 @@ not re-inflate the bundle each time.
 
 ## The setup portal
 
-Built, behind `CONFIG_TK_NET` and `just fw-net`. It exists because a device
-with no way to be told an SSID can never sync, so it comes before sync rather
-than after it.
+Built, behind `CONFIG_TK_NET`. It exists because a device with no way to be
+told an SSID can never sync, so it comes before sync rather than after it.
+
+The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf`
+rather than in `prj.conf`, because `prj.conf` is shared with qemu and
+native_sim and `CONFIG_WIFI_ESP32` needs a devicetree node only this SoC has.
+The second Wi-Fi node AP+STA requires is in the matching board overlay.
+`soak.conf` and `sleep.conf` set `CONFIG_TK_NET=n`: a refresh timed with a
+radio beside the panel is not the number the panel work is after, and one has
+already been seen at 2769 ms against the 622 ms this rig recorded without one.
 
 ```mermaid
 stateDiagram-v2

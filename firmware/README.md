@@ -34,7 +34,6 @@ just fw-init      # once: west init + update into deps/, fetch espressif blobs
 just fw-build     # build for the ESP32-S3 devkit
 just fw-flash     # flash over the devkit's USB connection
 just fw-monitor   # serial console: deck changes and presses
-just fw-net       # the image with a radio in it (see app/net.conf)
 just fw-sim       # run under qemu on the host
 just fw-test      # ztest suites via twister
 ```
@@ -109,7 +108,7 @@ password, and sets the question language. The window closes on its own after
 five minutes.
 
 ```sh
-just fw-net         # the real thing: the gesture is what starts it
+just fw-flash       # the ordinary image: the gesture is what starts it
 just fw-portal      # the same image, minus the gesture (CONFIG_TK_DEBUG_PORTAL)
 just fw-monitor     # every state change is logged
 ```
@@ -117,6 +116,12 @@ just fw-monitor     # every state change is logged
 `fw-portal` exists because the gesture needs two hands on the board at the
 moment it starts, which makes everything behind it awkward to bring up. It
 prints a warning at boot and is never enabled in a shipped build.
+
+The radio is in the everyday image, so it is also in the charset and debug
+builds. It is *not* in `fw-soak`, `fw-retain` or `fw-sleep`: those measure the
+panel and the power path, and eight extra threads beside the panel are not what
+those figures are meant to describe. Each of those confs turns it off and says
+why.
 
 Not the USB-plus-Next gesture the design documents describe: that needs VBUS
 detect on GPIO21, which is reserved but unwired. See the decision log.
@@ -174,6 +179,7 @@ firmware/
 ├── app/
 │   ├── CMakeLists.txt
 │   ├── prj.conf            # shared config; LATER blocks track the architecture
+│   │                       # (Wi-Fi lives in boards/, not here — qemu has none)
 │   ├── Kconfig             # pulls in ../Kconfig.policy
 │   ├── boards/             # per-board conf + devicetree overlay
 │   ├── include/            # channels.h, input.h, panel.h, app_logic.h
