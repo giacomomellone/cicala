@@ -35,6 +35,7 @@
 
 #include "app_logic.h"
 #include "channels.h"
+#include "net.h"
 
 LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 
@@ -107,6 +108,17 @@ static void sleep_now(struct k_work *work)
          * Mid-decision: a refresh in flight, or a deck named but not yet
          * drawn from. A wake is a fresh boot, so sleeping here does not pause
          * the work, it discards it.
+         */
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+        return;
+    }
+
+    if (tk_net_is_active()) {
+        /*
+         * The setup portal is on air. sys_poweroff() would take the access
+         * point down mid-session and, since a wake is a fresh boot, lose it —
+         * the phone would be looking at a network that no longer exists.
+         * docs/firmware_architecture.md calls this the PM lock.
          */
         (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
         return;

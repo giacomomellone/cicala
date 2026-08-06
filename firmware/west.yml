@@ -37,6 +37,8 @@ manifest:
           - hal_espressif   # SoC HAL + Wi-Fi blobs; carries its own xtensa core config
           - hal_xtensa      # xtensa/config/core.h for qemu_xtensa/dc233c host tests
           - picolibc        # default libc
-          - mbedtls         # TLS for the sync flow
+          - mbedtls         # TLS; also pulled in by the Wi-Fi driver
+          - tf-psa-crypto   # mbedtls 4 keeps PSA crypto here, and will not configure without it
+          - mldsa-native    # referenced by the same mbedtls CMake, alongside tf-psa-crypto
           - littlefs        # question bundle storage
           - segger          # RTT, for logging without a UART

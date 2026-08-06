@@ -294,6 +294,29 @@ fw-build-sleep: fw-fixtures
 fw-sleep: fw-build-sleep
     {{ west }} flash --no-rebuild -d build/esp32s3-sleep {{ portflag }}
 
+# build the networking image (see firmware/app/net.conf)
+[group('firmware')]
+fw-build-net: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-net -- \
+        -DEXTRA_CONF_FILE=net.conf -DEXTRA_DTC_OVERLAY_FILE=net.overlay
+
+# flash the networking image: hold both buttons through boot for setup
+[group('firmware')]
+fw-net: fw-build-net
+    {{ west }} flash --no-rebuild -d build/esp32s3-net {{ portflag }}
+
+# build the setup portal without the two-button gesture (see CONFIG_TK_DEBUG_PORTAL)
+[group('firmware')]
+fw-build-portal: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-portal -- \
+        -DEXTRA_CONF_FILE=net.conf -DEXTRA_DTC_OVERLAY_FILE=net.overlay \
+        -DCONFIG_TK_DEBUG_PORTAL=y
+
+# flash it: the portal comes up at every boot, no hands needed
+[group('firmware')]
+fw-portal: fw-build-portal
+    {{ west }} flash --no-rebuild -d build/esp32s3-portal {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")

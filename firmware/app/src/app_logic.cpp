@@ -296,6 +296,24 @@ void tk_app_post_next(void)
     fsm.post_next();
 }
 
+void tk_app_corpus(char *version, size_t version_size, uint16_t *count)
+{
+    *count = io.qdb.count();
+
+    const char *const v = io.qdb.version();
+    size_t n = io.qdb.version_len();
+
+    if (n >= version_size) {
+        n = version_size - 1;
+    }
+
+    for (size_t i = 0; i < n; i++) {
+        version[i] = v[i];
+    }
+
+    version[n] = '\0';
+}
+
 void tk_app_post_service(const char *text, uint16_t len)
 {
     io.set_service(text, len);

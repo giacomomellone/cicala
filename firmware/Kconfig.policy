@@ -251,6 +251,20 @@ config TK_NET
       The device works with its compiled-in corpus whether or not this is on.
       Wi-Fi is optional by design; see docs/design.md.
 
+config TK_DEBUG_PORTAL
+    bool "Enter setup at every boot, without the gesture"
+    default n
+    depends on TK_NET
+    help
+      Skips the both-buttons hold and starts the portal straight from boot.
+
+      The gesture needs two hands on the board at the moment it starts, which
+      makes every other part of the portal awkward to work on: raising the
+      access point, the DNS answers, the pages and the join all have to be
+      reached through it before they can be looked at.
+
+      Never enabled in a shipped build, and it says so in the boot log.
+
 config TK_PORTAL_SSID_PREFIX
     string "Setup network name, before the per-device suffix"
     default "Tischkarte"

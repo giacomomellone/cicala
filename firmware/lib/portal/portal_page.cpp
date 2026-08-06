@@ -286,8 +286,8 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     w.raw(kHead);
     w.raw("<h1>Device status</h1><dl>");
 
-    w.raw("<dt>Firmware</dt><dd>");
-    w.text(status.fw_version != nullptr ? status.fw_version : "unknown");
+    w.raw("<dt>Board</dt><dd>");
+    w.text(status.board != nullptr ? status.board : "unknown");
     w.raw("</dd>");
 
     w.raw("<dt>Setup network</dt><dd>");

@@ -302,7 +302,7 @@ ZTEST(tk_portal, test_page_status_never_shows_the_saved_password)
 {
     const PortalStatus status = {
         .ap_ssid = "Tischkarte-A1B2",
-        .fw_version = "0.1.0",
+        .board = "esp32s3_devkitc",
         .corpus_language = "en",
         .corpus_version = "2026.07.2",
         .corpus_count = 240,
@@ -314,6 +314,7 @@ ZTEST(tk_portal, test_page_status_never_shows_the_saved_password)
     zassert_true(page_status(page, sizeof(page), status) > 0);
 
     zassert_true(contains(page, "Tischkarte-A1B2"));
+    zassert_true(contains(page, "esp32s3_devkitc"));
     zassert_true(contains(page, "240 in en"));
     zassert_true(contains(page, "2026.07.2"));
     zassert_true(contains(page, "Cafe Krone"));
@@ -325,7 +326,7 @@ ZTEST(tk_portal, test_page_status_reports_an_unconfigured_device)
 {
     const PortalStatus status = {
         .ap_ssid = "Tischkarte-A1B2",
-        .fw_version = "0.1.0",
+        .board = "esp32s3_devkitc",
         .corpus_language = "en",
         .corpus_version = "2026.07.2",
         .corpus_count = 240,

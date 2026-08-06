@@ -34,7 +34,8 @@ struct ScanEntry {
 /** What the status page reports. Every string is NUL-terminated. */
 struct PortalStatus {
     const char *ap_ssid;
-    const char *fw_version;
+    /** What this device is. Nothing stamps a firmware version yet. */
+    const char *board;
     const char *corpus_language;
     const char *corpus_version;
     uint16_t corpus_count;

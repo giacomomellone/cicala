@@ -9,6 +9,7 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/app_fsm tk_app_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/layout tk_layout)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/retained tk_retained)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/portal tk_portal)
 
 # Application logic is C++17; the files that use zbus's observer macros stay C,
 # because those expand to out-of-order designated initializers.
@@ -31,13 +32,23 @@ target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
 # wake, which is the point and also why bring-up does not want it. See
 # soak.conf's neighbour, sleep.conf.
 target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
+target_sources_ifdef(CONFIG_TK_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
+
+# HTTP_RESOURCE_DEFINE lands each resource in a section named after its service.
+# Zephyr cannot pre-declare a section whose name the application chooses, so the
+# application declares it — without this the resources link into nothing and
+# every request falls through to the catch-all.
+if(CONFIG_TK_NET)
+  zephyr_linker_sources(SECTIONS sections-rom.ld)
+  zephyr_linker_section(NAME http_resource_desc_tk_portal KVMA RAM_REGION GROUP RODATA_REGION)
+endif()
 
 target_include_directories(app PRIVATE include)
 
 # Explicit: Zephyr collects its own libraries in a loop that has already run by
 # the time find_package(Zephyr) returns, so anything added after has to be
 # linked by hand.
-target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal tk_retained)
 
 # The factory-preloaded corpus, compiled into the image so a device whose Wi-Fi
 # is never configured still works. Built from the question database by

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -70,6 +71,14 @@ void tk_app_run(void);
  * device reach deep sleep once power management is on.
  */
 bool tk_app_needs_timeout(void);
+
+/**
+ * What corpus is loaded: its release version, and how many questions it holds.
+ *
+ * For the setup portal's status page, which is the one place a person can ask
+ * the device what it is carrying. `version` is NUL-terminated on return.
+ */
+void tk_app_corpus(char *version, size_t version_size, uint16_t *count);
 
 /** Current state, as an AppFsm::State value. For logging. */
 int tk_app_state(void);
