@@ -12,10 +12,21 @@ ZBUS_CHAN_DEFINE(chan_next, struct tk_next_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY
                  ZBUS_MSG_INIT(.timestamp_ms = 0, .duration_ms = 0));
 
 ZBUS_CHAN_DEFINE(chan_question, struct tk_question_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
-                 ZBUS_MSG_INIT(.seq = 0, .deck = 0, .is_category = false, .len = 0, .text = {0}));
+                 ZBUS_MSG_INIT(.seq = 0, .deck = 0, .kind = TK_CARD_QUESTION, .len = 0,
+                               .text = {0}));
 
 ZBUS_CHAN_DEFINE(chan_render, struct tk_render_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.seq = 0, .result = 0, .was_full = false));
+
+/*
+ * chan_question is the biggest message on any channel, and the static
+ * subscriber buffer is sized against it in prj.conf. Adding a field wide enough
+ * to bring padding with it overflows that buffer, and a publish then fails at
+ * runtime on a board rather than here. `kind` is a byte for this reason.
+ */
+BUILD_ASSERT(sizeof(struct tk_question_msg) <= CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE,
+             "chan_question no longer fits the static subscriber buffer; "
+             "raise CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE in prj.conf");
 
 /*
  * Index order is the order Category advances through, and matches
@@ -52,4 +63,21 @@ const char *tk_deck_label(uint8_t deck)
     }
 
     return deck_labels[deck];
+}
+
+/* Reads as the sentence the display log puts it in: "partial refresh of a
+ * deck name seq 4 took 622 ms". */
+static const char *const card_names[] = {
+    "question",
+    "deck name",
+    "service card",
+};
+
+const char *tk_card_name(uint8_t kind)
+{
+    if (kind >= ARRAY_SIZE(card_names)) {
+        return "?";
+    }
+
+    return card_names[kind];
 }

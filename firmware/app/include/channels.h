@@ -53,6 +53,33 @@ struct tk_next_msg {
 };
 
 /**
+ * What a card on the panel is.
+ *
+ * The panel renders all three the same way — the font chooser gives short text
+ * the largest size on its own — but the display log says which is which, and a
+ * card that wanted its own styling would branch here.
+ */
+enum tk_card {
+    /** Something drawn from the corpus. */
+    TK_CARD_QUESTION = 0,
+    /**
+     * The name of the deck Category just moved to.
+     *
+     * It stays up until Next is pressed, which is what makes the deck legible
+     * without printing the six names on the case.
+     */
+    TK_CARD_CATEGORY,
+    /**
+     * The setup portal, saying which network to join and how it went.
+     *
+     * Only reachable through the service gesture, and only while `net` is
+     * running. Joining a network knocks the phone off the setup access point,
+     * so the panel is the only place the result can be reported.
+     */
+    TK_CARD_SERVICE,
+};
+
+/**
  * State channel: the question the panel should be showing.
  *
  * Carries the text by value rather than a pointer into the bundle. The corpus
@@ -65,15 +92,14 @@ struct tk_question_msg {
     uint32_t seq;
     uint8_t deck;
     /**
-     * True when `text` names the deck rather than asking something.
+     * One of `enum tk_card`, stored as a byte.
      *
-     * Turning the selector puts the deck's name on the panel and leaves it
-     * there until Next is pressed. The panel renders both the same way — a
-     * deck name is short, so the font chooser gives it the largest size on its
-     * own — but the display log says which is which, and a future card that
-     * wanted its own styling would branch here.
+     * Not the enum type itself: that is an int, and the padding it brings
+     * would push this message from 136 bytes to 144 — exactly
+     * CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE, which is sized
+     * against it. See prj.conf.
      */
-    bool is_category;
+    uint8_t kind;
     uint16_t len;
     char text[CONFIG_TK_MAX_QUESTION_BYTES];
 };
@@ -95,6 +121,9 @@ ZBUS_CHAN_DECLARE(chan_render);
 
 /** Deck id for logs, as it appears in questions/schema.json. "?" outside 0..5. */
 const char *tk_deck_name(uint8_t deck);
+
+/** What a card is, for logs. "?" for a value outside `enum tk_card`. */
+const char *tk_card_name(uint8_t kind);
 
 /**
  * Deck name as it should be read, for the panel.

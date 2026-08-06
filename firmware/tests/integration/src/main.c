@@ -93,7 +93,7 @@ ZTEST(tk_integration, test_boot_names_the_remembered_deck)
      * which is the documented New People default.
      */
     zassert_true(have_first, "boot should have put something on the panel");
-    zassert_true(first_question.is_category, "and on a cold boot that is a deck name");
+    zassert_equal(first_question.kind, TK_CARD_CATEGORY, "and on a cold boot that is a deck name");
     zassert_equal(first_question.deck, 0, "New People is the cold default");
 }
 
@@ -107,7 +107,7 @@ ZTEST(tk_integration, test_category_advances_and_names_the_deck)
     press(&category);
 
     zassert_equal(questions, 1, "one press is one card");
-    zassert_true(last_question.is_category, "pressing Category names a deck");
+    zassert_equal(last_question.kind, TK_CARD_CATEGORY, "pressing Category names a deck");
     zassert_equal(last_question.deck, (before + 1) % TK_DECK_COUNT, "and advances by one");
     zassert_equal(renders, 1, "the display should have been asked to draw it");
     zassert_equal(last_render_result, 0);
@@ -120,7 +120,7 @@ ZTEST(tk_integration, test_category_advances_and_names_the_deck)
 ZTEST(tk_integration, test_next_turns_the_deck_name_into_a_question)
 {
     press(&category);
-    zassert_true(last_question.is_category);
+    zassert_equal(last_question.kind, TK_CARD_CATEGORY);
 
     const uint8_t deck = last_question.deck;
 
@@ -129,7 +129,7 @@ ZTEST(tk_integration, test_next_turns_the_deck_name_into_a_question)
     press(&next_button);
 
     zassert_equal(questions, 1, "one press is one question");
-    zassert_false(last_question.is_category, "and a press asks for a real question");
+    zassert_equal(last_question.kind, TK_CARD_QUESTION, "and a press asks for a real question");
     zassert_equal(last_question.deck, deck, "from the deck that was named");
     zassert_true(last_question.len > 0);
 }
@@ -137,7 +137,7 @@ ZTEST(tk_integration, test_next_turns_the_deck_name_into_a_question)
 ZTEST(tk_integration, test_next_draws_a_different_question)
 {
     press(&next_button);
-    zassert_false(last_question.is_category);
+    zassert_equal(last_question.kind, TK_CARD_QUESTION);
 
     const uint32_t before_seq = last_question.seq;
     const uint16_t before_len = last_question.len;
@@ -182,7 +182,7 @@ ZTEST(tk_integration, test_a_deck_returns_only_its_own_questions)
      * repeatedly is the cheapest end-to-end check that the deck mask survives
      * the whole path from bundle to panel.
      */
-    while (last_question.deck != 5 || !last_question.is_category) {
+    while (last_question.deck != 5 || last_question.kind != TK_CARD_CATEGORY) {
         press(&category);
     }
 

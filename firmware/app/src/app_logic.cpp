@@ -131,7 +131,7 @@ public:
 
         msg.seq = ++_seq;
         msg.deck = deck;
-        msg.is_category = true;
+        msg.kind = TK_CARD_CATEGORY;
 
         while (msg.len < sizeof(msg.text) && label[msg.len] != '\0') {
             msg.text[msg.len] = label[msg.len];
