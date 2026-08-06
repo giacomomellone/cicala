@@ -833,6 +833,21 @@ suites that drive the two buttons run in the default macOS loop.
   at the 4 Zephyr picks once IPv6 is off. Nothing says the next limit has been
   found, and none of them fails visibly — the phone associates and the page
   simply does not load.
+- Curating the deck from the portal — browsing, hiding, and a favourites deck —
+  is proposed in [design.md](design.md) under "Deferred work". Three firmware
+  constraints are already known and are what would shape it. Per-question
+  identity is the first: a hash of the question text avoids a format change and
+  a second decoder, where a TKB3 with IDs does not. A favourites deck means
+  `TK_DECK_COUNT` goes from 6 to 7, which Category wraps through and the
+  retained per-deck bitmaps grow 64 bytes for, against an 8 KB budget. And
+  browsing cannot be rendered the way the three portal pages are: the corpus is
+  40 KB of HTML against a 4 KB page buffer, so it has to be paginated or sent
+  across several handler calls, which the HTTP server already supports by
+  calling back until `final_chunk`.
+- CI does not build or test this firmware. `.github/workflows/firmware.yml`
+  runs in an `espressif/idf` container and gates on a `firmware/CMakeLists.txt`
+  that has not existed since the move to Zephyr, so the job always no-ops. The
+  suites run only when somebody runs them.
 - The refresh counter has to reach RTC memory before the full-refresh interval
   means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
   always refreshes fully — correct today, and wrong the moment deep sleep makes

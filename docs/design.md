@@ -128,3 +128,42 @@ limited to the 120 ms question fade and selector state transition.
 - A token-swap dark theme.
 - A depth-boundary physical study. A slider is reconsidered only if people use
   it publicly and unprompted.
+- Curating the deck from the setup portal: browsing the questions on a phone,
+  keeping a favourites deck, and hiding questions that do not suit a table.
+
+### Curating the deck from the portal
+
+The setup portal can already be reached from a phone, and a host preparing for
+an evening is not at the table yet. So this is proposed as a service-flow
+feature in the sense this document already uses for Wi-Fi, language and
+maintenance: something done beforehand, on a phone, that leaves the tabletop
+face exactly as it is — one button, one question, no menu.
+
+That framing is what makes it compatible with the principle rather than a
+violation of it. Curating beforehand *reduces* time-to-question at the table.
+Curating *at* the table would be engagement with the product, and the portal
+already resists it: reaching the portal costs a reboot with both buttons held,
+and it closes itself after five minutes.
+
+Three parts, roughly in order of how much they cost:
+
+- **Browse.** Read-only listing of the corpus by deck. Useful on its own, and
+  the cheapest way to find out whether anybody wants the rest.
+- **Hide.** A device-local set of questions never drawn. The clearest value:
+  one question that lands badly at your table stops appearing.
+- **Favourites.** A seventh deck that Category wraps through, holding questions
+  chosen on the phone. The panel already announces deck names, so nothing has
+  to be printed on the case.
+
+**This reverses a recorded decision, and that is the thing to settle first.**
+[sync_protocol.md](sync_protocol.md) omits IDs from the bundle and names the
+reason: "the physical device has no favorites, permalinks, or human-visible
+question numbers". Favourites is the named reason the format has no identity in
+it.
+
+It need not reverse the *format* decision, though. Identity can be a hash of
+the question's own text, which needs no format change, no second decoder to
+keep in sync, and no signing-pipeline question — and whose one failure mode is
+that editing a question's wording drops it from a favourites list, which is
+arguably correct. The alternative, a TKB3 with IDs, costs a change in both
+decoders and the spec at once.
