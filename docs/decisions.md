@@ -667,3 +667,23 @@ That reasoning holds for a sync nobody asked for, and only for that one. It miss
 So the rule splits by who started it. An automatic sync stays silent and applies on the next requested draw, exactly as before. A user-initiated one puts a card on the panel saying what arrived, and it stays there until the next press, which is how every service card already behaves.
 
 No new machinery: this is `TK_CARD_SERVICE` and the `SERVICE` state built for the portal, whose whole behaviour is already "show this until somebody presses". `chan_corpus` keeps its rule — it must not trigger a redraw — because the card travels on `chan_service` instead, which is a different channel with a different meaning.
+
+## 2026-08-07: TLS after all, as a transport rather than as the security boundary
+
+The 2026-08-06 entry above chose plain HTTP, on the grounds that a device with no clock cannot honestly validate a certificate. That reasoning about the clock still holds. What it got wrong was the assumption underneath it: that plain HTTP is something you can simply have.
+
+It is not, any more. Cloudflare Pages force-redirects to HTTPS and GitHub Releases is HTTPS-only, so serving the device plain HTTP means deliberately engineering around the platform — a bespoke Worker route whose only job is to defeat a redirect, maintained forever, on the path a device depends on to update itself.
+
+So the device speaks TLS, and it is explicit about what that does and does not buy. It does not authenticate the server: certificate validation needs a trusted clock and there is not one. What protects the corpus is unchanged — an Ed25519 signature over the bundle's SHA-256, verified against a key compiled into the image, which does not expire and does not depend on who answered the socket. TLS here is the transport hosts will accept, plus confidentiality from a passive observer, and it is worth roughly 40 KB of flash against an image at 51% of its partition.
+
+Calling this security theatre would be fair only if it were the security boundary. It is not, and the code and the docs should keep saying so, because the failure mode of forgetting is somebody later assuming the connection is authenticated and dropping the signature check.
+
+## 2026-08-07: The device fetches from the website, not from GitHub Releases
+
+GitHub Releases is where bundles are published and will stay there — it is free, it is already working, and `bundle.yml` needs no changes. It is the wrong thing for a device to talk to.
+
+Every release asset URL answers with a 302 to `objects.githubusercontent.com`, and Zephyr's `http_client` does not follow redirects: there is no handling of 301, 302 or `Location` anywhere in it. Supporting that means writing redirect following, re-resolving a second host, and opening a second TLS session to it — on the least controllable part of the update path, to reach a URL structure GitHub can change.
+
+It also requires the repository to be public before a device can fetch anything at all: a private repository's release asset returns 404 to an unauthenticated request, which is what a device is. Publishing is the intent — this is described as an open-source system, the questions are CC0, and the licences are already in the tree — but a device's update path should not be the thing that forces the timing.
+
+So the manifest points at the site, which gives stable paths with no cross-host hop, and `CONFIG_TK_SYNC_BASE_URL` makes the host a build-time setting rather than something compiled into the flow. Anything that can serve two files over TLS will do, including a plain object store, if the site is ever not the answer.
