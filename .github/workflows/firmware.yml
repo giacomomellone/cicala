@@ -49,10 +49,20 @@ jobs:
           app-path: firmware
           toolchains: x86_64-zephyr-elf
 
-      # native_sim is the 32-bit variant, which needs multilib on an x86_64
-      # host. Without this every suite fails to link, not to build.
-      - name: Install the 32-bit host libraries native_sim links against
-        run: sudo apt-get update && sudo apt-get install -y gcc-multilib g++-multilib
+      # Two host dependencies native_sim has and qemu does not.
+      #
+      # native_sim is the 32-bit variant, so it needs multilib on an x86_64
+      # host or every suite fails to link rather than to build.
+      #
+      # And Zephyr's display driver on this platform is SDL, where under qemu
+      # it is the dummy one — so the three suites that touch the panel
+      # (integration, panel, soak) fail to configure without libsdl2. The
+      # 32-bit development package, since the build is 32-bit.
+      - name: Install the host libraries native_sim builds against
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install -y gcc-multilib g++-multilib libsdl2-dev:i386
 
       - name: Build the question bundles the suites run against
         run: |
