@@ -463,6 +463,54 @@ Someone returning to a device showing a question cannot tell which deck it came
 from without pressing Category, which changes it. The panel shows the name on
 every advance, which is the mitigation the product design already chose.
 
+## 2026-08-05: Zephyr is patched locally, through `west patch`
+
+`ssd16xx` clears both controller RAM buffers, pulses the hardware reset and drives a full update from its init function, with no way to opt out. A deep-sleep wake on the ESP32-S3 is a reset, so all three ran on every press: the panel spent 2314 ms going white before the application's own refresh began, and the retained refresh counter described a panel state that no longer existed.
+
+`CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT` skips all three. Measured on the bench: the refresh after a wake fell from 2919 ms to 624 ms, and the white flash is gone.
+
+The alternatives were worse. Accepting the wipe meant a 2.3 s flash on every press and a retained counter that measured nothing. Restoring the controller RAM from a copy in RTC memory would have cost 3.8 KB and needed a second patch anyway, since upstream exposes `ssd16xx_read_ram()` but no write. Forcing a full refresh on every wake was correct and slow.
+
+`deps/` is gitignored, so the change lives in `firmware/patches/` and is applied by `west patch`; see [patching zephyr](firmware_patches.md). It should go upstream — the case is general, not ours: any e-paper device whose wake is a reset and whose controller keeps power has it.
+
+Accepted cost: a divergence from the pinned Zephyr that has to be re-checked at every version bump, and a build that is wrong in a way Kconfig only warns about if someone skips `just fw-patch`. `app/src/sleep.c` turns that warning into an `#error`.
+
+## 2026-08-05: The wake press is replayed from the wake mask
+
+EXT1 sees the press that ends a sleep before the kernel exists, and by the time the gpio-keys driver is listening the button is already down. `app/src/input.c` refuses to invent a press out of the bare release that follows — a rule worth keeping, since it is also what makes a button held at boot count once rather than twice.
+
+So the press was reaching nobody. On hardware that looked like a device that ignored the first press of every conversation: eleven wakes in one capture, zero renders.
+
+The wake mask is the record of that press, and the only one there is. `app/src/sleep.c` latches `esp_sleep_get_ext1_wakeup_status()` at `PRE_KERNEL_1`; `tk_app_init()` replays it — Category advances the deck before it is announced, Next is posted to the state machine, which gained a `BOOT --REDRAW--> DRAWING` transition to answer it.
+
+That transition is checked before the retained-panel check, not after: waking by Next onto a panel that already holds a question is the ordinary case, and `RETAINED` would decide the panel was already correct and draw nothing — which is exactly the press the user just made. Announcing the deck first instead would be worse than useless, because `REFRESHING` drops presses made during a refresh, so the second press would be swallowed too.
+
+## 2026-08-05: The panel's control lines are held through deep sleep
+
+Deep sleep isolates every GPIO. The panel's RESET line is active low and the controller keeps its own power, so a line left floating for the length of a sleep can drift low and reset the controller — taking with it the RAM that the `ssd16xx` patch exists to preserve. CS floating is the same argument once removed: selected by accident, noise on the clock is a command.
+
+RESET, CS and D/C are driven to their inactive level and held with `rtc_gpio_hold_en()` before `sys_poweroff()`, and released at `PRE_KERNEL_2` alongside the button pads. All three are RTC-capable (GPIO 8, 10, 18), which is what makes it possible at all.
+
+Ghosting after a wake was fixed by this and the reset-pulse skip together, in one flash. Which of the two was load-bearing is not known; separating them means a run on the `fw-retain` image, which reboots without deep sleep.
+
+## 2026-08-06: The panel controller is asked to sleep, behind a switch that is off
+
+`sys_poweroff()` stops the SoC and nothing else. The SSD1680 is a separate chip on its own rail, and Zephyr's `ssd16xx` never issues command `0x10`: `SSD16XX_CMD_SLEEP_MODE` is defined in `ssd16xx_regs.h` and used nowhere in the driver. So through every deep sleep the controller has been sitting in whatever state the last refresh left it in.
+
+`CONFIG_PM_DEVICE` does not cover this, despite `sleep.conf` having claimed it did. `lib/os/poweroff.c` locks interrupts and calls `z_sys_poweroff()` without touching device PM, and `ssd16xx` defines no PM action for it to call in any case. The comment has been corrected; the symbol stays for `PM_STATE` handling.
+
+`CONFIG_TK_PANEL_DEEP_SLEEP` sends the controller into deep sleep mode 1 — RAM retained — from `sleep_now()`, before the control pins are parked, since holding CS would take the bus away mid-command. Mode 2 drops the RAM, which is the image on the glass.
+
+Waking it needs the hardware reset the `ssd16xx` patch removed: a controller in deep sleep ignores SPI, and RES# is the only way back. The patch therefore grew a second symbol, `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET`, which restores the pulse while still skipping the clear and the update. `TK_PANEL_DEEP_SLEEP` selects it.
+
+Off by default, because both halves of the trade are unmeasured. What it saves is unknown: a meter with 0.1 mA steps read zero across the panel's VCC in deep sleep, which bounds the draw under roughly 50 µA and rules out a controller that is fully awake, but does not distinguish 3 µA from 45 µA against a 30 µA whole-device budget. What it costs is also unknown: the patch's own comment holds that a hardware reset returns the SSD1680's RAM to defaults, and if that is right then every wake falls back to a 2315 ms full refresh and this is not worth having.
+
+The two are worth settling together, on the power mule rather than the DevKitC — the devkit's USB bridge, regulator and LED swamp any sub-milliamp figure taken at the board level.
+
+Splitting the symbol also settles the older question above: the reset skip and the clear skip arrived in one flash and were never told apart. `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET=y` with `TK_PANEL_DEEP_SLEEP=n` is the reset skip alone, which is the isolation that run needed.
+
+Accepted cost: a third Kconfig combination that nothing on the bench has yet run, and a patch that now carries two symbols into every Zephyr version bump instead of one.
+
 ## 2026-08-06: The portal is entered by both buttons at boot, not by USB-plus-Next
 
 [design.md](design.md) and [sync_protocol.md](sync_protocol.md) both specify "connect USB while holding Next" as the service gesture. That needs VBUS detect, which [hardware_wiring.md](hardware_wiring.md) reserves on GPIO21 and which is neither wired on the rig nor present in the devicetree — the pins were reserved so the deep-sleep work would not find the RTC-capable range full, and nothing reads them.

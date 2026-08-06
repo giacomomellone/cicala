@@ -171,6 +171,70 @@ ZTEST(tk_app_fsm, test_boot_with_a_retained_question_draws_nothing)
     zassert_equal(io.labels, 0);
 }
 
+/*
+ * Waking by Next. The press that ended the sleep is spent on the wake itself,
+ * so app_logic replays it into the machine before BOOT runs; from here that is
+ * indistinguishable from a press that was already pending.
+ */
+ZTEST(tk_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
+{
+    FakeIo io;
+    io.retained = true;
+    io.retained_deck = 2;
+
+    TestAppFsm fsm(io);
+
+    fsm.post_next();
+    fsm.post_selector(2, true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+    zassert_equal(io.draws, 1, "waking by Next must answer, not sit on the old question");
+    zassert_equal(io.labels, 0, "and must not announce the deck first");
+    zassert_equal(io.last_deck, 2);
+}
+
+/*
+ * The same, with nothing retained: a Next wake onto a panel showing a deck
+ * name. Announcing first would cost a refresh, and REFRESHING drops presses
+ * made during one — so the press would be swallowed and the table would see a
+ * button that does nothing.
+ */
+ZTEST(tk_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    fsm.post_next();
+    fsm.post_selector(3, true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+    zassert_equal(io.draws, 1);
+    zassert_equal(io.labels, 0);
+}
+
+/** And having answered it, the machine settles rather than relabelling. */
+ZTEST(tk_app_fsm, test_a_next_wake_settles_without_announcing_the_deck)
+{
+    FakeIo io;
+    io.retained = true;
+    io.retained_deck = 1;
+
+    TestAppFsm fsm(io);
+
+    fsm.post_next();
+    fsm.post_selector(1, true);
+    settle(fsm);
+
+    fsm.post_render(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+    zassert_equal(io.draws, 1);
+    zassert_equal(io.labels, 0, "the deck was never in doubt; naming it would be noise");
+}
+
 ZTEST(tk_app_fsm, test_next_asks_for_a_question)
 {
     FakeIo io;

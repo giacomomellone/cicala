@@ -178,10 +178,12 @@ by changing one file.
 Kconfig decides what is compiled in. Symbols come from Zephyr, from modules,
 and from us.
 
-**Ours are in `firmware/app/Kconfig`:**
+**Ours are in `firmware/Kconfig.policy`**, sourced by `firmware/app/Kconfig`.
+One level up from the application so the test suites build against the same
+values rather than a copy that drifts:
 
 ```sh
-cat firmware/app/Kconfig
+cat firmware/Kconfig.policy
 ```
 
 These are the values the architecture deliberately leaves open — the selector
@@ -196,9 +198,9 @@ grep "^CONFIG_TK_" build/esp32s3/zephyr/.config
 ```
 
 ```
-CONFIG_TK_SELECTOR_SETTLE_MS=600
-CONFIG_TK_NEXT_DEBOUNCE_MS=30
-CONFIG_TK_FULL_REFRESH_INTERVAL=8
+CONFIG_TK_BUTTON_DEBOUNCE_MS=30
+CONFIG_TK_FULL_REFRESH_INTERVAL=16
+CONFIG_TK_REFRESH_TIMEOUT_MS=15000
 CONFIG_TK_PLAYBACK_DEPTH_MAX=2
 CONFIG_TK_RECENT_RING=20
 CONFIG_TK_REFRESH_MIN_MV=3200

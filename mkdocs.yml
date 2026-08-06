@@ -18,6 +18,7 @@ nav:
   - hardware wiring: hardware_wiring.md
   - firmware primer: firmware_primer.md
   - firmware architecture: firmware_architecture.md
+  - patching zephyr: firmware_patches.md
   - decisions: decisions.md
   - languages: languages.md
   - sync protocol: sync_protocol.md

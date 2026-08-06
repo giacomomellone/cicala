@@ -1,0 +1,187 @@
+diff --git a/drivers/display/Kconfig.ssd16xx b/drivers/display/Kconfig.ssd16xx
+index 097351fec5e..fb298d09608 100644
+--- a/drivers/display/Kconfig.ssd16xx
++++ b/drivers/display/Kconfig.ssd16xx
+@@ -15,3 +15,43 @@ config SSD16XX
+ 	select MIPI_DBI
+ 	help
+ 	  Enable driver for SSD16XX compatible controller.
++
++config SSD16XX_PRESERVE_IMAGE_ON_INIT
++	bool "Leave the panel image untouched at init"
++	depends on SSD16XX
++	help
++	  By default the driver clears both controller RAM buffers at init and
++	  performs a full update, so the panel is blank once init returns. On a
++	  system that reboots with the panel still powered - an e-paper device
++	  waking from deep sleep, where the wake is a reset - that discards the
++	  image the panel was holding and costs a full refresh on every wake.
++
++	  Enable this to skip both the clear and the update. The controller keeps
++	  whatever its RAM held across the reset, which is what makes a partial
++	  refresh after the reboot meaningful.
++
++	  Only safe when the controller keeps power across the reset. After a
++	  true power cycle the RAM contents are undefined, so the application
++	  must perform one full refresh before its first partial one - it has to
++	  distinguish the two cases anyway to know what the panel is showing.
++
++config SSD16XX_PRESERVE_IMAGE_HW_RESET
++	bool "Pulse the hardware reset even while preserving the image"
++	depends on SSD16XX_PRESERVE_IMAGE_ON_INIT
++	help
++	  SSD16XX_PRESERVE_IMAGE_ON_INIT skips three things at init: the
++	  hardware reset pulse, the RAM clear, and the full update. Enable this
++	  to put the reset pulse back while still skipping the other two.
++
++	  There is one case that needs it. An application that puts the
++	  controller into its own deep sleep mode - command 0x10 - to save power
++	  between refreshes cannot get it out again over the bus: in that mode
++	  the controller ignores SPI entirely, and only a pulse on RES# revives
++	  it. Skipping the reset there leaves every command after the wake
++	  falling on a controller that is not listening.
++
++	  Whether the RAM survives that reset is a property of the controller
++	  and has to be established on the panel in question. If it does not,
++	  the two options are mutually exclusive in practice: preserving the
++	  image and sleeping the controller cannot both be had, and the
++	  application must choose the full refresh or the current.
+diff --git a/drivers/display/ssd16xx.c b/drivers/display/ssd16xx.c
+index 0b9a3559dd5..5e6a9382144 100644
+--- a/drivers/display/ssd16xx.c
++++ b/drivers/display/ssd16xx.c
+@@ -611,7 +611,8 @@ static int ssd16xx_set_orientation(const struct device *dev,
+ 	return 0;
+ }
+ 
+-static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
++static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd,
++				   uint16_t first_page)
+ {
+ 	const struct ssd16xx_config *config = dev->config;
+ 	uint16_t panel_h = config->height / EPD_PANEL_NUMOF_ROWS_PER_PAGE;
+@@ -633,14 +634,14 @@ static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_set_ram_param(dev, SSD16XX_PANEL_FIRST_PAGE,
++	err = ssd16xx_set_ram_param(dev, first_page,
+ 				    panel_h - 1, last_gate,
+ 				    SSD16XX_PANEL_FIRST_GATE);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_set_ram_ptr(dev, SSD16XX_PANEL_FIRST_PAGE, last_gate);
++	err = ssd16xx_set_ram_ptr(dev, first_page, last_gate);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+@@ -655,7 +656,7 @@ static int ssd16xx_clear_cntlr_mem(const struct device *dev, uint8_t ram_cmd)
+ 	} else {
+ 		memset(clear_page, 0xff, sizeof(clear_page));
+ 	}
+-	for (int h = 0; h < panel_h; h++) {
++	for (int h = first_page; h < panel_h; h++) {
+ 		size_t x = config->width;
+ 
+ 		while (x) {
+@@ -865,26 +866,71 @@ static int ssd16xx_controller_init(const struct device *dev)
+ 	data->blanking_on = false;
+ 	data->profile = SSD16XX_PROFILE_INVALID;
+ 
+-	err = mipi_dbi_reset(config->mipi_dev, SSD16XX_RESET_DELAY);
+-	if (err < 0) {
+-		return err;
+-	}
++	/*
++	 * The hardware reset returns the controller to its defaults - including,
++	 * on at least the SSD1680, its RAM. That is exactly the state a caller
++	 * preserving the image across a reboot is trying to keep, and the
++	 * controller has its own power-on reset for the case where it has just
++	 * been powered up, so the pulse is skipped rather than made conditional
++	 * on something the driver cannot see.
++	 *
++	 * SSD16XX_PRESERVE_IMAGE_HW_RESET puts it back for the one caller that
++	 * cannot do without it: a controller left in its own deep sleep mode
++	 * ignores the bus, and RES# is the only thing that wakes it.
++	 */
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT) ||
++	    IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET)) {
++		err = mipi_dbi_reset(config->mipi_dev, SSD16XX_RESET_DELAY);
++		if (err < 0) {
++			return err;
++		}
+ 
+-	k_msleep(SSD16XX_RESET_DELAY);
++		k_msleep(SSD16XX_RESET_DELAY);
++	}
+ 
+ 	err = ssd16xx_set_profile(dev, SSD16XX_PROFILE_FULL);
+ 	if (err < 0) {
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM);
+-	if (err < 0) {
+-		return err;
+-	}
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM,
++					      SSD16XX_PANEL_FIRST_PAGE);
++		if (err < 0) {
++			return err;
++		}
+ 
+-	err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM);
+-	if (err < 0) {
+-		return err;
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM,
++					      SSD16XX_PANEL_FIRST_PAGE);
++		if (err < 0) {
++			return err;
++		}
++	} else if (config->height % EPD_PANEL_NUMOF_ROWS_PER_PAGE) {
++		/*
++		 * The rows past the last whole page fall outside the resolution
++		 * this driver reports, so nothing in the ordinary refresh path
++		 * ever writes them - the clear above is the only thing that
++		 * does. Preserving the image must not preserve those, because
++		 * they are not part of it: left as the controller powered up,
++		 * they show as a strip of noise along one edge that no later
++		 * refresh can reach.
++		 *
++		 * Clear them alone, and leave the image itself untouched.
++		 */
++		const uint16_t first_unused =
++			config->height / EPD_PANEL_NUMOF_ROWS_PER_PAGE;
++
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RAM,
++					      first_unused);
++		if (err < 0) {
++			return err;
++		}
++
++		err = ssd16xx_clear_cntlr_mem(dev, SSD16XX_CMD_WRITE_RED_RAM,
++					      first_unused);
++		if (err < 0) {
++			return err;
++		}
+ 	}
+ 
+ 	if (config->rotation == 0U) {
+@@ -902,9 +948,11 @@ static int ssd16xx_controller_init(const struct device *dev)
+ 		return err;
+ 	}
+ 
+-	err = ssd16xx_update_display(dev);
+-	if (err < 0) {
+-		return err;
++	if (!IS_ENABLED(CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT)) {
++		err = ssd16xx_update_display(dev);
++		if (err < 0) {
++			return err;
++		}
+ 	}
+ 
+ 	return 0;

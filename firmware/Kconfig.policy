@@ -150,6 +150,31 @@ config TK_SLEEP
       Off by default. A board that reboots on every press is harder to bring up
       than one that stays awake, and the console goes with it.
 
+config TK_PANEL_DEEP_SLEEP
+    bool "Put the panel controller to sleep too"
+    default n
+    depends on TK_SLEEP
+    select SSD16XX_PRESERVE_IMAGE_HW_RESET
+    help
+      sys_poweroff() stops the SoC and nothing else. The SSD1680 is a separate
+      chip on its own rail, and Zephyr's ssd16xx driver never issues command
+      0x10 — SSD16XX_CMD_SLEEP_MODE is defined in ssd16xx_regs.h and used
+      nowhere — so through every deep sleep the controller sits in whatever
+      state the last refresh left it in. CONFIG_PM_DEVICE does not change
+      that: sys_poweroff() runs no device hooks, and the driver defines no PM
+      action for them to run.
+
+      Turning this on sends the controller into its deep sleep mode 1 (RAM
+      retained) on the way down, and takes the hardware reset pulse back at
+      init so it can be revived — which is what the select above is for, since
+      a sleeping controller ignores the bus.
+
+      Off by default, and a bench question rather than a settled one. The
+      saving has not been measured and neither has the cost: the reset that
+      wakes the controller may take the RAM with it, in which case every wake
+      falls back to a full refresh and this is not worth having. Measure both
+      before shipping it. See docs/hardware_wiring.md, "Bench measurements".
+
 config TK_SLEEP_IDLE_MS
     int "Quiet time before sleeping (ms)"
     default 2000
@@ -183,20 +208,23 @@ config TK_REFRESH_TIMEOUT_MS
 
 config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
-    default 64
+    default 16
     help
-      Measured. A `just fw-soak` run on the Waveshare 2.13-inch V4 reached 193
-      consecutive partial refreshes with only minor artefacts and the question
-      still comfortably readable.
-
-      64 sits about three times under that. The margin covers what the run did
-      not: ghosting is temperature and batch dependent, and a device on a cold
-      table has not been tested.
+      Set from the glass rather than from the soak run. A `just fw-soak` run on
+      the Waveshare 2.13-inch V4 reached 193 consecutive partial refreshes with
+      only minor artefacts, and 64 was picked as three times under that — but
+      ghosting showed in ordinary use well before 64. The run's "minor
+      artefacts" turned out to be a more forgiving standard than a question
+      somebody is reading at a table. 16 is where the panel still looks clean;
+      the 193 stands as a ceiling to stay under, not a target to approach.
 
       A cold boot always uses a full refresh because the panel content is
-      unknown. Once deep sleep lands, every wake is a cold boot, so the counter
-      has to live in RTC memory or this number stops meaning anything — see
-      docs/firmware_architecture.md, "Where state lives".
+      unknown. A deep-sleep wake is also a fresh boot, but not an unknown
+      panel: the controller keeps power and keeps its RAM, so the counter
+      carries on across the wake from RTC memory rather than restarting. Both
+      halves of that are load-bearing — see docs/firmware_architecture.md,
+      "Where state lives", and CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT in
+      firmware/patches.yml.
 
 config TK_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"
