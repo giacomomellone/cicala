@@ -18,8 +18,10 @@ target_sources(app PRIVATE
     ${TK_APP}/src/app.c
     ${TK_APP}/src/app_logic.cpp
     ${TK_APP}/src/channels.c
+    ${TK_APP}/src/corpus.c
     ${TK_APP}/src/display.c
     ${TK_APP}/src/input.c
+    ${TK_APP}/src/language.c
     ${TK_APP}/src/panel.cpp
     ${TK_APP}/src/retained_block.cpp
 )
@@ -27,10 +29,16 @@ target_sources(app PRIVATE
 target_include_directories(app PRIVATE ${TK_APP}/include)
 target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
 
-set(corpus ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures/en.tkb2)
+# Both shipped corpora, because app/src/corpus.c carries every language the
+# image offers and the suite builds the same file the application does.
+set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 
-if(NOT EXISTS ${corpus})
-  message(FATAL_ERROR "missing ${corpus} — run `just fw-fixtures`")
-endif()
+foreach(lang en de)
+  if(NOT EXISTS ${fixtures}/${lang}.tkb2)
+    message(FATAL_ERROR "missing ${fixtures}/${lang}.tkb2 — run `just fw-fixtures`")
+  endif()
 
-generate_inc_file_for_target(app ${corpus} ${ZEPHYR_BINARY_DIR}/include/generated/corpus.inc)
+  generate_inc_file_for_target(app
+    ${fixtures}/${lang}.tkb2
+    ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_tkb2.inc)
+endforeach()

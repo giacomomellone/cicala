@@ -120,6 +120,23 @@ struct tk_service_msg {
     char text[CONFIG_TK_MAX_QUESTION_BYTES];
 };
 
+/**
+ * Event channel: the corpus has been replaced.
+ *
+ * Published by `net` when the setup portal changes the language, and by `sync`
+ * when a downloaded bundle is swapped in. Read by `app`, which reopens the
+ * store and rebinds the bag.
+ *
+ * **This must not trigger a redraw.** The new corpus applies on the next
+ * *requested* draw. The question on the panel is one somebody is reading, and
+ * replacing it because a setting changed takes the table's attention for
+ * nothing.
+ */
+struct tk_corpus_msg {
+    /** Two-letter code, NUL-terminated. */
+    char language[4];
+};
+
 /** Event channel: the display finished with the question it was given. */
 struct tk_render_msg {
     /** The `seq` of the question this refers to. */
@@ -134,6 +151,7 @@ ZBUS_CHAN_DECLARE(chan_category);
 ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
 ZBUS_CHAN_DECLARE(chan_service);
+ZBUS_CHAN_DECLARE(chan_corpus);
 ZBUS_CHAN_DECLARE(chan_render);
 
 /** Deck id for logs, as it appears in questions/schema.json. "?" outside 0..5. */

@@ -18,6 +18,9 @@ ZBUS_CHAN_DEFINE(chan_question, struct tk_question_msg, NULL, NULL, ZBUS_OBSERVE
 ZBUS_CHAN_DEFINE(chan_service, struct tk_service_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.len = 0, .text = {0}));
 
+ZBUS_CHAN_DEFINE(chan_corpus, struct tk_corpus_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
+                 ZBUS_MSG_INIT(.language = {0}));
+
 ZBUS_CHAN_DEFINE(chan_render, struct tk_render_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.seq = 0, .result = 0, .was_full = false));
 

@@ -128,9 +128,18 @@ channels and a display.
 
 ## Where the questions come from
 
-The corpus is not fetched at runtime yet. It is compiled into the image, which
-is the factory-preloaded set [design.md](design.md) promises: a device whose
-Wi-Fi is never configured still works.
+The corpus is not fetched at runtime yet. Every shipped language is compiled
+into the image, which is the factory-preloaded set [design.md](design.md)
+promises: a device whose Wi-Fi is never configured still works, and the setup
+portal's language choice has something to switch to. Each bundle is about
+7 KB, which is a better trade than a portal offering a language the device
+cannot show.
+
+Which one is open is `app/src/language.c`'s answer, kept in the same NVS as the
+Wi-Fi credentials and falling back to `CONFIG_TK_CORPUS_LANGUAGE`. Changing it
+publishes `chan_corpus`; `app` reopens the store and rebinds the bag, whose
+fingerprint no longer matches, so the shuffle bag resets — indices into the
+English corpus mean nothing once the German one is open.
 
 ```mermaid
 flowchart LR
@@ -260,8 +269,8 @@ the question on the glass *is* something, a press *happened*.
 | `chan_question` | state | seq, deck, text | `app` | `display` | built |
 | `chan_render` | event | seq, result, was-full | `display` | `app` | built |
 | `chan_service` | event | the portal's current card | `net` | `app` | built |
+| `chan_corpus` | event | the language now in use | `net` | `app` | built |
 | `chan_power` | state | USB, charging, mV | workqueue | `app`, `net` | design |
-| `chan_corpus` | event | version, language, count | `net` | `app` | design |
 
 All observers are message subscribers, so a publish never blocks a publisher.
 

@@ -201,6 +201,10 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
     } else {
         w.raw("<select id=\"ssid\" name=\"ssid\">");
 
+        /* Selected by default, so submitting the form untouched changes the
+         * language and leaves the stored network alone. */
+        w.raw("<option value=\"\">Leave unchanged</option>");
+
         for (uint8_t i = 0; i < count; i++) {
             w.raw("<option value=\"");
             w.text(nets[i].ssid);
@@ -220,7 +224,8 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
     w.raw("<label for=\"psk\">Password</label>");
     w.raw("<input id=\"psk\" name=\"psk\" type=\"password\" "
           "autocomplete=\"off\" autocapitalize=\"off\">");
-    w.raw("<p class=\"note\">Leave empty for an open network.</p>");
+    w.raw("<p class=\"note\">Leave empty for an open network. To change only the "
+          "language, clear the network name and save.</p>");
 
     w.raw("<label for=\"lang\">Question language</label>");
     w.raw("<select id=\"lang\" name=\"lang\">");
@@ -252,14 +257,26 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
 
 int page_saved(char *out, uint16_t out_size, const char *ssid)
 {
-    if (out == nullptr || ssid == nullptr) {
+    if (out == nullptr) {
         return -1;
     }
 
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<h1>Saved</h1><p>Joining ");
+    w.raw("<h1>Saved</h1>");
+
+    if (ssid == nullptr || ssid[0] == '\0') {
+        /* The form was posted for the language alone, which is a whole reason
+         * to be here: changing it must not cost a retyped Wi-Fi password. */
+        w.raw("<p>The language is set. It applies to the next question.</p>");
+        nav(w, false);
+        w.raw(kFoot);
+
+        return w.finish();
+    }
+
+    w.raw("<p>Joining ");
     w.text(ssid);
     w.raw(".</p>");
 

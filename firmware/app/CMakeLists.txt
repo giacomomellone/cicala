@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.20.0)
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(tischkarte LANGUAGES C CXX)
 
+# The languages the image carries. Kept here rather than derived from what
+# happens to be in tests/fixtures/, so a missing bundle fails the build instead
+# of silently shipping a portal that offers a language the device does not have.
+set(TK_CORPUS_LANGUAGES en de)
+
 # Shared, host-testable logic. See docs/firmware_architecture.md "Modules".
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/fsm tk_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/app_fsm tk_app_fsm)
@@ -17,8 +22,10 @@ target_sources(app PRIVATE
     src/app.c
     src/app_logic.cpp
     src/channels.c
+    src/corpus.c
     src/display.c
     src/input.c
+    src/language.c
     src/main.c
     src/panel.cpp
     src/retained_block.cpp
@@ -50,15 +57,24 @@ target_include_directories(app PRIVATE include)
 # linked by hand.
 target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal tk_retained)
 
-# The factory-preloaded corpus, compiled into the image so a device whose Wi-Fi
-# is never configured still works. Built from the question database by
-# `just fw-fixtures`, which `just fw-build` runs first. When sync lands this is
-# the fallback and the live corpus comes from LittleFS.
-set(corpus ${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures/${CONFIG_TK_CORPUS_LANGUAGE}.tkb2)
+# The factory-preloaded corpora, compiled into the image so a device whose
+# Wi-Fi is never configured still works. Built from the question database by
+# `just fw-fixtures`, which `just fw-build` runs first. When sync lands these
+# are the fallback and the live corpus comes from LittleFS.
+#
+# Every shipped language, not just CONFIG_TK_CORPUS_LANGUAGE: the setup portal
+# offers a language and the device has to have something to switch to. Each is
+# about 20 KB against a 1344 KB slot, which is a better trade than a portal
+# whose language field cannot do anything.
+set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures)
 
-if(NOT EXISTS ${corpus})
-  message(FATAL_ERROR
-    "missing ${corpus} — run `just fw-fixtures` (or `just fw-build`, which does)")
-endif()
+foreach(lang ${TK_CORPUS_LANGUAGES})
+  if(NOT EXISTS ${fixtures}/${lang}.tkb2)
+    message(FATAL_ERROR
+      "missing ${fixtures}/${lang}.tkb2 — run `just fw-fixtures` (or `just fw-build`, which does)")
+  endif()
 
-generate_inc_file_for_target(app ${corpus} ${ZEPHYR_BINARY_DIR}/include/generated/corpus.inc)
+  generate_inc_file_for_target(app
+    ${fixtures}/${lang}.tkb2
+    ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_tkb2.inc)
+endforeach()

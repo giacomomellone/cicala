@@ -56,6 +56,16 @@ void tk_app_post_render(bool ok, uint32_t seq);
 void tk_app_post_service(const char *text, uint16_t len);
 
 /**
+ * Open the corpus the chosen language now names, and rebind the bag.
+ *
+ * Deliberately does not draw. docs/firmware_architecture.md's rule for
+ * chan_corpus is that a new corpus applies on the next *requested* draw: the
+ * question on the panel is one somebody is reading, and replacing it because a
+ * setting changed would take the table's attention for no reason.
+ */
+void tk_app_reload_corpus(void);
+
+/**
  * Tick the state machine until it stops moving.
  *
  * One event can walk it through several states — a press is SHOWING, then

@@ -42,6 +42,10 @@
 #include <zephyr/net/wifi_credentials.h>
 #include <zephyr/net/wifi_mgmt.h>
 
+#include <zephyr/zbus/zbus.h>
+
+#include "channels.h"
+#include "language.h"
 #include "net.h"
 #include "net_logic.h"
 
@@ -587,8 +591,8 @@ static int setup_handler(struct http_client_ctx *client, enum http_transaction_s
     }
 
     k_mutex_lock(&scan_lock, K_FOREVER);
-    const int n = tk_page_setup((char *) page_buf, sizeof(page_buf), scan_results, scan_count,
-                                CONFIG_TK_CORPUS_LANGUAGE);
+    const int n =
+        tk_page_setup((char *) page_buf, sizeof(page_buf), scan_results, scan_count, tk_language());
     k_mutex_unlock(&scan_lock);
 
     return send_page("/", n, response);
@@ -650,16 +654,40 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
         return 0;
     }
 
+    char lang[TK_LANGUAGE_LEN] = {0};
+
     const int ssid_len = tk_form_field(form_body, (uint16_t) form_len, "ssid", ssid, sizeof(ssid));
     const int psk_len = tk_form_field(form_body, (uint16_t) form_len, "psk", psk, sizeof(psk));
+    const int lang_len = tk_form_field(form_body, (uint16_t) form_len, "lang", lang, sizeof(lang));
 
     form_len = 0;
 
+    /*
+     * The language is applied on its own. Somebody who only wants German
+     * should not have to retype a Wi-Fi password to get it, and the form posts
+     * every field whether or not it was touched.
+     */
+    if (lang_len > 0 && strcmp(lang, tk_language()) != 0) {
+        if (tk_language_set(lang) == 0) {
+            const struct tk_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
+
+            /* `app` reopens the store. The new corpus applies on the next
+             * requested draw, so whatever is on the panel stays readable. */
+            (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
+        }
+    }
+
+    /*
+     * An empty network name means the form was submitted for the language
+     * alone, which is a whole reason to be here. Nothing is stored and no join
+     * is attempted; the saved network keeps whatever it had.
+     */
     if (ssid_len <= 0) {
-        LOG_WRN("a form arrived with no network name");
-        response->status = HTTP_400_BAD_REQUEST;
-        response->final_chunk = true;
-        return 0;
+        LOG_INF("no network name in the form; language only");
+
+        const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+
+        return send_page("/save", n, response);
     }
 
     const enum wifi_security_type type =

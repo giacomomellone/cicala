@@ -16,6 +16,8 @@
 
 #include "app_fsm.hpp"
 #include "channels.h"
+#include "corpus.h"
+#include "language.h"
 #include "qdb.hpp"
 #include "retained_block.hpp"
 #include "sleep.h"
@@ -25,9 +27,27 @@ LOG_MODULE_REGISTER(tk_app, LOG_LEVEL_INF);
 namespace
 {
 
-const uint8_t corpus[] = {
-#include "corpus.inc"
-};
+/**
+ * Open the corpus the chosen language names.
+ *
+ * Falls back to the first one the image carries rather than failing: a device
+ * that cannot find its language should still ask questions in some language,
+ * and language.c has already refused to store a code with no corpus behind it.
+ */
+bool open_corpus(tk::Qdb &qdb)
+{
+    int index = tk_corpus_find(tk_language());
+
+    if (index < 0) {
+        LOG_WRN("no corpus for %s; falling back to %s", tk_language(), tk_corpus_language(0));
+        index = 0;
+    }
+
+    size_t size = 0;
+    const uint8_t *const data = tk_corpus_data((size_t) index, &size);
+
+    return qdb.open(data, size);
+}
 
 /*
  * Bag state lives in RTC slow memory, so the no-repeat cycle survives the
@@ -237,7 +257,7 @@ tk::AppFsm fsm(io);
 
 int tk_app_init(void)
 {
-    if (!io.qdb.open(corpus, sizeof(corpus))) {
+    if (!open_corpus(io.qdb)) {
         LOG_ERR("the embedded corpus is not a valid TKB2 bundle");
         return -EINVAL;
     }
@@ -336,6 +356,24 @@ void tk_app_corpus(char *version, size_t version_size, uint16_t *count)
     }
 
     version[n] = '\0';
+}
+
+void tk_app_reload_corpus(void)
+{
+    if (!open_corpus(io.qdb)) {
+        LOG_ERR("could not reopen the corpus for %s", tk_language());
+        return;
+    }
+
+    /*
+     * bind() wipes the bag when the fingerprint no longer matches, which a
+     * different language always does. That is the behaviour wanted: a shuffle
+     * bag holding indices into the English corpus means nothing once the
+     * German one is open.
+     */
+    (void) io.bag.bind(io.qdb);
+
+    LOG_INF("corpus is now %s, %u questions", tk_language(), io.qdb.count());
 }
 
 void tk_app_post_service(const char *text, uint16_t len)

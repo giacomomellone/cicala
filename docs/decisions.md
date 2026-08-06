@@ -591,3 +591,19 @@ Recorded because it was found while merging sleep and could easily be mistaken f
 It was 2301 ms earlier the same day on the same rig, which is what makes it worth writing down rather than assuming it has always been so. What has not been established is whether the glass is actually wrong, or only the number: the full-refresh path brackets the write with `display_blanking_on()` and `display_blanking_off()`, and `panel.cpp` already carries a comment describing a bug with exactly this signature — "the refresh takes about 20 ms, nothing changes on the glass" — from when only the first half was called.
 
 Someone has to look at the panel after a cold boot and say whether the deck name is on it.
+
+## 2026-08-06: Every shipped corpus goes in the image, so the portal's language choice means something
+
+The setup portal offered a language from its first commit and threw the answer away. Worse than not wired: the image embedded exactly one corpus, the one `CONFIG_TK_CORPUS_LANGUAGE` named at build time, so there was no German text on the device to show even if the choice had been stored.
+
+Both bundles now ship. `app/CMakeLists.txt` embeds every language in `TK_CORPUS_LANGUAGES`, `app/src/corpus.c` is the table, and the build fails on a missing bundle rather than shipping a portal that offers a language the device cannot display. Each is about 7 KB against a 1344 KB slot, which is a better trade than a setting that does nothing.
+
+The choice lives in the same NVS as the Wi-Fi credentials and falls back to `CONFIG_TK_CORPUS_LANGUAGE`, which is what a device that has never seen the portal is. A stored language the image no longer carries is dropped rather than obeyed: firmware can ship with a different set than the one that stored it, and a device with no corpus to open would have nothing to draw at all.
+
+Changing it publishes `chan_corpus` — the channel the architecture already specified for exactly this, and whose documented rule is that a new corpus applies on the next *requested* draw. So the question on the panel stays until somebody presses Next. Reopening the store rebinds the bag, whose fingerprint no longer matches, so the shuffle bag resets: indices into the English corpus mean nothing once the German one is open.
+
+## 2026-08-06: The setup form saves the language without the Wi-Fi password
+
+The form posts every field whether or not it was touched, and the handler required a network name, so changing the language meant retyping a Wi-Fi password. That is a bad trade for a setting, and worse on an open access point where the password is the one thing worth not sending twice.
+
+An empty network name now means "language only": nothing is stored against Wi-Fi, no join is attempted, and the saved network keeps whatever it had. The scan list gains a "Leave unchanged" option, selected by default, so submitting the form untouched is that case rather than an error.

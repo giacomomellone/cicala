@@ -29,6 +29,7 @@ ZBUS_MSG_SUBSCRIBER_DEFINE(app_sub);
 ZBUS_CHAN_ADD_OBS(chan_category, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_next, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_service, app_sub, 3);
+ZBUS_CHAN_ADD_OBS(chan_corpus, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_render, app_sub, 3);
 
 static void app_thread(void *p1, void *p2, void *p3)
@@ -51,6 +52,7 @@ static void app_thread(void *p1, void *p2, void *p3)
             struct tk_category_msg category;
             struct tk_next_msg next;
             struct tk_service_msg service;
+            struct tk_corpus_msg corpus;
             struct tk_render_msg render;
         } msg;
 
@@ -104,6 +106,10 @@ static void app_thread(void *p1, void *p2, void *p3)
              * panel is free.
              */
             tk_app_post_service(msg.service.text, msg.service.len);
+        } else if (chan == &chan_corpus) {
+            /* No redraw: the new corpus applies on the next requested draw. */
+            LOG_INF("corpus replaced: %s", msg.corpus.language);
+            tk_app_reload_corpus();
         } else if (chan == &chan_render) {
             tk_app_post_render(msg.render.result == 0, msg.render.seq);
         }

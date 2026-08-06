@@ -110,8 +110,13 @@ Use the image rather than the reset button: an EN-pin reset reports as
 Hold Category and Next together through a boot. The device raises an open
 access point named `Tischkarte-XXXX`, the panel says so, and a phone that joins
 it is redirected to a page that lists the networks in earshot, takes a
-password, and sets the question language. The window closes on its own after
-five minutes.
+password, and sets the question language — which the device can act on, because
+every shipped corpus is in the image. The window closes on its own after five
+minutes.
+
+The language can be changed on its own: clear the network name and save. The
+new corpus applies to the next question rather than replacing the one on the
+panel, which somebody may be reading.
 
 ```sh
 just fw-flash       # the ordinary image: the gesture is what starts it
