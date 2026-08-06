@@ -49,13 +49,6 @@ jobs:
           app-path: firmware
           toolchains: x86_64-zephyr-elf
 
-      # Zephyr's display driver on native_sim is SDL, where under qemu it is
-      # the dummy one, so the three suites that touch the panel — integration,
-      # panel and soak — fail to configure without it. This is a difference
-      # between the two CI platforms rather than anything about the suites.
-      - name: Install the host library the display suites build against
-        run: sudo apt-get update && sudo apt-get install -y libsdl2-dev
-
       - name: Build the question bundles the suites run against
         run: |
           pip install --quiet pyyaml jsonschema
@@ -68,7 +61,7 @@ jobs:
           ls -l firmware/tests/fixtures/
 
       - name: Run the suites
-        run: west twister -T firmware/tests -p native_sim/native/64 --inline-logs -O build/twister
+        run: west twister -T firmware/tests -p native_sim --inline-logs -O build/twister
 
       - name: Keep the twister report
         if: always()

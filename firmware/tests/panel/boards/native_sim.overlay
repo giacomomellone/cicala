@@ -1,0 +1,18 @@
+/*
+ * A dummy display the same size as the real panel, as in the qemu overlay
+ * beside this one. Without it Zephyr falls back to the SDL driver on this
+ * platform, which needs a host library and shows nothing useful anyway.
+ */
+
+/ {
+    tk_dummy: dummy_dc {
+        compatible = "zephyr,dummy-dc";
+        width = <250>;
+        height = <122>;
+        status = "okay";
+    };
+
+    chosen {
+        zephyr,display = &tk_dummy;
+    };
+};
