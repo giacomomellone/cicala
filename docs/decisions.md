@@ -617,3 +617,43 @@ It survived on the bench because sleeping needs at least one button open — `op
 `tk_net_is_active()` therefore covers the confirmation window as well as the running portal. Widening the inhibit rather than lengthening the idle timer, because the relationship between those two numbers should not be load-bearing: either can be tuned for its own reasons.
 
 The "both buttons read closed" message drops from error to warning at the same time. Holding both buttons is a thing people now do on purpose, and reaching that line means a button is held for some other reason or is stuck — worth saying, not a fault.
+
+## 2026-08-06: The device fetches bundles over plain HTTP, and the signature is the security boundary
+
+[sync_protocol.md](sync_protocol.md) names an HTTPS manifest. The device cannot do TLS honestly, and pretending otherwise would be worse than not doing it.
+
+Certificate validation needs a trusted clock. This device has none: no RTC time source, no SNTP, and a deep-sleep wake is a fresh boot with no notion of when it is. Validating without a clock means either failing everything or disabling expiry checks — and a certificate you will accept after it expires or is revoked is most of the way to no certificate. Fetching the time first would mean trusting an unauthenticated channel to bootstrap the channel that is supposed to be authenticated.
+
+What actually protects the corpus is already specified and already built into the pipeline: an Ed25519 signature over the bundle's SHA-256, verified against a public key compiled into the image. The 2026-07-24 entry above already reasons that "the firmware side can use any conforming verifier". A key in the image is a stronger statement than a TLS session to a hostname in the same image, and it does not expire.
+
+Given up, plainly: an observer on the path learns that a Tischkarte fetched a bundle, and can block the fetch. The question database is public, so there is nothing to keep confidential, and TLS does not stop anyone blocking traffic either. Replaying an older but validly signed manifest is a real attack and is answered by refusing any manifest whose version is not newer than the installed one.
+
+This also takes TLS, a CA bundle, and the CA-rotation failure mode out of an image already at 51% of its partition.
+
+## 2026-08-06: Devices download the raw bundle; gzip stays for the website
+
+`.tkb` is gzip around the binary and the device stores the binary, so something had to inflate it. Zephyr has no compression subsystem in this version, which means vendoring an inflate and finding somewhere to stage 15 KB while it runs.
+
+Measured, that buys nothing. English is 5807 bytes gzipped against 15166 raw, German 3053 against 6809 — about 9 KB per language, once per release, on a device that is plugged into power when it syncs.
+
+So the manifest points devices at the raw `.tkb2` and the signature covers those bytes. `.tkb` continues to be published for the website and for people. Manifest `schema` goes to 3.
+
+This is not a format change: TKB2 is untouched and the two decoders in `tools/build_bundle.py` and `firmware/lib/qdb/` still agree, so the rule that a format change must land in both is not engaged.
+
+## 2026-08-06: The corpus goes in a LittleFS partition above the 4 MB line
+
+The module carries 8 MB of flash (`esp32s3_wroom_n8.dtsi`) but the devicetree includes `partitions_0x0_amp_4M.dtsi`, whose last partition ends at 0x3FFFFF. Everything from 0x400000 up is unclaimed.
+
+The filesystem goes there. The alternative — carving it out of the 192 KB `storage_partition`, or widening `slot0_partition` — would move partitions that already hold something: the Wi-Fi credentials and the chosen language live in NVS inside `storage_partition`, and shifting it would orphan them on every device that had been set up. Adding above the line moves nothing.
+
+## 2026-08-06: The device carries its own Ed25519 verifier
+
+mbedtls cannot do it. `PSA_ALG_PURE_EDDSA` is defined in `tf-psa-crypto/include/psa/crypto_values.h` and appears nowhere in that module's `core/` or `drivers/` — the algorithm identifier exists, the implementation does not. This is a long-standing gap in mbedtls rather than something a Kconfig option turns on.
+
+That leaves changing the signature scheme or carrying a verifier. Changing it would reverse the 2026-07-24 decision, rewrite `tools/keygen.py`, the bundle pipeline and the spec, and land on a curve with more ways to be implemented wrongly. A verify-only Ed25519 is a few KB of field arithmetic, and the SHA-512 it needs is in mbedtls, which the Wi-Fi driver already links.
+
+## 2026-08-06: Sync runs on a cold boot and on request, until VBUS exists
+
+The specified trigger is USB power plus a known network. VBUS detect is reserved on GPIO21 and not wired, so the device cannot tell it has been plugged in.
+
+Until it can: sync on a cold boot once the station has an address, and offer it from the portal's status page. A cold boot is rare once the device sleeps — first power-up, the reset pin, a flat cell — which is the right frequency for something nobody is waiting on, and the portal covers wanting it now. Neither waits on hardware, and the charging window replaces both when the power branch lands.

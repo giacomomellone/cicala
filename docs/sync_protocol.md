@@ -6,17 +6,17 @@ at most two.
 
 ## Manifest
 
-Stable URL: `https://<site-domain>/device/manifest.json`
+Stable URL: `http://<site-domain>/device/manifest.json`
 
 ```json
 {
-  "schema": 2,
+  "schema": 3,
   "version": "2026.07.2",
   "min_fw": "0.1.0",
   "languages": {
     "en": {
-      "url": "https://<site-domain>/device/bundle-en-2026.07.2.tkb",
-      "size": 19042,
+      "url": "http://<site-domain>/device/bundle-en-2026.07.2.tkb2",
+      "size": 15166,
       "sha256": "9e2f…c41a",
       "sig": "base64-ed25519-signature-of-sha256",
       "count": 240
@@ -30,6 +30,20 @@ eligibilities. `sig` is an Ed25519 signature over the 32 raw bytes of the
 bundle's SHA-256 digest. An unsigned development bundle uses `"sig": null`;
 release firmware rejects it.
 
+Two things here are deliberate and are explained in the decision log.
+
+**`url` points at the raw `.tkb2`, not the gzipped `.tkb`.** Zephyr carries no
+inflate, and the saving does not justify vendoring one: about 9 KB per language
+per release, on a device that is plugged in when it syncs. `size`, `sha256` and
+`sig` all describe the raw bytes. `.tkb` is still published, for the website and
+for people.
+
+**`http`, not `https`.** The device has no clock, and certificate validation
+without one is not validation. The signature is what protects the corpus, and it
+is verified against a key compiled into the image. Because an unauthenticated
+transport allows an old but validly signed manifest to be replayed, the device
+**must reject a manifest whose `version` is not newer than the installed one**.
+
 ## TKB2 bundle
 
 **TKB** is the Tischkarte Bundle: the device's copy of the question database,
@@ -41,12 +55,11 @@ Two file extensions appear, and they are the same data in different states:
 
 | | What | Where |
 |---|---|---|
-| `.tkb` | The published bundle: gzip around the binary below | `dist/bundles/`, the website, a device download |
-| `.tkb2` | The binary itself, decompressed | what the device stores, and what the firmware suites embed |
+| `.tkb` | gzip around the binary below | `dist/bundles/`, the website |
+| `.tkb2` | The binary itself | what a device downloads and stores, and what the firmware suites embed |
 
-The gzip is transport only. A device that reboots on every press must not
-re-inflate the corpus each time, so `SWAP` decompresses once and stores the raw
-image.
+The gzip was once the device's transport too, and `SWAP` inflated it. It no
+longer is: devices fetch the `.tkb2` directly. See the decision log.
 
 A `.tkb` file is a deterministic gzip stream (`mtime=0`) around this flat
 binary. Integers are little-endian and strings are UTF-8 without a terminator.
@@ -123,9 +136,12 @@ or manual-sync gesture.
 
 The portal is built and the setup trigger is not that one yet: it is both
 buttons held through a boot, because VBUS detect is reserved on GPIO21 and
-unwired. See the decision log. Everything below this line is still design.
+unwired. The sync trigger is unavailable for the same reason, so until VBUS is
+wired the device syncs on a cold boot once the station has an address, and on
+request from the portal's status page.
 
-1. Fetch the manifest and check `schema` and `min_fw`.
+1. Fetch the manifest and check `schema`, `min_fw`, and that `version` is newer
+   than the installed one.
 2. Compare the release with each installed language.
 3. Download a changed bundle and verify size, SHA-256, then signature.
 4. Write a staging file and atomically rename it over the prior bundle.
