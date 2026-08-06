@@ -39,6 +39,21 @@ int tk_corpus_find(const char *code);
 /** Where a synced corpus is kept, and what one is called. */
 #define TK_CORPUS_DIR "/corpus"
 
+/** Room for a release version, as it appears in a manifest. */
+#define TK_CORPUS_VERSION_LEN 32
+
+/**
+ * The release version of the installed corpus, or an empty string.
+ *
+ * Kept in the same NVS as the Wi-Fi credentials rather than in RTC memory: it
+ * has to survive a flat cell, because it is what stops an older but validly
+ * signed manifest being accepted as an update.
+ */
+const char *tk_corpus_version(void);
+
+/** Record the installed release. Returns 0, or a negative errno. */
+int tk_corpus_version_set(const char *version);
+
 #ifdef CONFIG_FILE_SYSTEM_LITTLEFS
 
 /**
@@ -64,6 +79,18 @@ const uint8_t *tk_corpus_stored(const char *code, size_t *size);
  * @return 0, or a negative errno.
  */
 int tk_corpus_store(const char *code, const uint8_t *data, size_t size);
+
+/**
+ * The buffer a stored corpus is read into, lent out for a download.
+ *
+ * Sync fetches a bundle, hashes it, verifies its signature and then writes it,
+ * and those are all the same bytes — so it borrows this rather than adding a
+ * second copy to a device whose RAM is the tighter budget. Only one of the two
+ * runs at a time: a corpus is open from this buffer, or a download is filling
+ * it, and a download that fails leaves the file on disk untouched to be read
+ * back into it again.
+ */
+uint8_t *tk_corpus_buffer(size_t *capacity);
 
 #else
 

@@ -36,6 +36,15 @@ bool tk_net_is_active(void);
  */
 void tk_net_notify_credentials(void);
 
+/**
+ * Somebody pressed "sync now" in the portal.
+ *
+ * Called from the HTTP server's thread, so it only sets a bit and wakes `net`.
+ * The fetch is slow — a request, a hash and a signature check — and must not
+ * happen inside a request handler.
+ */
+void tk_net_notify_sync(void);
+
 #else
 
 /* No radio in this image, so nothing is ever on air. Inline rather than a

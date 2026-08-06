@@ -43,6 +43,15 @@ static void corpus_path(const char *code, const char *suffix, char *out, size_t 
     (void) snprintf(out, out_size, TK_CORPUS_DIR "/%s.qdb%s", code, suffix);
 }
 
+uint8_t *tk_corpus_buffer(size_t *capacity)
+{
+    if (capacity != NULL) {
+        *capacity = sizeof(corpus_buf);
+    }
+
+    return corpus_buf;
+}
+
 const uint8_t *tk_corpus_stored(const char *code, size_t *size)
 {
     char path[48];

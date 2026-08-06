@@ -15,6 +15,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/layout tk_layout)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/retained tk_retained)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/portal tk_portal)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/ed25519 tk_ed25519)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/sync tk_sync)
 
 # Application logic is C++17; the files that use zbus's observer macros stay C,
 # because those expand to out-of-order designated initializers.
@@ -41,6 +43,7 @@ target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
 target_sources_ifdef(CONFIG_FILE_SYSTEM_LITTLEFS app PRIVATE src/corpus_store.c)
 target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
 target_sources_ifdef(CONFIG_TK_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
+target_sources_ifdef(CONFIG_TK_SYNC app PRIVATE src/sync.cpp)
 
 # HTTP_RESOURCE_DEFINE lands each resource in a section named after its service.
 # Zephyr cannot pre-declare a section whose name the application chooses, so the
@@ -51,12 +54,14 @@ if(CONFIG_TK_NET)
   zephyr_linker_section(NAME http_resource_desc_tk_portal KVMA RAM_REGION GROUP RODATA_REGION)
 endif()
 
-target_include_directories(app PRIVATE include)
+# trusted_key.h — the committed bundle-signing public key.
+target_include_directories(app PRIVATE include ${CMAKE_CURRENT_SOURCE_DIR}/../components/sync)
 
 # Explicit: Zephyr collects its own libraries in a loop that has already run by
 # the time find_package(Zephyr) returns, so anything added after has to be
 # linked by hand.
-target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal tk_retained)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal tk_ed25519
+    tk_sync tk_retained)
 
 # The factory-preloaded corpora, compiled into the image so a device whose
 # Wi-Fi is never configured still works. Built from the question database by

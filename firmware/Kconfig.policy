@@ -333,6 +333,56 @@ config TK_DEBUG_PORTAL
 
       Never enabled in a shipped build, and it says so in the boot log.
 
+config TK_SYNC
+    bool "Fetch question bundles over the network"
+    default n
+    depends on TK_NET
+    help
+      Checks a manifest, downloads a newer bundle, verifies it, and replaces
+      the stored corpus. The full flow is docs/sync_protocol.md.
+
+      Off unless the host below is a real one. A device that cannot reach its
+      manifest retries forever for nothing, and the placeholder domain is not
+      reachable — see docs/decisions.md.
+
+config TK_SYNC_BASE_URL
+    string "Where the manifest and bundles are served from"
+    default "https://tischkarte.pages.dev/device"
+    depends on TK_SYNC
+    help
+      Everything under it: `<base>/manifest.json`, and the bundle URLs the
+      manifest names. Anything that serves two static files over TLS will do —
+      the site, an object store, or a laptop during development.
+
+      Deliberately not GitHub Releases: every asset URL there answers with a
+      redirect to another host, and Zephyr's HTTP client does not follow
+      redirects. See the decision log.
+
+config TK_SYNC_HOST
+    string "Host name to connect to and resolve"
+    default "tischkarte.pages.dev"
+    depends on TK_SYNC
+    help
+      The host part of TK_SYNC_BASE_URL, separately, because the socket needs
+      it before there is a URL to parse and TLS wants it for SNI.
+
+config TK_SYNC_PORT
+    int "Port"
+    default 443
+    depends on TK_SYNC
+
+config TK_SYNC_INSECURE
+    bool "Connect without TLS"
+    default n
+    depends on TK_SYNC
+    help
+      Plain HTTP, for a development server on a bench. The signature check is
+      unaffected — it is what protects the corpus either way, and the device
+      cannot authenticate a server in either case because it has no clock.
+
+      What this gives up is confidentiality from anyone watching the network.
+      Never in a shipped build.
+
 config TK_PORTAL_SSID_PREFIX
     string "Setup network name, before the per-device suffix"
     default "Tischkarte"

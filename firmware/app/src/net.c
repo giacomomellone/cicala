@@ -19,11 +19,19 @@
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/sys/atomic.h>
+#include <zephyr/zbus/zbus.h>
+
+#include <string.h>
+
+#include "channels.h"
+#include "corpus.h"
+#include "language.h"
 
 #include "net.h"
 #include "net_logic.h"
 #include "portal.h"
 #include "sleep.h"
+#include "sync.h"
 
 LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 
@@ -50,6 +58,7 @@ LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 #define EV_CONNECTED BIT(3)
 #define EV_REFUSED BIT(4)
 #define EV_CREDENTIALS BIT(5)
+#define EV_SYNC BIT(6)
 
 /*
  * This Zephyr has no all-events mask for Wi-Fi, so the mask is the events this
@@ -81,10 +90,53 @@ static atomic_t confirming_gesture;
 
 static struct net_mgmt_event_callback wifi_cb;
 
+static void run_sync(bool asked_for);
+
+/**
+ * Put the outcome of a sync on the panel.
+ *
+ * Through chan_service, not chan_question: `app` owns the sequence number every
+ * card carries. The card stays up until the next press, which is what every
+ * service card does and what makes this readable by somebody who was not
+ * watching at the moment it arrived.
+ */
+static void tk_net_show_sync_result(enum tk_sync_result result, uint16_t count, const char *version)
+{
+    struct tk_service_msg msg = {};
+
+    switch (result) {
+    case TK_SYNC_UPDATED:
+        msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text),
+                                      "New questions: %u in this deck (%s)", count, version);
+        break;
+
+    case TK_SYNC_CURRENT:
+        msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text), "Questions are up to date.");
+        break;
+
+    case TK_SYNC_FAILED:
+    default:
+        msg.len =
+            (uint16_t) snprintk(msg.text, sizeof(msg.text), "Could not check for new questions.");
+        break;
+    }
+
+    if (msg.len >= sizeof(msg.text)) {
+        msg.len = sizeof(msg.text) - 1;
+    }
+
+    (void) zbus_chan_pub(&chan_service, &msg, K_MSEC(100));
+}
+
 static void raise(uint32_t bit)
 {
     (void) atomic_or(&events, bit);
     k_sem_give(&wake);
+}
+
+void tk_net_notify_sync(void)
+{
+    raise(EV_SYNC);
 }
 
 bool tk_net_is_active(void)
@@ -216,6 +268,51 @@ static void drain_events(void)
     if (pending & EV_REFUSED) {
         tk_net_post_connected(false);
     }
+
+    if (pending & EV_SYNC) {
+        run_sync(true);
+    }
+}
+
+/**
+ * Check for a newer corpus, and say so if one arrived.
+ *
+ * `asked_for` decides whether the panel hears about it. A sync that fires by
+ * itself is housekeeping and stays silent; one somebody pressed a button for
+ * reports, because otherwise the device looks like it ignored them. See the
+ * decision log.
+ */
+static void run_sync(bool asked_for)
+{
+    if (!tk_portal_station_connected()) {
+        LOG_INF("no network, so nothing to sync from");
+        return;
+    }
+
+    uint16_t count = 0;
+    char version[TK_CORPUS_VERSION_LEN] = {0};
+
+    const enum tk_sync_result result = tk_sync_run(tk_language(), &count, version, sizeof(version));
+
+    if (result != TK_SYNC_UPDATED) {
+        if (asked_for) {
+            tk_net_show_sync_result(result, 0, "");
+        }
+
+        return;
+    }
+
+    /*
+     * The corpus on disk has changed, so `app` reopens it. The rule is that
+     * this must not redraw: the new questions apply to the next one somebody
+     * asks for, not to the one on the glass now.
+     */
+    struct tk_corpus_msg msg = {};
+
+    (void) strncpy(msg.language, tk_language(), sizeof(msg.language) - 1);
+    (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
+
+    tk_net_show_sync_result(result, count, version);
 }
 
 static void net_thread(void *p1, void *p2, void *p3)
@@ -246,6 +343,7 @@ static void net_thread(void *p1, void *p2, void *p3)
     } else if (gesture) {
         LOG_INF("both buttons held through boot — entering setup");
         tk_net_post_start();
+        /* Nothing else to do until somebody asks. */
     } else if (tk_wake_button() != TK_WAKE_NONE) {
         /*
          * A deep-sleep wake, which is to say somebody pressed a button and is
@@ -262,9 +360,15 @@ static void net_thread(void *p1, void *p2, void *p3)
          */
         LOG_INF("woken by a button; not joining a network");
     } else {
-        /* A cold boot. Nothing on the panel and nothing to fetch yet: this
-         * exists so the sync branch has an interface up to work with. */
-        (void) tk_portal_connect_stored();
+        /*
+         * A cold boot: power-on, the reset pin, or a cell that went flat.
+         * Rare once the device sleeps, which is the right frequency for
+         * something nobody is waiting on — and the moment somebody is most
+         * likely to be holding the device and able to read a card.
+         */
+        if (tk_portal_connect_stored()) {
+            run_sync(false);
+        }
     }
 
     while (true) {

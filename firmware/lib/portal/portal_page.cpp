@@ -348,6 +348,16 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
 
     w.raw("</dd></dl>");
 
+    /*
+     * Asking for a sync is a POST, not a link: it changes the device, and a
+     * browser that prefetches links would otherwise start one by itself.
+     */
+    w.raw("<form method=\"post\" action=\"/sync\">");
+    w.raw("<button type=\"submit\">Check for new questions</button>");
+    w.raw("</form>");
+    w.raw("<p class=\"note\">The result appears on the device, and stays there "
+          "until the next press.</p>");
+
     nav(w, true);
     w.raw(kFoot);
 

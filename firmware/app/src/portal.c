@@ -725,6 +725,34 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
 }
 
 /**
+ * "Check for new questions".
+ *
+ * Answers immediately and lets `net` do the work: a fetch, a hash and a
+ * signature check take seconds, and holding an HTTP handler open for them would
+ * block the server thread and time the browser out. The result reaches the
+ * panel rather than this page, which is also where it has to go — joining a
+ * network drops the phone off the setup access point.
+ */
+static int sync_handler(struct http_client_ctx *client, enum http_transaction_status status,
+                        const struct http_request_ctx *request, struct http_response_ctx *response,
+                        void *user_data)
+{
+    ARG_UNUSED(client);
+    ARG_UNUSED(request);
+    ARG_UNUSED(user_data);
+
+    if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+        return 0;
+    }
+
+    tk_net_notify_sync();
+
+    const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+
+    return send_page("/sync", n, response);
+}
+
+/**
  * Everything else.
  *
  * A phone probing for a portal asks for a URL on some other host and expects a
@@ -781,6 +809,13 @@ static struct http_resource_detail_dynamic save_detail = {
     .cb = save_handler,
 };
 
+static struct http_resource_detail_dynamic sync_detail = {
+    .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+               .bitmask_of_supported_http_methods = BIT(HTTP_POST),
+               .content_type = "text/html"},
+    .cb = sync_handler,
+};
+
 static struct http_resource_detail_dynamic catchall_detail = {
     .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
                .bitmask_of_supported_http_methods = BIT(HTTP_GET) | BIT(HTTP_POST),
@@ -802,3 +837,4 @@ HTTP_SERVICE_DEFINE(tk_portal, NULL, &http_port, CONFIG_HTTP_SERVER_MAX_CLIENTS,
 HTTP_RESOURCE_DEFINE(setup_resource, tk_portal, "/", &setup_detail);
 HTTP_RESOURCE_DEFINE(status_resource, tk_portal, "/status", &status_detail);
 HTTP_RESOURCE_DEFINE(save_resource, tk_portal, "/save", &save_detail);
+HTTP_RESOURCE_DEFINE(sync_resource, tk_portal, "/sync", &sync_detail);
