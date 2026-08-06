@@ -92,6 +92,30 @@ static struct net_mgmt_event_callback wifi_cb;
 
 static void run_sync(bool asked_for);
 
+/*
+ * Set on a cold boot, acted on when the station reports an address.
+ *
+ * tk_portal_connect_stored() returns as soon as the *request* is accepted, so
+ * there is no network yet when it does — the first run on hardware joined and
+ * then never synced, because the check for a connection ran seconds early.
+ */
+static bool sync_when_connected;
+
+/*
+ * Held from the moment the station is asked to join until the sync that
+ * follows has finished, or until waiting for it stops being reasonable.
+ *
+ * Without it the device sleeps straight through its own cold-boot sync. The
+ * idle timer starts at the first render and fires after
+ * CONFIG_TK_SLEEP_IDLE_MS — two seconds — while an association plus a fetch
+ * takes rather longer than that. The first run on hardware joined a network
+ * and was asleep before it had an address.
+ */
+static atomic_t sync_busy;
+
+/** When waiting for that address stops being worth staying awake for. */
+static int64_t sync_deadline;
+
 /**
  * Put the outcome of a sync on the panel.
  *
@@ -141,7 +165,8 @@ void tk_net_notify_sync(void)
 
 bool tk_net_is_active(void)
 {
-    return atomic_get(&confirming_gesture) != 0 || tk_net_portal_active();
+    return atomic_get(&confirming_gesture) != 0 || atomic_get(&sync_busy) != 0 ||
+           tk_net_portal_active();
 }
 
 void tk_net_notify_credentials(void)
@@ -263,6 +288,12 @@ static void drain_events(void)
 
     if (pending & EV_CONNECTED) {
         tk_net_post_connected(true);
+
+        if (sync_when_connected) {
+            sync_when_connected = false;
+            run_sync(false);
+            atomic_set(&sync_busy, 0);
+        }
     }
 
     if (pending & EV_REFUSED) {
@@ -270,7 +301,9 @@ static void drain_events(void)
     }
 
     if (pending & EV_SYNC) {
+        atomic_set(&sync_busy, 1);
         run_sync(true);
+        atomic_set(&sync_busy, 0);
     }
 }
 
@@ -367,7 +400,9 @@ static void net_thread(void *p1, void *p2, void *p3)
          * likely to be holding the device and able to read a card.
          */
         if (tk_portal_connect_stored()) {
-            run_sync(false);
+            sync_when_connected = true;
+            sync_deadline = k_uptime_get() + CONFIG_TK_NET_CONNECT_TIMEOUT_MS;
+            atomic_set(&sync_busy, 1);
         }
     }
 
@@ -387,6 +422,15 @@ static void net_thread(void *p1, void *p2, void *p3)
          * deep sleep. While the portal runs, sleep is inhibited anyway, so
          * ticking four times a second costs nothing.
          */
+        /* A network that never arrives must not keep the device awake for
+         * good. Giving up here is what lets the idle timer run again. */
+        if (sync_when_connected && k_uptime_get() > sync_deadline) {
+            LOG_INF("no address after %d ms; not syncing this boot",
+                    CONFIG_TK_NET_CONNECT_TIMEOUT_MS);
+            sync_when_connected = false;
+            atomic_set(&sync_busy, 0);
+        }
+
         (void) k_sem_take(&wake, tk_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
     }
 }

@@ -687,3 +687,19 @@ Every release asset URL answers with a 302 to `objects.githubusercontent.com`, a
 It also requires the repository to be public before a device can fetch anything at all: a private repository's release asset returns 404 to an unauthenticated request, which is what a device is. Publishing is the intent — this is described as an open-source system, the questions are CC0, and the licences are already in the tree — but a device's update path should not be the thing that forces the timing.
 
 So the manifest points at the site, which gives stable paths with no cross-host hop, and `CONFIG_TK_SYNC_BASE_URL` makes the host a build-time setting rather than something compiled into the flow. Anything that can serve two files over TLS will do, including a plain object store, if the site is ever not the answer.
+
+## 2026-08-07: TLS is written but disabled, and sync runs over plain HTTP for now
+
+The 2026-08-07 entry above chose TLS as the transport. The code is there and behind `CONFIG_TK_SYNC_INSECURE=n`, and it does not build: enabling the PSA elliptic-curve support a public host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to compile on `mbedtls_ecc_group_from_psa`. That is a broken configuration combination inside the vendored mbedtls 4, not a missing symbol on this side, and chasing it further was not worth holding the rest of sync for.
+
+So the shipped default is plain HTTP, with the reason written where the flag is set. What that costs is confidentiality — an observer learns a device fetched a question bundle — and not integrity: the Ed25519 signature is the security boundary either way, and a device with no clock could not authenticate a server even with TLS on. A tampered bundle is refused exactly as it would have been.
+
+Worth retrying at the next Zephyr bump. Until then it is an open item in the architecture rather than a decision to unpick.
+
+## 2026-08-07: Sleep is inhibited across a sync, not only across the portal
+
+Found on the bench, and it made the whole feature silently do nothing: the device joined a network and was asleep before it had an address.
+
+The idle timer starts at the first render and fires after `CONFIG_TK_SLEEP_IDLE_MS`, two seconds. An association plus DHCP plus a fetch takes rather longer. `tk_net_is_active()` covered the portal and the entry gesture, so nothing stopped `sleep_now()` running in the middle of a cold-boot sync — and since a wake is a fresh boot, the next attempt started over and lost again.
+
+The inhibit now covers the window from asking to join until the sync finishes, with a deadline so a network that never arrives cannot keep the device awake for good. This is the third thing to need that guard, which is the argument for `tk_net_is_active()` being one question the sleep path asks rather than a list of conditions it checks.

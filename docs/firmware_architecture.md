@@ -466,6 +466,8 @@ refresh accounting as everything else, and `app` stays the only publisher of
 
 ## Sync
 
+Built, apart from the transport. The flow below is what runs.
+
 ```mermaid
 stateDiagram-v2
     [*] --> IDLE
@@ -884,6 +886,19 @@ suites that drive the two buttons run in the default macOS loop.
 - Whether the SoftAP surviving a station join is as disruptive as the datasheet
   implies. The phone is dropped by design and the panel reports instead, which
   works; whether the phone could have been kept has not been tested.
+- **TLS does not build**, so sync runs over plain HTTP behind
+  `CONFIG_TK_SYNC_INSECURE`. Enabling the PSA elliptic-curve support a public
+  host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to
+  compile on `mbedtls_ecc_group_from_psa` — a broken configuration combination
+  in the vendored mbedtls 4 rather than a missing symbol here. What it costs is
+  confidentiality, not integrity: the signature is the security boundary in
+  either case. Worth revisiting at the next Zephyr bump.
+- **The fetch has never completed on hardware.** Everything up to the TCP
+  connect has: the device joins, gets an address, resolves and asks. The bench
+  server was unreachable because the device is on a guest network that isolates
+  its clients from the LAN, and there is no public host yet. What this leaves
+  unverified is the HTTP response handling and the download itself; the parse,
+  the verification and the store are all covered by suites or by the bench.
 - Sizing. Three limits were found only by putting a phone on the network, each
   as an error at the moment it was hit: the socket-service stack at 2400 of
   2400 with the DHCP server on it, the Wi-Fi adapter's heap, and `NET_MAX_CONN`

@@ -36,6 +36,7 @@ just fw-init      # once: west init + update into deps/, fetch espressif blobs
 just fw-build     # build for the ESP32-S3 devkit
 just fw-flash     # flash over the devkit's USB connection
 just fw-monitor   # serial console: deck changes and presses
+just fw-bench IP  # point sync at a server on the bench
 just fw-sim       # run under qemu on the host
 just fw-test      # ztest suites via twister
 ```
@@ -249,7 +250,10 @@ e-paper HAT wired to the panel pins.
 | A phone joins the setup network, is redirected, and completes the form | the rig, with a phone |
 | The device joins the named network and says so on the panel | the rig — joined and leased in 5 s from the form being posted |
 | The credentials survive a power cycle | the rig — a cold boot with no gesture joins the stored network |
-| Bundle sync from USB power | nothing yet — `sync` is still design |
+| A signed bundle verifies against the committed key | the suites, against the signature db-2026.08.1 actually shipped |
+| A corpus is stored, swapped atomically and read back | the rig, via `just fw-corpus` |
+| A cold boot joins a network and starts a sync | the rig — up to the TCP connect |
+| A bundle is fetched and installed over the network | nothing yet — the bench server is unreachable from the guest network the device is on, and there is no public host |
 
 Two of these are honest only with their qualifier. The bundle and layout rows
 are checked off the host suites against the corpus the device ships, which

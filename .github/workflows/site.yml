@@ -61,6 +61,30 @@ jobs:
           path: website/dist
       # Deploy is intentionally the only host-specific step; the build above
       # works on any static host (spec §7.1). Runs only when CF secrets exist.
+      # The device fetches from the site, so the release has to be on it. The
+      # manifest names /device/<bundle>.qdb and nothing else serves that path —
+      # GitHub Releases is where bundles are published, but every asset URL
+      # there redirects to another host and Zephyr's HTTP client does not
+      # follow redirects. See docs/decisions.md.
+      - name: Put the latest question bundles under /device/
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p website/dist/device
+          tag=$(gh release list --limit 20 --json tagName \
+                  --jq '[.[] | select(.tagName | startswith("db-"))][0].tagName')
+
+          if [ -z "$tag" ] || [ "$tag" = "null" ]; then
+            echo "::warning::no db-* release yet, so /device/ will be empty"
+            exit 0
+          fi
+
+          gh release download "$tag" -D website/dist/device \
+            -p 'manifest.json' -p '*.qdb' -p '*.qdb.gz'
+          echo "published $tag:"
+          ls -l website/dist/device
+
       - name: Deploy to Cloudflare Pages
         if: github.event_name == 'push' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: website

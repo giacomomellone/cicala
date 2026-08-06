@@ -325,6 +325,20 @@ fw-build-corpus: fw-fixtures
 fw-corpus: fw-build-corpus
     {{ west }} flash --no-rebuild -d build/esp32s3-corpus {{ portflag }}
 
+# build with sync pointed at a server on the bench: just fw-build-bench 192.168.1.2
+[group('firmware')]
+fw-build-bench host port="8000": fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-bench -- \
+        -DEXTRA_CONF_FILE=bench.conf \
+        -DCONFIG_TK_SYNC_HOST=\"{{ host }}\" \
+        -DCONFIG_TK_SYNC_PORT={{ port }} \
+        -DCONFIG_TK_SYNC_BASE_URL=\"http://{{ host }}:{{ port }}\"
+
+# flash it, then `just fw-monitor` to watch a real bundle arrive
+[group('firmware')]
+fw-bench host port="8000": (fw-build-bench host port)
+    {{ west }} flash --no-rebuild -d build/esp32s3-bench {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")
