@@ -38,6 +38,7 @@ target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
 # Deep sleep, likewise out of the default image: it reboots the board on every
 # wake, which is the point and also why bring-up does not want it. See
 # soak.conf's neighbour, sleep.conf.
+target_sources_ifdef(CONFIG_FILE_SYSTEM_LITTLEFS app PRIVATE src/corpus_store.c)
 target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
 target_sources_ifdef(CONFIG_TK_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
 

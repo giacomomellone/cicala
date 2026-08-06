@@ -314,6 +314,17 @@ fw-build-portal: fw-fixtures
 fw-portal: fw-build-portal
     {{ west }} flash --no-rebuild -d build/esp32s3-portal {{ portflag }}
 
+# build with the compiled-in corpus written to the filesystem at boot
+[group('firmware')]
+fw-build-corpus: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-corpus -- \
+        -DCONFIG_TK_DEBUG_CORPUS_STORE=y
+
+# flash it, reboot once, and the corpus then comes off the filesystem
+[group('firmware')]
+fw-corpus: fw-build-corpus
+    {{ west }} flash --no-rebuild -d build/esp32s3-corpus {{ portflag }}
+
 # serial monitor (ctrl-] to exit)
 [group('firmware')]
 fw-monitor: (_west-build-dir "build/esp32s3")

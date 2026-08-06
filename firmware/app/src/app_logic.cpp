@@ -34,8 +34,50 @@ namespace
  * that cannot find its language should still ask questions in some language,
  * and language.c has already refused to store a code with no corpus behind it.
  */
+#ifdef CONFIG_TK_DEBUG_CORPUS_STORE
+/**
+ * Put the compiled-in corpus on the filesystem, so the next boot reads it.
+ *
+ * Everything sync does after it has verified a bundle, minus the verifying:
+ * write a staging file, rename it over whatever was there, and read it back.
+ */
+void store_compiled_in_corpus()
+{
+    const int index = tk_corpus_find(tk_language());
+
+    if (index < 0) {
+        return;
+    }
+
+    size_t size = 0;
+    const uint8_t *const data = tk_corpus_data((size_t) index, &size);
+
+    LOG_WRN("CONFIG_TK_DEBUG_CORPUS_STORE: writing the compiled-in %s corpus to the filesystem",
+            tk_language());
+
+    (void) tk_corpus_store(tk_language(), data, size);
+}
+#endif
+
 bool open_corpus(tk::Qdb &qdb)
 {
+    size_t size = 0;
+
+    /*
+     * A synced corpus wins over the compiled-in one, and a compiled-in one is
+     * always there to fall back to — which is what makes a device whose Wi-Fi
+     * is never configured work, and what makes a corrupt download survivable.
+     */
+    const uint8_t *const stored = tk_corpus_stored(tk_language(), &size);
+
+    if (stored != nullptr && qdb.open(stored, size)) {
+        return true;
+    }
+
+    if (stored != nullptr) {
+        LOG_ERR("the stored %s corpus does not parse; using the compiled-in one", tk_language());
+    }
+
     int index = tk_corpus_find(tk_language());
 
     if (index < 0) {
@@ -43,7 +85,6 @@ bool open_corpus(tk::Qdb &qdb)
         index = 0;
     }
 
-    size_t size = 0;
     const uint8_t *const data = tk_corpus_data((size_t) index, &size);
 
     return qdb.open(data, size);
@@ -257,6 +298,10 @@ tk::AppFsm fsm(io);
 
 int tk_app_init(void)
 {
+#ifdef CONFIG_TK_DEBUG_CORPUS_STORE
+    store_compiled_in_corpus();
+#endif
+
     if (!open_corpus(io.qdb)) {
         LOG_ERR("the embedded corpus is not a valid TKB2 bundle");
         return -EINVAL;
@@ -360,6 +405,10 @@ void tk_app_corpus(char *version, size_t version_size, uint16_t *count)
 
 void tk_app_reload_corpus(void)
 {
+#ifdef CONFIG_TK_DEBUG_CORPUS_STORE
+    store_compiled_in_corpus();
+#endif
+
     if (!open_corpus(io.qdb)) {
         LOG_ERR("could not reopen the corpus for %s", tk_language());
         return;

@@ -183,3 +183,46 @@
 &light_sleep {
     status = "disabled";
 };
+
+/*
+ * Where a synced corpus lives.
+ *
+ * The module carries 8 MB but the devicetree includes the 4 MB partition
+ * table, whose last partition ends at 0x400000. Everything above that is
+ * unclaimed, so the filesystem goes there and nothing existing moves — which
+ * matters, because storage_partition holds the NVS with the Wi-Fi credentials
+ * and the chosen language in it. Carving the filesystem out of that, or
+ * widening slot0_partition, would shift it and orphan them on every device
+ * that had already been set up.
+ *
+ * 512 KB is far more than the corpora need — two languages come to about
+ * 22 KB, and a staging copy during a swap makes it 37 KB. The rest is slack
+ * for LittleFS to wear-level in. The 3 MB above this stays unclaimed for
+ * whatever wants it later; a pair of OTA image slots would.
+ */
+&flash0 {
+    partitions {
+        tk_corpus_partition: partition@400000 {
+            label = "corpus";
+            reg = <0x400000 DT_SIZE_K(512)>;
+        };
+    };
+};
+
+/ {
+    fstab {
+        compatible = "zephyr,fstab";
+
+        tk_corpus_fs: tk_corpus_fs {
+            compatible = "zephyr,fstab,littlefs";
+            mount-point = "/corpus";
+            partition = <&tk_corpus_partition>;
+            automount;
+            read-size = <16>;
+            prog-size = <16>;
+            cache-size = <64>;
+            lookahead-size = <32>;
+            block-cycles = <512>;
+        };
+    };
+};

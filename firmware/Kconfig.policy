@@ -261,6 +261,39 @@ config TK_MAX_QUESTIONS
       English ships 240. A bundle with more questions than this is rejected at
       open() rather than silently half-tracked.
 
+config TK_DEBUG_CORPUS_STORE
+    bool "Write the compiled-in corpus to the filesystem at boot"
+    default n
+    depends on FILE_SYSTEM_LITTLEFS
+    help
+      Stores the compiled-in corpus for the chosen language under /corpus at
+      boot, so the *next* boot opens it from the filesystem instead.
+
+      It exists because the store, the atomic rename and the read-back are the
+      whole of what sync does with a corpus once it has verified one, and none
+      of it needs a radio to be wrong. Without this there is no way to exercise
+      any of it until the download path exists, and then a failure could be in
+      either half.
+
+      The boot after this says `stored corpus <lang>` rather than falling back,
+      which is the difference to watch for. Never enabled in a shipped build.
+
+config TK_MAX_CORPUS_BYTES
+    int "Largest synced corpus the device will read (bytes)"
+    default 32768
+    help
+      A corpus that arrives over the network is copied into RAM, because qdb
+      hands out pointers into the bundle and a file's bytes are not contiguous
+      in flash.
+
+      Sized against TK_MAX_QUESTIONS rather than against what ships today: 512
+      questions is the most qdb will accept, and English is 15 KB at 240. A
+      bundle larger than this is refused before it is written, since a corpus
+      the device cannot read back would be worse stored than not stored — it
+      would have replaced one that works.
+
+      Costs this many bytes of RAM whenever a filesystem is configured.
+
 config TK_MAX_QUESTION_BYTES
     int "Largest question the device will render (UTF-8 bytes)"
     default 128
