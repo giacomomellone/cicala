@@ -63,6 +63,14 @@ jobs:
       - name: Run the suites
         run: west twister -T firmware/tests -p native_sim --inline-logs -O build/twister
 
+      # The suites build app/src/ but never the application itself, so nothing
+      # was checking app/boards/native_sim.overlay. It had been stale since the
+      # Category button replaced the selector, and `just fw-sim` on a Linux host
+      # was broken the whole time. The POSIX architecture is Linux-only, so this
+      # cannot be caught on a macOS bench either.
+      - name: Build the application itself for native_sim
+        run: west build -b native_sim firmware/app -d build/native_sim
+
       - name: Keep the twister report
         if: always()
         uses: actions/upload-artifact@v4

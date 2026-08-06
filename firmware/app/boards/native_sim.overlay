@@ -1,33 +1,34 @@
 /*
- * Host build. GPIO is emulated so tests can drive the selector and Next
- * without hardware; the display is a dummy whose framebuffer the tests read.
+ * Host build. GPIO is emulated so the two buttons can be driven without
+ * hardware; the display is a dummy that accepts writes and discards them.
  *
- * Index order matches the target overlay and questions/schema.json
- * x-tischkarte.decks: 0 new_people, 1 close, 2 family, 3 work, 4 here, 5 wild.
+ * Two buttons, as on the target: Category advances the deck, Next asks a
+ * question. The six-input selector this used to describe is gone, and so is
+ * the pin numbering that went with it — nothing on this platform cares which
+ * emulated pin a contact sits on, only that the aliases exist.
  */
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
     aliases {
+        tk-category = &tk_category;
         tk-next = &tk_next;
-    };
-
-    tk_selector: tk-selector {
-        compatible = "gpio-keys";
-        debounce-interval-ms = <30>;
-        tk_deck_0: deck_0 { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_0>; label = "new_people"; };
-        tk_deck_1: deck_1 { gpios = <&gpio0 1 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_1>; label = "close"; };
-        tk_deck_2: deck_2 { gpios = <&gpio0 2 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_2>; label = "family"; };
-        tk_deck_3: deck_3 { gpios = <&gpio0 3 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_3>; label = "work"; };
-        tk_deck_4: deck_4 { gpios = <&gpio0 4 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_4>; label = "here"; };
-        tk_deck_5: deck_5 { gpios = <&gpio0 5 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_BTN_5>; label = "wild"; };
     };
 
     tk_buttons: tk-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
-        tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
+        tk_category: category {
+            gpios = <&gpio0 0 GPIO_ACTIVE_LOW>;
+            zephyr,code = <INPUT_KEY_MENU>;
+            label = "category";
+        };
+        tk_next: next {
+            gpios = <&gpio0 6 GPIO_ACTIVE_LOW>;
+            zephyr,code = <INPUT_KEY_ENTER>;
+            label = "next";
+        };
     };
 
     /* Bring-up blinky pin, so src/main.c builds for the host too. */
@@ -41,6 +42,18 @@
 
     dummy_dc: dummy_dc {
         compatible = "zephyr,dummy-dc";
+        width = <250>;
+        height = <122>;
         status = "okay";
     };
+};
+
+/*
+ * native_sim's own devicetree enables an SDL display and chooses it. Choosing
+ * the dummy above is not enough on its own: the SDL node stays `okay`, so its
+ * driver is still built and CMake still looks for a host library this
+ * application has no use for.
+ */
+&sdl_dc {
+    status = "disabled";
 };
