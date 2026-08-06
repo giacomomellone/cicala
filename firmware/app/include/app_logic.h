@@ -45,6 +45,16 @@ void tk_app_post_next(void);
 void tk_app_post_render(bool ok, uint32_t seq);
 
 /**
+ * The setup portal wants `text` on the panel.
+ *
+ * Copied here rather than referenced, and routed through the state machine
+ * rather than published straight to the display: app_logic owns the sequence
+ * number every card carries, and the guard that drops a late render matches
+ * against it.
+ */
+void tk_app_post_service(const char *text, uint16_t len);
+
+/**
  * Tick the state machine until it stops moving.
  *
  * One event can walk it through several states — a press is SHOWING, then

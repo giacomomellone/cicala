@@ -26,6 +26,7 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
     {STATE(SHOWING),     TRANSITION(REPEAT),     STATE(SHOWING),      0       },
     {STATE(SHOWING),     TRANSITION(REDRAW),     STATE(DRAWING),      0       },
     {STATE(SHOWING),     TRANSITION(RELABEL),    STATE(CATEGORY),     0       },
+    {STATE(SHOWING),     TRANSITION(SERVICE),    STATE(SERVICE),      0       },
 
     {STATE(DRAWING),     TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
     {STATE(DRAWING),     TRANSITION(FAILED),     STATE(FAIL),         0       },
@@ -37,6 +38,9 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
     {STATE(REFRESHING),  TRANSITION(REPEAT),     STATE(REFRESHING),   kRefreshTimeoutMs},
     {STATE(REFRESHING),  TRANSITION(CONTINUE),   STATE(SHOWING),      0       },
     {STATE(REFRESHING),  TRANSITION(FAILED),     STATE(FAIL),         0       },
+
+    {STATE(SERVICE),     TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
+    {STATE(SERVICE),     TRANSITION(FAILED),     STATE(FAIL),         0       },
 
     {STATE(FAIL),        TRANSITION(CONTINUE),   STATE(SHOWING),      0       },
     {STATE(FAIL),        TRANSITION(REPEAT),     STATE(FAIL),         0       },
@@ -82,6 +86,13 @@ void AppFsm::on_enter_state(int state)
         _shown_deck = _selector_deck;
         break;
 
+    case STATE(SERVICE):
+        // Same stale-render reasoning as DRAWING and CATEGORY; this starts a
+        // refresh too.
+        _render_pending = false;
+        _service_ok = _io.show_service();
+        break;
+
     case STATE(FAIL):
         // Claim the deck even though nothing was drawn. Without this, SHOWING
         // sees a deck it has not shown, asks for a draw, fails again, and the
@@ -113,6 +124,9 @@ int AppFsm::handle_current_state()
 
     case STATE(REFRESHING):
         return on_refreshing();
+
+    case STATE(SERVICE):
+        return on_service();
 
     case STATE(FAIL):
     default:
@@ -150,6 +164,19 @@ int AppFsm::on_showing()
     // Zero or several contacts is not a deck. Keep whatever is on the panel.
     if (!_selector_valid) {
         return TRANSITION(REPEAT);
+    }
+
+    /*
+     * The portal first. It only ever speaks because somebody performed the
+     * service gesture and is standing there waiting to be told which network
+     * to join, and it speaks a handful of times in a session. A press still
+     * replaces the card with a question afterwards — the tabletop face stays a
+     * question display, and this does not take it over.
+     */
+    if (_service_pending) {
+        _service_pending = false;
+
+        return TRANSITION(SERVICE);
     }
 
     /*
@@ -194,6 +221,13 @@ int AppFsm::on_refreshing()
     return TRANSITION(REPEAT);
 }
 
+int AppFsm::on_service()
+{
+    // The card itself was sent in on_enter_state(); this only reports how it
+    // went, as DRAWING and CATEGORY do.
+    return _service_ok ? TRANSITION(CONTINUE) : TRANSITION(FAILED);
+}
+
 int AppFsm::on_fail()
 {
     return TRANSITION(CONTINUE);
@@ -216,6 +250,11 @@ void AppFsm::post_render(bool ok)
 {
     _render_pending = true;
     _render_ok = ok;
+}
+
+void AppFsm::post_service()
+{
+    _service_pending = true;
 }
 
 } // namespace tk

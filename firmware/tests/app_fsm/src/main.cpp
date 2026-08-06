@@ -28,6 +28,8 @@ public:
     int last_labelled_deck = -1;
     bool draw_succeeds = true;
     bool label_succeeds = true;
+    int services = 0;
+    bool service_succeeds = true;
     bool retained = false;
     int retained_deck = -1;
 
@@ -43,6 +45,12 @@ public:
         labels++;
         last_labelled_deck = deck;
         return label_succeeds;
+    }
+
+    bool show_service() override
+    {
+        services++;
+        return service_succeeds;
     }
 
     bool retained_matches(uint8_t deck) const override
@@ -421,4 +429,102 @@ ZTEST(tk_app_fsm, test_only_refreshing_asks_the_loop_to_stay_awake)
     fsm.post_render(true);
     settle(fsm);
     zassert_false(fsm.current_state_has_timeout(), "SHOWING is where deep sleep happens");
+}
+
+ZTEST(tk_app_fsm, test_the_portal_gets_a_card_and_the_table_gets_it_back)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    fsm.post_selector(0, true);
+    settle(fsm);
+    fsm.post_render(true);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+
+    fsm.post_service();
+    settle(fsm);
+
+    /* The card goes through the same refresh accounting every other card gets,
+     * which is the whole point of it being a state rather than a publish from
+     * the net thread. */
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+    zassert_equal(io.services, 1);
+    zassert_equal(io.draws, 0, "a service card is not a question");
+
+    fsm.post_render(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+}
+
+ZTEST(tk_app_fsm, test_a_press_during_setup_still_asks_a_question)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    fsm.post_selector(0, true);
+    settle(fsm);
+    fsm.post_render(true);
+    settle(fsm);
+
+    fsm.post_service();
+    settle(fsm);
+    fsm.post_render(true);
+    settle(fsm);
+
+    /* The tabletop face is not taken over by the portal. Somebody who presses
+     * Next while the setup card is up gets a question, as always. */
+    fsm.post_next();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+    zassert_equal(io.draws, 1);
+}
+
+ZTEST(tk_app_fsm, test_a_card_the_panel_refuses_does_not_wedge_the_table)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    io.service_succeeds = false;
+
+    fsm.post_selector(0, true);
+    settle(fsm);
+    fsm.post_render(true);
+    settle(fsm);
+
+    fsm.post_service();
+    settle(fsm);
+
+    /* Through FAIL and back to SHOWING, so the previous question stays up and
+     * the next press still works. */
+    zassert_equal(fsm.get_current_state(), STATE(SHOWING));
+    zassert_equal(io.services, 1);
+
+    fsm.post_next();
+    settle(fsm);
+    zassert_equal(io.draws, 1);
+}
+
+ZTEST(tk_app_fsm, test_a_card_arriving_mid_refresh_waits_rather_than_being_dropped)
+{
+    FakeIo io;
+    TestAppFsm fsm(io);
+
+    fsm.post_selector(0, true);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
+
+    /* Unlike a press. Somebody is standing there waiting to be told which
+     * network to join, and the panel is busy for at most a couple of seconds. */
+    fsm.post_service();
+    settle(fsm);
+    zassert_equal(io.services, 0, "not while the panel is busy");
+
+    fsm.post_render(true);
+    settle(fsm);
+
+    zassert_equal(io.services, 1, "but as soon as it is free");
+    zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 }

@@ -163,6 +163,37 @@ public:
         return tk_retained_survived() && block.showing_question && block.deck == deck;
     }
 
+    bool show_service() override
+    {
+        struct tk_question_msg msg = {};
+
+        msg.seq = ++_seq;
+        msg.deck = _last_deck;
+        msg.kind = TK_CARD_SERVICE;
+        msg.len = _service_len;
+
+        for (uint16_t i = 0; i < _service_len; i++) {
+            msg.text[i] = _service_text[i];
+        }
+
+        LOG_INF("service card: %.*s", (int) msg.len, msg.text);
+
+        // Not a question, so a wake must not treat the panel as holding one.
+        _last_was_question = false;
+
+        return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+    }
+
+    /** Hold the portal's text until the machine reaches SERVICE. */
+    void set_service(const char *text, uint16_t len)
+    {
+        _service_len = len > sizeof(_service_text) ? sizeof(_service_text) : len;
+
+        for (uint16_t i = 0; i < _service_len; i++) {
+            _service_text[i] = text[i];
+        }
+    }
+
     /** The seq of the question most recently published. */
     uint32_t last_seq() const { return _seq; }
 
@@ -191,6 +222,8 @@ private:
     uint32_t _seq = 0;
     uint8_t _last_deck = 0;
     bool _last_was_question = false;
+    char _service_text[CONFIG_TK_MAX_QUESTION_BYTES] = {};
+    uint16_t _service_len = 0;
 #ifdef CONFIG_TK_DEBUG_CHARSET
     uint8_t _page = 0;
 #endif
@@ -261,6 +294,12 @@ void tk_app_post_category(void)
 void tk_app_post_next(void)
 {
     fsm.post_next();
+}
+
+void tk_app_post_service(const char *text, uint16_t len)
+{
+    io.set_service(text, len);
+    fsm.post_service();
 }
 
 void tk_app_post_render(bool ok, uint32_t seq)

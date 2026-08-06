@@ -104,6 +104,22 @@ struct tk_question_msg {
     char text[CONFIG_TK_MAX_QUESTION_BYTES];
 };
 
+/**
+ * Event channel: the setup portal has something to say.
+ *
+ * Published by `net`, read by `app`. It does not go straight to the display,
+ * because `app_logic` owns the sequence number every card is stamped with and
+ * the guard that drops a late render matches against it — a second publisher on
+ * chan_question would break that guard rather than merely race it.
+ *
+ * `app` stays the only thread that decides anything, and the only publisher of
+ * chan_question.
+ */
+struct tk_service_msg {
+    uint16_t len;
+    char text[CONFIG_TK_MAX_QUESTION_BYTES];
+};
+
 /** Event channel: the display finished with the question it was given. */
 struct tk_render_msg {
     /** The `seq` of the question this refers to. */
@@ -117,6 +133,7 @@ struct tk_render_msg {
 ZBUS_CHAN_DECLARE(chan_category);
 ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
+ZBUS_CHAN_DECLARE(chan_service);
 ZBUS_CHAN_DECLARE(chan_render);
 
 /** Deck id for logs, as it appears in questions/schema.json. "?" outside 0..5. */

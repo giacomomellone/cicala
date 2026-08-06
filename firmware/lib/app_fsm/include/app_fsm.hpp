@@ -45,6 +45,18 @@ public:
     virtual bool show_category(uint8_t deck) = 0;
 
     /**
+     * Put the setup portal's current card on the panel.
+     *
+     * The text is the portal's to own — the state machine only decides when a
+     * card should be shown, never what it says. Joining a network knocks the
+     * phone off the setup access point, so this is the only place the result
+     * of a setup attempt can be reported.
+     *
+     * @return false when the card could not be sent to the display.
+     */
+    virtual bool show_service() = 0;
+
+    /**
      * True when the panel already holds a question drawn from `deck`.
      *
      * E-paper keeps its image without power, so the common wake is one where
@@ -56,7 +68,7 @@ public:
 class AppFsm : public Fsm
 {
 public:
-    enum class State { BOOT = 0, CATEGORY, SHOWING, DRAWING, REFRESHING, FAIL };
+    enum class State { BOOT = 0, CATEGORY, SHOWING, DRAWING, REFRESHING, SERVICE, FAIL };
 
     /*
      * Named for what happened, not for where it goes — the table owns the
@@ -69,6 +81,7 @@ public:
         REDRAW,     ///< Next: the table wants a question
         RELABEL,    ///< the selector moved: announce the new deck
         RETAINED,   ///< the panel already holds this deck's question
+        SERVICE,    ///< the setup portal has something to say
         FAILED,     ///< the draw or the render did not work
     };
 
@@ -82,6 +95,16 @@ public:
 
     /** The display finished, successfully or not. */
     void post_render(bool ok);
+
+    /**
+     * The setup portal wants its card on the panel.
+     *
+     * Routed through here rather than published by `net` directly because
+     * app_logic owns the sequence number every card is stamped with, and the
+     * guard that drops a late render matches against it. A second publisher
+     * would break that guard rather than merely race it.
+     */
+    void post_service();
 
     /** The deck the panel is currently showing. */
     uint8_t shown_deck() const { return _shown_deck; }
@@ -97,6 +120,7 @@ private:
     int on_showing();
     int on_drawing();
     int on_refreshing();
+    int on_service();
     int on_fail();
 
     AppIo &_io;
@@ -107,6 +131,8 @@ private:
     uint8_t _shown_deck = 0;
 
     bool _next_pending = false;
+    bool _service_pending = false;
+    bool _service_ok = false;
     bool _render_pending = false;
     bool _render_ok = false;
     bool _draw_ok = false;

@@ -19,6 +19,19 @@ LOG_MODULE_REGISTER(tk_display, LOG_LEVEL_INF);
 #define DISPLAY_STACK_SIZE 2560
 #define DISPLAY_PRIORITY 6
 
+/*
+ * The static subscriber buffer has to hold the biggest message this thread
+ * receives, and chan_question is the biggest on any channel. Adding a field
+ * wide enough to bring padding with it overflows the buffer, and the publish
+ * then fails at runtime on a board rather than here — which is why `kind` is a
+ * byte. The suites that subscribe to the two button channels only set a much
+ * smaller size, correctly, so this lives with the subscriber rather than with
+ * the channel definition.
+ */
+BUILD_ASSERT(sizeof(struct tk_question_msg) <= CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE,
+             "chan_question no longer fits the static subscriber buffer; "
+             "raise CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE");
+
 ZBUS_MSG_SUBSCRIBER_DEFINE(display_sub);
 ZBUS_CHAN_ADD_OBS(chan_question, display_sub, 3);
 
