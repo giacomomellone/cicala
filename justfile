@@ -400,13 +400,13 @@ test-tools:
 test-website:
     cd website && npm test
 
-# decompress real question bundles into firmware/tests/fixtures/
+# copy the real question bundles into firmware/tests/fixtures/
 [group('tests')]
 fw-fixtures: bundle
     mkdir -p firmware/tests/fixtures
-    for f in dist/bundles/bundle-*.tkb; do \
+    for f in dist/bundles/bundle-*.tkb2; do \
         lang=$(basename "$f" | cut -d- -f2); \
-        gzip -dc "$f" > "firmware/tests/fixtures/$lang.tkb2"; \
+        cp "$f" "firmware/tests/fixtures/$lang.tkb2"; \
     done
     @ls -l firmware/tests/fixtures/
 

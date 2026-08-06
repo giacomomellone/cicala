@@ -4,6 +4,8 @@ Run from the repo root:  python -m unittest discover tools/tests
 Uses only the stdlib (unittest) per the tools dependency policy.
 """
 
+import gzip
+import hashlib
 import io
 import json
 import shutil
@@ -254,9 +256,9 @@ class TestBundle(unittest.TestCase):
                                    ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
             self.assertEqual(code, 0)
             manifest = json.loads((Path(tmp) / "manifest.json").read_text())
-            self.assertEqual(manifest["schema"], 2)
+            self.assertEqual(manifest["schema"], 3)
             for lang in ("en", "de"):
-                blob = (Path(tmp) / f"bundle-{lang}-test.1.tkb").read_bytes()
+                blob = (Path(tmp) / f"bundle-{lang}-test.1.tkb2").read_bytes()
                 self.assertEqual(len(blob), manifest["languages"][lang]["size"])
                 parsed = build_bundle.parse_bundle(blob)
                 self.assertEqual(parsed["lang"], lang)
@@ -269,6 +271,50 @@ class TestBundle(unittest.TestCase):
                     self.assertIn(question["depth"], (1, 2, 3))
                     if question["spicy"] or question["dark"]:
                         self.assertEqual(question["decks"], ["wild"])
+
+
+    def test_manifest_describes_the_raw_bundle_a_device_downloads(self):
+        """schema 3: the device takes the .tkb2, and size/sha256/sig cover it.
+
+        The gzip is still published for the website, so the failure this
+        guards against is the manifest quietly pointing at one artifact while
+        the hash describes the other — which no test would notice on either
+        side alone.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, _ = run_quiet(build_bundle.main,
+                                   ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
+            self.assertEqual(code, 0)
+            manifest = json.loads((Path(tmp) / "manifest.json").read_text())
+
+            for lang in ("en", "de"):
+                entry = manifest["languages"][lang]
+                raw = (Path(tmp) / f"bundle-{lang}-test.1.tkb2").read_bytes()
+                gz = (Path(tmp) / f"bundle-{lang}-test.1.tkb").read_bytes()
+
+                self.assertTrue(entry["url"].endswith(".tkb2"))
+                self.assertEqual(entry["size"], len(raw))
+                self.assertEqual(entry["sha256"], hashlib.sha256(raw).hexdigest())
+
+                # The raw bundle is the format itself, magic and all.
+                self.assertEqual(raw[:4], b"TKB2")
+
+                # Both artifacts are published and carry the same questions.
+                self.assertEqual(gzip.decompress(gz), raw)
+                self.assertEqual(
+                    len(build_bundle.parse_bundle(gz)["questions"]), entry["count"]
+                )
+
+    def test_parse_bundle_takes_either_shape(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, _ = run_quiet(build_bundle.main,
+                                   ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
+            self.assertEqual(code, 0)
+            raw = (Path(tmp) / "bundle-en-test.1.tkb2").read_bytes()
+            gz = (Path(tmp) / "bundle-en-test.1.tkb").read_bytes()
+
+            self.assertEqual(build_bundle.parse_bundle(raw),
+                             build_bundle.parse_bundle(gz))
 
 
 if __name__ == "__main__":

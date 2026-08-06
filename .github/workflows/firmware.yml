@@ -54,9 +54,9 @@ jobs:
           pip install --quiet pyyaml jsonschema
           python3 tools/build_bundle.py
           mkdir -p firmware/tests/fixtures
-          for f in dist/bundles/bundle-*.tkb; do
+          for f in dist/bundles/bundle-*.tkb2; do
             lang=$(basename "$f" | cut -d- -f2)
-            gzip -dc "$f" > "firmware/tests/fixtures/$lang.tkb2"
+            cp "$f" "firmware/tests/fixtures/$lang.tkb2"
           done
           ls -l firmware/tests/fixtures/
 
@@ -114,9 +114,9 @@ jobs:
           pip install --quiet pyyaml jsonschema
           python3 tools/build_bundle.py
           mkdir -p firmware/tests/fixtures
-          for f in dist/bundles/bundle-*.tkb; do
+          for f in dist/bundles/bundle-*.tkb2; do
             lang=$(basename "$f" | cut -d- -f2)
-            gzip -dc "$f" > "firmware/tests/fixtures/$lang.tkb2"
+            cp "$f" "firmware/tests/fixtures/$lang.tkb2"
           done
 
       - name: Build for the ESP32-S3 devkit

@@ -53,12 +53,21 @@ def build_bundle_bytes(
         metadata |= (1 << 3) if "dark" in tags else 0
         text = entry["text"].encode("utf-8")
         out += struct.pack("<BBH", mask, metadata, len(text)) + text
-    return gzip.compress(bytes(out), mtime=0)
+    return bytes(out)
+
+
+def compress_bundle(raw: bytes) -> bytes:
+    """The .tkb published for the website. Deterministic, so mtime is zeroed."""
+    return gzip.compress(raw, mtime=0)
 
 
 def parse_bundle(blob: bytes):
-    """Inverse of build_bundle_bytes, for tests and debugging."""
-    raw = gzip.decompress(blob)
+    """Inverse of build_bundle_bytes, for tests and debugging.
+
+    Takes either shape: the raw binary a device downloads, or the gzip around
+    it that the website publishes.
+    """
+    raw = blob if blob[:4] == b"TKB2" else gzip.decompress(blob)
     if raw[:4] != b"TKB2":
         raise ValueError("bad magic")
     pos = 4
@@ -130,7 +139,9 @@ def main(argv=None) -> int:
         return 1
     decks = cfg["decks"]
 
-    manifest = {"schema": 2, "version": version, "min_fw": args.min_fw, "languages": {}}
+    # schema 3: `url` points at the raw .tkb2 a device downloads, and size,
+    # sha256 and sig all describe those bytes. See docs/sync_protocol.md.
+    manifest = {"schema": 3, "version": version, "min_fw": args.min_fw, "languages": {}}
     for lang, lang_dir, incubator in validate.discover_languages(args.root):
         if incubator:
             continue
@@ -146,21 +157,31 @@ def main(argv=None) -> int:
                 return 1
         count = len(entries)
 
-        blob = build_bundle_bytes(lang, version, entries, decks)
-        name = f"bundle-{lang}-{version}.tkb"
-        (out_dir / name).write_bytes(blob)
-        digest = hashlib.sha256(blob).digest()
+        raw = build_bundle_bytes(lang, version, entries, decks)
+        gz = compress_bundle(raw)
+
+        # Both are published. The device takes the raw one, because Zephyr
+        # carries no inflate and the saving is about 9 KB per language per
+        # release; the gzip is for the website and for people.
+        raw_name = f"bundle-{lang}-{version}.tkb2"
+        gz_name = f"bundle-{lang}-{version}.tkb"
+        (out_dir / raw_name).write_bytes(raw)
+        (out_dir / gz_name).write_bytes(gz)
+
+        # Over the bytes the device actually verifies.
+        digest = hashlib.sha256(raw).digest()
         sig = sign_digest(digest, args.sign_key) if args.sign_key else None
         if sig is None:
-            print(f"warning: {name} is unsigned (no --sign-key)", file=sys.stderr)
+            print(f"warning: {raw_name} is unsigned (no --sign-key)", file=sys.stderr)
         manifest["languages"][lang] = {
-            "url": f"{args.base_url}/{name}",
-            "size": len(blob),
+            "url": f"{args.base_url}/{raw_name}",
+            "size": len(raw),
             "sha256": digest.hex(),
             "sig": sig,
             "count": count,
         }
-        print(f"{name}: {count} questions, {len(blob)} bytes")
+        print(f"{raw_name}: {count} questions, {len(raw)} bytes "
+              f"({len(gz)} gzipped)")
 
     (out_dir / "manifest.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
