@@ -556,8 +556,10 @@ bool tk_portal_connect_stored(void)
 /* ------------------------------------------------------------------- HTTP */
 
 /** Send one rendered page, or a 500 if it would not fit the buffer. */
-static int send_page(int rendered, struct http_response_ctx *response)
+static int send_page(const char *what, int rendered, struct http_response_ctx *response)
 {
+    LOG_INF("GET %s: %d bytes", what, rendered);
+
     if (rendered < 0) {
         response->status = HTTP_500_INTERNAL_SERVER_ERROR;
         response->final_chunk = true;
@@ -589,7 +591,7 @@ static int setup_handler(struct http_client_ctx *client, enum http_transaction_s
                                 CONFIG_TK_CORPUS_LANGUAGE);
     k_mutex_unlock(&scan_lock);
 
-    return send_page(n, response);
+    return send_page("/", n, response);
 }
 
 static int status_handler(struct http_client_ctx *client, enum http_transaction_status status,
@@ -608,7 +610,7 @@ static int status_handler(struct http_client_ctx *client, enum http_transaction_
                                  pending_ssid[0] != '\0' ? pending_ssid : NULL, station_connected,
                                  station_ip);
 
-    return send_page(n, response);
+    return send_page("/status", n, response);
 }
 
 /*
@@ -691,7 +693,7 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
      */
     tk_net_notify_credentials();
 
-    return send_page(n, response);
+    return send_page("/save", n, response);
 }
 
 /**
@@ -716,6 +718,8 @@ static int catchall_handler(struct http_client_ctx *client, enum http_transactio
     if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
         return 0;
     }
+
+    LOG_INF("redirecting a probe to the portal");
 
     response->status = HTTP_302_FOUND;
     response->headers = location;

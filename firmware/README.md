@@ -235,7 +235,9 @@ e-paper HAT wired to the panel pins.
 | Partial and full refresh behavior over a representative run | the rig — 193 partials clean at 622 ms, full refresh 2315 ms |
 | The setup portal raises an access point and serves on 192.168.4.1 | the rig — access point up, DHCP, DNS and HTTP started, card on the panel |
 | The portal closes its own window and tears down | the rig — up at 2.6 s, down at 22.6 s on a 20 s window |
-| A phone joins the portal and completes setup | nothing yet — no phone has been put on it |
+| A phone joins the setup network, is redirected, and completes the form | the rig, with a phone |
+| The device joins the named network and says so on the panel | the rig — joined and leased in 5 s from the form being posted |
+| The credentials survive a power cycle | the rig — a cold boot with no gesture joins the stored network |
 | Bundle sync from USB power | nothing yet — `sync` is still design |
 
 Two of these are honest only with their qualifier. The bundle and layout rows

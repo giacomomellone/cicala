@@ -798,17 +798,20 @@ suites that drive the two buttons run in the default macOS loop.
 
 ## Open items
 
-- What a phone actually does with the portal. The access point, the DHCP
-  server, the DNS responder and the HTTP server all come up on the bench and
-  the card reaches the panel, but no phone has joined one: the captive sheet on
-  iOS and on Android, the scan list against a real band, the form, and the join
-  are all *verify*.
+- A partial refresh was once measured at 2769 ms during a portal session,
+  against the 622 ms the panel work recorded. It has not recurred: every
+  measurement since the networking configuration moved into the board files has
+  been 624–720 ms. Left here as something to watch rather than a known problem,
+  because nothing explains what was different about the run that produced it.
 - Whether the SoftAP surviving a station join is as disruptive as the datasheet
-  implies. The design assumes the phone is dropped and reports on the panel
-  instead; that assumption has not been watched happening.
-- A partial refresh measured 2769 ms during a portal session against the 622 ms
-  the panel work recorded. Either the service card's longer text or contention
-  with the radio explains it, and which one matters for the refresh budget.
+  implies. The phone is dropped by design and the panel reports instead, which
+  works; whether the phone could have been kept has not been tested.
+- Sizing. Three limits were found only by putting a phone on the network, each
+  as an error at the moment it was hit: the socket-service stack at 2400 of
+  2400 with the DHCP server on it, the Wi-Fi adapter's heap, and `NET_MAX_CONN`
+  at the 4 Zephyr picks once IPv6 is off. Nothing says the next limit has been
+  found, and none of them fails visibly — the phone associates and the page
+  simply does not load.
 - The refresh counter has to reach RTC memory before the full-refresh interval
   means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
   always refreshes fully — correct today, and wrong the moment deep sleep makes
