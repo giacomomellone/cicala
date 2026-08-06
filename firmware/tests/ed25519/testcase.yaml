@@ -1,0 +1,15 @@
+tests:
+  tischkarte.ed25519:
+    # Bytes in, yes or no out. No board features, no network, no filesystem.
+    platform_allow:
+      - qemu_xtensa/dc233c
+      - native_sim
+    integration_platforms:
+      - qemu_xtensa/dc233c
+    # TweetNaCl is compact rather than fast, and qemu emulates every multiply.
+    # A verification takes about a second here against milliseconds on the
+    # board, so the default 60 s is not enough for a suite that does a dozen.
+    timeout: 300
+    tags:
+      - tischkarte
+      - ed25519
