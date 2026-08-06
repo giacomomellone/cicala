@@ -145,12 +145,13 @@ request from the portal's status page.
 2. Compare the release with each installed language.
 3. Download a changed bundle and verify size, SHA-256, then signature.
 4. Write a staging file and atomically rename it over the prior bundle.
-5. Use the new bundle on the next requested draw without displaying a status
-   message.
+5. Use the new bundle on the next requested draw. A sync nobody asked for shows
+   nothing; a sync somebody asked for puts a card on the panel that stays until
+   the next press. See the decision log.
 
 Any failure leaves the old bundle intact and retries during a later charging
-window. Sync does not refresh the e-paper or take attention from the current
-question.
+window. A sync that fires by itself does not refresh the e-paper or take
+attention from the current question.
 
 ## Keys
 

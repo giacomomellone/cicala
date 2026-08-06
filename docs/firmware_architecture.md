@@ -164,7 +164,10 @@ flowchart LR
 The same decompressed bundle feeds the `qdb`, `layout` and `panel` suites, so
 the corpus the tests check is the corpus the device ships. When `sync` lands,
 `open()` points at a LittleFS file instead and the embedded copy becomes the
-fallback.
+fallback. That half is built: `app/src/corpus_store.c` reads `/corpus/<lang>.qdb`
+into RAM and `app_logic` prefers it, falling back to the compiled-in corpus when
+there is none, when it does not fit, or when it does not parse. What is missing
+is the part that puts a file there.
 
 ## qdb — the question store
 
@@ -284,7 +287,10 @@ Two contract rules that are easy to violate:
 - **Press duration travels but is never read by policy.** It exists so a table
   study can answer "did anyone try to long-press?". Long press is Next.
 - **`chan_corpus` must not trigger a redraw.** A new bundle applies on the next
-  *requested* draw, silently.
+  *requested* draw. A sync that fires by itself is housekeeping and stays
+  silent; a sync somebody asked for reports on the panel through
+  `chan_service`, which is a different channel and a deliberate exception. See
+  the decision log.
 - **`app` is the only publisher of `chan_question`.** `net` has something to
   put on the panel and still does not publish it: `app_logic` owns the sequence
   number every card is stamped with, and the guard that drops a late render
@@ -480,6 +486,57 @@ Checks run cheapest-first so a truncated download costs no signature work. Any
 failure leaves the previous bundle in place. The gzip in a `.qdb.gz` is transport
 only — `SWAP` decompresses, because a device that reboots on every press must
 not re-inflate the bundle each time.
+
+## Where a synced corpus lives
+
+Built, ahead of anything that fetches one.
+
+```mermaid
+flowchart LR
+    NET["net<br/><i>verifies a bundle</i>"]:::t
+    STORE["corpus_store.c<br/><i>write · rename · read</i>"]
+    LFS[("LittleFS /corpus<br/>512 KB at 0x400000")]
+    BUF["one RAM buffer<br/><i>CONFIG_TK_MAX_CORPUS_BYTES</i>"]
+    EMB[("corpus.c<br/><i>every shipped language, in the image</i>")]
+    QDB["qdb::open()"]
+
+    NET -.-> STORE
+    STORE --> LFS
+    LFS --> BUF
+    BUF --> QDB
+    EMB --> QDB
+
+    classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
+```
+
+The partition sits above 0x400000, which nothing claims: the module carries
+8 MB and the devicetree includes the 4 MB table. Nothing existing moves, and
+that is the point — `storage_partition` holds the NVS with the Wi-Fi
+credentials and the chosen language in it, so carving the filesystem out of it
+would orphan them on every device already set up.
+
+**A synced corpus wins, and a compiled-in one is always there.** A device that
+never reaches a network works, a corpus that does not parse falls back with a
+complaint rather than leaving the panel with nothing to draw, and a bundle too
+large to read back is refused *before* it is written — storing one would have
+replaced a corpus that works with one that cannot be opened.
+
+**The whole file is read into RAM**, because `qdb` is a zero-copy reader:
+`Question::text` points into the bundle and has to stay valid for as long as the
+store is open, and a file's bytes are not contiguous in flash. One buffer,
+reused, sized against `CONFIG_TK_MAX_QUESTIONS` rather than against what ships
+today. The same buffer will hold a download while it is verified, since those
+are the same bytes.
+
+**The swap is a rename.** `fs_rename` replaces the destination, so a power cut
+either side of it leaves a whole corpus on disk — the old one or the new one,
+never half of either.
+
+`CONFIG_TK_DEBUG_CORPUS_STORE` writes the compiled-in corpus to the filesystem
+at boot so the next boot reads it back, which is the whole of what sync does
+with a bundle once it has verified one. Without it none of this could be
+exercised until the download existed, and a first failure could then have been
+in either half.
 
 ## The setup portal
 

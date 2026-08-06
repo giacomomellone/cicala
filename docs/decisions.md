@@ -657,3 +657,13 @@ That leaves changing the signature scheme or carrying a verifier. Changing it wo
 The specified trigger is USB power plus a known network. VBUS detect is reserved on GPIO21 and not wired, so the device cannot tell it has been plugged in.
 
 Until it can: sync on a cold boot once the station has an address, and offer it from the portal's status page. A cold boot is rare once the device sleeps — first power-up, the reset pin, a flat cell — which is the right frequency for something nobody is waiting on, and the portal covers wanting it now. Neither waits on hardware, and the charging window replaces both when the power branch lands.
+
+## 2026-08-06: A sync somebody asked for says so on the panel; one that just happens does not
+
+The original rule was that sync never shows anything: "use the new bundle on the next requested draw without displaying a status message", and "sync does not refresh the e-paper or take attention from the current question". The reasoning was the product principle — sync runs during a charging window, possibly while people are mid-conversation, and interrupting them to announce housekeeping is engagement with the product rather than between people.
+
+That reasoning holds for a sync nobody asked for, and only for that one. It misses a case: somebody who has just pressed "sync now" in the setup portal, or who has finished setting up Wi-Fi, is standing at the device waiting to learn whether it worked. Telling them nothing is not restraint, it is a device that appears to have ignored them — and the portal cannot tell them either, because joining a network drops the phone off the setup access point.
+
+So the rule splits by who started it. An automatic sync stays silent and applies on the next requested draw, exactly as before. A user-initiated one puts a card on the panel saying what arrived, and it stays there until the next press, which is how every service card already behaves.
+
+No new machinery: this is `TK_CARD_SERVICE` and the `SERVICE` state built for the portal, whose whole behaviour is already "show this until somebody presses". `chan_corpus` keeps its rule — it must not trigger a redraw — because the card travels on `chan_service` instead, which is a different channel with a different meaning.
