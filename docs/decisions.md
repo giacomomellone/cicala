@@ -462,3 +462,43 @@ Accepted cost: the deck is no longer readable from the device when it is off.
 Someone returning to a device showing a question cannot tell which deck it came
 from without pressing Category, which changes it. The panel shows the name on
 every advance, which is the mitigation the product design already chose.
+
+## 2026-08-06: The portal is entered by both buttons at boot, not by USB-plus-Next
+
+[design.md](design.md) and [sync_protocol.md](sync_protocol.md) both specify "connect USB while holding Next" as the service gesture. That needs VBUS detect, which [hardware_wiring.md](hardware_wiring.md) reserves on GPIO21 and which is neither wired on the rig nor present in the devicetree — the pins were reserved so the deep-sleep work would not find the RTC-capable range full, and nothing reads them.
+
+So the shipped gesture is both buttons held through a boot, confirmed for `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` rather than sampled once. It needs no hardware that does not exist, it cannot happen by accident, and it survives as a fallback once VBUS lands — a device whose power path has failed can still be serviced.
+
+The buttons are read from the pins rather than through the input layer, which cannot answer the question: `input.c` publishes a press on release and deliberately ignores a release with no press behind it, so a button already down when the device starts produces no event at all.
+
+Accepted cost: two documents now describe a gesture the firmware does not implement, and they say so rather than being quietly corrected. When VBUS is wired, USB-plus-Next becomes the primary trigger and this stays as the fallback.
+
+## 2026-08-06: The setup access point is open
+
+A WPA2 SoftAP needs a passphrase, and the only places to put one are the e-paper and the case. Printing it on the case makes it a shared secret across every unit or a per-unit label to manage; putting it on the panel means it is readable by anyone who can already see the device, which is the same population that can reach the radio.
+
+Open, plus a gesture that needs two hands on the device, plus a window that closes on its own after `CONFIG_TK_PORTAL_WINDOW_MS`, is the posture most consumer setup flows take. What is exposed during that window is the ability to set the Wi-Fi credentials and the language of a question deck. The status page names the saved network and never renders its password back.
+
+The window is a hard cap rather than an idle timer, deliberately: an idle timer can be held open indefinitely by any phone that keeps probing, and an open access point that never closes is a worse thing to leave on a table than one that ends a setup session early.
+
+## 2026-08-06: The portal's card is a state of the tabletop machine
+
+The architecture said "service entry is not a state", on the grounds that the tabletop face stays a question display. It still does, and it is a state anyway, for a reason that is mechanical rather than aesthetic.
+
+`app_logic` owns the sequence number every card is stamped with, and `tk_app_post_render()` discards any render result whose `seq` is not the one last published. That guard is what fixed the bug where one press appeared to do nothing and the next showed two questions. A card published straight from the `net` thread would allocate a sequence number behind `app_logic`'s back, so the guard would start dropping real renders instead of stale ones.
+
+The portal therefore publishes on `chan_service`, `app` forwards it, and `AppFsm` gains a `SERVICE` state alongside `CATEGORY`. `app` stays the only thread that decides anything and the only publisher of `chan_question`, and the card gets the same refresh accounting as every other card.
+
+One asymmetry falls out and is worth naming: a press arriving mid-refresh is dropped, and a service card arriving mid-refresh waits. A press is asking for a question nobody has read yet; a service card is somebody standing at the device waiting to be told which network to join.
+
+## 2026-08-06: west.yml gains tf-psa-crypto and mldsa-native
+
+The Wi-Fi driver selects `MBEDTLS`, and mbedtls 4 keeps PSA crypto in a separate repository that Zephyr fetches as its own west project rather than as a submodule. With the module allowlist as it was, CMake failed at `TF-PSA-Crypto target tfpsacrypto does not exist` before compiling anything. `mldsa-native` is referenced by the same CMake.
+
+This is the widening the manifest comment anticipated — "widen if a build fails on a missing module rather than importing all ~60" — and it costs a longer `just fw-init`.
+
+## 2026-08-06: CONFIG_TK_NET is off in the everyday image
+
+The networking image is 676 KB against a 1344 KB `slot0_partition`; the everyday one is 238 KB. It fits, and it is still not what `just fw-build` should produce, for the reason `CONFIG_TK_SLEEP` is off: the panel and power work measure that image, and a subsystem that adds 438 KB of flash, 50 KB of Wi-Fi heap and eight threads should not appear underneath a refresh measurement.
+
+`just fw-net` is the image with a radio in it. `just fw-portal` is the same thing with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture — the gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.

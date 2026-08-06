@@ -1,10 +1,11 @@
 # Firmware
 
-**Status: the tabletop loop works.** Pressing Category or Next
-draws a question from the compiled-in corpus and renders it on the e-paper, and
-the shuffle bag and refresh counter now live in RTC memory so a reboot does not
-restart them. Still missing: deep sleep itself and the power path, Wi-Fi sync,
-and the setup portal.
+**Status: the tabletop loop works, and the device can be put on a network.**
+Pressing Category or Next draws a question from the compiled-in corpus and
+renders it on the e-paper; the shuffle bag and refresh counter live in RTC
+memory so a reboot does not restart them; and holding both buttons through a
+boot raises a setup portal a phone can configure Wi-Fi from. Still missing:
+deep sleep itself and the power path, and bundle sync.
 [docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
 design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
@@ -33,6 +34,7 @@ just fw-init      # once: west init + update into deps/, fetch espressif blobs
 just fw-build     # build for the ESP32-S3 devkit
 just fw-flash     # flash over the devkit's USB connection
 just fw-monitor   # serial console: deck changes and presses
+just fw-net       # the image with a radio in it (see app/net.conf)
 just fw-sim       # run under qemu on the host
 just fw-test      # ztest suites via twister
 ```
@@ -98,6 +100,27 @@ full refresh, nothing redrawn.
 Use the image rather than the reset button: an EN-pin reset reports as
 `POWERON` and clears the RTC domain.
 
+## The setup portal
+
+Hold Category and Next together through a boot. The device raises an open
+access point named `Tischkarte-XXXX`, the panel says so, and a phone that joins
+it is redirected to a page that lists the networks in earshot, takes a
+password, and sets the question language. The window closes on its own after
+five minutes.
+
+```sh
+just fw-net         # the real thing: the gesture is what starts it
+just fw-portal      # the same image, minus the gesture (CONFIG_TK_DEBUG_PORTAL)
+just fw-monitor     # every state change is logged
+```
+
+`fw-portal` exists because the gesture needs two hands on the board at the
+moment it starts, which makes everything behind it awkward to bring up. It
+prints a warning at boot and is never enabled in a shipped build.
+
+Not the USB-plus-Next gesture the design documents describe: that needs VBUS
+detect on GPIO21, which is reserved but unwired. See the decision log.
+
 ## Interaction contract
 
 - E-paper shows one question, or the name of the deck just selected, and no
@@ -113,8 +136,12 @@ Use the image rather than the reset button: an EN-pin reset reports as
 - Normal playback includes depths 1 and 2. Depth 3 is never drawn
   automatically.
 - The current question persists on e-paper while power is removed.
-- Wi-Fi remains optional. Sync runs only during an explicit service or charging
+- Wi-Fi remains optional; a device whose Wi-Fi is never configured works from
+  the compiled-in corpus. Sync runs only during an explicit service or charging
   flow and never interrupts tabletop use.
+- Holding both buttons through a boot enters setup. The panel says which
+  network to join; the tabletop face still answers Next with a question while
+  it is up.
 
 ## State outline
 
@@ -156,6 +183,7 @@ firmware/
 │   ├── app_fsm/            # the tabletop machine built on it
 │   ├── qdb/                # TKB2 reader and shuffle bag
 │   ├── layout/             # UTF-8, accent decomposition, word wrap
+│   ├── portal/             # setup machine, DNS codec, form decode, pages
 │   └── retained/           # what survives a wake, and how that is known
 ├── tests/                  # ztest suites, run by twister
 └── components/             # per-area contracts (README only, pre-Zephyr)
@@ -199,7 +227,10 @@ e-paper HAT wired to the panel pins.
 | Real English and German TKB2 bundles round-trip through the question store | the suites, against bundles built from the database |
 | Every released question fits at the fixed minimum type size | the suites, at the real panel geometry |
 | Partial and full refresh behavior over a representative run | the rig — 193 partials clean at 622 ms, full refresh 2315 ms |
-| Wi-Fi and bundle sync from USB power | nothing yet — `sync` is still design |
+| The setup portal raises an access point and serves on 192.168.4.1 | the rig — access point up, DHCP, DNS and HTTP started, card on the panel |
+| The portal closes its own window and tears down | the rig — up at 2.6 s, down at 22.6 s on a 20 s window |
+| A phone joins the portal and completes setup | nothing yet — no phone has been put on it |
+| Bundle sync from USB power | nothing yet — `sync` is still design |
 
 Two of these are honest only with their qualifier. The bundle and layout rows
 are checked off the host suites against the corpus the device ships, which

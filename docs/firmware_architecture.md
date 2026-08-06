@@ -6,12 +6,13 @@ the data contract in [sync_protocol.md](sync_protocol.md), the pins and the
 board in [hardware wiring](hardware_wiring.md), rationale in
 [decisions.md](decisions.md).
 
-**Status: the tabletop loop is built, and its state now survives a reboot.**
-`input`, `app_fsm`, `qdb` with its bag, `layout`, `retained` and the panel all
-exist and are tested, wired together by four of the six channels. Still design:
-`sync`, `portal`, `power`, and deep sleep itself — `CONFIG_PM` is off, so
-nothing sleeps, but the state that has to outlive a wake is already in RTC
-memory rather than waiting on it. Items marked *verify* have not been run on
+**Status: the tabletop loop is built, its state survives a reboot, and the
+device can be put on a network.** `input`, `app_fsm`, `qdb` with its bag,
+`layout`, `retained`, the panel and the setup `portal` all exist and are
+tested. Still design: `sync`, `power`, and deep sleep itself — `CONFIG_PM` is
+off, so nothing sleeps, but the state that has to outlive a wake is already in
+RTC memory rather than waiting on it. `CONFIG_TK_NET` is off in the everyday
+image for the same reason, and `just fw-net` is the one with a radio in it. Items marked *verify* have not been run on
 hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
 ## The one constraint
@@ -48,8 +49,8 @@ flowchart LR
     display.c + panel.cpp`"]
 
     NET["`**net**
-    prio 8 · 12 KB
-    portal OR sync`"]:::todo
+    prio 8 · 6 KB
+    portal · sync later`"]
 
     WQ -- chan_category --> APP
     WQ -- chan_next --> APP
@@ -57,11 +58,12 @@ flowchart LR
     WQ -. chan_power .-> NET
     APP -- chan_question --> DSP
     DSP -- chan_render --> APP
+    NET -- chan_service --> APP
     NET -. chan_corpus .-> APP
-    APP -. starts .-> NET
 
     DSP --> PANEL[/e-paper/]:::hw
     APP --> QDB[(qdb · corpus in flash)]:::store
+    NET --> NVS[(NVS · Wi-Fi credentials)]:::store
     NET -. replaces .-> QDB
 
     classDef hw fill:#f4efe6,stroke:#b0a086
@@ -76,12 +78,21 @@ A thread exists only where something must block independently.
 | system workqueue | nothing (delayed work) | An input thread would buy nothing; the `gpio-keys` driver already owns the debounce |
 | `app` | its zbus queue | — |
 | `display` | the panel, 0.3–2 s | So `app` stays awake during a refresh and can drop the Next press |
-| `net` | sockets, TLS | Portal and sync never overlap; one thread saves ~12 KB |
+| `net` | its semaphore | Portal and sync never overlap, so one thread serves both |
+
+`net` is a coordinator rather than the thread that does the networking. The
+HTTP server has its own thread, the DHCP server runs on the socket-service
+thread, the DNS responder has one of its own, and the Wi-Fi driver spawns
+several. What is left on `net` is the portal's state machine, the translation
+of management events into it, and the tick its deadlines need — which is why
+6 KB is enough where the design once said 12.
 
 There is no power thread. With `CONFIG_PM` the idle thread picks the sleep
 state once nothing is runnable, so the design's job is to make every thread
-block with **no timeout** when the table is quiet. `net` holds a PM lock while
-active; nothing else inhibits sleep.
+block with **no timeout** when the table is quiet. `net` inhibits sleep while
+the portal is on air — `sleep_now()` asks `tk_net_is_active()` and reschedules
+rather than calling `sys_poweroff()`, which is what a PM lock would mean on a
+device that stops the SoC explicitly. Nothing else inhibits sleep.
 
 `CONFIG_PM` is off today, so nothing sleeps yet — but `app` already blocks with
 `K_FOREVER` except in `REFRESHING`, which is the property enabling it later.
@@ -105,6 +116,10 @@ free to be C++.
 | `layout` | `lib/layout/` | UTF-8 text, a column count | lines of base glyph + mark |
 | `panel` | `app/src/panel.cpp` | a question | pixels, and a full/partial choice |
 | `display` | `app/src/display.c` | `chan_question` | `chan_render` |
+| `net` | `app/src/net.c` | the boot gesture, Wi-Fi events | drives the portal machine |
+| `portal_fsm` | `lib/portal/` | a scan, an AP result, a form, a join result | when to scan, serve, join, stop |
+| `net_logic` | `app/src/net_logic.cpp` | the machine's decisions | `chan_service`, and calls into `portal` |
+| `portal` | `app/src/portal.c` | those calls | SoftAP, DHCP, DNS, HTTP, credentials |
 | `channels` | `app/src/channels.c` | — | the channel definitions themselves |
 
 `lib/` is everything that compiles without a Zephyr header, which is what lets
@@ -244,6 +259,7 @@ the question on the glass *is* something, a press *happened*.
 | `chan_next` | event | timestamp, press duration | workqueue | `app` | built |
 | `chan_question` | state | seq, deck, text | `app` | `display` | built |
 | `chan_render` | event | seq, result, was-full | `display` | `app` | built |
+| `chan_service` | event | the portal's current card | `net` | `app` | built |
 | `chan_power` | state | USB, charging, mV | workqueue | `app`, `net` | design |
 | `chan_corpus` | event | version, language, count | `net` | `app` | design |
 
@@ -260,6 +276,12 @@ Two contract rules that are easy to violate:
   study can answer "did anyone try to long-press?". Long press is Next.
 - **`chan_corpus` must not trigger a redraw.** A new bundle applies on the next
   *requested* draw, silently.
+- **`app` is the only publisher of `chan_question`.** `net` has something to
+  put on the panel and still does not publish it: `app_logic` owns the sequence
+  number every card is stamped with, and the guard that drops a late render
+  matches against it. A second publisher would break that guard rather than
+  merely race it, so the portal's card travels on `chan_service` and `app`
+  turns it into a card.
 
 ## Modules
 
@@ -276,6 +298,8 @@ flowchart TB
         APPFSM[app_fsm<br/><i>the only decision maker</i>]
         QDB[qdb<br/><i>TKB2 reader · bag</i>]
         LAY[layout<br/><i>UTF-8 · accents · wrap</i>]
+        PFSM[portal_fsm<br/><i>the setup machine</i>]
+        PBITS[portal dns · form · page<br/><i>parse · render · escape</i>]
     end
 
     subgraph glue["firmware/app/src — Zephyr-bound"]
@@ -286,13 +310,15 @@ flowchart TB
         LOGIC[app_logic.cpp<br/><i>fsm + qdb, behind a C API</i>]
         DISP[display.c<br/><i>thread</i>]
         PANEL[panel.cpp<br/><i>CFB, marks, refresh</i>]
+        NETC[net.c<br/><i>thread + wifi events</i>]
+        NLOG[net_logic.cpp<br/><i>machine behind a C API</i>]
+        PORTALC[portal.c<br/><i>SoftAP, DHCP, DNS, HTTP</i>]
     end
 
     subgraph todo["still design"]
         direction LR
         POWER[power<br/><i>ADC, VBUS, PM</i>]:::t
         SYNC[sync<br/><i>HTTPS, verify, swap</i>]:::t
-        PORTAL[portal<br/><i>SoftAP setup</i>]:::t
     end
 
     FSM --> APPFSM
@@ -305,10 +331,15 @@ flowchart TB
     DISP --> PANEL
     DISP --> CHAN
     APPC --> CHAN
+    FSM --> PFSM
+    PFSM --> NLOG
+    PBITS --> PORTALC
+    NETC --> NLOG
+    NLOG --> PORTALC
+    NLOG --> CHAN
     SYNC -.-> QDB
     SYNC -.-> CHAN
     POWER -.-> CHAN
-    PORTAL -.-> SYNC
 
     classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
 ```
@@ -339,6 +370,9 @@ stateDiagram-v2
     SHOWING --> SHOWING: REPEAT — idle → deep sleep
     SHOWING --> CATEGORY: RELABEL — Category advanced the deck
     SHOWING --> DRAWING: REDRAW — Next
+    SHOWING --> SERVICE: SERVICE — the portal has something to say
+    SERVICE --> REFRESHING: CONTINUE
+    SERVICE --> FAIL: FAILED
     DRAWING --> REFRESHING: CONTINUE
     DRAWING --> FAIL: FAILED — deck yields nothing
     REFRESHING --> REFRESHING: REPEAT — refresh timeout
@@ -371,6 +405,7 @@ injected clock.
 | `CATEGORY` | `on_category()` | immediately — the deck's name is sent in `on_enter_state()` |
 | `SHOWING` | `on_showing()` | Next arrives, or the deck differs from the one on screen |
 | `DRAWING` | `on_drawing()` | immediately — the draw itself happens in `on_enter_state()` |
+| `SERVICE` | `on_service()` | immediately — the card is sent in `on_enter_state()` |
 | `REFRESHING` | `on_refreshing()` | the display reports back, or `CONFIG_TK_REFRESH_TIMEOUT_MS` passes |
 | `FAIL` | `on_fail()` | immediately |
 
@@ -398,8 +433,21 @@ what the machine remembers rather than where it goes:
   guard by matching the `seq` on `chan_render` against the last question
   published, so a late result is dropped before it reaches the machine at all.
 
-Service entry is not a state. USB-plus-Next starts `net` in portal mode and the
-FSM continues in `SHOWING`, because the tabletop face stays a question display.
+**A press that lands during `REFRESHING` is dropped; a service card is not.**
+The two are opposites on purpose. A press made while the panel is busy is
+asking for time nobody has read yet, so honouring it spends two seconds badly.
+A service card is somebody standing at the device waiting to be told which
+network to join, and the panel is free within a couple of seconds.
+
+Service entry was specified here as *not* a state, on the grounds that the
+tabletop face stays a question display. It stays a question display, and it is
+a state anyway. The reason is mechanical rather than aesthetic: `app_logic`
+owns the sequence number every card carries and drops any render whose `seq` is
+not the one last published, so a card published from the `net` thread would
+allocate a sequence number behind its back and break that guard. Routing it
+through `SHOWING → SERVICE → REFRESHING → SHOWING` gives the card the same
+refresh accounting as everything else, and `app` stays the only publisher of
+`chan_question`. A press during setup still draws a question.
 
 ## Sync
 
@@ -423,6 +471,68 @@ Checks run cheapest-first so a truncated download costs no signature work. Any
 failure leaves the previous bundle in place. The gzip in a `.tkb` is transport
 only — `SWAP` decompresses, because a device that reboots on every press must
 not re-inflate the bundle each time.
+
+## The setup portal
+
+Built, behind `CONFIG_TK_NET` and `just fw-net`. It exists because a device
+with no way to be told an SSID can never sync, so it comes before sync rather
+than after it.
+
+```mermaid
+stateDiagram-v2
+    [*] --> OFF
+    OFF --> SCANNING: both buttons held through a boot
+    SCANNING --> AP_STARTING: scan done, or the budget expired
+    AP_STARTING --> SERVING: the access point reports itself up
+    AP_STARTING --> SHUTDOWN: it did not
+    SERVING --> CONNECTING: the form was posted
+    SERVING --> SHUTDOWN: the window closed
+    CONNECTING --> CONNECTED: the network accepted us
+    CONNECTING --> SERVING: it refused, or never answered
+    CONNECTED --> SHUTDOWN: the window closed
+    SHUTDOWN --> OFF: everything torn down
+```
+
+Three orderings in that diagram are forced by the hardware rather than chosen,
+and all three come from the ESP32-S3 having one radio for two jobs.
+
+**The scan runs before the access point.** A scan hops every channel in the
+band for several seconds while a SoftAP sits on one, so scanning with a phone
+already associated stalls it and can drop the association. The list is a few
+seconds stale by the time anyone reads it, which is not a property of networks
+that move. A scan that never reports back still raises the access point: the
+page takes a typed network name, which a hidden network needs anyway.
+
+**Joining happens last, and the panel reports it.** In AP+STA mode the SoftAP
+is forced onto whatever channel the station lands on, so joining knocks the
+phone off the setup network. The browser that submitted the form is gone before
+the result exists. The form is therefore answered first and the join started
+afterwards, and the answer arrives on the e-paper.
+
+**Serving waits for the access point to report itself up.** A socket bound to
+192.168.4.1 fails with `-EADDRNOTAVAIL` until the interface actually carries
+that address.
+
+The captive sheet needs two things to be wrong at once, which is why both are
+arranged deliberately. DHCP hands out the device as the DNS server — an empty
+`CONFIG_NET_DHCPV4_SERVER_OPTION_DNS_ADDRESS` omits option 6 entirely and the
+whole flow silently fails there — and the DNS responder answers every A query
+with 192.168.4.1. The phone's probe then reaches the HTTP server's fallback
+resource, which redirects.
+
+The access point is **open**. A WPA2 setup network needs a passphrase the user
+has to be told, and the only places to tell them are the panel and the case.
+Open, plus a physical gesture to start it, plus a window that closes on its own,
+is the same posture most consumer setup flows take. The status page names the
+saved network and never its password.
+
+Entry is **both buttons held through a boot**, confirmed for
+`CONFIG_TK_PORTAL_ENTRY_HOLD_MS` rather than sampled once.
+[design.md](design.md) documents USB-plus-Next, which needs VBUS detect on
+GPIO21 — reserved, unwired, and absent from the devicetree. The buttons are
+read from the pins directly, because `input.c` publishes a press on release and
+ignores a release with no press behind it: a button already down at boot
+produces no event at all.
 
 ## A press, as the firmware runs today
 
@@ -499,9 +609,9 @@ flowchart LR
     bag bitmaps · recent ring
     current question · refresh counter
     bundle fingerprint`"]
-    NVS["`**NVS**
-    language · Wi-Fi credentials
-    bundle version`"]
+    NVS["`**NVS** in storage_partition
+    Wi-Fi credentials
+    language · bundle version`"]
     LFS["`**LittleFS**
     decompressed TKB2 corpus`"]
     ACT["`**RTC slow memory**
@@ -518,6 +628,13 @@ flowchart LR
 
 Keeping the bag out of NVS means a Next press costs no flash write, so button
 life rather than flash endurance bounds the device.
+
+The Wi-Fi credentials are Zephyr's `wifi_credentials` on the settings backend,
+which puts them in the `storage_partition` the ESP32-S3 flash map already
+defines — 192 KB at 0x3b0000, of which settings takes 32 KB. No devicetree
+change was needed. They are written when the form is posted and before the
+station is asked to join, deliberately: a flash write on this SoC disables the
+instruction cache, and the Wi-Fi task runs out of it.
 
 The active deck is in RTC memory rather than nowhere. A rotary selector would
 have held its own state — the knob position *is* the deck, readable at zero
@@ -674,6 +791,17 @@ suites that drive the two buttons run in the default macOS loop.
 
 ## Open items
 
+- What a phone actually does with the portal. The access point, the DHCP
+  server, the DNS responder and the HTTP server all come up on the bench and
+  the card reaches the panel, but no phone has joined one: the captive sheet on
+  iOS and on Android, the scan list against a real band, the form, and the join
+  are all *verify*.
+- Whether the SoftAP surviving a station join is as disruptive as the datasheet
+  implies. The design assumes the phone is dropped and reports on the panel
+  instead; that assumption has not been watched happening.
+- A partial refresh measured 2769 ms during a portal session against the 622 ms
+  the panel work recorded. Either the service card's longer text or contention
+  with the radio explains it, and which one matters for the refresh budget.
 - The refresh counter has to reach RTC memory before the full-refresh interval
   means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
   always refreshes fully — correct today, and wrong the moment deep sleep makes

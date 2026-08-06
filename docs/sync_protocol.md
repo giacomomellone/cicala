@@ -121,6 +121,10 @@ Normal trigger: USB power plus known Wi-Fi. Setup trigger: connect USB while
 holding Next, then use the captive portal on a phone. There is no tabletop menu
 or manual-sync gesture.
 
+The portal is built and the setup trigger is not that one yet: it is both
+buttons held through a boot, because VBUS detect is reserved on GPIO21 and
+unwired. See the decision log. Everything below this line is still design.
+
 1. Fetch the manifest and check `schema` and `min_fw`.
 2. Compare the release with each installed language.
 3. Download a changed bundle and verify size, SHA-256, then signature.

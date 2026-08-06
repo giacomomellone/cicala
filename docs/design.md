@@ -39,7 +39,7 @@ around a physical selector.
 | Press Next | Draw another eligible question | One e-paper refresh |
 | Hold Next | Same as a short press | One e-paper refresh; press duration has no second meaning |
 | Leave it alone | Sleep | The question and active category remain readable on e-paper |
-| Connect USB while holding Next | Enter service setup | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
+| Connect USB while holding Next (see below) | Enter service setup | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
 
 Hard rules:
 
@@ -55,6 +55,12 @@ Hard rules:
 - Long press is not Favorite. The device has no way to confirm a save without
   adding status UI, and a hidden saved collection would introduce a mode.
 - Wi-Fi is optional. Sync runs while charging and never interrupts use.
+
+The service gesture ships as both buttons held through a boot rather than
+USB-plus-Next: VBUS detect is reserved on GPIO21 and not wired, so the device
+cannot yet tell that it has been plugged in. USB-plus-Next becomes the primary
+trigger once it can, and the button hold stays as the fallback — a device whose
+power path has failed should still be serviceable. See the decision log.
 
 ## Six decks
 
