@@ -235,6 +235,87 @@ config TK_MAX_QUESTION_BYTES
       fit, so a corpus change that breaks this fails a test rather than a
       device.
 
+config TK_NET
+    bool "Wi-Fi, and the setup portal that configures it"
+    default n
+    help
+      Brings in the Wi-Fi driver, the networking stack, the HTTP server and
+      NVS. The device joins a stored network at boot, and holding both buttons
+      through a boot raises a SoftAP with a captive portal on it.
+
+      Off by default, for the reason TK_SLEEP is: this is a large subsystem
+      whose flash and RAM cost has not been measured on this board, and the
+      everyday `just fw-build` image should not change under it. Use
+      `just fw-net`, which merges app/net.conf and app/net.overlay.
+
+      The device works with its compiled-in corpus whether or not this is on.
+      Wi-Fi is optional by design; see docs/design.md.
+
+config TK_PORTAL_SSID_PREFIX
+    string "Setup network name, before the per-device suffix"
+    default "Tischkarte"
+    depends on TK_NET
+    help
+      The SoftAP announces itself as `<prefix>-XXXX`, where the suffix comes
+      from the chip's device id. Two devices being set up on the same table
+      would otherwise raise two networks with the same name.
+
+config TK_PORTAL_ENTRY_HOLD_MS
+    int "Both buttons held this long after boot to enter setup (ms)"
+    default 2000
+    depends on TK_NET
+    help
+      The documented gesture is USB-plus-Next, which needs VBUS detect on
+      GPIO21 — reserved, but not wired and not in the devicetree. Both buttons
+      at boot is what the current hardware can sense.
+
+      The hold is confirmed rather than sampled once, because somebody picking
+      the device up with two fingers should not find themselves in a service
+      mode. Two seconds is long enough to be deliberate and short enough that
+      nobody wonders whether it worked.
+
+config TK_PORTAL_WINDOW_MS
+    int "How long the portal stays up (ms)"
+    default 300000
+    help
+      A hard window rather than an idle timer, and measured from the moment the
+      portal starts serving. An open access point that any passing phone can
+      keep alive by probing it is a worse thing to leave on a table than one
+      that closes on its own five minutes later.
+
+      The window restarts once, when a network is joined, so the status page
+      can be read afterwards. Re-entering setup is a reboot with both buttons.
+
+config TK_PORTAL_SCAN_MS
+    int "How long to wait for the scan before giving up on it (ms)"
+    default 8000
+    help
+      The scan runs before the access point, because the ESP32-S3 has one
+      radio: scanning with a phone already associated stalls it and can drop
+      the association.
+
+      Expiring is survivable. The setup page takes a typed network name — which
+      a hidden network needs anyway — so a missing list costs some typing
+      rather than the whole flow.
+
+config TK_NET_CONNECT_TIMEOUT_MS
+    int "How long to wait for a network to accept us (ms)"
+    default 20000
+    help
+      Covers association, authentication and DHCP. Expiring puts the portal
+      back on the setup page with the panel saying so, because the likely cause
+      is a mistyped password and the fix is to type it again.
+
+config TK_NET_SCAN_MAX
+    int "Networks kept from a scan"
+    default 12
+    depends on TK_NET
+    help
+      Bounds the array the setup page renders from. A busy 2.4 GHz band has
+      more than this, and the rest are dropped: a list nobody can scroll is not
+      more useful than a short one, and each entry costs 34 bytes of RAM that
+      is live for the whole portal session.
+
 config TK_REFRESH_MIN_MV
     int "Minimum cell voltage for a panel refresh (mV)"
     default 3200

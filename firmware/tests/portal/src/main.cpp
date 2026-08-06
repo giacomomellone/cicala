@@ -13,6 +13,7 @@
 
 #include "portal_dns.hpp"
 #include "portal_form.hpp"
+#include "portal_fsm.hpp"
 #include "portal_page.hpp"
 
 using namespace tk;
@@ -369,4 +370,397 @@ ZTEST(tk_portal, test_html_escape_reports_a_buffer_too_small)
     char out[8];
 
     zassert_equal(html_escape("&&&&", 4, out, sizeof(out)), -1);
+}
+
+/* ------------------------------------------------------------------- FSM */
+
+namespace
+{
+
+/* STATE() casts through this name, so the macro needs it in scope. */
+using State = PortalFsm::State;
+
+/** Records what the state machine asked for, and answers how the test says to. */
+class FakeIo : public PortalIo
+{
+public:
+    int scans = 0;
+    int ap_starts = 0;
+    int serve_starts = 0;
+    int connects = 0;
+    int teardowns = 0;
+    int cards = 0;
+    PortalCard last_card = PortalCard::SETUP;
+
+    bool scan_succeeds = true;
+    bool ap_succeeds = true;
+    bool serve_succeeds = true;
+    bool connect_succeeds = true;
+
+    bool scan_start() override
+    {
+        scans++;
+        return scan_succeeds;
+    }
+
+    bool ap_start() override
+    {
+        ap_starts++;
+        return ap_succeeds;
+    }
+
+    bool serve_start() override
+    {
+        serve_starts++;
+        return serve_succeeds;
+    }
+
+    bool connect_start() override
+    {
+        connects++;
+        return connect_succeeds;
+    }
+
+    void teardown() override { teardowns++; }
+
+    void show(PortalCard card) override
+    {
+        cards++;
+        last_card = card;
+    }
+};
+
+/** Same machine, with a clock the test winds forward by hand. */
+class TestPortalFsm : public PortalFsm
+{
+public:
+    using PortalFsm::PortalFsm;
+
+    int64_t clock = 0;
+
+    void advance(int64_t ms) { clock += ms; }
+
+protected:
+    int64_t now_ms() const override { return clock; }
+};
+
+/** Tick until the state stops moving, as the net thread's loop does. */
+void settle(TestPortalFsm &fsm)
+{
+    for (int i = 0; i < 16; i++) {
+        const int before = fsm.get_current_state();
+
+        fsm.run();
+
+        if (fsm.get_current_state() == before) {
+            return;
+        }
+    }
+}
+
+/** Drive a fresh machine as far as SERVING, which most cases start from. */
+void reach_serving(TestPortalFsm &fsm, FakeIo &io)
+{
+    fsm.post_start();
+    settle(fsm);
+
+    fsm.post_scan_done();
+    settle(fsm);
+
+    fsm.post_ap_ready(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SERVING));
+    zassert_equal(io.serve_starts, 1);
+}
+
+} // namespace
+
+ZTEST(tk_portal, test_fsm_starts_off_and_stays_there)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_false(fsm.is_active(), "nothing is on air until somebody asks");
+    zassert_equal(io.scans, 0);
+    zassert_equal(io.ap_starts, 0);
+}
+
+ZTEST(tk_portal, test_fsm_scans_before_it_raises_the_access_point)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    fsm.post_start();
+    settle(fsm);
+
+    /* One radio: the scan has to finish before the AP takes it. */
+    zassert_equal(fsm.get_current_state(), STATE(SCANNING));
+    zassert_equal(io.scans, 1);
+    zassert_equal(io.ap_starts, 0, "the access point must not be up during a scan");
+
+    fsm.post_scan_done();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(AP_STARTING));
+    zassert_equal(io.ap_starts, 1);
+    zassert_equal(io.serve_starts, 0, "nothing is served until the AP reports itself up");
+
+    fsm.post_ap_ready(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SERVING));
+    zassert_equal(io.serve_starts, 1);
+    zassert_equal(io.last_card, PortalCard::SETUP, "the panel names the network to join");
+}
+
+ZTEST(tk_portal, test_fsm_gives_up_on_a_scan_that_never_reports)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    fsm.post_start();
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(SCANNING));
+
+    fsm.advance(kPortalScanMs - 1);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(SCANNING), "not yet");
+
+    fsm.advance(1);
+    settle(fsm);
+
+    /* Onward, not away: the page still takes a typed name, which a hidden
+     * network needs anyway. */
+    zassert_equal(fsm.get_current_state(), STATE(AP_STARTING));
+}
+
+ZTEST(tk_portal, test_fsm_carries_on_when_the_scan_cannot_be_started)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    io.scan_succeeds = false;
+
+    fsm.post_start();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(AP_STARTING),
+                  "no waiting for a scan that is not running");
+}
+
+ZTEST(tk_portal, test_fsm_ends_when_the_access_point_will_not_come_up)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    fsm.post_start();
+    settle(fsm);
+    fsm.post_scan_done();
+    settle(fsm);
+
+    fsm.post_ap_ready(false);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_equal(io.teardowns, 1, "whatever came up has to come down again");
+    zassert_equal(io.serve_starts, 0);
+    zassert_false(fsm.is_active());
+}
+
+ZTEST(tk_portal, test_fsm_ends_when_nothing_can_be_served)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    io.serve_succeeds = false;
+
+    fsm.post_start();
+    settle(fsm);
+    fsm.post_scan_done();
+    settle(fsm);
+    fsm.post_ap_ready(true);
+    settle(fsm);
+
+    /* An access point that answers no request is worse than none: it would sit
+     * there for the whole window looking like it worked. */
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_equal(io.teardowns, 1);
+}
+
+ZTEST(tk_portal, test_fsm_joins_a_network_when_the_form_arrives)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    reach_serving(fsm, io);
+
+    fsm.post_credentials();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTING));
+    zassert_equal(io.connects, 1);
+    zassert_equal(io.last_card, PortalCard::CONNECTING,
+                  "the panel reports it, because joining knocks the phone off");
+
+    fsm.post_connected(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTED));
+    zassert_true(fsm.is_connected());
+    zassert_equal(io.last_card, PortalCard::CONNECTED);
+    zassert_equal(io.teardowns, 0, "the AP stays up so the status page can be read");
+}
+
+ZTEST(tk_portal, test_fsm_puts_a_refused_password_back_on_the_form)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    reach_serving(fsm, io);
+
+    fsm.post_credentials();
+    settle(fsm);
+
+    fsm.post_connected(false);
+    settle(fsm);
+
+    /* The likely cause is a mistyped password, and the fix is to type it again
+     * rather than to start the whole gesture over. */
+    zassert_equal(fsm.get_current_state(), STATE(SERVING));
+    zassert_equal(io.last_card, PortalCard::REFUSED);
+    zassert_equal(io.serve_starts, 1, "the access point never went down, so nothing restarts");
+    zassert_equal(io.ap_starts, 1);
+
+    /* And a second attempt still works. */
+    fsm.post_credentials();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTING));
+    zassert_equal(io.connects, 2);
+}
+
+ZTEST(tk_portal, test_fsm_treats_a_silent_network_as_a_refusal)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    reach_serving(fsm, io);
+
+    fsm.post_credentials();
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTING));
+
+    fsm.advance(kConnectTimeoutMs - 1);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTING));
+
+    fsm.advance(1);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SERVING));
+    zassert_equal(io.last_card, PortalCard::REFUSED);
+}
+
+ZTEST(tk_portal, test_fsm_closes_the_window_on_its_own)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    reach_serving(fsm, io);
+
+    fsm.advance(kPortalWindowMs - 1);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(SERVING));
+
+    fsm.advance(1);
+    settle(fsm);
+
+    /* An open access point nobody is using should not stay on a table. */
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_equal(io.teardowns, 1);
+    zassert_false(fsm.is_active());
+}
+
+ZTEST(tk_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    reach_serving(fsm, io);
+
+    /* Spend most of the first window on the form, then join. */
+    fsm.advance(kPortalWindowMs - 10);
+    settle(fsm);
+
+    fsm.post_credentials();
+    settle(fsm);
+    fsm.post_connected(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTED));
+
+    /* The clock started again on the way in, so the page is readable. */
+    fsm.advance(kPortalWindowMs - 1);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(CONNECTED));
+
+    fsm.advance(1);
+    settle(fsm);
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_equal(io.teardowns, 1);
+}
+
+ZTEST(tk_portal, test_fsm_stops_from_wherever_it_is)
+{
+    for (int stop_at = 0; stop_at < 4; stop_at++) {
+        FakeIo io;
+        TestPortalFsm fsm(io);
+
+        fsm.post_start();
+        settle(fsm);
+
+        if (stop_at >= 1) {
+            fsm.post_scan_done();
+            settle(fsm);
+        }
+
+        if (stop_at >= 2) {
+            fsm.post_ap_ready(true);
+            settle(fsm);
+        }
+
+        if (stop_at >= 3) {
+            fsm.post_credentials();
+            settle(fsm);
+        }
+
+        fsm.post_stop();
+        settle(fsm);
+
+        zassert_equal(fsm.get_current_state(), STATE(OFF), "stop at step %d", stop_at);
+        zassert_equal(io.teardowns, 1, "stop at step %d", stop_at);
+        zassert_false(fsm.is_active());
+    }
+}
+
+ZTEST(tk_portal, test_fsm_ignores_a_stop_that_arrives_with_nothing_running)
+{
+    FakeIo io;
+    TestPortalFsm fsm(io);
+
+    fsm.post_stop();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(OFF));
+    zassert_equal(io.teardowns, 0);
+
+    /* And it must not be left queued to end the next session immediately. */
+    fsm.post_start();
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(SCANNING));
 }

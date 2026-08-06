@@ -1,0 +1,9 @@
+# The portal window, the scan budget and the connect timeout are CONFIG_TK_*
+# values and the suite asserts on both sides of them, so it sources the same
+# file the application builds with.
+
+mainmenu "tischkarte portal tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"
