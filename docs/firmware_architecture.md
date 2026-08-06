@@ -89,8 +89,8 @@ of management events into it, and the tick its deadlines need — which is why
 
 There is no power thread. With `CONFIG_PM` the idle thread picks the sleep
 state once nothing is runnable, so the design's job is to make every thread
-block with **no timeout** when the table is quiet. `net` inhibits sleep while
-the portal is on air — `sleep_now()` asks `tk_net_is_active()` and reschedules
+block with **no timeout** when the table is quiet. `net` inhibits sleep from the
+moment the entry gesture starts being confirmed until the portal ends — `sleep_now()` asks `tk_net_is_active()` and reschedules
 rather than calling `sys_poweroff()`, which is what a PM lock would mean on a
 device that stops the SoC explicitly. Nothing else inhibits sleep.
 

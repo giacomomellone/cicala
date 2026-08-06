@@ -607,3 +607,13 @@ Changing it publishes `chan_corpus` — the channel the architecture already spe
 The form posts every field whether or not it was touched, and the handler required a network name, so changing the language meant retyping a Wi-Fi password. That is a bad trade for a setting, and worse on an open access point where the password is the one thing worth not sending twice.
 
 An empty network name now means "language only": nothing is stored against Wi-Fi, no join is attempted, and the saved network keeps whatever it had. The scan list gains a "Leave unchanged" option, selected by default, so submitting the form untouched is that case rather than an error.
+
+## 2026-08-06: Sleep is inhibited across the entry gesture, not only across the portal
+
+`CONFIG_TK_SLEEP_IDLE_MS` and `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` are both two seconds, and the idle timer starts at the first render. So the timer expires while somebody is still holding both buttons to enter setup, and `sleep_now()` was reached with the gesture half-done.
+
+It survived on the bench because sleeping needs at least one button open — `open_pin_mask()` returns zero when both read closed, and the guard refuses. But that covers exactly the instant when both are down and nothing either side of it. Press the two buttons a moment apart and only one is closed when the timer fires: the device sleeps armed on the other, and the press meant for the gesture is spent on the wake instead.
+
+`tk_net_is_active()` therefore covers the confirmation window as well as the running portal. Widening the inhibit rather than lengthening the idle timer, because the relationship between those two numbers should not be load-bearing: either can be tuned for its own reasons.
+
+The "both buttons read closed" message drops from error to warning at the same time. Holding both buttons is a thing people now do on purpose, and reaching that line means a button is held for some other reason or is stuck — worth saying, not a fault.

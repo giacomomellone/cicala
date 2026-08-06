@@ -298,7 +298,14 @@ static void sleep_now(struct k_work *work)
          * Both buttons read closed — held down, or stuck. Sleeping would be
          * permanent, so stay awake and let the panel keep showing what it has.
          */
-        LOG_ERR("both buttons read closed; staying awake rather than sleeping forever");
+        /*
+         * Warning rather than error: somebody is holding both buttons, which
+         * is a thing people do — it is the service gesture. It resolves as
+         * soon as they let go, and `net` inhibits sleep across the gesture
+         * itself, so reaching this means a button is being held for some other
+         * reason, or is stuck.
+         */
+        LOG_WRN("both buttons read closed; staying awake rather than sleeping forever");
         return;
     }
 

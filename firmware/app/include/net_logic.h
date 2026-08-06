@@ -45,6 +45,15 @@ void tk_net_run(void);
 /** Current state, as a PortalFsm::State value. For logging. */
 int tk_net_state(void);
 
+/**
+ * True while the portal machine is anywhere but OFF.
+ *
+ * Not the whole answer to "may the device sleep" — net.c adds the window
+ * before the machine starts, while the entry gesture is still being confirmed.
+ * See tk_net_is_active().
+ */
+bool tk_net_portal_active(void);
+
 /* -------------------------------------------------------------- the pages */
 
 /**

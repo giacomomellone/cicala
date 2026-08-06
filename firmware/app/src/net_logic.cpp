@@ -185,7 +185,7 @@ int tk_net_state(void)
     return fsm.get_current_state();
 }
 
-bool tk_net_is_active(void)
+bool tk_net_portal_active(void)
 {
     return fsm.is_active();
 }

@@ -64,12 +64,32 @@ LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 static atomic_t events;
 static K_SEM_DEFINE(wake, 0, 1);
 
+/*
+ * Set while the entry gesture is being confirmed, which is a window sleep must
+ * not land in.
+ *
+ * The idle timer starts at the first render and runs for
+ * CONFIG_TK_SLEEP_IDLE_MS; the gesture is confirmed over
+ * CONFIG_TK_PORTAL_ENTRY_HOLD_MS. Both default to two seconds, so the timer
+ * expires while somebody still has both buttons down. sleep_now() refuses when
+ * both read closed, which covers that exact instant and nothing either side of
+ * it: press the two buttons a moment apart and only one is down when the timer
+ * fires, so the device sleeps armed on the other and the gesture is spent on a
+ * wake instead.
+ */
+static atomic_t confirming_gesture;
+
 static struct net_mgmt_event_callback wifi_cb;
 
 static void raise(uint32_t bit)
 {
     (void) atomic_or(&events, bit);
     k_sem_give(&wake);
+}
+
+bool tk_net_is_active(void)
+{
+    return atomic_get(&confirming_gesture) != 0 || tk_net_portal_active();
 }
 
 void tk_net_notify_credentials(void)
@@ -212,10 +232,18 @@ static void net_thread(void *p1, void *p2, void *p3)
         return;
     }
 
+    /* Held across the gesture rather than set inside it, so the answer is
+     * already true by the time the idle timer can first fire. */
+    atomic_set(&confirming_gesture, 1);
+
+    const bool gesture = !IS_ENABLED(CONFIG_TK_DEBUG_PORTAL) && service_gesture_held();
+
+    atomic_set(&confirming_gesture, 0);
+
     if (IS_ENABLED(CONFIG_TK_DEBUG_PORTAL)) {
         LOG_WRN("CONFIG_TK_DEBUG_PORTAL: entering setup without the gesture");
         tk_net_post_start();
-    } else if (service_gesture_held()) {
+    } else if (gesture) {
         LOG_INF("both buttons held through boot — entering setup");
         tk_net_post_start();
     } else if (tk_wake_button() != TK_WAKE_NONE) {
