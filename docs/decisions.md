@@ -569,3 +569,25 @@ The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf` rath
 `just fw-sim` had been failing since the selector was replaced: `app/boards/qemu_xtensa_dc233c.overlay` still described six selector inputs and defined no `tk-category` alias, which `src/input.c` requires. The suites did not catch it because `tests/input` carries its own overlay, and nothing else builds `firmware/app` for qemu.
 
 Fixed alongside the portal work rather than separately, because `src/net.c` reads the same two aliases to detect the service gesture. The overlay now describes the two buttons the target has.
+
+## 2026-08-06: Deep sleep ships in the everyday image, and a wake does not join a network
+
+Sleep and Wi-Fi were separate build variants, and a device needs both at once. `CONFIG_TK_SLEEP` therefore joins `CONFIG_TK_NET` in the devkit board conf, `sleep.conf` and `sleep.overlay` are gone, and `just fw-sleep` with them.
+
+Not in `prj.conf`, for the reason the radio is not: that file is shared with qemu and native_sim, and `src/sleep.c` is written against the Espressif RTC and sleep APIs. The light-sleep state that has to be disabled moves into the board overlay alongside the second Wi-Fi node.
+
+The two debug images cannot sleep at all now — `TK_SLEEP` gained `depends on !TK_DEBUG_SOAK && !TK_DEBUG_CHARSET`. Both keep a count in ordinary memory across presses, a soak run of its own presses and the charset image of which test page it is on, and a wake is a reboot that loses both. Making it structurally unavailable is better than a conf line somebody can forget: the failure is a confusing run rather than an error. `debug.conf` still turns it off by hand, because there is no symbol to depend on and a debugger loses its thread every two seconds otherwise.
+
+**A wake does not join a network.** Deep sleep makes every press a fresh boot, so connecting on one would put a radio association in front of every question the device ever answers, for a connection nothing yet uses. `net.c` skips it when `tk_wake_button()` reports an EXT1 wake.
+
+That leaves a cold boot as the only automatic trigger, and once the device sleeps a cold boot is rare — first power-up, the reset pin, or a flat cell. This is deliberate rather than a gap: the manual path already exists, since the service gesture raises the portal and the portal joins the saved network as the last step of its flow. The trigger the design actually wants is USB power plus a known network, and that needs VBUS on GPIO21, which is reserved and unwired. It belongs to the power branch.
+
+## 2026-08-06: A full refresh at boot returns in 18 ms, and nobody knows why yet
+
+Recorded because it was found while merging sleep and could easily be mistaken for something that merge caused. It is not.
+
+`tk_panel_render()` reports the boot's full refresh completing in 18-19 ms, where a full update on this panel takes about 2300 ms. Partial refreshes in the same run are healthy, at 622-625 ms against the 622 ms this rig recorded. The same 18 ms appears in the soak image, which has no radio, no deep sleep and none of the ssd16xx patch symbols, and whose `panel.cpp` is byte-identical to the one on `main` — so neither the merge, the patch, nor the networking configuration is responsible.
+
+It was 2301 ms earlier the same day on the same rig, which is what makes it worth writing down rather than assuming it has always been so. What has not been established is whether the glass is actually wrong, or only the number: the full-refresh path brackets the write with `display_blanking_on()` and `display_blanking_off()`, and `panel.cpp` already carries a comment describing a bug with exactly this signature — "the refresh takes about 20 ms, nothing changes on the glass" — from when only the first half was called.
+
+Someone has to look at the panel after a cold boot and say whether the deck name is on it.

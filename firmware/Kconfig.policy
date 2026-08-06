@@ -139,6 +139,7 @@ config TK_DEBUG_SOAK_REBOOT_EVERY
 config TK_SLEEP
     bool "Enter deep sleep when the table goes quiet"
     default n
+    depends on !TK_DEBUG_SOAK && !TK_DEBUG_CHARSET
     select POWEROFF
     select PM
     help
@@ -147,8 +148,14 @@ config TK_SLEEP
       Everything that has to outlive that is already in RTC memory, so this is
       the switch that starts using it.
 
-      Off by default. A board that reboots on every press is harder to bring up
-      than one that stays awake, and the console goes with it.
+      Off by default here and turned on by the devkit board conf, so the
+      ordinary image sleeps.
+
+      Structurally unavailable in the two debug images, because a wake is a
+      reboot and both keep state in ordinary memory across presses: a soak run
+      counts its own presses, and the charset image remembers which test page it
+      is on. Neither survives a wake, so rather than producing a confusing run,
+      sleeping is not offered.
 
 config TK_PANEL_DEEP_SLEEP
     bool "Put the panel controller to sleep too"

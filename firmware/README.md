@@ -1,11 +1,13 @@
 # Firmware
 
-**Status: the tabletop loop works, and the device can be put on a network.**
+**Status: the tabletop loop works, it sleeps between presses, and the device
+can be put on a network.**
 Pressing Category or Next draws a question from the compiled-in corpus and
 renders it on the e-paper; the shuffle bag and refresh counter live in RTC
-memory so a reboot does not restart them; and holding both buttons through a
-boot raises a setup portal a phone can configure Wi-Fi from. Still missing:
-deep sleep itself and the power path, and bundle sync.
+memory so a wake does not restart them; the device deep-sleeps two seconds
+after the last press and replays the press that wakes it; and holding both
+buttons through a boot raises a setup portal a phone can configure Wi-Fi from.
+Still missing: the power path, and bundle sync.
 [docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
 design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in

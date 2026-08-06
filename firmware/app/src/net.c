@@ -23,6 +23,7 @@
 #include "net.h"
 #include "net_logic.h"
 #include "portal.h"
+#include "sleep.h"
 
 LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 
@@ -217,9 +218,24 @@ static void net_thread(void *p1, void *p2, void *p3)
     } else if (service_gesture_held()) {
         LOG_INF("both buttons held through boot — entering setup");
         tk_net_post_start();
+    } else if (tk_wake_button() != TK_WAKE_NONE) {
+        /*
+         * A deep-sleep wake, which is to say somebody pressed a button and is
+         * waiting for a question. Deep sleep makes every press a fresh boot, so
+         * joining here would put a radio association in front of every question
+         * the device ever answers — for a connection nothing yet uses.
+         *
+         * That leaves a cold boot as the only automatic trigger, and once the
+         * device sleeps a cold boot is rare: first power-up, the reset pin, or
+         * a flat cell. The deliberate path is the service gesture, which brings
+         * the portal up and joins the saved network as the last step of its
+         * flow. The charging window the design actually wants needs VBUS on
+         * GPIO21, which is reserved and unwired.
+         */
+        LOG_INF("woken by a button; not joining a network");
     } else {
-        /* The ordinary boot. Nothing on the panel and nothing to fetch yet:
-         * this exists so the sync branch has an interface up to work with. */
+        /* A cold boot. Nothing on the panel and nothing to fetch yet: this
+         * exists so the sync branch has an interface up to work with. */
         (void) tk_portal_connect_stored();
     }
 

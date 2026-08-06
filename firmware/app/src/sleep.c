@@ -1,9 +1,11 @@
 /*
  * Deep sleep, and the wake mask that makes it possible.
  *
- * Compiled only when CONFIG_TK_SLEEP is on, which is what `just fw-sleep`
- * sets. The default image stays awake: a board that reboots on every press is
- * harder to bring up than one that does not.
+ * Compiled only when CONFIG_TK_SLEEP is on, which the devkit board conf sets,
+ * so the ordinary image sleeps. The images that have to stay awake say so
+ * themselves: the soak and charset builds cannot enable it at all, and
+ * debug.conf turns it off, because a wake is a reboot and a debugger loses the
+ * thread it was on.
  *
  * ## Sleep is called, not fallen into
  *
