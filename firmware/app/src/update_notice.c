@@ -32,7 +32,6 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/settings/settings.h>
 #include <zephyr/zbus/zbus.h>
 
 #include <app_version.h>
@@ -40,6 +39,10 @@
 #include "channels.h"
 
 LOG_MODULE_REGISTER(tk_update, LOG_LEVEL_INF);
+
+#ifdef CONFIG_SETTINGS
+
+#include <zephyr/settings/settings.h>
 
 /*
  * `tk/fw/ver`, not `tk/fw_ver`.
@@ -143,3 +146,20 @@ void tk_update_notice_check(void)
      */
     (void) zbus_chan_pub(&chan_service, &msg, K_MSEC(100));
 }
+
+#else /* !CONFIG_SETTINGS */
+
+void tk_update_notice_check(void)
+{
+    /*
+     * Nowhere to record what ran last, so no way to know the firmware changed.
+     * A board without settings storage is a host or emulator target — the
+     * suites' — and one that guessed would announce an update on every single
+     * boot, which is worse than saying nothing.
+     *
+     * Guarded rather than left out of the build, because main() calls this
+     * unconditionally and src/language.c solves the same problem the same way.
+     */
+}
+
+#endif /* CONFIG_SETTINGS */
