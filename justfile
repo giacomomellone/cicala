@@ -362,9 +362,24 @@ fw-bench host port="8000": (fw-build-bench host port)
 # Then bump firmware/app/VERSION, `just fw-ota-publish` again, and cold-boot the
 # device: it finds the newer version, installs it, and says so on the panel.
 
-# build + flash an image whose updates come from a laptop rather than the site
+# Split, because the loop needs a build without a flash: the device runs the
+# old version while the new one is built and published for it to find.
+
+# build an image whose updates come from a laptop rather than from the site
 [group('firmware')]
-fw-ota host port="8000": fw-fixtures
+fw-build-ota host="" port="8000": fw-fixtures
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # No host: a rebuild of whatever was configured last, which is what bumping
+    # the VERSION file and building the *next* release wants. CMake caches the
+    # URLs, so repeating them would only be a chance to mistype one.
+    if [ -z "{{ host }}" ]; then
+        if [ ! -d build/esp32s3-ota ]; then
+            echo "no build/esp32s3-ota yet — run: just fw-build-ota <this laptop's IP>" >&2
+            exit 1
+        fi
+        exec {{ west }} build -d build/esp32s3-ota
+    fi
     {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-ota --sysbuild -- \
         -DEXTRA_CONF_FILE=bench.conf \
         -DCONFIG_TK_OTA=y \
@@ -372,6 +387,10 @@ fw-ota host port="8000": fw-fixtures
         -DCONFIG_TK_SYNC_PORT={{ port }} \
         -DCONFIG_TK_SYNC_BASE_URL=\"http://{{ host }}:{{ port }}\" \
         -DCONFIG_TK_OTA_BASE_URL=\"http://{{ host }}:{{ port }}\"
+
+# build + flash that image, which is where the loop starts
+[group('firmware')]
+fw-ota host port="8000": (fw-build-ota host port)
     {{ west }} flash --no-rebuild -d build/esp32s3-ota {{ portflag }}
 
 # Signed with the bundle key if you have it, unsigned otherwise — and an
