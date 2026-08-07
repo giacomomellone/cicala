@@ -127,9 +127,13 @@ def main(argv=None) -> int:
                         help="ed25519 private key PEM; omit for an unsigned dev build")
     # http, not https: the device has no clock and cannot validate a
     # certificate, so the ed25519 signature is what protects the corpus. See
-    # docs/decisions.md. Note this requires /device/ to be reachable without a
-    # forced redirect to https.
-    parser.add_argument("--base-url", default="http://tischkarte.pages.dev/device")
+    # docs/decisions.md.
+    #
+    # The host must therefore be one that does not upgrade the request — a
+    # redirect to https is fatal rather than slow, because Zephyr's HTTP client
+    # does not follow one. That is a different host from the website, and the
+    # default below is deliberately unresolvable until it exists.
+    parser.add_argument("--base-url", default="http://tischkarte.invalid/device")
     args = parser.parse_args(argv)
 
     out_dir = args.out or args.root / "dist" / "bundles"

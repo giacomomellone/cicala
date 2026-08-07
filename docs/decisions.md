@@ -761,3 +761,29 @@ Two non-answers, so nobody spends time on them. Encrypting the password with a k
 The middle option is real but is custom work: the S3's HMAC peripheral can hold an eFuse key software cannot read, which would let the application encrypt the password with a secret an attacker does not get from the flash. The vendored `hal_espressif` here exposes no HMAC component, so this is register-level work rather than a Kconfig switch.
 
 So it stays as it is, deliberately, and this entry is the record. What that buys an attacker is a Wi-Fi password, from a device they are holding. The mitigation that costs nothing is the one already in use on the bench: give the device a guest network. Revisit at the PCB stage, where the eFuse step can be part of manufacturing rather than something done to a device already in use.
+
+## 2026-08-07: The device gets its own host, over plain HTTP, and TLS stops being the plan
+
+The 2026-08-07 entry "TLS after all, as a transport rather than as the security boundary" chose TLS on one premise: that plain HTTP is not something you can simply have any more, because Cloudflare Pages force-redirects and GitHub Releases is HTTPS-only. The premise was true about *those two hosts* and was mistaken as a fact about the internet. Plenty of things serve plain HTTP without an argument — an S3 static-website endpoint does it by design, as does any small static host somebody runs.
+
+So the conclusion inverts. Rather than making the device speak a protocol it cannot use honestly, the device gets a host that speaks the protocol it can. `/device/` moves off the website, onto something that serves two files without upgrading the request. The website stays where it is, on HTTPS, for people.
+
+What decided it is that TLS here cannot ever be the security boundary. The device has no clock — no RTC source, no SNTP, and every wake is a fresh boot — so it cannot check a certificate's expiry or revocation. A TLS session it cannot validate authenticates nobody. The Ed25519 signatures do the work instead: one over each bundle and image, verified against keys compiled into the image and the bootloader, neither of which expires.
+
+Given up, precisely: an observer on the path learns that a Tischkarte fetched a question bundle or a firmware image. Both are public artifacts of a public project. Not given up: an attacker on the path still cannot make the device install anything the keys did not sign, and cannot walk it backwards, because a manifest not newer than what is installed is refused.
+
+The cost of the alternative was also real — about 40 KB of flash for TLS, on an image at 57% of its slot, for confidentiality on public data. And it does not build: enabling the PSA elliptic-curve support a public handshake needs breaks tf-psa-crypto's own `psa_crypto_ecp.c`. That code stays behind `CONFIG_TK_SYNC_INSECURE=n` and is worth retrying at the next Zephyr bump, for confidentiality alone rather than as a fix for anything.
+
+The defaults become `http://tischkarte.invalid/device` — deliberately unresolvable, because a device pointed at a host that does not exist retries for a few seconds each cold boot and carries on, while one pointed at a host somebody else owns is a different matter. The real host replaces it when it exists.
+
+## 2026-08-07: A power switch is the update trigger the hardware can actually have
+
+The design's trigger is USB power plus a known network — a charging window, when the device has power to spare and nobody is waiting. It needs VBUS detect on GPIO21, which the pin map reserves and nothing is wired to, so the firmware cannot tell whether it is plugged in. Sync and the OTA check therefore run on a cold boot, which once the device sleeps means first power-up, the reset pin, or a flat cell.
+
+A physical power switch turns that from an accident into an action. Off and on is a cold boot, and a cold boot is already the trigger, so "flip the switch to check for updates" needs no firmware change and no new GPIO. It also stops a device draining its cell on a shelf, which is wanted independently.
+
+What it does not do, and these should be stated rather than discovered. It is manual: there is no unattended overnight update, and a device nobody touches stays on its version indefinitely. A hard power cut takes RTC memory with it, so the shuffle bag, the active deck and the refresh counter reset — the device comes back on New People with a full refresh, which is fine occasionally and tiresome daily. And it tells the firmware nothing about the battery, because sense on GPIO1 is unwired too, so nothing refuses an update on a weak cell.
+
+That last one matters less than it sounds. MCUboot runs overwrite-only, and a brownout during its copy leaves the source image and the pending flag untouched in the spare slot, so the next power-up simply copies again. The window that sounds dangerous is the recoverable one.
+
+Not built and not tested: there is no switch on the rig yet. Recorded now so the reasoning is not reconstructed later, and because it changes what VBUS is for — with a switch, VBUS stops being the only way to trigger an update and becomes the thing that makes updates unattended.

@@ -939,13 +939,16 @@ suites that drive the two buttons run in the default macOS loop.
 - Whether the SoftAP surviving a station join is as disruptive as the datasheet
   implies. The phone is dropped by design and the panel reports instead, which
   works; whether the phone could have been kept has not been tested.
-- **TLS does not build**, so sync runs over plain HTTP behind
-  `CONFIG_TK_SYNC_INSECURE`. Enabling the PSA elliptic-curve support a public
-  host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to
-  compile on `mbedtls_ecc_group_from_psa` — a broken configuration combination
-  in the vendored mbedtls 4 rather than a missing symbol here. What it costs is
-  confidentiality, not integrity: the signature is the security boundary in
-  either case. Worth revisiting at the next Zephyr bump.
+- **TLS is not the plan any more**, and this is a decision rather than an open
+  item. The device has no clock, so it cannot validate a certificate under any
+  scheme; the Ed25519 signatures are the security boundary and do not care
+  about the transport. So the device fetches over plain HTTP, from a host
+  chosen for not upgrading the request — which is a hosting constraint, not a
+  firmware one, and means `/device/` is not served by the website. The TLS path
+  is still written behind `CONFIG_TK_SYNC_INSECURE=n` and still does not
+  compile against the vendored mbedtls 4 (`psa_crypto_ecp.c`,
+  `mbedtls_ecc_group_from_psa`); worth retrying at the next Zephyr bump for
+  confidentiality alone. See the decision log.
 - **The fetch has never completed on hardware.** Everything up to the TCP
   connect has: the device joins, gets an address, resolves and asks. The bench
   server was unreachable because the device is on a guest network that isolates

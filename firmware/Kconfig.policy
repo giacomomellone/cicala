@@ -347,20 +347,26 @@ config TK_SYNC
 
 config TK_SYNC_BASE_URL
     string "Where the manifest and bundles are served from"
-    default "https://tischkarte.pages.dev/device"
+    default "http://tischkarte.invalid/device"
     depends on TK_SYNC
     help
       Everything under it: `<base>/manifest.json`, and the bundle URLs the
-      manifest names. Anything that serves two static files over TLS will do —
-      the site, an object store, or a laptop during development.
+      manifest names. An object store, a small static host, or a laptop during
+      development — anything that serves two files.
 
-      Deliberately not GitHub Releases: every asset URL there answers with a
-      redirect to another host, and Zephyr's HTTP client does not follow
-      redirects. See the decision log.
+      `http`, and the host must not upgrade it. A redirect to HTTPS is fatal
+      rather than slow: Zephyr's HTTP client does not follow redirects, so the
+      device sees a 301 it cannot act on. That rules out Cloudflare Pages and
+      GitHub Pages, and it is why this is not the same host as the website.
+      GitHub Releases is out for the same reason.
+
+      The default is deliberately unresolvable. A device pointed at a host that
+      does not exist retries a handful of seconds per cold boot and carries on;
+      one pointed at a host somebody else owns is a different matter.
 
 config TK_SYNC_HOST
     string "Host name to connect to and resolve"
-    default "tischkarte.pages.dev"
+    default "tischkarte.invalid"
     depends on TK_SYNC
     help
       The host part of TK_SYNC_BASE_URL, separately, because the socket needs
@@ -368,20 +374,27 @@ config TK_SYNC_HOST
 
 config TK_SYNC_PORT
     int "Port"
-    default 443
+    default 80
     depends on TK_SYNC
 
 config TK_SYNC_INSECURE
     bool "Connect without TLS"
-    default n
+    default y
     depends on TK_SYNC
     help
-      Plain HTTP, for a development server on a bench. The signature check is
-      unaffected — it is what protects the corpus either way, and the device
-      cannot authenticate a server in either case because it has no clock.
+      Plain HTTP, and this is the shipped configuration rather than a
+      development shortcut. See the decision log.
 
-      What this gives up is confidentiality from anyone watching the network.
-      Never in a shipped build.
+      The device has no clock, so it cannot validate a certificate under any
+      scheme — TLS here would authenticate nobody and buy only confidentiality,
+      on artifacts that are public in a public repository. What protects a
+      bundle and an image is the Ed25519 signature over each, verified against
+      keys that do not expire.
+
+      What it gives up: an observer learns that a Tischkarte fetched something.
+      What it does not give up: an attacker on the path still cannot make the
+      device install anything the keys did not sign, and cannot walk it
+      backwards, because a manifest older than what is installed is refused.
 
 config TK_OTA
     bool "Install firmware updates over the network"
@@ -425,7 +438,7 @@ config TK_OTA
 
 config TK_OTA_BASE_URL
     string "Where the firmware manifest and images are served from"
-    default "https://tischkarte.pages.dev/device"
+    default "http://tischkarte.invalid/device"
     depends on TK_OTA
     help
       `<base>/firmware.json`, and the image URL that manifest names.

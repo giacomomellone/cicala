@@ -101,9 +101,16 @@ answer dozens of times a day rather than once.
    GitHub Release.
 
 Devices do not fetch from GitHub Releases: every asset URL there redirects to
-another host and Zephyr's HTTP client does not follow redirects. Serving
-`/device/firmware.json` from the website is the step that closes this loop, and
-it is the same step the question bundles are waiting on.
+another host and Zephyr's HTTP client does not follow redirects. `site.yml`
+copies the newest release under `/device/`, which is the step that closes this
+loop — and it is the same step the question bundles are waiting on.
+
+That host cannot be the website. A device fetches over plain HTTP and Zephyr
+will not follow a redirect, so anything that upgrades the request — Cloudflare
+Pages and GitHub Pages both do — is unusable. `/device/` needs a host that
+serves two files as asked; an object store's website endpoint is the least
+effort. The decision log has the reasoning, including why plain HTTP costs
+nothing that matters here.
 
 ## Trying it on a bench
 

@@ -56,7 +56,7 @@ def main(argv=None) -> int:
         default=None,
         help="ed25519 private key PEM; omit for an unsigned dev manifest",
     )
-    parser.add_argument("--base-url", default="https://tischkarte.pages.dev/device")
+    parser.add_argument("--base-url", default="http://tischkarte.invalid/device")
     args = parser.parse_args(argv)
 
     raw = args.image.read_bytes()
