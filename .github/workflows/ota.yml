@@ -35,8 +35,9 @@ on:
   workflow_dispatch:
     inputs:
       sync_host:
-        description: "Host the device fetches from (an IP on the bench)"
-        required: true
+        description: "Bench address to fetch from. Leave EMPTY to cut a real release."
+        required: false
+        default: ""
         type: string
       sync_port:
         description: "Port it is served on"
@@ -89,7 +90,7 @@ jobs:
       # site. Empty for a tag, and then the board configuration's own defaults
       # apply — which is what a real release must use.
       - name: Point this build at the bench, if it is one
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.sync_host != ''
         run: |
           host="${{ inputs.sync_host }}"
           port="${{ inputs.sync_port }}"
@@ -201,19 +202,38 @@ jobs:
         run: cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
 
       - name: Attach the image, the manifest and the bootloader to a Release
-        if: github.event_name == 'push'
+        if: github.event_name == 'push' || inputs.sync_host == ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" dist/firmware/* \
-            --title "Firmware $GITHUB_REF_NAME" \
-            --notes "Signed image, firmware.json and the matching bootloader. See docs/firmware_update.md."
+          # A dispatched release tags the commit it was run against, which is
+          # what "release main as it stands" means from the Actions page. A tag
+          # push already carries its own name.
+          tag="$GITHUB_REF_NAME"
+          target=""
+
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            tag="fw-$version"
+            target="--target $GITHUB_SHA"
+          fi
+
+          # Re-runnable: uploading over an existing release is how a rebuild of
+          # the same version replaces its assets rather than failing halfway.
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/firmware/* --clobber
+          else
+            gh release create "$tag" dist/firmware/* $target \
+              --title "Firmware $tag" \
+              --notes "Signed image, firmware.json and the matching bootloader. See docs/firmware_update.md."
+          fi
+
+          echo "released $tag" >> "$GITHUB_STEP_SUMMARY"
 
       # A dispatched build is for one bench and must not become a Release: it
       # names a private address that means nothing to anybody else, and it
       # would burn a version number that no tag points at.
       - name: Keep the bench build as an artifact instead
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && inputs.sync_host != ''
         uses: actions/upload-artifact@v4
         with:
           name: firmware-${{ env.version }}-bench

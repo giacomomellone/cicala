@@ -85,6 +85,33 @@ jobs:
           echo "published $tag:"
           ls -l website/dist/device
 
+      # The firmware half of the same idea, and the same reasoning: a device
+      # fetches /device/firmware.json and the image that manifest names, and
+      # nothing else serves those paths.
+      #
+      # The bootloader is deliberately NOT published. It is not something a
+      # device fetches — it is what a wired first flash needs — and serving it
+      # beside the image would invite installing one without the other, which
+      # is how a board ends up trusting a key its images are not signed with.
+      - name: Put the latest firmware release under /device/
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p website/dist/device
+          tag=$(gh release list --limit 20 --json tagName \
+                  --jq '[.[] | select(.tagName | startswith("fw-"))][0].tagName')
+
+          if [ -z "$tag" ] || [ "$tag" = "null" ]; then
+            echo "::warning::no fw-* release yet, so no firmware is offered"
+            exit 0
+          fi
+
+          gh release download "$tag" -D website/dist/device \
+            -p 'firmware.json' -p 'tischkarte-*.bin'
+          echo "published $tag:"
+          ls -l website/dist/device
+
       - name: Deploy to Cloudflare Pages
         if: github.event_name == 'push' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: website
