@@ -22,8 +22,6 @@
 
 LOG_MODULE_REGISTER(tk_fetch, LOG_LEVEL_INF);
 
-#define HTTP_TIMEOUT_MS 15000
-
 /*
  * Where the current transfer is going.
  *
@@ -161,7 +159,7 @@ static int connect_to_host(void)
     return sock;
 }
 
-int tk_fetch(const char *path, const struct tk_fetch_sink *sink)
+int tk_fetch(const char *path, const struct tk_fetch_sink *sink, int32_t timeout_ms)
 {
     struct http_request req = {0};
     static uint8_t recv_buf[512];
@@ -188,7 +186,7 @@ int tk_fetch(const char *path, const struct tk_fetch_sink *sink)
     req.recv_buf = recv_buf;
     req.recv_buf_len = sizeof(recv_buf);
 
-    const int err = http_client_req(sock, &req, HTTP_TIMEOUT_MS, NULL);
+    const int err = http_client_req(sock, &req, timeout_ms, NULL);
 
     (void) zsock_close(sock);
 

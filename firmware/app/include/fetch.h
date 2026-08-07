@@ -38,15 +38,41 @@ struct tk_fetch_sink {
 };
 
 /**
+ * A manifest, or a question bundle: small, and quick or broken.
+ *
+ * Also the bound on how long a failed sync keeps the device awake, since sleep
+ * is inhibited for the length of the attempt.
+ */
+#define TK_FETCH_TIMEOUT_MS 15000
+
+/**
+ * A firmware image, which is a different kind of transfer.
+ *
+ * Three quarters of a megabyte, and the sink erases flash as it goes —
+ * IMG_ERASE_PROGRESSIVELY erases each 4 KB sector inside the receive callback,
+ * so the socket waits on the flash controller roughly two hundred times during
+ * one download. Measured against nothing yet, but 195 sector erases at the tens
+ * of milliseconds each takes is already most of the fifteen seconds a manifest
+ * is allowed, before a single byte crosses the network.
+ *
+ * Generous rather than unbounded: a server that stalls mid-image must not hold
+ * the device awake until the cell is flat.
+ */
+#define TK_FETCH_IMAGE_TIMEOUT_MS 300000
+
+/**
  * GET `path` from the configured sync host into `sink`.
  *
  * One request per connection: keeping one open across the manifest and what it
  * points at would save a handshake and cost a state machine, for a case that
  * happens once a release.
  *
+ * @param timeout_ms covers the whole request, not each read. One of the two
+ *        constants above — they differ by twenty times, and using the wrong one
+ *        for an image is a download that always fails at the same place.
  * @return the number of body bytes delivered to the sink, or a negative errno.
  */
-int tk_fetch(const char *path, const struct tk_fetch_sink *sink);
+int tk_fetch(const char *path, const struct tk_fetch_sink *sink, int32_t timeout_ms);
 
 /**
  * The path part of a URL, which is all the HTTP client wants.

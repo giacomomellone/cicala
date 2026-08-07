@@ -118,7 +118,8 @@ enum tk_ota_result tk_ota_run(char *version, size_t version_size)
 
     const struct tk_fetch_sink manifest_sink = {tk_fetch_mem_write, &mem};
 
-    int n = tk_fetch(tk_fetch_path_of(CONFIG_TK_OTA_BASE_URL "/firmware.json"), &manifest_sink);
+    int n = tk_fetch(tk_fetch_path_of(CONFIG_TK_OTA_BASE_URL "/firmware.json"), &manifest_sink,
+                     TK_FETCH_TIMEOUT_MS);
 
     if (n < 0) {
         return TK_OTA_FAILED;
@@ -210,7 +211,7 @@ enum tk_ota_result tk_ota_run(char *version, size_t version_size)
 
     const struct tk_fetch_sink image_sink = {on_chunk, nullptr};
 
-    n = tk_fetch(tk_fetch_path_of(release.url), &image_sink);
+    n = tk_fetch(tk_fetch_path_of(release.url), &image_sink, TK_FETCH_IMAGE_TIMEOUT_MS);
 
     if (n < 0 || sink_failed) {
         (void) psa_hash_abort(&hash_op);

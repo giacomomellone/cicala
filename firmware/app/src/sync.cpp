@@ -62,7 +62,7 @@ static int fetch_into(const char *path, uint8_t *into, size_t capacity)
 
     const struct tk_fetch_sink sink = {tk_fetch_mem_write, &mem};
 
-    const int n = tk_fetch(path, &sink);
+    const int n = tk_fetch(path, &sink, TK_FETCH_TIMEOUT_MS);
 
     if (n == -EFBIG && mem.overflowed) {
         LOG_ERR("GET %s returned more than the %zu bytes there was room for", path, capacity);
