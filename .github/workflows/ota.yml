@@ -19,9 +19,30 @@
 
 name: ota
 
+# workflow_dispatch builds the same thing for a bench instead of for the world.
+#
+# It exists because a release image cannot be re-pointed after the fact: the
+# host it fetches from is compiled in, and only this workflow can sign an image
+# the released bootloader will accept. Without an input there is no way to
+# exercise a real, production-signed update against a laptop — which is the
+# only place the download can be tested until the site serves /device/.
+#
+# A dispatched run uploads artifacts and creates no Release. It is otherwise
+# identical: same keys, same signatures, same checks.
 on:
   push:
     tags: ["fw-*"]
+  workflow_dispatch:
+    inputs:
+      sync_host:
+        description: "Host the device fetches from (an IP on the bench)"
+        required: true
+        type: string
+      sync_port:
+        description: "Port it is served on"
+        required: false
+        default: "8000"
+        type: string
 
 permissions:
   contents: write
@@ -38,25 +59,49 @@ jobs:
       # pinning an interpreter before the Zephyr action installs west is a way
       # to end up with west on one python and `python3 tools/...` on another.
 
-      - name: Check the tag matches the VERSION file
+      - name: Work out the version, and check a tag agrees with it
         run: |
-          version="${GITHUB_REF_NAME#fw-}"
           major=$(sed -n 's/^VERSION_MAJOR *= *//p' firmware/app/VERSION)
           minor=$(sed -n 's/^VERSION_MINOR *= *//p' firmware/app/VERSION)
           patch=$(sed -n 's/^PATCHLEVEL *= *//p' firmware/app/VERSION)
           file="$major.$minor.$patch"
 
-          # The device compares the manifest's version against the one compiled
-          # into the image from the VERSION file. If the tag and the file
-          # disagree, the manifest advertises a release the image does not claim
-          # to be — and a device installs it and then offers it to itself again
-          # on every boot, forever.
-          if [ "$version" != "$file" ]; then
-            echo "::error::tag $GITHUB_REF_NAME says $version, firmware/app/VERSION says $file"
-            exit 1
+          # The VERSION file is the source either way: it is what Zephyr
+          # compiles into APP_VERSION_STRING, which is the number the device
+          # compares a manifest against. A tag only has to agree with it.
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            version="${GITHUB_REF_NAME#fw-}"
+
+            # If the tag and the file disagree, the manifest advertises a
+            # release the image does not claim to be — and a device installs it
+            # and then offers it to itself again on every boot, forever.
+            if [ "$version" != "$file" ]; then
+              echo "::error::tag $GITHUB_REF_NAME says $version, firmware/app/VERSION says $file"
+              exit 1
+            fi
+          else
+            version="$file"
           fi
 
           echo "version=$version" >> "$GITHUB_ENV"
+
+      # A dispatched build points the device at a bench rather than at the
+      # site. Empty for a tag, and then the board configuration's own defaults
+      # apply — which is what a real release must use.
+      - name: Point this build at the bench, if it is one
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          host="${{ inputs.sync_host }}"
+          port="${{ inputs.sync_port }}"
+          base="http://$host:$port"
+
+          {
+            echo "bench_args=-DCONFIG_TK_SYNC_HOST=\"$host\" -DCONFIG_TK_SYNC_PORT=$port -DCONFIG_TK_SYNC_BASE_URL=\"$base\" -DCONFIG_TK_OTA_BASE_URL=\"$base\""
+            echo "base_url=$base"
+          } >> "$GITHUB_ENV"
+
+          echo "### Bench build" >> "$GITHUB_STEP_SUMMARY"
+          echo "This image fetches from \`$base\` and is **not** a release." >> "$GITHUB_STEP_SUMMARY"
 
       # The same setup firmware.yml uses, and deliberately not a hand-rolled
       # one: the action does `west init -l firmware`, the update and the
@@ -106,10 +151,13 @@ jobs:
             echo "::warning::FIRMWARE_SIGNING_KEY is not set — signing with the committed development key, whose private half is public"
           fi
 
+      # $bench_args is empty for a tag, so a real release is built from the
+      # board configuration alone and cannot pick up a bench address by
+      # accident. Unquoted on purpose: it is a list of flags or nothing.
       - name: Build the signed image
         run: |
           west build -b esp32s3_devkitc/esp32s3/procpu firmware/app \
-            -d build/esp32s3 --sysbuild
+            -d build/esp32s3 --sysbuild -- ${bench_args:-}
 
       - name: Check both images still fit their partitions
         run: |
@@ -134,23 +182,40 @@ jobs:
             printf '%s' "$BUNDLE_SIGNING_KEY" > signing_key.pem
             python3 tools/build_firmware_manifest.py \
               build/esp32s3/app/zephyr/zephyr.signed.bin \
-              --version "$version" --sign-key signing_key.pem
+              --version "$version" --sign-key signing_key.pem \
+              ${base_url:+--base-url "$base_url"}
             rm -f signing_key.pem
           else
             echo "::warning::BUNDLE_SIGNING_KEY is not set — the manifest will be UNSIGNED and every device will refuse it"
             python3 tools/build_firmware_manifest.py \
-              build/esp32s3/app/zephyr/zephyr.signed.bin --version "$version"
+              build/esp32s3/app/zephyr/zephyr.signed.bin --version "$version" \
+              ${base_url:+--base-url "$base_url"}
           fi
 
-      # The bootloader goes up too, and not because a device ever fetches it:
+      # The bootloader travels with the image it will accept, and not because a
+      # device ever fetches one:
       # it is what a wired first flash needs, and a device flashed with a
       # bootloader built from a different key cannot install these images at
       # all. Keeping the pair together is what makes that recoverable.
+      - name: Put the matching bootloader beside the image
+        run: cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
+
       - name: Attach the image, the manifest and the bootloader to a Release
+        if: github.event_name == 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
           gh release create "$GITHUB_REF_NAME" dist/firmware/* \
             --title "Firmware $GITHUB_REF_NAME" \
             --notes "Signed image, firmware.json and the matching bootloader. See docs/firmware_update.md."
+
+      # A dispatched build is for one bench and must not become a Release: it
+      # names a private address that means nothing to anybody else, and it
+      # would burn a version number that no tag points at.
+      - name: Keep the bench build as an artifact instead
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ env.version }}-bench
+          path: dist/firmware/
+          if-no-files-found: error

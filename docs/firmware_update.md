@@ -133,6 +133,42 @@ git checkout firmware/components/sync/trusted_key.h
 Then bump `firmware/app/VERSION`, run `just fw-ota-publish` again, and reset the
 device. It fetches, verifies, restarts, and comes back saying what it installed.
 
+## Trying it with the real keys
+
+The bench recipe above signs with a throwaway key, because the real private
+halves are GitHub secrets. To test what devices will actually receive, have CI
+build it: `ota.yml` takes a `workflow_dispatch` with the address of your bench.
+
+```sh
+gh workflow run ota.yml -f sync_host=192.168.1.23 -f sync_port=8000
+gh run watch
+gh run download --name firmware-0.1.0-bench -D /tmp/bench
+```
+
+That is the release path in every respect — the same two keys, the same
+signatures, the same size checks — except that the image fetches from your
+laptop instead of the site, and the result is an artifact rather than a
+Release. It has to be built this way rather than re-pointed afterwards: the
+host is compiled in, and only this workflow can sign an image the released
+bootloader will accept.
+
+Flash the pair over the wire, bootloader first. **Both**, together: a device
+running a bootloader built from a different key refuses every image here.
+
+```sh
+.venv/bin/python -m esptool --port /dev/cu.usbserial-140 --chip esp32s3 \
+    write-flash 0x0 /tmp/bench/mcuboot-0.1.0.bin 0x20000 /tmp/bench/tischkarte-0.1.0.bin
+```
+
+Then bump `firmware/app/VERSION`, push, and dispatch again with the same host.
+Serve that second artifact's `firmware.json` and `.bin` on port 8000, reset the
+device, and it installs a genuinely production-signed update.
+
+That board is now on release keys, so `just fw-ota` builds — signed with the
+development key — will no longer boot on it. `just fw-flash` puts it back.
+
+## Trying the install path alone
+
 To exercise the install path alone — no network needed — sign an image into the
 spare slot by hand and reboot:
 
