@@ -787,3 +787,17 @@ What it does not do, and these should be stated rather than discovered. It is ma
 That last one matters less than it sounds. MCUboot runs overwrite-only, and a brownout during its copy leaves the source image and the pending flag untouched in the spare slot, so the next power-up simply copies again. The window that sounds dangerous is the recoverable one.
 
 Not built and not tested: there is no switch on the rig yet. Recorded now so the reasoning is not reconstructed later, and because it changes what VBUS is for — with a switch, VBUS stops being the only way to trigger an update and becomes the thing that makes updates unattended.
+
+## 2026-08-07: The device endpoint is a bucket, and the website is not it
+
+Once plain HTTP became the plan rather than the workaround, "which host" stopped being a detail. The requirement is narrow and unusual: answer port 80 without upgrading, publicly, at stable paths. Most modern static hosting is built to do the opposite — Cloudflare Pages and GitHub Pages both force HTTPS, which is correct for a website and fatal for a client that cannot follow a redirect.
+
+An S3 static-website endpoint is HTTP-only by design. That is a limitation everywhere else and the feature here, so `/device/` moves onto one and the website stays on Pages. Two hosts, one job each, and `site.yml` publishes the same files to both — the Pages copy for people who want to look, the bucket copy for devices.
+
+The trap worth writing down, because it will be found the hard way otherwise: if the DNS for that name is on Cloudflare, the record must be **DNS-only**, not proxied. A proxied record puts Cloudflare in front of the bucket and reintroduces exactly the HTTPS upgrade the arrangement exists to avoid, and a browser will show a perfectly working URL while every device fails.
+
+The bootloader is deliberately not published there. It is not something a device fetches — it is what a wired first flash needs — and serving it beside the image invites installing one without the other, which is how a board ends up trusting a key its images are not signed with. It stays on the GitHub Release.
+
+Cache lifetimes are split rather than defaulted: sixty seconds on the two manifests, immutable on everything they name. A manifest cached for an hour is an hour in which a release reaches nobody, while an artifact is named after its version and never changes.
+
+The whole procedure, from buying the domain to the first device that updates itself, is in [hosting.md](hosting.md).

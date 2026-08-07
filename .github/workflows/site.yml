@@ -18,6 +18,12 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # The device endpoint is a different host from the website, because it
+      # has to answer plain HTTP without upgrading. See docs/hosting.md.
+      DEVICE_BUCKET: ${{ secrets.DEVICE_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.DEVICE_BUCKET_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.DEVICE_BUCKET_SECRET }}
+      AWS_DEFAULT_REGION: ${{ secrets.DEVICE_BUCKET_REGION }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -111,6 +117,29 @@ jobs:
             -p 'firmware.json' -p 'tischkarte-*.bin'
           echo "published $tag:"
           ls -l website/dist/device
+
+      # Devices fetch from here, not from the Pages deploy above: Pages upgrades
+      # every request to HTTPS, and Zephyr's HTTP client does not follow a
+      # redirect. The same files go to both — one host for people, one for
+      # devices — and this step no-ops until the bucket exists.
+      #
+      # Cache lifetimes are the point of the two syncs. A manifest cached for
+      # an hour is an hour a release does not reach anybody; an image is named
+      # after its version and never changes, so it can be cached forever.
+      - name: Publish /device/ to the bucket devices fetch from
+        if: github.event_name == 'push' && env.DEVICE_BUCKET != ''
+        run: |
+          aws s3 sync website/dist/device "s3://$DEVICE_BUCKET/device/" \
+            --exclude '*' --include 'tischkarte-*.bin' --include '*.qdb' --include '*.qdb.gz' \
+            --cache-control 'public, max-age=31536000, immutable' \
+            --no-progress
+
+          aws s3 sync website/dist/device "s3://$DEVICE_BUCKET/device/" \
+            --exclude '*' --include 'manifest.json' --include 'firmware.json' \
+            --cache-control 'public, max-age=60' \
+            --no-progress
+
+          echo "published to s3://$DEVICE_BUCKET/device/"
 
       - name: Deploy to Cloudflare Pages
         if: github.event_name == 'push' && env.CLOUDFLARE_API_TOKEN != ''

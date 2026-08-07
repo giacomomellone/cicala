@@ -23,6 +23,7 @@ nav:
   - languages: languages.md
   - sync protocol: sync_protocol.md
   - firmware updates: firmware_update.md
+  - hosting: hosting.md
   - votes (v2): votes.md
 
 # Self-hosted mermaid. Material would otherwise lazy-load it from unpkg; its
