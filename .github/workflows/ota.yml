@@ -34,9 +34,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+      # No setup-python, deliberately: firmware.yml does without one, and
+      # pinning an interpreter before the Zephyr action installs west is a way
+      # to end up with west on one python and `python3 tools/...` on another.
 
       - name: Check the tag matches the VERSION file
         run: |
@@ -103,8 +103,7 @@ jobs:
             printf '%s' "$FIRMWARE_SIGNING_KEY" > firmware/keys/firmware-signing-dev.pem
             echo "signing with the release key"
           else
-            echo "::warning::FIRMWARE_SIGNING_KEY is not set — signing with the committed \
-            development key, whose private half is public"
+            echo "::warning::FIRMWARE_SIGNING_KEY is not set — signing with the committed development key, whose private half is public"
           fi
 
       - name: Build the signed image
@@ -138,8 +137,7 @@ jobs:
               --version "$version" --sign-key signing_key.pem
             rm -f signing_key.pem
           else
-            echo "::warning::BUNDLE_SIGNING_KEY is not set — the manifest will be UNSIGNED \
-            and every device will refuse it"
+            echo "::warning::BUNDLE_SIGNING_KEY is not set — the manifest will be UNSIGNED and every device will refuse it"
             python3 tools/build_firmware_manifest.py \
               build/esp32s3/app/zephyr/zephyr.signed.bin --version "$version"
           fi
@@ -155,5 +153,4 @@ jobs:
           cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
           gh release create "$GITHUB_REF_NAME" dist/firmware/* \
             --title "Firmware $GITHUB_REF_NAME" \
-            --notes "Signed image, firmware.json and the matching bootloader. \
-            See docs/firmware_update.md."
+            --notes "Signed image, firmware.json and the matching bootloader. See docs/firmware_update.md."
