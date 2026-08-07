@@ -58,24 +58,18 @@ jobs:
 
           echo "version=$version" >> "$GITHUB_ENV"
 
-      - name: Install the Zephyr build dependencies
-        run: |
-          pip install --quiet west pyyaml jsonschema imgtool
-          sudo apt-get update -qq
-          sudo apt-get install -qq --no-install-recommends ninja-build device-tree-compiler
-
-      - name: Set up the west workspace
-        run: |
-          west init -l firmware
-          west update --narrow -o=--depth=1
-          west zephyr-export
-          pip install --quiet -r deps/zephyr/scripts/requirements-base.txt
-          west blobs fetch hal_espressif
-
-      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+      # The same setup firmware.yml uses, and deliberately not a hand-rolled
+      # one: the action does `west init -l firmware`, the update and the
+      # toolchain, and caches them. Doing that by hand first leaves the action
+      # to find an initialised workspace.
+      - name: Set up Zephyr and west
+        uses: zephyrproject-rtos/action-zephyr-setup@v1
         with:
           app-path: firmware
           toolchains: xtensa-espressif_esp32s3_zephyr-elf
+
+      - name: Fetch the espressif Wi-Fi blobs
+        run: west blobs fetch hal_espressif
 
       - name: Apply the local Zephyr patches
         run: |
@@ -88,6 +82,8 @@ jobs:
 
       - name: Build the question bundles compiled into the image
         run: |
+          # imgtool: the sysbuild build signs the application with it.
+          pip install --quiet pyyaml jsonschema imgtool
           python3 tools/build_bundle.py
           mkdir -p firmware/tests/fixtures
           for f in dist/bundles/bundle-*.qdb; do
