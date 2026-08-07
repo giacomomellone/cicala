@@ -10,6 +10,7 @@
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/hwinfo.h>
+#include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/zbus/zbus.h>
@@ -18,6 +19,51 @@
 #include "input.h"
 
 LOG_MODULE_REGISTER(tk_main, LOG_LEVEL_INF);
+
+#ifdef CONFIG_SETTINGS
+
+#include <zephyr/settings/settings.h>
+
+/**
+ * Read the `tk` subtree back out of NVS.
+ *
+ * Nothing did this before, which meant the chosen language and the installed
+ * corpus release were written on every change and read on no boot at all:
+ * `settings_save_one()` initialises the subsystem by itself, so saving worked
+ * and looked complete, while every registered load handler sat unused. A device
+ * set to German came back in English, and the anti-rollback check in sync.cpp
+ * compared against an empty string.
+ *
+ * At APPLICATION level rather than from main(), because this has to finish
+ * before the threads that read what it loads. Zephyr runs this level in the
+ * main thread before the static threads are started, so `app` cannot observe
+ * a half-loaded configuration.
+ */
+static int load_settings(void)
+{
+    int err = settings_subsys_init();
+
+    if (err != 0) {
+        LOG_ERR("settings init failed: %d", err);
+
+        return 0;
+    }
+
+    err = settings_load();
+
+    if (err != 0) {
+        LOG_ERR("settings load failed: %d", err);
+    }
+
+    /* Never fatal. A device that cannot read its settings still draws
+     * questions, in the compiled-in language, which is a better answer than
+     * refusing to boot. */
+    return 0;
+}
+
+SYS_INIT(load_settings, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+
+#endif /* CONFIG_SETTINGS */
 
 /*
  * Visual confirm on the breadboard, next to the console line: the DevKitC's
