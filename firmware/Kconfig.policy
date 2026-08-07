@@ -383,6 +383,68 @@ config TK_SYNC_INSECURE
       What this gives up is confidentiality from anyone watching the network.
       Never in a shipped build.
 
+config TK_OTA
+    bool "Install firmware updates over the network"
+    default n
+    depends on TK_SYNC
+    depends on BOOTLOADER_MCUBOOT
+    select STREAM_FLASH
+    select IMG_MANAGER
+    select IMG_ERASE_PROGRESSIVELY
+    select REBOOT
+    help
+      Checks a firmware manifest, downloads a newer image into the spare
+      MCUboot slot, verifies it, and marks it for install on the next boot.
+      The full flow is docs/firmware_update.md.
+
+      Depends on TK_SYNC rather than standing alone: both speak to the same
+      host over the same socket code, and the signature this verifies is made
+      with the same key as a question bundle's.
+
+      Depends on BOOTLOADER_MCUBOOT because without a bootloader there is no
+      second slot to write to — which means this stays off in a build without
+      `--sysbuild`, and such a build produces a working device that cannot
+      update itself. `just fw-build` passes --sysbuild.
+
+      STREAM_FLASH is selected explicitly because IMG_MANAGER depends on it
+      rather than selecting it, and a `select` skips dependencies: without
+      this line the build fails inside Zephyr's own Kconfig with a warning
+      about STREAM_FLASH_ERASE.
+
+      MCUBOOT_IMG_MANAGER is not selected here, and cannot be: it is a choice
+      symbol, and Kconfig ignores select on those. It is the only member of
+      that choice and its default, so enabling IMG_MANAGER is what turns it
+      on.
+
+      IMG_ERASE_PROGRESSIVELY erases as the download arrives rather than
+      erasing 1344 KB up front. The device is awake and on the radio either
+      way; this spreads the cost instead of stalling before the first byte.
+
+      REBOOT because installing is a restart: MCUboot does the copy, and the
+      only way to reach it is to go through it.
+
+config TK_OTA_BASE_URL
+    string "Where the firmware manifest and images are served from"
+    default "https://tischkarte.pages.dev/device"
+    depends on TK_OTA
+    help
+      `<base>/firmware.json`, and the image URL that manifest names.
+
+      Separate from TK_SYNC_BASE_URL so a development image can take firmware
+      from a laptop while still taking questions from the site, or the reverse.
+      Both still resolve TK_SYNC_HOST — one host per image, because the socket
+      needs a name before there is a URL to parse.
+
+config TK_OTA_ON_COLD_BOOT
+    bool "Check for firmware on a cold boot, after the corpus sync"
+    default y
+    depends on TK_OTA
+    help
+      The same trigger the corpus sync uses, and for the same reasons: a cold
+      boot is rare once the device sleeps, nobody is waiting on it, and the
+      device is most likely to be plugged in. Turning this off leaves the
+      portal's sync button as the only way to update.
+
 config TK_PORTAL_SSID_PREFIX
     string "Setup network name, before the per-device suffix"
     default "Tischkarte"

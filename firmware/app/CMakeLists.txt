@@ -31,6 +31,7 @@ target_sources(app PRIVATE
     src/main.c
     src/panel.cpp
     src/retained_block.cpp
+    src/update_notice.c
 )
 
 # Bench instrumentation, and the only source that is not in every image: it
@@ -43,7 +44,11 @@ target_sources_ifdef(CONFIG_TK_DEBUG_SOAK app PRIVATE src/soak.c)
 target_sources_ifdef(CONFIG_FILE_SYSTEM_LITTLEFS app PRIVATE src/corpus_store.c)
 target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
 target_sources_ifdef(CONFIG_TK_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
-target_sources_ifdef(CONFIG_TK_SYNC app PRIVATE src/sync.cpp)
+
+# fetch.c belongs to whichever of the two downloaders is built, and both use it
+# unchanged — a bundle into RAM, an image into flash, one socket path.
+target_sources_ifdef(CONFIG_TK_SYNC app PRIVATE src/fetch.c src/sync.cpp)
+target_sources_ifdef(CONFIG_TK_OTA app PRIVATE src/ota.cpp)
 
 # HTTP_RESOURCE_DEFINE lands each resource in a section named after its service.
 # Zephyr cannot pre-declare a section whose name the application chooses, so the

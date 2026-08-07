@@ -29,6 +29,10 @@ namespace tk
 /** The manifest shape this firmware understands. See docs/sync_protocol.md. */
 constexpr uint32_t kManifestSchema = 3;
 
+/** The firmware manifest's own schema. A separate file; see
+ *  docs/firmware_update.md for why it is not a key in the one above. */
+constexpr uint32_t kFirmwareSchema = 1;
+
 constexpr size_t kSha256Bytes = 32;
 constexpr size_t kSignatureBytes = 64;
 constexpr size_t kMaxUrlBytes = 160;
@@ -55,6 +59,27 @@ struct Manifest {
 };
 
 /**
+ * A firmware release, from `firmware.json`.
+ *
+ * The same four fields a bundle carries — where, how big, what it hashes to,
+ * who says so — plus the version, which for firmware is release-level because
+ * there is one image rather than one artifact per language.
+ *
+ * `size` is the signed image including the MCUboot header and trailer, which is
+ * what gets written to the spare slot byte for byte.
+ */
+struct FirmwareRelease {
+    uint32_t schema;
+    char version[kMaxVersionBytes];
+    char url[kMaxUrlBytes];
+    uint32_t size;
+    uint8_t sha256[kSha256Bytes];
+    uint8_t sig[kSignatureBytes];
+    /** False for an image built without a key. Refused; see docs/firmware_update.md. */
+    bool signed_;
+};
+
+/**
  * Compare two dotted version strings component by component, numerically.
  *
  * `2026.08.9` is older than `2026.08.10`, which string comparison gets exactly
@@ -76,5 +101,17 @@ bool manifest_parse(const char *json, size_t len, Manifest &out);
  *         it carries does not fit or does not decode.
  */
 bool manifest_entry(const char *json, size_t len, const char *language, ManifestEntry &out);
+
+/**
+ * Read a firmware manifest.
+ *
+ * Flat rather than nested: one image per release, so there is no keyed object
+ * to search and every field is top-level.
+ *
+ * @return false when the document is not a usable firmware manifest. As with a
+ *         bundle entry, `"sig": null` parses and sets `signed_` to false rather
+ *         than failing, so the caller can refuse it for what it is.
+ */
+bool firmware_parse(const char *json, size_t len, FirmwareRelease &out);
 
 } // namespace tk
