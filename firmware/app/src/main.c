@@ -17,6 +17,7 @@
 
 #include "channels.h"
 #include "input.h"
+#include "update_notice.h"
 
 LOG_MODULE_REGISTER(tk_main, LOG_LEVEL_INF);
 
@@ -177,6 +178,14 @@ int main(void)
         LOG_ERR("input init failed: %d", ret);
         return ret;
     }
+
+    /*
+     * Last, and after the threads are running: this may publish a card, and a
+     * card published before `app` exists would be a card nobody renders. An
+     * update installs during a boot with nobody watching, so this is the only
+     * thing that tells the table it happened.
+     */
+    tk_update_notice_check();
 
     return 0;
 }
