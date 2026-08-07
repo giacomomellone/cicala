@@ -1,0 +1,163 @@
+# Publish a firmware release devices can install.
+#
+# Modelled on bundle.yml, which does the same job for question bundles: build,
+# sign, attach to a GitHub Release. The device does not fetch from Releases —
+# every asset URL there is a redirect to another host and Zephyr's HTTP client
+# does not follow redirects — so serving these to devices is a later step, the
+# same one the bundles are waiting on. Until then this is where a release lives
+# and where `just fw-ota-publish` gets its artifacts from.
+#
+# Two signatures are applied here and they are made with different keys:
+#
+#   FIRMWARE_SIGNING_KEY  imgtool, over the image. MCUboot checks it at boot and
+#                         it is what gates execution. A bootloader built from a
+#                         different key rejects the result.
+#   BUNDLE_SIGNING_KEY    over the image's SHA-256, into firmware.json. The
+#                         application checks it before it spends a reboot.
+#
+# See docs/firmware_update.md.
+
+name: ota
+
+on:
+  push:
+    tags: ["fw-*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check the tag matches the VERSION file
+        run: |
+          version="${GITHUB_REF_NAME#fw-}"
+          major=$(sed -n 's/^VERSION_MAJOR *= *//p' firmware/app/VERSION)
+          minor=$(sed -n 's/^VERSION_MINOR *= *//p' firmware/app/VERSION)
+          patch=$(sed -n 's/^PATCHLEVEL *= *//p' firmware/app/VERSION)
+          file="$major.$minor.$patch"
+
+          # The device compares the manifest's version against the one compiled
+          # into the image from the VERSION file. If the tag and the file
+          # disagree, the manifest advertises a release the image does not claim
+          # to be — and a device installs it and then offers it to itself again
+          # on every boot, forever.
+          if [ "$version" != "$file" ]; then
+            echo "::error::tag $GITHUB_REF_NAME says $version, firmware/app/VERSION says $file"
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_ENV"
+
+      - name: Install the Zephyr build dependencies
+        run: |
+          pip install --quiet west pyyaml jsonschema imgtool
+          sudo apt-get update -qq
+          sudo apt-get install -qq --no-install-recommends ninja-build device-tree-compiler
+
+      - name: Set up the west workspace
+        run: |
+          west init -l firmware
+          west update --narrow -o=--depth=1
+          west zephyr-export
+          pip install --quiet -r deps/zephyr/scripts/requirements-base.txt
+          west blobs fetch hal_espressif
+
+      - uses: zephyrproject-rtos/action-zephyr-setup@v1
+        with:
+          app-path: firmware
+          toolchains: xtensa-espressif_esp32s3_zephyr-elf
+
+      - name: Apply the local Zephyr patches
+        run: |
+          if grep -q SSD16XX_PRESERVE_IMAGE_ON_INIT \
+              deps/zephyr/drivers/display/Kconfig.ssd16xx; then
+            echo "patches already applied"
+          else
+            west patch -b patches -l patches.yml apply
+          fi
+
+      - name: Build the question bundles compiled into the image
+        run: |
+          python3 tools/build_bundle.py
+          mkdir -p firmware/tests/fixtures
+          for f in dist/bundles/bundle-*.qdb; do
+            lang=$(basename "$f" | cut -d- -f2)
+            cp "$f" "firmware/tests/fixtures/$lang.qdb"
+          done
+
+      # Over the committed development key, so the released bootloader trusts
+      # the release key and nothing else. Without the secret this builds a
+      # dev-key image, which is correct for a fork and must never reach a
+      # device that is expected to accept only real releases.
+      - name: Install the release signing key
+        env:
+          FIRMWARE_SIGNING_KEY: ${{ secrets.FIRMWARE_SIGNING_KEY }}
+        run: |
+          if [ -n "$FIRMWARE_SIGNING_KEY" ]; then
+            printf '%s' "$FIRMWARE_SIGNING_KEY" > firmware/keys/firmware-signing-dev.pem
+            echo "signing with the release key"
+          else
+            echo "::warning::FIRMWARE_SIGNING_KEY is not set — signing with the committed \
+            development key, whose private half is public"
+          fi
+
+      - name: Build the signed image
+        run: |
+          west build -b esp32s3_devkitc/esp32s3/procpu firmware/app \
+            -d build/esp32s3 --sysbuild
+
+      - name: Check both images still fit their partitions
+        run: |
+          app=$(stat -c %s build/esp32s3/app/zephyr/zephyr.signed.bin)
+          boot=$(stat -c %s build/esp32s3/mcuboot/zephyr/zephyr.bin)
+
+          if [ "$app" -gt $((1344 * 1024)) ]; then
+            echo "::error::the signed image is $app B, over slot0_partition"
+            exit 1
+          fi
+
+          if [ "$boot" -gt $((64 * 1024)) ]; then
+            echo "::error::MCUboot is $boot B, over boot_partition"
+            exit 1
+          fi
+
+      - name: Describe the release for devices
+        env:
+          BUNDLE_SIGNING_KEY: ${{ secrets.BUNDLE_SIGNING_KEY }}
+        run: |
+          if [ -n "$BUNDLE_SIGNING_KEY" ]; then
+            printf '%s' "$BUNDLE_SIGNING_KEY" > signing_key.pem
+            python3 tools/build_firmware_manifest.py \
+              build/esp32s3/app/zephyr/zephyr.signed.bin \
+              --version "$version" --sign-key signing_key.pem
+            rm -f signing_key.pem
+          else
+            echo "::warning::BUNDLE_SIGNING_KEY is not set — the manifest will be UNSIGNED \
+            and every device will refuse it"
+            python3 tools/build_firmware_manifest.py \
+              build/esp32s3/app/zephyr/zephyr.signed.bin --version "$version"
+          fi
+
+      # The bootloader goes up too, and not because a device ever fetches it:
+      # it is what a wired first flash needs, and a device flashed with a
+      # bootloader built from a different key cannot install these images at
+      # all. Keeping the pair together is what makes that recoverable.
+      - name: Attach the image, the manifest and the bootloader to a Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
+          gh release create "$GITHUB_REF_NAME" dist/firmware/* \
+            --title "Firmware $GITHUB_REF_NAME" \
+            --notes "Signed image, firmware.json and the matching bootloader. \
+            See docs/firmware_update.md."
