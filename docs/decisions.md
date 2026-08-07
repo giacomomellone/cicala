@@ -703,3 +703,61 @@ Found on the bench, and it made the whole feature silently do nothing: the devic
 The idle timer starts at the first render and fires after `CONFIG_TK_SLEEP_IDLE_MS`, two seconds. An association plus DHCP plus a fetch takes rather longer. `tk_net_is_active()` covered the portal and the entry gesture, so nothing stopped `sleep_now()` running in the middle of a cold-boot sync — and since a wake is a fresh boot, the next attempt started over and lost again.
 
 The inhibit now covers the window from asking to join until the sync finishes, with a deadline so a network that never arrives cannot keep the device awake for good. This is the third thing to need that guard, which is the argument for `tk_net_is_active()` being one question the sleep path asks rather than a list of conditions it checks.
+
+## 2026-08-07: MCUboot, and the two keys an update is signed with
+
+Firmware updates need a bootloader, and the flash was already laid out for one: Zephyr's `partitions_0x0_amp_4M.dtsi` has defined `boot_partition`, two 1344 KB image slots and a scratch partition since before any of this was written. The device was simply not using them — the ESP32-S3 default is "simple boot", which loads slot0 directly. So enabling MCUboot moved no partition and orphaned no device state: the NVS holding the Wi-Fi credentials and the LittleFS holding the corpus are both untouched, verified on hardware by reading them back after the switch.
+
+What it costs is 57,696 B of the 64 KB `boot_partition`, 88%, and that is almost entirely the Ed25519 verification the bootloader exists to do — an unsigned MCUboot for this board is 37,648 B. The application grew from 716,388 B to 784,372 B, and none of that is code: with MCUboot the image's IROM and DROM segments are MMU-page aligned, which pads the binary. 57% of slot0 either way.
+
+An update carries two signatures, made with two keys, and the reason is that they answer different questions. MCUboot's, made by `imgtool` with `FIRMWARE_SIGNING_KEY`, answers "may this run" — it gates execution and it is checked before a byte of slot1 is copied. The manifest's, made with the existing `BUNDLE_SIGNING_KEY` over the image's SHA-256, answers "is this the current release", and exists so a device can refuse a bad image before spending a download and a restart on it. That second question is exactly the one a question bundle's signature answers, so it reuses that key rather than inventing a third.
+
+The two keys are separate because they rotate differently. The bundle key is compiled into the application, so replacing it is an ordinary release. The firmware key is compiled into the bootloader, and nothing but a wired reflash replaces a bootloader — a device that will not accept your images is a device you have to physically reach. Keeping them separate means a compromised bundle key is an update and a compromised firmware key is a recall, rather than both being a recall.
+
+The development key in `firmware/keys/` is committed on purpose and its private half is public. Without it a local build produces an image the local bootloader rejects, which would make `just fw-build` useless out of the box. CI writes the release secret over that path before building, so a released bootloader trusts the release key and nothing else.
+
+## 2026-08-07: Overwrite-only, so a bad release is a reflash rather than a revert
+
+MCUboot's alternative is swap-with-revert: boot the new image as "test", and roll back automatically unless it confirms itself. That is the safer-sounding default and it is the wrong fit here.
+
+Confirming means the device deciding "I booted successfully". This device deep-sleeps between presses and every wake is a fresh boot, so that is a judgement it would make dozens of times a day rather than once, and a confirm written at the wrong moment either defeats the revert or triggers it on a device that is working. The swap also costs a second copy pass in a window where power must hold — the measured single copy is already 4.5 seconds.
+
+So the bootloader overwrites, and what is given up is recovery from a signed image of ours that crashes on boot. That is a release-process failure, answered by testing before tagging, and it is recoverable over the wire because every device is reachable with a cable. What overwrite-only does *not* give up is protection from an image that is not ours: the signature is checked before the copy begins, which was verified on hardware by planting an image signed with the wrong key and watching the bootloader refuse it and boot slot0 unchanged.
+
+## 2026-08-07: A device says it was updated by comparing versions in NVS, not by asking the bootloader
+
+An update installs during a boot, which is the one moment nobody is looking: MCUboot does the copy before any application code runs, and the device comes up looking exactly as it did before. Without something saying so, the only evidence is a console nobody has attached.
+
+Zephyr exposes `mcuboot_swap_type()`, and it is the wrong source twice over. It answers what will happen on the *next* boot, not what happened on this one, and in overwrite-only mode there is nothing left afterwards to distinguish an image installed a moment ago from one that has run for months.
+
+Comparing `APP_VERSION_STRING` against a version stored in NVS answers the question actually worth asking — is this different firmware than the one that ran here last — survives a flat cell, and clears itself, because writing the new value is what makes the next boot quiet. It is the mechanism `language.c` already uses for the corpus release, in the same settings subtree.
+
+The card goes out on `chan_service`, so it behaves like every other service card and holds the panel until somebody presses. A device with no version recorded stores one silently: a person unboxing a device should not be told it has just been updated.
+
+## 2026-08-07: Nothing was reading the settings back
+
+Found while building the update notice, and it had been true since settings were introduced: no code anywhere called `settings_load()`. `settings_save_one()` initialises the subsystem by itself, so saving worked and looked complete, while every registered load handler sat unused.
+
+The chosen language was written and never restored, so a device set to German came back in English on the next boot. The installed corpus version was likewise never read, which meant the anti-rollback check in `sync.cpp` compared every manifest against an empty string — the guard was there, and it was comparing against nothing.
+
+`load_settings()` in `main.c` now runs at `APPLICATION` init level, which Zephyr runs before the static threads start, so `app` cannot observe a half-loaded configuration. It never fails fatally: a device that cannot read its settings still draws questions in the compiled-in language, which is a better answer than refusing to boot.
+
+A second thing the same bug taught: the settings subsystem matches subtrees component by component, not by string prefix. A handler registered for `tk/fw` does not receive the key `tk/fw_ver`, because `fw` and `fw_ver` are different components — that key falls through to the `tk` handler in `language.c`, which returns `-ENOENT`. The key is `tk/fw/ver`. This was caught on hardware, by a device that reported itself factory-fresh on two consecutive boots.
+
+## 2026-08-07: Wi-Fi credentials are at rest in the clear, and that is recorded rather than fixed
+
+Demonstrated rather than assumed: with the device in its ordinary state, no gesture and no portal, one USB cable and eighteen seconds of `esptool read-flash 0x3b0000 0x30000` yields the network name and its password as printable strings. `wifi_credentials` stores them in NVS, NVS does not encrypt, and nothing else in the image does either.
+
+The ESP32-S3 can fix this properly. It has AES-XTS flash encryption with the key in an eFuse that software cannot read, and MCUboot's Espressif port supports it — `boot/espressif/hal/src/flash_encrypt.c` is right there in the tree. Three things stand in the way, and together they make it the wrong change for now.
+
+It needs a different bootloader. `ESP_FLASH_ENCRYPTION` in Zephyr is `depends on !ESP_SIMPLE_BOOT && !MCUBOOT`, and its help says the bootloader must be MCUboot's *Espressif* port, built with IDF-style configuration. What this repository builds is the *Zephyr* port, as a sysbuild image — the integration the OTA work is built on. Switching ports means giving that up.
+
+It needs `write-block-size = 32` in the devicetree, against the 4 this board declares. That is not cosmetic: NVS, LittleFS and the OTA stream all align to it, so raising it re-lays-out the storage partition and orphans the credentials, the language and the corpus on every device already set up. That is the same hazard the 2026-08-06 partition decision was written to avoid, arriving from the other direction.
+
+And it burns eFuses, irreversibly, per device. Release mode additionally disables UART read-back, which is what actually closes the hole above; development mode leaves re-flashing possible and is bypassable.
+
+Two non-answers, so nobody spends time on them. Encrypting the password with a key compiled into the image is not encryption against this attack: the dump that yields the password also yields the image, and therefore the key. And the password cannot simply not be stored — every wake is a fresh boot, so the device has to rejoin a network unattended.
+
+The middle option is real but is custom work: the S3's HMAC peripheral can hold an eFuse key software cannot read, which would let the application encrypt the password with a secret an attacker does not get from the flash. The vendored `hal_espressif` here exposes no HMAC component, so this is register-level work rather than a Kconfig switch.
+
+So it stays as it is, deliberately, and this entry is the record. What that buys an attacker is a Wi-Fi password, from a device they are holding. The mitigation that costs nothing is the one already in use on the bench: give the device a guest network. Revisit at the PCB stage, where the eFuse step can be part of manufacturing rather than something done to a device already in use.

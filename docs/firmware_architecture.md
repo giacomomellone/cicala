@@ -328,12 +328,14 @@ flowchart TB
         NETC[net.c<br/><i>thread + wifi events</i>]
         NLOG[net_logic.cpp<br/><i>machine behind a C API</i>]
         PORTALC[portal.c<br/><i>SoftAP, DHCP, DNS, HTTP</i>]
+        FETCH[fetch.c<br/><i>one GET, a sink per caller</i>]
+        SYNCC[sync.cpp<br/><i>bundle: verify, store</i>]
+        OTAC[ota.cpp<br/><i>image: verify, stage</i>]
     end
 
     subgraph todo["still design"]
         direction LR
         POWER[power<br/><i>ADC, VBUS, PM</i>]:::t
-        SYNC[sync<br/><i>HTTPS, verify, swap</i>]:::t
     end
 
     FSM --> APPFSM
@@ -352,8 +354,11 @@ flowchart TB
     NETC --> NLOG
     NLOG --> PORTALC
     NLOG --> CHAN
-    SYNC -.-> QDB
-    SYNC -.-> CHAN
+    NETC --> SYNCC
+    NETC --> OTAC
+    SYNCC --> FETCH
+    OTAC --> FETCH
+    SYNCC --> CHAN
     POWER -.-> CHAN
 
     classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
@@ -489,6 +494,37 @@ failure leaves the previous bundle in place. The gzip in a `.qdb.gz` is transpor
 only — `SWAP` decompresses, because a device that reboots on every press must
 not re-inflate the bundle each time.
 
+## Firmware updates
+
+Built. The same shape as the sync above, sharing the socket code in `fetch.c`,
+the manifest parser in `lib/sync`, the verifier in `lib/ed25519` and the
+cheapest-first check order. Full description in
+[firmware_update.md](firmware_update.md).
+
+```mermaid
+flowchart LR
+    OTA["ota.cpp<br/><i>manifest · verify · stage</i>"]
+    SINK["fetch.c<br/><i>one GET, a sink per caller</i>"]
+    SLOT[("slot1_partition<br/>1344 KB at 0x170000")]
+    MB["MCUboot<br/><i>verifies, then copies</i>"]
+    APP["slot0<br/><i>the running image</i>"]
+
+    OTA --> SINK
+    SINK -->|"streamed, hashed as it goes"| SLOT
+    OTA -->|"boot_request_upgrade()<br/>only after all three checks"| SLOT
+    SLOT -->|"on the next boot"| MB
+    MB -->|"signature ok"| APP
+```
+
+Two differences from a bundle sync, both forced by size. An image is written
+before it is verified, because 780 KB does not fit in RAM — safe because
+nothing boots from slot1 until `boot_request_upgrade()` marks it. And installing
+is a restart rather than a rename: MCUboot does the copy, measured at 4.5
+seconds on this board, before any application code runs.
+
+`update_notice.c` is what tells the table afterwards, since the install happens
+where nobody can see it.
+
 ## Where a synced corpus lives
 
 Built, ahead of anything that fetches one.
@@ -539,6 +575,23 @@ at boot so the next boot reads it back, which is the whole of what sync does
 with a bundle once it has verified one. Without it none of this could be
 exercised until the download existed, and a first failure could then have been
 in either half.
+
+### What is at rest, and in the clear
+
+Everything the device keeps between boots is readable by anyone holding it.
+`storage_partition` is NVS and NVS does not encrypt; the flash itself is not
+encrypted either. So `esptool read-flash 0x3b0000 0x30000` yields, as printable
+strings, the stored network name and **its password**, the chosen language and
+the installed versions. Measured on the bench: eighteen seconds, no gesture, no
+portal, device in its ordinary state.
+
+Nothing here is a mistake to be fixed in this layer — encrypting the value with
+a key that is also in the flash protects nobody. Closing it means the SoC's
+eFuse-backed flash encryption, which is a different bootloader, a devicetree
+change that orphans existing storage, and an irreversible per-device step. The
+decision log has the full reasoning and the argument for deferring it to the
+PCB stage. Until then the mitigation that costs nothing is to give the device a
+guest network.
 
 ## The setup portal
 

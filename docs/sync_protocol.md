@@ -159,3 +159,17 @@ attention from the current question.
 The private key is a GitHub Actions secret. The public key remains part of a
 future firmware build. Key rotation requires a firmware release; devices
 without a valid new bundle continue with their preloaded corpus.
+
+The same key signs the OTA manifest, because it makes the same statement about
+the same kind of artifact. It is *not* the key that signs firmware images —
+that one lives in the bootloader and is described in
+[firmware_update.md](firmware_update.md).
+
+## Firmware, which is the same shape
+
+Firmware updates use a second manifest, `/device/firmware.json`, with the same
+fields and the same check order. It is a separate document rather than a key in
+this one because the two are published by different tags and each carries the
+version its own anti-rollback rule compares against — sharing a file would make
+a question-database release gate a firmware check, and the reverse. See
+[firmware_update.md](firmware_update.md).
