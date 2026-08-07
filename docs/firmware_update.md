@@ -107,9 +107,16 @@ it is the same step the question bundles are waiting on.
 
 ## Trying it on a bench
 
-No website, no release, one laptop and one device on the same network. The
-device must be able to reach the laptop — a guest network that isolates its
-clients will not work, which is worth checking first.
+No website, no release, one laptop and one device on the same network.
+
+**Check that first, because it is the step that fails silently.** A guest
+network usually isolates its clients, so a device on one cannot open a socket
+to a laptop on the main network — the console says `could not connect to
+<ip>: 116`, which is a timeout and looks like a server that is not running. Put
+both on the same network before anything else: hold Category and Next through a
+boot, join the `Tischkarte-XXXX` access point from a phone, and set the network
+the laptop is on. The device's lease is logged, so `just fw-monitor` tells you
+which subnet it landed in.
 
 ```sh
 # A throwaway manifest key, because the real private half is a GitHub secret.
