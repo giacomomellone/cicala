@@ -9,9 +9,9 @@ board in [hardware wiring](hardware_wiring.md), rationale in
 **Status: the tabletop loop is built, its state survives a reboot, and the
 device can be put on a network.** `input`, `app_fsm`, `qdb` with its bag,
 `layout`, `retained`, the panel and the setup `portal` all exist and are
-tested. Still design: `sync`, `power`, and deep sleep itself — `CONFIG_PM` is
-off, so nothing sleeps, but the state that has to outlive a wake is already in
-RTC memory rather than waiting on it. Deep sleep and the radio are both on in
+tested, as are `sync` and the firmware update path built on it. Still design:
+`power`. Deep sleep is on in the everyday image, and the state that has to
+outlive a wake lives in RTC memory. Deep sleep and the radio are both on in
 the everyday image now; the images that measure something turn them back off. Items marked *verify* have not been run on
 hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
