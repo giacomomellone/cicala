@@ -111,7 +111,10 @@ jobs:
 
       - name: Build the question bundles compiled into the image
         run: |
-          pip install --quiet pyyaml jsonschema
+          # imgtool: the sysbuild build signs the application with it, and its
+          # absence surfaces as a build failure inside mcuboot.cmake rather
+          # than as a missing package.
+          pip install --quiet pyyaml jsonschema imgtool
           python3 tools/build_bundle.py
           mkdir -p firmware/tests/fixtures
           for f in dist/bundles/bundle-*.qdb; do
@@ -119,25 +122,46 @@ jobs:
             cp "$f" "firmware/tests/fixtures/$lang.qdb"
           done
 
-      - name: Build for the ESP32-S3 devkit
-        run: west build -b esp32s3_devkitc/esp32s3/procpu firmware/app -d build/esp32s3
-
-      # The partition is 1344 KB (dts/vendor/espressif/partitions_0x0_amp_4M.dtsi).
-      # Reported every run, not only when it fails, so the number moves visibly
-      # rather than being noticed at a flash.
-      - name: Check the image still fits its partition
+      # --sysbuild: the bootloader is part of the product now, and a build
+      # without it would not catch a change that breaks MCUboot's own build or
+      # pushes it past its 64 KB partition. Signed with the committed
+      # development key here; a release re-signs with the secret. See
+      # firmware/keys/README.md.
+      - name: Build for the ESP32-S3 devkit (bootloader + application)
         run: |
-          limit=$((1344 * 1024))
-          size=$(stat -c %s build/esp32s3/zephyr/zephyr.bin)
-          pct=$((size * 100 / limit))
+          west build -b esp32s3_devkitc/esp32s3/procpu firmware/app \
+            -d build/esp32s3 --sysbuild
 
-          echo "### Image size" >> "$GITHUB_STEP_SUMMARY"
-          echo "\`zephyr.bin\` is $size B of $limit B (${pct}% of slot0_partition)." \
-            >> "$GITHUB_STEP_SUMMARY"
+      # slot0 is 1344 KB and boot_partition is 64 KB
+      # (dts/vendor/espressif/partitions_0x0_amp_4M.dtsi). Both reported every
+      # run, not only when they fail, so the numbers move visibly rather than
+      # being noticed at a flash — and the bootloader is the tighter of the two.
+      - name: Check both images still fit their partitions
+        run: |
+          app_limit=$((1344 * 1024))
+          boot_limit=$((64 * 1024))
+          app=$(stat -c %s build/esp32s3/app/zephyr/zephyr.signed.bin)
+          boot=$(stat -c %s build/esp32s3/mcuboot/zephyr/zephyr.bin)
+          app_pct=$((app * 100 / app_limit))
+          boot_pct=$((boot * 100 / boot_limit))
 
-          if [ "$size" -gt "$limit" ]; then
-            echo "::error::zephyr.bin is $size B, over the $limit B slot0_partition"
-            exit 1
+          {
+            echo "### Image size"
+            echo "\`zephyr.signed.bin\` is $app B of $app_limit B (${app_pct}% of slot0_partition)."
+            echo "MCUboot is $boot B of $boot_limit B (${boot_pct}% of boot_partition)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          fail=0
+
+          if [ "$app" -gt "$app_limit" ]; then
+            echo "::error::the signed image is $app B, over the $app_limit B slot0_partition"
+            fail=1
           fi
 
-          echo "zephyr.bin is $size B of $limit B (${pct}%)"
+          if [ "$boot" -gt "$boot_limit" ]; then
+            echo "::error::MCUboot is $boot B, over the $boot_limit B boot_partition"
+            fail=1
+          fi
+
+          echo "app $app B of $app_limit B (${app_pct}%), mcuboot $boot B of $boot_limit B (${boot_pct}%)"
+          exit $fail
