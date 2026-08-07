@@ -51,6 +51,11 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      DEVICE_BUCKET: ${{ secrets.DEVICE_BUCKET }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.DEVICE_BUCKET_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.DEVICE_BUCKET_SECRET }}
+      AWS_DEFAULT_REGION: ${{ secrets.DEVICE_BUCKET_REGION }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -239,3 +244,28 @@ jobs:
           name: firmware-${{ env.version }}-bench
           path: dist/firmware/
           if-no-files-found: error
+
+      # Publishing here rather than leaving it to site.yml, which runs on a
+      # push to main and would not notice this: a release created with the
+      # default GITHUB_TOKEN raises no events, so nothing downstream fires.
+      # Without this step, "release from the Actions page" would produce a
+      # release that reached no device until somebody happened to push.
+      #
+      # Not for a bench build. That manifest names a private address, and the
+      # public endpoint is the last place it belongs.
+      - name: Publish it where devices will look
+        if: (github.event_name == 'push' || inputs.sync_host == '') && env.DEVICE_BUCKET != ''
+        run: |
+          aws s3 cp dist/firmware/tischkarte-${version}.bin \
+            "s3://$DEVICE_BUCKET/device/tischkarte-${version}.bin" \
+            --cache-control 'public, max-age=31536000, immutable' --no-progress
+
+          # The manifest last, and with a short cache: it is the file that
+          # makes the image visible, so an image that is not there yet must
+          # never be advertised.
+          aws s3 cp dist/firmware/firmware.json \
+            "s3://$DEVICE_BUCKET/device/firmware.json" \
+            --cache-control 'public, max-age=60' --no-progress
+
+          echo "devices will find $version at http://$DEVICE_BUCKET/device/" \
+            >> "$GITHUB_STEP_SUMMARY"
