@@ -20,6 +20,7 @@ REPO = TOOLS.parent
 sys.path.insert(0, str(TOOLS))
 
 import build_bundle  # noqa: E402
+import build_firmware_manifest  # noqa: E402
 import build_site_data  # noqa: E402
 import validate  # noqa: E402
 
@@ -49,12 +50,7 @@ class TmpDb(unittest.TestCase):
         return path
 
     def question(self, text, decks="[new_people]", depth=1, extra=""):
-        return (
-            f'- text: "{text}"\n'
-            f"  decks: {decks}\n"
-            f"  depth: {depth}\n"
-            f"{extra}"
-        )
+        return f'- text: "{text}"\n  decks: {decks}\n  depth: {depth}\n{extra}'
 
 
 class TestIdAssignment(TmpDb):
@@ -73,7 +69,8 @@ class TestIdAssignment(TmpDb):
         content = (self.tmp / "questions/en/questions.yaml").read_text()
         # id must equal the documented hash construction
         expected = validate.compute_id(
-            "en", "When did you last change your mind about something important?")
+            "en", "When did you last change your mind about something important?"
+        )
         self.assertIn(f"id: {expected}", content)
         self.assertIn("added: ", content)
 
@@ -88,16 +85,17 @@ class TestIdAssignment(TmpDb):
 
     def test_existing_id_is_preserved_after_text_edit(self):
         # ids are stable forever: a typo fix must not change or invalidate the id
-        self.write("questions/en/questions.yaml",
-                   "- id: q-00000000\n"
-                   '  text: "What matters most to you todayy?"\n'
-                   "  decks: [close]\n"
-                   "  depth: 2\n"
-                   '  added: "2026-01-01"\n')
+        self.write(
+            "questions/en/questions.yaml",
+            "- id: q-00000000\n"
+            '  text: "What matters most to you todayy?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            '  added: "2026-01-01"\n',
+        )
         code, _, _ = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 0)
-        self.assertIn("id: q-00000000",
-                      (self.tmp / "questions/en/questions.yaml").read_text())
+        self.assertIn("id: q-00000000", (self.tmp / "questions/en/questions.yaml").read_text())
 
     def test_fix_is_idempotent(self):
         path = self.write(
@@ -229,8 +227,7 @@ class TestSiteData(TmpDb):
         )
         run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         out = self.tmp / "site_data"
-        code, _, _ = run_quiet(build_site_data.main,
-                               ["--root", str(self.tmp), "--out", str(out)])
+        code, _, _ = run_quiet(build_site_data.main, ["--root", str(self.tmp), "--out", str(out)])
         self.assertEqual(code, 0)
         self.assertTrue((out / "questions.en.json").exists())
         self.assertFalse((out / "questions.fr.json").exists())
@@ -252,8 +249,9 @@ class TestBundle(unittest.TestCase):
     def test_round_trip_against_real_database(self):
         # phase C acceptance: bundle round-trip for en and de
         with tempfile.TemporaryDirectory() as tmp:
-            code, _, _ = run_quiet(build_bundle.main,
-                                   ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
+            code, _, _ = run_quiet(
+                build_bundle.main, ["--root", str(REPO), "--out", tmp, "--version", "test.1"]
+            )
             self.assertEqual(code, 0)
             manifest = json.loads((Path(tmp) / "manifest.json").read_text())
             self.assertEqual(manifest["schema"], 3)
@@ -263,15 +261,12 @@ class TestBundle(unittest.TestCase):
                 parsed = build_bundle.parse_bundle(blob)
                 self.assertEqual(parsed["lang"], lang)
                 self.assertEqual(parsed["version"], "test.1")
-                self.assertEqual(
-                    len(parsed["questions"]), manifest["languages"][lang]["count"]
-                )
+                self.assertEqual(len(parsed["questions"]), manifest["languages"][lang]["count"])
                 for question in parsed["questions"]:
                     self.assertTrue(question["decks"])
                     self.assertIn(question["depth"], (1, 2, 3))
                     if question["spicy"] or question["dark"]:
                         self.assertEqual(question["decks"], ["wild"])
-
 
     def test_manifest_describes_the_raw_bundle_a_device_downloads(self):
         """schema 3: the device takes the .qdb, and size/sha256/sig cover it.
@@ -282,8 +277,9 @@ class TestBundle(unittest.TestCase):
         side alone.
         """
         with tempfile.TemporaryDirectory() as tmp:
-            code, _, _ = run_quiet(build_bundle.main,
-                                   ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
+            code, _, _ = run_quiet(
+                build_bundle.main, ["--root", str(REPO), "--out", tmp, "--version", "test.1"]
+            )
             self.assertEqual(code, 0)
             manifest = json.loads((Path(tmp) / "manifest.json").read_text())
 
@@ -301,21 +297,83 @@ class TestBundle(unittest.TestCase):
 
                 # Both artifacts are published and carry the same questions.
                 self.assertEqual(gzip.decompress(gz), raw)
-                self.assertEqual(
-                    len(build_bundle.parse_bundle(gz)["questions"]), entry["count"]
-                )
+                self.assertEqual(len(build_bundle.parse_bundle(gz)["questions"]), entry["count"])
 
     def test_parse_bundle_takes_either_shape(self):
         with tempfile.TemporaryDirectory() as tmp:
-            code, _, _ = run_quiet(build_bundle.main,
-                                   ["--root", str(REPO), "--out", tmp, "--version", "test.1"])
+            code, _, _ = run_quiet(
+                build_bundle.main, ["--root", str(REPO), "--out", tmp, "--version", "test.1"]
+            )
             self.assertEqual(code, 0)
             raw = (Path(tmp) / "bundle-en-test.1.qdb").read_bytes()
             gz = (Path(tmp) / "bundle-en-test.1.qdb.gz").read_bytes()
 
-            self.assertEqual(build_bundle.parse_bundle(raw),
-                             build_bundle.parse_bundle(gz))
+            self.assertEqual(build_bundle.parse_bundle(raw), build_bundle.parse_bundle(gz))
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFirmwareManifest(unittest.TestCase):
+    """The firmware side of the same contract the bundle manifest has.
+
+    The bug being guarded against is the one build_bundle's manifest test
+    guards against, in a shape that is easier to hit: the build produces
+    zephyr.bin and zephyr.signed.bin forty bytes apart in one directory, and
+    publishing the wrong one yields a manifest that verifies perfectly and an
+    image MCUboot refuses to boot.
+    """
+
+    # An MCUboot image header is magic, load address, header size... Only the
+    # magic matters here; the rest is padding so the file looks like an image.
+    SIGNED = (0x96F3B83D).to_bytes(4, "little") + bytes(28) + b"payload"
+    UNSIGNED = b"\xe9\x04\x02\x20" + bytes(28) + b"payload"
+
+    def test_manifest_describes_the_image_it_publishes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "zephyr.signed.bin"
+            image.write_bytes(self.SIGNED)
+            out = Path(tmp) / "out"
+
+            code, _, _ = run_quiet(
+                build_firmware_manifest.main,
+                [
+                    str(image),
+                    "--version",
+                    "0.2.0",
+                    "--out",
+                    str(out),
+                    "--base-url",
+                    "http://h/device",
+                ],
+            )
+            self.assertEqual(code, 0)
+
+            manifest = json.loads((out / "firmware.json").read_text())
+            published = (out / "tischkarte-0.2.0.bin").read_bytes()
+
+            self.assertEqual(manifest["schema"], 1)
+            self.assertEqual(manifest["version"], "0.2.0")
+            self.assertTrue(manifest["url"].endswith("tischkarte-0.2.0.bin"))
+            self.assertEqual(manifest["size"], len(published))
+            self.assertEqual(manifest["sha256"], hashlib.sha256(published).hexdigest())
+
+            # What the device downloads is byte for byte what was signed.
+            self.assertEqual(published, self.SIGNED)
+
+            # No key was given, so nothing claims one was.
+            self.assertIsNone(manifest["sig"])
+
+    def test_the_unsigned_image_is_refused(self):
+        """zephyr.bin has no MCUboot header, so a device could never boot it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            image = Path(tmp) / "zephyr.bin"
+            image.write_bytes(self.UNSIGNED)
+
+            code, _, err = run_quiet(
+                build_firmware_manifest.main,
+                [str(image), "--version", "0.2.0", "--out", str(Path(tmp) / "out")],
+            )
+            self.assertEqual(code, 1)
+            self.assertIn("MCUboot header", err)

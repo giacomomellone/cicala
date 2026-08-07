@@ -41,4 +41,5 @@ manifest:
           - tf-psa-crypto   # mbedtls 4 keeps PSA crypto here, and will not configure without it
           - mldsa-native    # referenced by the same mbedtls CMake, alongside tf-psa-crypto
           - littlefs        # question bundle storage
+          - mcuboot         # bootloader, for OTA image slots
           - segger          # RTT, for logging without a UART

@@ -113,10 +113,14 @@ data:
 bundle:
     {{ python }} tools/build_bundle.py
 
-# generate the ed25519 bundle-signing keypair (see docs/sync_protocol.md)
+# Arguments pass through, which is what reaches the second key:
+#   just keygen --purpose firmware --out release-firmware-key.pem
+# See docs/firmware_update.md for which key is which.
+
+# generate an ed25519 signing keypair (see docs/sync_protocol.md)
 [group('database')]
-keygen:
-    {{ python }} tools/keygen.py
+keygen *args:
+    {{ python }} tools/keygen.py {{ args }}
 
 # ----------------------------------------------------------------- website
 
@@ -211,20 +215,27 @@ fw-doctor:
     @# The USB jack: JTAG for OpenOCD, and the debug build's console.
     @echo "usbport:   {{ if usbport == '' { 'none — USB jack not connected; no JTAG, no debug console' } else { usbport } }}"
 
-# build for the ESP32-S3 devkit
+# --sysbuild, so the build produces the bootloader as well as the application.
+# Without MCUboot there is no second image slot and no firmware update; see
+# docs/firmware_update.md. It moves the application's output down a level:
+# build/esp32s3/app/zephyr/ rather than build/esp32s3/zephyr/. The bench images
+# below stay single-image on purpose — they are flashed over the UART and never
+# updated over the air.
+
+# build for the ESP32-S3 devkit (bootloader + application)
 [group('firmware')]
 fw-build: fw-fixtures
-    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3 --sysbuild
 
-# Changes land in build/esp32s3/zephyr/.config, which fw-clean and pristine
+# Changes land in build/esp32s3/app/zephyr/.config, which fw-clean and pristine
 # rebuilds discard — copy anything worth keeping into firmware/app/prj.conf.
 
 # open the kconfig menu for the devkit build (q to quit, s to save)
 [group('firmware')]
 fw-menuconfig: fw-build
-    {{ west }} build -t menuconfig -d build/esp32s3
+    {{ west }} build -t menuconfig -d build/esp32s3 --domain app
 
-# flash the devkit over its USB connection
+# flash the devkit over its USB connection (both images, bootloader first)
 [group('firmware')]
 fw-flash: fw-build
     {{ west }} flash --no-rebuild -d build/esp32s3 {{ portflag }}
@@ -338,6 +349,79 @@ fw-build-bench host port="8000": fw-fixtures
 [group('firmware')]
 fw-bench host port="8000": (fw-build-bench host port)
     {{ west }} flash --no-rebuild -d build/esp32s3-bench {{ portflag }}
+
+# ------------------------------------------------------- firmware updates
+#
+# The whole loop on one bench, with no website involved. See
+# docs/firmware_update.md for what each step is doing and why.
+#
+#   just fw-ota-publish            # sign the image you just built, into dist/firmware
+#   just fw-ota-serve              # serve dist/firmware on :8000
+#   just fw-ota 192.168.1.23       # flash a device that fetches from this laptop
+#
+# Then bump firmware/app/VERSION, `just fw-ota-publish` again, and cold-boot the
+# device: it finds the newer version, installs it, and says so on the panel.
+
+# Split, because the loop needs a build without a flash: the device runs the
+# old version while the new one is built and published for it to find.
+
+# build an image whose updates come from a laptop rather than from the site
+[group('firmware')]
+fw-build-ota host="" port="8000": fw-fixtures
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # No host: a rebuild of whatever was configured last, which is what bumping
+    # the VERSION file and building the *next* release wants. CMake caches the
+    # URLs, so repeating them would only be a chance to mistype one.
+    if [ -z "{{ host }}" ]; then
+        if [ ! -d build/esp32s3-ota ]; then
+            echo "no build/esp32s3-ota yet — run: just fw-build-ota <this laptop's IP>" >&2
+            exit 1
+        fi
+        exec {{ west }} build -d build/esp32s3-ota
+    fi
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-ota --sysbuild -- \
+        -DEXTRA_CONF_FILE=bench.conf \
+        -DCONFIG_TK_OTA=y \
+        -DCONFIG_TK_SYNC_HOST=\"{{ host }}\" \
+        -DCONFIG_TK_SYNC_PORT={{ port }} \
+        -DCONFIG_TK_SYNC_BASE_URL=\"http://{{ host }}:{{ port }}\" \
+        -DCONFIG_TK_OTA_BASE_URL=\"http://{{ host }}:{{ port }}\"
+
+# build + flash that image, which is where the loop starts
+[group('firmware')]
+fw-ota host port="8000": (fw-build-ota host port)
+    {{ west }} flash --no-rebuild -d build/esp32s3-ota {{ portflag }}
+
+# Signed with the bundle key if you have it, unsigned otherwise — and an
+# unsigned manifest is refused by the device, on purpose. For a bench run,
+# generate a throwaway pair with `just keygen` and rebuild the firmware so its
+# committed public key matches, or use a real release manifest.
+
+# sign the built OTA image and write dist/firmware/firmware.json
+[group('firmware')]
+fw-ota-publish version="" key="signing_key.pem" host="" port="8000":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    v="{{ version }}"
+    if [ -z "$v" ]; then
+        v=$(sed -n 's/^VERSION_MAJOR *= *//p' firmware/app/VERSION).$(sed -n 's/^VERSION_MINOR *= *//p' firmware/app/VERSION).$(sed -n 's/^PATCHLEVEL *= *//p' firmware/app/VERSION)
+    fi
+    h="{{ host }}"
+    if [ -z "$h" ]; then
+        h=$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')
+    fi
+    key=""
+    if [ -f "{{ key }}" ]; then key="--sign-key {{ key }}"; fi
+    {{ python }} tools/build_firmware_manifest.py \
+        build/esp32s3-ota/app/zephyr/zephyr.signed.bin \
+        --version "$v" --base-url "http://$h:{{ port }}" $key
+
+# serve dist/firmware so a device on the same network can fetch it
+[group('firmware')]
+fw-ota-serve port="8000":
+    @echo "serving dist/firmware on :{{ port }} — the device wants http://<this host>:{{ port }}/firmware.json"
+    cd dist/firmware && {{ python }} -m http.server {{ port }}
 
 # serial monitor (ctrl-] to exit)
 [group('firmware')]

@@ -7,7 +7,11 @@ renders it on the e-paper; the shuffle bag and refresh counter live in RTC
 memory so a wake does not restart them; the device deep-sleeps two seconds
 after the last press and replays the press that wakes it; and holding both
 buttons through a boot raises a setup portal a phone can configure Wi-Fi from.
-Still missing: the power path, and bundle sync.
+It runs under MCUboot and installs signed firmware updates into its spare image
+slot, saying so on the panel afterwards —
+[docs/firmware_update.md](../docs/firmware_update.md).
+Still missing: the power path, and a host that serves devices their bundles and
+images.
 [docs/firmware_primer.md](../docs/firmware_primer.md) is the hands-on tour; the
 design is [docs/firmware_architecture.md](../docs/firmware_architecture.md). Initial
 development targets the USB-powered breadboard rig in
@@ -33,13 +37,21 @@ the decision log for why.
 
 ```sh
 just fw-init      # once: west init + update into deps/, fetch espressif blobs
-just fw-build     # build for the ESP32-S3 devkit
-just fw-flash     # flash over the devkit's USB connection
+just fw-build     # build for the ESP32-S3 devkit: bootloader + application
+just fw-flash     # flash both over the devkit's USB connection
 just fw-monitor   # serial console: deck changes and presses
 just fw-bench IP  # point sync at a server on the bench
+just fw-ota IP    # the same for firmware updates — see docs/firmware_update.md
 just fw-sim       # run under qemu on the host
 just fw-test      # ztest suites via twister
 ```
+
+`fw-build` passes `--sysbuild`, so it produces two images: MCUboot in
+`build/esp32s3/mcuboot/` and the signed application in `build/esp32s3/app/`.
+The bootloader is what makes a firmware update possible — it owns the choice of
+which of the two image slots runs — and the pair must be flashed together,
+because a bootloader only installs images signed with the key it was built
+from.
 
 The west workspace uses T2 topology: `west.yml` here is the manifest, the repo
 root is the topdir, and Zephyr plus its modules land in a gitignored `deps/`.
@@ -254,6 +266,11 @@ e-paper HAT wired to the panel pins.
 | A corpus is stored, swapped atomically and read back | the rig, via `just fw-corpus` |
 | A cold boot joins a network and starts a sync | the rig — up to the TCP connect |
 | A bundle is fetched and installed over the network | nothing yet — the bench server is unreachable from the guest network the device is on, and there is no public host |
+| MCUboot boots the application, with NVS and the corpus intact | the rig — 240 questions and the stored language survived the switch |
+| A signed image in the spare slot is installed on the next boot | the rig — 4.5 s for the copy, then the new version runs |
+| An image signed with the wrong key is refused | the rig — the bootloader rejected it and booted the old image unchanged |
+| The panel says so after an update installs | the rig — `Updated to 0.3.0` on the glass, held until the next press |
+| An image is fetched over the network | nothing yet — same guest network, same reason as the bundle row above |
 
 Two of these are honest only with their qualifier. The bundle and layout rows
 are checked off the host suites against the corpus the device ships, which

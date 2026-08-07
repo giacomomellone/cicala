@@ -40,3 +40,10 @@ docs/assets/javascripts/mermaid.min.js
 # secrets — never commit private keys
 *.pem
 signing_key*
+
+# The one exception, and it is not a secret: the development firmware-signing
+# key, whose whole purpose is to be in the tree so a local build produces an
+# image the local bootloader accepts. Every release is signed with the
+# FIRMWARE_SIGNING_KEY secret instead. firmware/keys/README.md says so at
+# length; do not add a second exception here.
+!firmware/keys/firmware-signing-dev.pem

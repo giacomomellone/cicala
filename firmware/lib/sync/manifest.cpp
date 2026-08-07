@@ -389,4 +389,68 @@ bool manifest_entry(const char *json, size_t len, const char *language, Manifest
     return true;
 }
 
+bool firmware_parse(const char *json, size_t len, FirmwareRelease &out)
+{
+    if (json == nullptr || len == 0) {
+        return false;
+    }
+
+    size_t at = 0;
+
+    if (!find_key(json, len, "schema", 0, at) || !take_uint(json, len, at, out.schema)) {
+        return false;
+    }
+
+    if (!find_key(json, len, "version", 0, at) ||
+        !take_string(json, len, at, out.version, sizeof(out.version))) {
+        return false;
+    }
+
+    if (!find_key(json, len, "url", 0, at) ||
+        !take_string(json, len, at, out.url, sizeof(out.url))) {
+        return false;
+    }
+
+    if (!find_key(json, len, "size", 0, at) || !take_uint(json, len, at, out.size)) {
+        return false;
+    }
+
+    if (out.size == 0) {
+        return false;
+    }
+
+    char scratch[kSignatureBytes * 2 + 8];
+
+    if (!find_key(json, len, "sha256", 0, at) ||
+        !take_string(json, len, at, scratch, sizeof(scratch)) ||
+        !take_hex(scratch, out.sha256, sizeof(out.sha256))) {
+        return false;
+    }
+
+    out.signed_ = false;
+
+    for (size_t i = 0; i < sizeof(out.sig); i++) {
+        out.sig[i] = 0;
+    }
+
+    if (!find_key(json, len, "sig", 0, at)) {
+        return false;
+    }
+
+    /* `"sig": null` — an image built without the manifest key. Parsed rather
+     * than rejected, so ota.cpp can say what is wrong with it. */
+    if (at < len && json[at] == 'n') {
+        return true;
+    }
+
+    if (!take_string(json, len, at, scratch, sizeof(scratch)) ||
+        !take_base64(scratch, out.sig, sizeof(out.sig))) {
+        return false;
+    }
+
+    out.signed_ = true;
+
+    return true;
+}
+
 } // namespace tk

@@ -1,0 +1,14 @@
+# The firmware image version.
+#
+# Two things read it. Zephyr generates APP_VERSION_STRING from it, which is
+# what the device compares against the OTA manifest to decide whether an update
+# is newer — see src/ota.cpp. And CONFIG_MCUBOOT_IMGTOOL_SIGN_VERSION defaults
+# to APP_VERSION_TWEAK_STRING, so the same number lands in the MCUboot image
+# header without being written twice.
+#
+# Bump this in the commit that is released, and tag it `fw-<version>`.
+VERSION_MAJOR = 0
+VERSION_MINOR = 1
+PATCHLEVEL = 0
+VERSION_TWEAK = 0
+EXTRAVERSION =

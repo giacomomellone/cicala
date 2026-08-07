@@ -197,3 +197,106 @@ ZTEST(tk_sync, test_a_zero_sized_bundle_is_refused)
 
     zassert_false(manifest_entry(json, sizeof(json) - 1, "en", e));
 }
+
+/* ------------------------------------------------------- firmware manifest */
+
+/*
+ * A second document, and the reason it is a second document rather than a key
+ * in the one above is in docs/firmware_update.md: the two are published by
+ * different releases and each carries its own version to compare against.
+ *
+ * The parser is shared, so what these cases are really checking is that the
+ * flat shape gets the same refusals the nested one does.
+ */
+
+ZTEST(tk_sync, test_a_firmware_manifest_parses)
+{
+    static const char json[] =
+        "{\"schema\":1,\"version\":\"0.2.0\","
+        "\"url\":\"https://h/device/tischkarte-0.2.0.bin\",\"size\":782628,"
+        "\"sha256\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\","
+        "\"sig\":\"" /* 64 bytes of 0x41, base64 */
+        "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ=="
+        "\"}";
+
+    FirmwareRelease r = {};
+
+    zassert_true(firmware_parse(json, sizeof(json) - 1, r));
+    zassert_equal(r.schema, 1);
+    zassert_str_equal(r.version, "0.2.0");
+    zassert_str_equal(r.url, "https://h/device/tischkarte-0.2.0.bin");
+    zassert_equal(r.size, 782628);
+    zassert_true(r.signed_);
+    zassert_equal(r.sha256[0], 0x01);
+    zassert_equal(r.sha256[31], 0x20);
+    zassert_equal(r.sig[0], 'A');
+    zassert_equal(r.sig[63], 'A');
+}
+
+ZTEST(tk_sync, test_an_unsigned_firmware_manifest_parses_but_is_marked)
+{
+    /* Parsed rather than refused here, so ota.cpp can say what is wrong with
+     * it. A parse failure would read as a corrupt manifest instead. */
+    static const char json[] =
+        "{\"schema\":1,\"version\":\"0.2.0\",\"url\":\"https://h/f.bin\",\"size\":1,"
+        "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "\"sig\":null}";
+
+    FirmwareRelease r = {};
+
+    zassert_true(firmware_parse(json, sizeof(json) - 1, r));
+    zassert_false(r.signed_);
+}
+
+ZTEST(tk_sync, test_a_firmware_manifest_missing_a_field_is_refused)
+{
+    FirmwareRelease r = {};
+
+    /* No version: nothing to compare against what is running, so there is no
+     * way to know whether this is an upgrade or a rollback. */
+    static const char no_version[] =
+        "{\"schema\":1,\"url\":\"https://h/f.bin\",\"size\":1,"
+        "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "\"sig\":null}";
+    zassert_false(firmware_parse(no_version, sizeof(no_version) - 1, r));
+
+    /* No url. */
+    static const char no_url[] =
+        "{\"schema\":1,\"version\":\"0.2.0\",\"size\":1,"
+        "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "\"sig\":null}";
+    zassert_false(firmware_parse(no_url, sizeof(no_url) - 1, r));
+
+    /* No digest. Without one, size is the only check before a reboot. */
+    static const char no_digest[] =
+        "{\"schema\":1,\"version\":\"0.2.0\",\"url\":\"https://h/f.bin\",\"size\":1,"
+        "\"sig\":null}";
+    zassert_false(firmware_parse(no_digest, sizeof(no_digest) - 1, r));
+}
+
+ZTEST(tk_sync, test_a_zero_sized_image_is_refused)
+{
+    static const char json[] =
+        "{\"schema\":1,\"version\":\"0.2.0\",\"url\":\"https://h/f.bin\",\"size\":0,"
+        "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
+        "\"sig\":null}";
+
+    FirmwareRelease r = {};
+
+    zassert_false(firmware_parse(json, sizeof(json) - 1, r));
+}
+
+ZTEST(tk_sync, test_firmware_versions_order_the_way_ota_needs)
+{
+    /* The comparison ota.cpp makes, with the shapes the VERSION file
+     * produces. Equal means current, which is what stops a device
+     * re-downloading the release it is already running on every cold boot. */
+    zassert_true(version_compare("0.2.0", "0.1.0") > 0);
+    zassert_equal(version_compare("0.1.0", "0.1.0"), 0);
+    zassert_true(version_compare("0.9.0", "0.10.0") < 0);
+
+    /* APP_VERSION_STRING has no build component and the image header's does.
+     * Trailing components count as zero, so these compare equal rather than
+     * one of them looking newer. */
+    zassert_equal(version_compare("0.1.0", "0.1.0+0"), 0);
+}

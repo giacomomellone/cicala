@@ -19,6 +19,7 @@
 #include <zephyr/net/net_if.h>
 #include <zephyr/net/wifi_mgmt.h>
 #include <zephyr/sys/atomic.h>
+#include <zephyr/sys/reboot.h>
 #include <zephyr/zbus/zbus.h>
 
 #include <string.h>
@@ -29,6 +30,7 @@
 
 #include "net.h"
 #include "net_logic.h"
+#include "ota.h"
 #include "portal.h"
 #include "sleep.h"
 #include "sync.h"
@@ -91,6 +93,7 @@ static atomic_t confirming_gesture;
 static struct net_mgmt_event_callback wifi_cb;
 
 static void run_sync(bool asked_for);
+static void run_ota(void);
 
 /*
  * Set on a cold boot, acted on when the station reports an address.
@@ -292,6 +295,16 @@ static void drain_events(void)
         if (sync_when_connected) {
             sync_when_connected = false;
             run_sync(false);
+
+            /* Questions first, firmware second. The corpus download is seconds
+             * and the image is minutes, so a device that loses the network
+             * partway through has at least got the cheap thing done — and an
+             * update that succeeds reboots, which would abandon a sync that
+             * had not run yet. */
+            if (IS_ENABLED(CONFIG_TK_OTA_ON_COLD_BOOT)) {
+                run_ota();
+            }
+
             atomic_set(&sync_busy, 0);
         }
     }
@@ -303,6 +316,7 @@ static void drain_events(void)
     if (pending & EV_SYNC) {
         atomic_set(&sync_busy, 1);
         run_sync(true);
+        run_ota();
         atomic_set(&sync_busy, 0);
     }
 }
@@ -347,6 +361,52 @@ static void run_sync(bool asked_for)
 
     tk_net_show_sync_result(result, count, version);
 }
+
+#ifdef CONFIG_TK_OTA
+
+/**
+ * Check for new firmware, and restart into it if there is some.
+ *
+ * Deliberately silent about what it is *about* to do. The device says what
+ * happened after the fact instead, on the next boot, through
+ * tk_update_notice_check() — a card announcing an imminent reboot would be
+ * replaced by that reboot a second later, and a card that survived it would be
+ * claiming something that had not happened yet.
+ *
+ * The restart is immediate rather than deferred to the next wake. Deep sleep
+ * makes every press a fresh boot, so deferring would put MCUboot's copy — 4.5
+ * seconds, measured on this board — in front of somebody who has just pressed
+ * a button and is waiting for a question. Here, nobody is waiting: this runs
+ * after a cold boot or from the setup portal, and the device is on power in
+ * both cases.
+ */
+static void run_ota(void)
+{
+    if (!tk_portal_station_connected()) {
+        return;
+    }
+
+    char version[32] = {0};
+
+    if (tk_ota_run(version, sizeof(version)) != TK_OTA_STAGED) {
+        return;
+    }
+
+    LOG_INF("restarting to install firmware %s", version);
+
+    /* The log is deferred, so give it a moment to drain: without this the line
+     * above is lost and an update that worked looks like a spontaneous
+     * reboot. */
+    k_sleep(K_MSEC(200));
+
+    sys_reboot(SYS_REBOOT_WARM);
+}
+
+#else
+
+static void run_ota(void) {}
+
+#endif /* CONFIG_TK_OTA */
 
 static void net_thread(void *p1, void *p2, void *p3)
 {

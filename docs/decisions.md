@@ -703,3 +703,101 @@ Found on the bench, and it made the whole feature silently do nothing: the devic
 The idle timer starts at the first render and fires after `CONFIG_TK_SLEEP_IDLE_MS`, two seconds. An association plus DHCP plus a fetch takes rather longer. `tk_net_is_active()` covered the portal and the entry gesture, so nothing stopped `sleep_now()` running in the middle of a cold-boot sync — and since a wake is a fresh boot, the next attempt started over and lost again.
 
 The inhibit now covers the window from asking to join until the sync finishes, with a deadline so a network that never arrives cannot keep the device awake for good. This is the third thing to need that guard, which is the argument for `tk_net_is_active()` being one question the sleep path asks rather than a list of conditions it checks.
+
+## 2026-08-07: MCUboot, and the two keys an update is signed with
+
+Firmware updates need a bootloader, and the flash was already laid out for one: Zephyr's `partitions_0x0_amp_4M.dtsi` has defined `boot_partition`, two 1344 KB image slots and a scratch partition since before any of this was written. The device was simply not using them — the ESP32-S3 default is "simple boot", which loads slot0 directly. So enabling MCUboot moved no partition and orphaned no device state: the NVS holding the Wi-Fi credentials and the LittleFS holding the corpus are both untouched, verified on hardware by reading them back after the switch.
+
+What it costs is 57,696 B of the 64 KB `boot_partition`, 88%, and that is almost entirely the Ed25519 verification the bootloader exists to do — an unsigned MCUboot for this board is 37,648 B. The application grew from 716,388 B to 784,372 B, and none of that is code: with MCUboot the image's IROM and DROM segments are MMU-page aligned, which pads the binary. 57% of slot0 either way.
+
+An update carries two signatures, made with two keys, and the reason is that they answer different questions. MCUboot's, made by `imgtool` with `FIRMWARE_SIGNING_KEY`, answers "may this run" — it gates execution and it is checked before a byte of slot1 is copied. The manifest's, made with the existing `BUNDLE_SIGNING_KEY` over the image's SHA-256, answers "is this the current release", and exists so a device can refuse a bad image before spending a download and a restart on it. That second question is exactly the one a question bundle's signature answers, so it reuses that key rather than inventing a third.
+
+The two keys are separate because they rotate differently. The bundle key is compiled into the application, so replacing it is an ordinary release. The firmware key is compiled into the bootloader, and nothing but a wired reflash replaces a bootloader — a device that will not accept your images is a device you have to physically reach. Keeping them separate means a compromised bundle key is an update and a compromised firmware key is a recall, rather than both being a recall.
+
+The development key in `firmware/keys/` is committed on purpose and its private half is public. Without it a local build produces an image the local bootloader rejects, which would make `just fw-build` useless out of the box. CI writes the release secret over that path before building, so a released bootloader trusts the release key and nothing else.
+
+## 2026-08-07: Overwrite-only, so a bad release is a reflash rather than a revert
+
+MCUboot's alternative is swap-with-revert: boot the new image as "test", and roll back automatically unless it confirms itself. That is the safer-sounding default and it is the wrong fit here.
+
+Confirming means the device deciding "I booted successfully". This device deep-sleeps between presses and every wake is a fresh boot, so that is a judgement it would make dozens of times a day rather than once, and a confirm written at the wrong moment either defeats the revert or triggers it on a device that is working. The swap also costs a second copy pass in a window where power must hold — the measured single copy is already 4.5 seconds.
+
+So the bootloader overwrites, and what is given up is recovery from a signed image of ours that crashes on boot. That is a release-process failure, answered by testing before tagging, and it is recoverable over the wire because every device is reachable with a cable. What overwrite-only does *not* give up is protection from an image that is not ours: the signature is checked before the copy begins, which was verified on hardware by planting an image signed with the wrong key and watching the bootloader refuse it and boot slot0 unchanged.
+
+## 2026-08-07: A device says it was updated by comparing versions in NVS, not by asking the bootloader
+
+An update installs during a boot, which is the one moment nobody is looking: MCUboot does the copy before any application code runs, and the device comes up looking exactly as it did before. Without something saying so, the only evidence is a console nobody has attached.
+
+Zephyr exposes `mcuboot_swap_type()`, and it is the wrong source twice over. It answers what will happen on the *next* boot, not what happened on this one, and in overwrite-only mode there is nothing left afterwards to distinguish an image installed a moment ago from one that has run for months.
+
+Comparing `APP_VERSION_STRING` against a version stored in NVS answers the question actually worth asking — is this different firmware than the one that ran here last — survives a flat cell, and clears itself, because writing the new value is what makes the next boot quiet. It is the mechanism `language.c` already uses for the corpus release, in the same settings subtree.
+
+The card goes out on `chan_service`, so it behaves like every other service card and holds the panel until somebody presses. A device with no version recorded stores one silently: a person unboxing a device should not be told it has just been updated.
+
+## 2026-08-07: Nothing was reading the settings back
+
+Found while building the update notice, and it had been true since settings were introduced: no code anywhere called `settings_load()`. `settings_save_one()` initialises the subsystem by itself, so saving worked and looked complete, while every registered load handler sat unused.
+
+The chosen language was written and never restored, so a device set to German came back in English on the next boot. The installed corpus version was likewise never read, which meant the anti-rollback check in `sync.cpp` compared every manifest against an empty string — the guard was there, and it was comparing against nothing.
+
+`load_settings()` in `main.c` now runs at `APPLICATION` init level, which Zephyr runs before the static threads start, so `app` cannot observe a half-loaded configuration. It never fails fatally: a device that cannot read its settings still draws questions in the compiled-in language, which is a better answer than refusing to boot.
+
+A second thing the same bug taught: the settings subsystem matches subtrees component by component, not by string prefix. A handler registered for `tk/fw` does not receive the key `tk/fw_ver`, because `fw` and `fw_ver` are different components — that key falls through to the `tk` handler in `language.c`, which returns `-ENOENT`. The key is `tk/fw/ver`. This was caught on hardware, by a device that reported itself factory-fresh on two consecutive boots.
+
+## 2026-08-07: Wi-Fi credentials are at rest in the clear, and that is recorded rather than fixed
+
+Demonstrated rather than assumed: with the device in its ordinary state, no gesture and no portal, one USB cable and eighteen seconds of `esptool read-flash 0x3b0000 0x30000` yields the network name and its password as printable strings. `wifi_credentials` stores them in NVS, NVS does not encrypt, and nothing else in the image does either.
+
+The ESP32-S3 can fix this properly. It has AES-XTS flash encryption with the key in an eFuse that software cannot read, and MCUboot's Espressif port supports it — `boot/espressif/hal/src/flash_encrypt.c` is right there in the tree. Three things stand in the way, and together they make it the wrong change for now.
+
+It needs a different bootloader. `ESP_FLASH_ENCRYPTION` in Zephyr is `depends on !ESP_SIMPLE_BOOT && !MCUBOOT`, and its help says the bootloader must be MCUboot's *Espressif* port, built with IDF-style configuration. What this repository builds is the *Zephyr* port, as a sysbuild image — the integration the OTA work is built on. Switching ports means giving that up.
+
+It needs `write-block-size = 32` in the devicetree, against the 4 this board declares. That is not cosmetic: NVS, LittleFS and the OTA stream all align to it, so raising it re-lays-out the storage partition and orphans the credentials, the language and the corpus on every device already set up. That is the same hazard the 2026-08-06 partition decision was written to avoid, arriving from the other direction.
+
+And it burns eFuses, irreversibly, per device. Release mode additionally disables UART read-back, which is what actually closes the hole above; development mode leaves re-flashing possible and is bypassable.
+
+Two non-answers, so nobody spends time on them. Encrypting the password with a key compiled into the image is not encryption against this attack: the dump that yields the password also yields the image, and therefore the key. And the password cannot simply not be stored — every wake is a fresh boot, so the device has to rejoin a network unattended.
+
+The middle option is real but is custom work: the S3's HMAC peripheral can hold an eFuse key software cannot read, which would let the application encrypt the password with a secret an attacker does not get from the flash. The vendored `hal_espressif` here exposes no HMAC component, so this is register-level work rather than a Kconfig switch.
+
+So it stays as it is, deliberately, and this entry is the record. What that buys an attacker is a Wi-Fi password, from a device they are holding. The mitigation that costs nothing is the one already in use on the bench: give the device a guest network. Revisit at the PCB stage, where the eFuse step can be part of manufacturing rather than something done to a device already in use.
+
+## 2026-08-07: The device gets its own host, over plain HTTP, and TLS stops being the plan
+
+The 2026-08-07 entry "TLS after all, as a transport rather than as the security boundary" chose TLS on one premise: that plain HTTP is not something you can simply have any more, because Cloudflare Pages force-redirects and GitHub Releases is HTTPS-only. The premise was true about *those two hosts* and was mistaken as a fact about the internet. Plenty of things serve plain HTTP without an argument — an S3 static-website endpoint does it by design, as does any small static host somebody runs.
+
+So the conclusion inverts. Rather than making the device speak a protocol it cannot use honestly, the device gets a host that speaks the protocol it can. `/device/` moves off the website, onto something that serves two files without upgrading the request. The website stays where it is, on HTTPS, for people.
+
+What decided it is that TLS here cannot ever be the security boundary. The device has no clock — no RTC source, no SNTP, and every wake is a fresh boot — so it cannot check a certificate's expiry or revocation. A TLS session it cannot validate authenticates nobody. The Ed25519 signatures do the work instead: one over each bundle and image, verified against keys compiled into the image and the bootloader, neither of which expires.
+
+Given up, precisely: an observer on the path learns that a Tischkarte fetched a question bundle or a firmware image. Both are public artifacts of a public project. Not given up: an attacker on the path still cannot make the device install anything the keys did not sign, and cannot walk it backwards, because a manifest not newer than what is installed is refused.
+
+The cost of the alternative was also real — about 40 KB of flash for TLS, on an image at 57% of its slot, for confidentiality on public data. And it does not build: enabling the PSA elliptic-curve support a public handshake needs breaks tf-psa-crypto's own `psa_crypto_ecp.c`. That code stays behind `CONFIG_TK_SYNC_INSECURE=n` and is worth retrying at the next Zephyr bump, for confidentiality alone rather than as a fix for anything.
+
+The defaults become `http://tischkarte.invalid/device` — deliberately unresolvable, because a device pointed at a host that does not exist retries for a few seconds each cold boot and carries on, while one pointed at a host somebody else owns is a different matter. The real host replaces it when it exists.
+
+## 2026-08-07: A power switch is the update trigger the hardware can actually have
+
+The design's trigger is USB power plus a known network — a charging window, when the device has power to spare and nobody is waiting. It needs VBUS detect on GPIO21, which the pin map reserves and nothing is wired to, so the firmware cannot tell whether it is plugged in. Sync and the OTA check therefore run on a cold boot, which once the device sleeps means first power-up, the reset pin, or a flat cell.
+
+A physical power switch turns that from an accident into an action. Off and on is a cold boot, and a cold boot is already the trigger, so "flip the switch to check for updates" needs no firmware change and no new GPIO. It also stops a device draining its cell on a shelf, which is wanted independently.
+
+What it does not do, and these should be stated rather than discovered. It is manual: there is no unattended overnight update, and a device nobody touches stays on its version indefinitely. A hard power cut takes RTC memory with it, so the shuffle bag, the active deck and the refresh counter reset — the device comes back on New People with a full refresh, which is fine occasionally and tiresome daily. And it tells the firmware nothing about the battery, because sense on GPIO1 is unwired too, so nothing refuses an update on a weak cell.
+
+That last one matters less than it sounds. MCUboot runs overwrite-only, and a brownout during its copy leaves the source image and the pending flag untouched in the spare slot, so the next power-up simply copies again. The window that sounds dangerous is the recoverable one.
+
+Not built and not tested: there is no switch on the rig yet. Recorded now so the reasoning is not reconstructed later, and because it changes what VBUS is for — with a switch, VBUS stops being the only way to trigger an update and becomes the thing that makes updates unattended.
+
+## 2026-08-07: The device endpoint is a bucket, and the website is not it
+
+Once plain HTTP became the plan rather than the workaround, "which host" stopped being a detail. The requirement is narrow and unusual: answer port 80 without upgrading, publicly, at stable paths. Most modern static hosting is built to do the opposite — Cloudflare Pages and GitHub Pages both force HTTPS, which is correct for a website and fatal for a client that cannot follow a redirect.
+
+An S3 static-website endpoint is HTTP-only by design. That is a limitation everywhere else and the feature here, so `/device/` moves onto one and the website stays on Pages. Two hosts, one job each, and `site.yml` publishes the same files to both — the Pages copy for people who want to look, the bucket copy for devices.
+
+The trap worth writing down, because it will be found the hard way otherwise: if the DNS for that name is on Cloudflare, the record must be **DNS-only**, not proxied. A proxied record puts Cloudflare in front of the bucket and reintroduces exactly the HTTPS upgrade the arrangement exists to avoid, and a browser will show a perfectly working URL while every device fails.
+
+The bootloader is deliberately not published there. It is not something a device fetches — it is what a wired first flash needs — and serving it beside the image invites installing one without the other, which is how a board ends up trusting a key its images are not signed with. It stays on the GitHub Release.
+
+Cache lifetimes are split rather than defaulted: sixty seconds on the two manifests, immutable on everything they name. A manifest cached for an hour is an hour in which a release reaches nobody, while an artifact is named after its version and never changes.
+
+The whole procedure, from buying the domain to the first device that updates itself, is in [hosting.md](hosting.md).

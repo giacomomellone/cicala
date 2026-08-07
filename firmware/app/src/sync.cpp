@@ -19,13 +19,12 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-#include <zephyr/net/http/client.h>
-#include <zephyr/net/socket.h>
 
 #include <psa/crypto.h>
 
 #include "corpus.h"
 #include "ed25519.hpp"
+#include "fetch.h"
 #include "manifest.hpp"
 #include "sync.h"
 
@@ -39,189 +38,37 @@ LOG_MODULE_REGISTER(tk_sync, LOG_LEVEL_INF);
  * several times over, and a bound on what a hostile server can make us hold. */
 #define MANIFEST_MAX 2048
 
-#define HTTP_TIMEOUT_MS 15000
-
 /*
- * The firmware version min_fw is compared against.
+ * The version min_fw is compared against.
  *
- * Nothing else in the tree stamps one, so it is here rather than invented at
- * three call sites. It is the version of the *sync contract* this image
- * implements, which is what min_fw is actually about.
+ * Not the image version, which lives in the VERSION file and is what OTA
+ * compares — this is the version of the *sync contract* this image implements,
+ * which is what min_fw is actually about. A release can require a newer
+ * contract without every device that has an older image being locked out of
+ * questions, and the two numbers move for different reasons.
  */
-#define TK_FIRMWARE_VERSION "0.1.0"
+#define TK_SYNC_CONTRACT_VERSION "0.1.0"
 
 static char manifest_buf[MANIFEST_MAX];
 static size_t manifest_len;
 
-/* Where the body of whatever is being fetched goes. The manifest lands in the
- * buffer above; a bundle lands in the corpus buffer, borrowed. */
-static uint8_t *body_buf;
-static size_t body_cap;
-static size_t body_len;
-static bool body_overflowed;
-
-static int on_body(struct http_response *rsp, enum http_final_call final, void *user_data)
+/** GET into a caller's buffer: the manifest, and then the bundle. */
+static int fetch_into(const char *path, uint8_t *into, size_t capacity)
 {
-    ARG_UNUSED(final);
-    ARG_UNUSED(user_data);
+    struct tk_fetch_mem mem = {};
 
-    if (rsp->body_frag_len == 0) {
-        return 0;
-    }
+    mem.buf = into;
+    mem.capacity = capacity;
 
-    if (body_len + rsp->body_frag_len > body_cap) {
-        /* Refused rather than truncated. A server that sends more than the
-         * manifest promised is not one to take a prefix from. */
-        body_overflowed = true;
-        return 0;
-    }
+    const struct tk_fetch_sink sink = {tk_fetch_mem_write, &mem};
 
-    memcpy(body_buf + body_len, rsp->body_frag_start, rsp->body_frag_len);
-    body_len += rsp->body_frag_len;
+    const int n = tk_fetch(path, &sink, TK_FETCH_TIMEOUT_MS);
 
-    return 0;
-}
-
-/** Open a socket to the configured host, with TLS unless told otherwise. */
-static int connect_to_host(void)
-{
-    struct zsock_addrinfo hints = {};
-    struct zsock_addrinfo *res = nullptr;
-
-    hints.ai_family = NET_AF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    char port[8];
-
-    (void) snprintf(port, sizeof(port), "%d", CONFIG_TK_SYNC_PORT);
-
-    int err = zsock_getaddrinfo(CONFIG_TK_SYNC_HOST, port, &hints, &res);
-
-    if (err != 0 || res == nullptr) {
-        LOG_ERR("could not resolve %s: %d", CONFIG_TK_SYNC_HOST, err);
-        return -EHOSTUNREACH;
-    }
-
-#ifdef CONFIG_TK_SYNC_INSECURE
-    const int sock = zsock_socket(res->ai_family, res->ai_socktype, IPPROTO_TCP);
-#else
-    const int sock = zsock_socket(res->ai_family, res->ai_socktype, IPPROTO_TLS_1_2);
-#endif
-
-    if (sock < 0) {
-        LOG_ERR("could not open a socket: %d", errno);
-        zsock_freeaddrinfo(res);
-        return -errno;
-    }
-
-#ifndef CONFIG_TK_SYNC_INSECURE
-    /*
-     * TLS without peer verification, deliberately and documented.
-     *
-     * Validating a certificate needs a trusted clock and this device has none:
-     * no RTC source, no SNTP, and a wake is a fresh boot with no idea when it
-     * is. Verifying with expiry checks disabled would accept a revoked or
-     * expired certificate, which is most of what a certificate is for.
-     *
-     * So TLS here is the transport hosts will accept, plus confidentiality from
-     * a passive observer. It authenticates nobody, and nothing downstream may
-     * treat it as if it did — the Ed25519 signature is the whole of the
-     * protection. See docs/decisions.md.
-     */
-    const int verify = TLS_PEER_VERIFY_NONE;
-
-    if (zsock_setsockopt(sock, SOL_TLS, TLS_PEER_VERIFY, &verify, sizeof(verify)) < 0) {
-        LOG_ERR("could not set the TLS verify mode: %d", errno);
-        (void) zsock_close(sock);
-        zsock_freeaddrinfo(res);
-        return -EIO;
-    }
-
-    /* Sent anyway: shared hosts route on it, so without it the request reaches
-     * the wrong site rather than failing honestly. */
-    if (zsock_setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_TK_SYNC_HOST,
-                         sizeof(CONFIG_TK_SYNC_HOST)) < 0) {
-        LOG_WRN("could not set the TLS hostname: %d", errno);
-    }
-#endif
-
-    err = zsock_connect(sock, res->ai_addr, res->ai_addrlen);
-
-    zsock_freeaddrinfo(res);
-
-    if (err < 0) {
-        LOG_ERR("could not connect to %s: %d", CONFIG_TK_SYNC_HOST, errno);
-        (void) zsock_close(sock);
-        return -ECONNREFUSED;
-    }
-
-    return sock;
-}
-
-/**
- * GET `path` into `into`, returning the number of bytes or a negative errno.
- *
- * One request per connection. Keeping one open across the manifest and the
- * bundle would save a handshake and cost a state machine for a case that
- * happens once a release.
- */
-static int fetch(const char *path, uint8_t *into, size_t capacity)
-{
-    struct http_request req = {};
-    static uint8_t recv_buf[512];
-
-    const int sock = connect_to_host();
-
-    if (sock < 0) {
-        return sock;
-    }
-
-    body_buf = into;
-    body_cap = capacity;
-    body_len = 0;
-    body_overflowed = false;
-
-    req.method = HTTP_GET;
-    req.url = path;
-    req.host = CONFIG_TK_SYNC_HOST;
-    req.protocol = "HTTP/1.1";
-    req.response = on_body;
-    req.recv_buf = recv_buf;
-    req.recv_buf_len = sizeof(recv_buf);
-
-    const int err = http_client_req(sock, &req, HTTP_TIMEOUT_MS, nullptr);
-
-    (void) zsock_close(sock);
-
-    if (err < 0) {
-        LOG_ERR("GET %s failed: %d", path, err);
-        return err;
-    }
-
-    if (body_overflowed) {
+    if (n == -EFBIG && mem.overflowed) {
         LOG_ERR("GET %s returned more than the %zu bytes there was room for", path, capacity);
-        return -EFBIG;
     }
 
-    if (body_len == 0) {
-        LOG_ERR("GET %s returned nothing", path);
-        return -ENODATA;
-    }
-
-    return (int) body_len;
-}
-
-/** The path part of a URL, which is all http_client_req wants. */
-static const char *path_of(const char *url)
-{
-    const char *at = strstr(url, "://");
-
-    if (at == nullptr) {
-        return url;
-    }
-
-    at = strchr(at + 3, '/');
-
-    return at != nullptr ? at : "/";
+    return n;
 }
 
 const char *tk_sync_installed_version(void)
@@ -239,8 +86,8 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
 
     manifest_len = 0;
 
-    int n = fetch(path_of(CONFIG_TK_SYNC_BASE_URL "/manifest.json"), (uint8_t *) manifest_buf,
-                  sizeof(manifest_buf));
+    int n = fetch_into(tk_fetch_path_of(CONFIG_TK_SYNC_BASE_URL "/manifest.json"),
+                       (uint8_t *) manifest_buf, sizeof(manifest_buf));
 
     if (n < 0) {
         return TK_SYNC_FAILED;
@@ -260,8 +107,9 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
         return TK_SYNC_FAILED;
     }
 
-    if (tk::version_compare(TK_FIRMWARE_VERSION, manifest.min_fw) < 0) {
-        LOG_WRN("this release wants firmware %s; this is %s", manifest.min_fw, TK_FIRMWARE_VERSION);
+    if (tk::version_compare(TK_SYNC_CONTRACT_VERSION, manifest.min_fw) < 0) {
+        LOG_WRN("this release wants firmware %s; this is %s", manifest.min_fw,
+                TK_SYNC_CONTRACT_VERSION);
         return TK_SYNC_FAILED;
     }
 
@@ -301,7 +149,7 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
 
     LOG_INF("fetching %s (%u bytes)", entry.url, entry.size);
 
-    n = fetch(path_of(entry.url), buf, capacity);
+    n = fetch_into(tk_fetch_path_of(entry.url), buf, capacity);
 
     if (n < 0) {
         return TK_SYNC_FAILED;

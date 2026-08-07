@@ -9,9 +9,9 @@ board in [hardware wiring](hardware_wiring.md), rationale in
 **Status: the tabletop loop is built, its state survives a reboot, and the
 device can be put on a network.** `input`, `app_fsm`, `qdb` with its bag,
 `layout`, `retained`, the panel and the setup `portal` all exist and are
-tested. Still design: `sync`, `power`, and deep sleep itself — `CONFIG_PM` is
-off, so nothing sleeps, but the state that has to outlive a wake is already in
-RTC memory rather than waiting on it. Deep sleep and the radio are both on in
+tested, as are `sync` and the firmware update path built on it. Still design:
+`power`. Deep sleep is on in the everyday image, and the state that has to
+outlive a wake lives in RTC memory. Deep sleep and the radio are both on in
 the everyday image now; the images that measure something turn them back off. Items marked *verify* have not been run on
 hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
 
@@ -328,12 +328,14 @@ flowchart TB
         NETC[net.c<br/><i>thread + wifi events</i>]
         NLOG[net_logic.cpp<br/><i>machine behind a C API</i>]
         PORTALC[portal.c<br/><i>SoftAP, DHCP, DNS, HTTP</i>]
+        FETCH[fetch.c<br/><i>one GET, a sink per caller</i>]
+        SYNCC[sync.cpp<br/><i>bundle: verify, store</i>]
+        OTAC[ota.cpp<br/><i>image: verify, stage</i>]
     end
 
     subgraph todo["still design"]
         direction LR
         POWER[power<br/><i>ADC, VBUS, PM</i>]:::t
-        SYNC[sync<br/><i>HTTPS, verify, swap</i>]:::t
     end
 
     FSM --> APPFSM
@@ -352,8 +354,11 @@ flowchart TB
     NETC --> NLOG
     NLOG --> PORTALC
     NLOG --> CHAN
-    SYNC -.-> QDB
-    SYNC -.-> CHAN
+    NETC --> SYNCC
+    NETC --> OTAC
+    SYNCC --> FETCH
+    OTAC --> FETCH
+    SYNCC --> CHAN
     POWER -.-> CHAN
 
     classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
@@ -489,6 +494,37 @@ failure leaves the previous bundle in place. The gzip in a `.qdb.gz` is transpor
 only — `SWAP` decompresses, because a device that reboots on every press must
 not re-inflate the bundle each time.
 
+## Firmware updates
+
+Built. The same shape as the sync above, sharing the socket code in `fetch.c`,
+the manifest parser in `lib/sync`, the verifier in `lib/ed25519` and the
+cheapest-first check order. Full description in
+[firmware_update.md](firmware_update.md).
+
+```mermaid
+flowchart LR
+    OTA["ota.cpp<br/><i>manifest · verify · stage</i>"]
+    SINK["fetch.c<br/><i>one GET, a sink per caller</i>"]
+    SLOT[("slot1_partition<br/>1344 KB at 0x170000")]
+    MB["MCUboot<br/><i>verifies, then copies</i>"]
+    APP["slot0<br/><i>the running image</i>"]
+
+    OTA --> SINK
+    SINK -->|"streamed, hashed as it goes"| SLOT
+    OTA -->|"boot_request_upgrade()<br/>only after all three checks"| SLOT
+    SLOT -->|"on the next boot"| MB
+    MB -->|"signature ok"| APP
+```
+
+Two differences from a bundle sync, both forced by size. An image is written
+before it is verified, because 780 KB does not fit in RAM — safe because
+nothing boots from slot1 until `boot_request_upgrade()` marks it. And installing
+is a restart rather than a rename: MCUboot does the copy, measured at 4.5
+seconds on this board, before any application code runs.
+
+`update_notice.c` is what tells the table afterwards, since the install happens
+where nobody can see it.
+
 ## Where a synced corpus lives
 
 Built, ahead of anything that fetches one.
@@ -539,6 +575,23 @@ at boot so the next boot reads it back, which is the whole of what sync does
 with a bundle once it has verified one. Without it none of this could be
 exercised until the download existed, and a first failure could then have been
 in either half.
+
+### What is at rest, and in the clear
+
+Everything the device keeps between boots is readable by anyone holding it.
+`storage_partition` is NVS and NVS does not encrypt; the flash itself is not
+encrypted either. So `esptool read-flash 0x3b0000 0x30000` yields, as printable
+strings, the stored network name and **its password**, the chosen language and
+the installed versions. Measured on the bench: eighteen seconds, no gesture, no
+portal, device in its ordinary state.
+
+Nothing here is a mistake to be fixed in this layer — encrypting the value with
+a key that is also in the flash protects nobody. Closing it means the SoC's
+eFuse-backed flash encryption, which is a different bootloader, a devicetree
+change that orphans existing storage, and an irreversible per-device step. The
+decision log has the full reasoning and the argument for deferring it to the
+PCB stage. Until then the mitigation that costs nothing is to give the device a
+guest network.
 
 ## The setup portal
 
@@ -886,13 +939,16 @@ suites that drive the two buttons run in the default macOS loop.
 - Whether the SoftAP surviving a station join is as disruptive as the datasheet
   implies. The phone is dropped by design and the panel reports instead, which
   works; whether the phone could have been kept has not been tested.
-- **TLS does not build**, so sync runs over plain HTTP behind
-  `CONFIG_TK_SYNC_INSECURE`. Enabling the PSA elliptic-curve support a public
-  host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to
-  compile on `mbedtls_ecc_group_from_psa` — a broken configuration combination
-  in the vendored mbedtls 4 rather than a missing symbol here. What it costs is
-  confidentiality, not integrity: the signature is the security boundary in
-  either case. Worth revisiting at the next Zephyr bump.
+- **TLS is not the plan any more**, and this is a decision rather than an open
+  item. The device has no clock, so it cannot validate a certificate under any
+  scheme; the Ed25519 signatures are the security boundary and do not care
+  about the transport. So the device fetches over plain HTTP, from a host
+  chosen for not upgrading the request — which is a hosting constraint, not a
+  firmware one, and means `/device/` is not served by the website. The TLS path
+  is still written behind `CONFIG_TK_SYNC_INSECURE=n` and still does not
+  compile against the vendored mbedtls 4 (`psa_crypto_ecp.c`,
+  `mbedtls_ecc_group_from_psa`); worth retrying at the next Zephyr bump for
+  confidentiality alone. See the decision log.
 - **The fetch has never completed on hardware.** Everything up to the TCP
   connect has: the device joins, gets an address, resolves and asks. The bench
   server was unreachable because the device is on a guest network that isolates
