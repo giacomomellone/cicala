@@ -1,13 +1,24 @@
 #!/usr/bin/env python3
-"""Generate the ed25519 bundle-signing keypair.
+"""Generate one of the project's two ed25519 signing keypairs.
 
 Uses the system openssl (≥ 1.1.1) so tools/ stays free of Python crypto
-dependencies. Writes:
+dependencies.
+
+`--purpose bundle` (the default) is the key the *application* verifies with. It
+signs question bundles and the OTA manifest — both are the same statement, "the
+project published this artifact and it is current" — and it rotates with a
+firmware release, because the public half is compiled into the image. Writes:
 
   <out>.pem                  private key — NEVER commit; store as the
                              BUNDLE_SIGNING_KEY GitHub Actions secret
   firmware/components/sync/trusted_key.h
                              raw 32-byte public key as a C array (committed)
+
+`--purpose firmware` is the key MCUboot verifies with. It signs the firmware
+image itself, and its public half is compiled into the *bootloader*, which only
+a wired reflash can replace — so it is a separate key with a separate secret,
+FIRMWARE_SIGNING_KEY. Writes the PEM alone: MCUboot's build extracts the public
+half itself, so there is no header to commit.
 
 The raw public key is the last 32 bytes of the SPKI DER — for ed25519 the DER
 is a fixed 12-byte prefix plus the key itself.
@@ -23,28 +34,56 @@ from pathlib import Path
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--out", type=Path, default=Path("signing_key.pem"),
-                        help="private key output path (default: signing_key.pem, gitignored)")
-    parser.add_argument("--header", type=Path,
-                        default=Path(__file__).resolve().parent.parent /
-                        "firmware" / "components" / "sync" / "trusted_key.h")
+    parser.add_argument(
+        "--purpose",
+        choices=("bundle", "firmware"),
+        default="bundle",
+        help="which of the two keys to make (default: bundle)",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="private key output path (default: signing_key.pem, gitignored)",
+    )
+    parser.add_argument(
+        "--header",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent
+        / "firmware"
+        / "components"
+        / "sync"
+        / "trusted_key.h",
+    )
     args = parser.parse_args(argv)
 
-    if args.out.exists():
-        print(f"refusing to overwrite existing {args.out}", file=sys.stderr)
+    out = args.out or Path("signing_key.pem")
+
+    if out.exists():
+        print(f"refusing to overwrite existing {out}", file=sys.stderr)
         return 1
 
-    subprocess.run(["openssl", "genpkey", "-algorithm", "ed25519",
-                    "-out", str(args.out)], check=True)
-    args.out.chmod(0o600)
-    der = subprocess.run(["openssl", "pkey", "-in", str(args.out),
-                          "-pubout", "-outform", "DER"],
-                         capture_output=True, check=True).stdout
+    subprocess.run(["openssl", "genpkey", "-algorithm", "ed25519", "-out", str(out)], check=True)
+    out.chmod(0o600)
+
+    if args.purpose == "firmware":
+        # No header: MCUboot's build reads this PEM and compiles the public half
+        # into the bootloader itself. Nothing on the application side ever sees
+        # this key.
+        print(f"private key: {out}  (add as GitHub secret FIRMWARE_SIGNING_KEY, then keep offline)")
+        print("point SB_CONFIG_BOOT_SIGNATURE_KEY_FILE at it to build a bootloader that trusts it")
+        return 0
+
+    der = subprocess.run(
+        ["openssl", "pkey", "-in", str(out), "-pubout", "-outform", "DER"],
+        capture_output=True,
+        check=True,
+    ).stdout
     pubkey = der[-32:]
 
     rows = []
     for i in range(0, 32, 8):
-        rows.append("    " + ", ".join(f"0x{b:02x}" for b in pubkey[i:i + 8]) + ",")
+        rows.append("    " + ", ".join(f"0x{b:02x}" for b in pubkey[i : i + 8]) + ",")
     body = "\n".join(rows)
     args.header.parent.mkdir(parents=True, exist_ok=True)
     args.header.write_text(
@@ -58,7 +97,7 @@ def main(argv=None) -> int:
         "};\n",
         encoding="utf-8",
     )
-    print(f"private key: {args.out}  (add as GitHub secret BUNDLE_SIGNING_KEY, then keep offline)")
+    print(f"private key: {out}  (add as GitHub secret BUNDLE_SIGNING_KEY, then keep offline)")
     print(f"public key header: {args.header}")
     return 0
 
