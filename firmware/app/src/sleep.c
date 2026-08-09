@@ -40,7 +40,9 @@
 #include "app_logic.h"
 #include "channels.h"
 #include "net.h"
+#include "power.h"
 #include "sleep.h"
+#include "status.h"
 
 LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 
@@ -56,8 +58,15 @@ LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 
 /*
  * Every input that should bring the device back. Same nodes input.c reads, so
- * the pins cannot drift apart; VBUS detect joins this list when it is wired,
- * with the opposite polarity, since plugging in drives it high.
+ * the pins cannot drift apart.
+ *
+ * VBUS does not join this list and cannot: esp_sleep_enable_ext1_wakeup() takes
+ * one trigger polarity for the whole mask, the buttons have claimed active-low,
+ * and VBUS is interesting when it is high. The ESP32-S3 does not define
+ * SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN, so there is no per-pin polarity to
+ * fall back on. EXT0 is a separate single-pin trigger that would work, at the
+ * price of keeping RTC_PERIPH powered through every sleep — see
+ * CONFIG_TK_POWER_WAKE_ON_USB. VBUS is polled at boot instead.
  */
 static const struct gpio_dt_spec wake_pins[] = {
     GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios),
@@ -291,6 +300,23 @@ static void sleep_now(struct k_work *work)
         return;
     }
 
+    if (tk_power_external()) {
+        /*
+         * Plugged in, so stay up for the whole charge rather than for a window.
+         *
+         * The status LEDs are the reason. They need the SoC running to be lit,
+         * and red handing over to green across a charge is most of what they
+         * are for — a device that went dark five minutes into an overnight
+         * charge would be reporting that it had stopped charging. The current
+         * this costs is the charger's, not the cell's.
+         *
+         * Third, after the two above: if a refresh is in flight or the portal
+         * is on air, those are the reasons, and they are more specific.
+         */
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+        return;
+    }
+
     const uint64_t mask = open_pin_mask();
 
     if (mask == 0) {
@@ -317,6 +343,13 @@ static void sleep_now(struct k_work *work)
     }
 
     hold_wake_pins(mask);
+
+    /* After every reason not to sleep has been ruled out, so a device that
+     * decides to stay awake does not blink dark first. Deep sleep isolates the
+     * pads and the LEDs would go out on their own; doing it here also cancels
+     * a blink that would otherwise be rescheduled into a device that has
+     * stopped existing. */
+    tk_status_off();
 
     /* Before the pins are parked: this is the last thing that uses the bus,
      * and holding CS would take it away mid-command. */
