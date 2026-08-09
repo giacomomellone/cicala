@@ -523,9 +523,190 @@ config TK_NET_SCAN_MAX
       more useful than a short one, and each entry costs 34 bytes of RAM that
       is live for the whole portal session.
 
+config TK_POWER
+    bool "Measure the cell, and decide what its voltage means"
+    default n
+    select ADC
+    help
+      Samples the battery through a divider on ADC1 and VBUS through a divider
+      on a plain input, turns the pair into a state with lib/power, and
+      publishes it on chan_power. That state gates panel refreshes, holds the
+      device awake while it is charging, and drives the status LEDs.
+
+      Off by default here and turned on by the devkit board conf, for the
+      reason TK_SLEEP is: the everyday `just fw-build` image should not change
+      under a board that has no divider fitted. Without this the device works
+      exactly as it did — it simply never refuses a refresh and never knows it
+      is plugged in.
+
+      Wiring, and the reason each pin is that pin, is docs/hardware_wiring.md.
+
 config TK_REFRESH_MIN_MV
     int "Minimum cell voltage for a panel refresh (mV)"
     default 3200
     help
       A partial refresh attempted near brownout can leave the panel in a
       corrupted state. Below this, the previous question stays on screen.
+
+      Also where LOW begins, so this is the number that decides when the device
+      stops answering presses. Read by lib/power; before the power module
+      existed it was declared here and nothing looked at it.
+
+      Not yet measured. The bench number to find is where a refresh actually
+      corrupts, which is not where the regulator gives up: the 3.3 V buck on
+      the charger board passes the cell straight through below about 3.45 V, so
+      the rail sags with the cell rather than cutting off, and the panel keeps
+      working for a while after that.
+
+config TK_POWER_CRITICAL_MV
+    int "Cell voltage below which the device says so loudly (mV)"
+    default 3000
+    depends on TK_POWER
+    help
+      Both LOW and CRITICAL refuse a refresh; this is where the answer changes
+      from one amber blink to three red ones. Set at the knee of a lithium
+      discharge curve, where the remaining capacity is small and falling fast.
+
+config TK_POWER_FULL_MV
+    int "Cell voltage that counts as charged (mV)"
+    default 4150
+    depends on TK_POWER
+    help
+      An estimate, and it must not be read as anything else. The bq25185 on the
+      bench board exposes no charge-status pin, so termination cannot be
+      sensed; a cell under constant-voltage charge sits near 4.2 V for the last
+      hour, so this reports full early by an amount that depends on the load.
+
+      Acceptable for an LED somebody glances at. Not acceptable as an input to
+      anything that decides something, which is why nothing else reads it.
+
+config TK_POWER_HYSTERESIS_MV
+    int "Millivolts a reading must clear a threshold by to cross back (mV)"
+    default 120
+    depends on TK_POWER
+    help
+      Applied on the way up only. Getting worse is reported immediately,
+      because being slow in that direction costs something.
+
+      120 mV because a partial refresh sags the pack by more than that for two
+      seconds, so a cell that reads under a threshold during one is not
+      necessarily under it. The sampler skips readings taken during a refresh
+      for the same reason; this covers what the skip does not.
+
+config TK_POWER_SAMPLE_MS
+    int "Time between readings while awake (ms)"
+    default 10000
+    depends on TK_POWER
+    help
+      Rarely reached on battery, where the device is awake for about
+      TK_SLEEP_IDLE_MS per press and the reading that matters is the one taken
+      at boot. This is for the two windows that last minutes or hours: a charge,
+      and a portal session.
+
+config TK_POWER_CONFIRM_SAMPLES
+    int "Readings averaged into the one taken at boot"
+    default 4
+    range 1 16
+    depends on TK_POWER
+    help
+      The boot reading is the only one a battery-powered press will ever get,
+      so it is a burst averaged rather than a single conversion. Four is enough
+      to flatten ADC noise and costs well under a millisecond.
+
+      This is where all the smoothing lives. A "wait for N consecutive
+      readings" rule inside the state machine would be dead code on battery:
+      the machine is constructed, sees one or two samples, and is destroyed by
+      sys_poweroff() a couple of seconds later.
+
+config TK_POWER_CHARGE_WINDOW_MS
+    int "How long a plug-in keeps the sync and update window open (ms)"
+    default 300000
+    depends on TK_POWER
+    help
+      Bounds the window, not wakefulness. The device stays awake for as long as
+      external power is present — the status LED needs it running — but a
+      device left on the charger overnight should not retry a sync for eight
+      hours.
+
+      One window per plug-in. Reaching a full cell part-way through does not
+      buy a second one.
+
+config TK_POWER_DIVIDER_NUM
+    int "Battery divider, numerator"
+    default 2
+    depends on TK_POWER
+    help
+      Millivolts at the pack are the reading times NUM over DEN. The bench
+      divider is 470k over 470k, so the pack is twice the tap: 2 over 1.
+
+      Two integers rather than one ratio because a divider made of real
+      resistors is rarely a round number, and calibrating against a multimeter
+      is the last step of bringing the rig up.
+
+config TK_POWER_DIVIDER_DEN
+    int "Battery divider, denominator"
+    default 1
+    depends on TK_POWER
+
+config TK_POWER_WAKE_ON_USB
+    bool "Wake from deep sleep when USB is plugged in"
+    default n
+    depends on TK_POWER
+    help
+      Off, and the default is the recommendation rather than an oversight.
+
+      The buttons wake through EXT1, which takes one trigger polarity for the
+      whole pin mask, and VBUS is high when it is interesting — so VBUS cannot
+      join that mask. It can use EXT0, which is a separate single-pin trigger
+      with its own polarity and is available on this SoC. The cost is in
+      Espressif's sleep_modes.c: arming EXT0 forces ESP_PD_DOMAIN_RTC_PERIPH to
+      stay powered through every sleep, where EXT1 alone leaves it off.
+
+      That is a permanent standby cost against a 30 uA budget, paid to save one
+      button press — plugging in and then pressing Next is the gesture the
+      design specified anyway. Turn it on to measure what it actually costs.
+
+config TK_DEBUG_POWER
+    bool "Log the cell voltage continuously"
+    default n
+    depends on TK_POWER
+    help
+      Samples every second regardless of TK_POWER_SAMPLE_MS and logs the raw
+      conversion beside the converted millivolts, so a discharge can be
+      recorded unattended and the divider constants calibrated against a
+      multimeter.
+
+      Set by `just fw-power`. Never enabled in a shipped build.
+
+config TK_STATUS_LED
+    bool "Show power, the portal and transfers on two LEDs"
+    default n
+    depends on TK_POWER
+    help
+      A red LED and a green one, driven as plain GPIOs. Lighting both is amber,
+      which is the whole palette: the conditions that share a colour are told
+      apart by rhythm instead.
+
+      No driver to select. An addressable LED was rejected on current — the
+      controller inside a WS2812 idles at around 0.6 mA with the emitters dark,
+      which is twenty times the whole sleep budget, where two GPIOs held low
+      cost nothing at all.
+
+      Compiled out on a board with no tk_leds devicetree node, which is qemu,
+      native_sim, and any board that simply has no LEDs.
+
+config TK_STATUS_LED_BLINK_MS
+    int "On, and off, time of one blink (ms)"
+    default 200
+    depends on TK_STATUS_LED
+    help
+      Fast enough that three of them read as one deliberate answer to a press
+      rather than as three separate events.
+
+config TK_STATUS_LED_PULSE_MS
+    int "Full cycle of the transfer pulse (ms)"
+    default 1500
+    depends on TK_STATUS_LED
+    help
+      Slow, so it does not compete with a blink for attention. Long enough to
+      read as "something is running" rather than as a fault.

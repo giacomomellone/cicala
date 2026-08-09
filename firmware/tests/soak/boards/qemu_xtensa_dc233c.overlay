@@ -30,10 +30,6 @@
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
     };
 
-    zephyr,user {
-        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
-    };
-
     tk_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;

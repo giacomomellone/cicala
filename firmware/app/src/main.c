@@ -67,30 +67,13 @@ SYS_INIT(load_settings, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 #endif /* CONFIG_SETTINGS */
 
 /*
- * Visual confirm on the breadboard, next to the console line: the DevKitC's
- * own LED is an addressable WS2812 on GPIO48, so this is a discrete LED wired
- * to the pin named by the `zephyr,user` node. It follows Next presses, which
- * is the one input with no other visible effect until the panel is wired.
+ * The bring-up LED that used to live here — a discrete LED on GPIO2, toggled
+ * on every question that reached the panel — has been removed. The panel is
+ * wired now, so a question arriving is visible on the glass, and the status
+ * LEDs say the things the glass cannot. Its pin went back to the spare pool as
+ * an ADC1 channel, which is what docs/hardware_wiring.md always said it was
+ * being kept for.
  */
-static const struct gpio_dt_spec blink = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), blink_gpios);
-
-/*
- * Follows what actually reached the panel, not what was pressed. Toggling on
- * chan_next instead looks right and is a lie: a press made during a refresh is
- * deliberately dropped, and an LED that winks at it tells the table the button
- * worked when nothing is going to happen.
- */
-static void on_drawn(const struct zbus_channel *chan)
-{
-    ARG_UNUSED(chan);
-
-    if (device_is_ready(blink.port)) {
-        (void) gpio_pin_toggle_dt(&blink);
-    }
-}
-
-ZBUS_LISTENER_DEFINE(main_blink, on_drawn);
-ZBUS_CHAN_ADD_OBS(chan_question, main_blink, 4);
 
 /**
  * Say why the chip started.
@@ -165,12 +148,6 @@ int main(void)
 
     log_reset_cause();
     hold_onboard_led_quiet();
-
-    if (gpio_is_ready_dt(&blink)) {
-        (void) gpio_pin_configure_dt(&blink, GPIO_OUTPUT_INACTIVE);
-    } else {
-        LOG_WRN("GPIO port %s is not ready; running without the LED", blink.port->name);
-    }
 
     const int ret = tk_input_init();
 

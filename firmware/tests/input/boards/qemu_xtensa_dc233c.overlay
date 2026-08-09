@@ -1,7 +1,6 @@
 /*
- * Same nodes as firmware/app/boards/qemu_xtensa_dc233c.overlay, minus the
- * blink pin the suite has no use for. The pins are emulator indices; the
- * suite drives them with gpio_emul_input_set().
+ * Same nodes as firmware/app/boards/qemu_xtensa_dc233c.overlay. The pins are
+ * emulator indices; the suite drives them with gpio_emul_input_set().
  *
  */
 

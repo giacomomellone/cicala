@@ -5,26 +5,28 @@
  *
  *   Category        GPIO 4
  *   Next            GPIO 17
- *   blink           GPIO 2
  *   e-paper         GPIO 10 CS, 11 MOSI, 12 SCLK, 13 MISO (the board's own
  *                   spim2_default), 18 D/C, 8 RESET, 9 BUSY
- *   VBUS detect     GPIO 21, reserved
- *   battery sense   GPIO 1, reserved (ADC1_CH0)
+ *   battery sense   GPIO 1 (ADC1_CH0), through a 470k/470k divider
+ *   VBUS detect     GPIO 21, through a 100k/150k divider
+ *   status LEDs     GPIO 15 red, GPIO 16 green
  *
- * The binding constraint is deep sleep: both buttons, and later VBUS
- * detect, must be RTC-capable or EXT1 wake is impossible. On the ESP32-S3 that
- * means GPIO0..21, which every input above satisfies. Avoided within that
- * range: GPIO0 and GPIO3 are strapping pins, and GPIO19/GPIO20 are the native
- * USB D-/D+ pair — the same peripheral app/debug.overlay puts the debug
- * console on and OpenOCD debugs through, so the panel's RESET and BUSY sit on
- * 8 and 9 instead.
+ * The binding constraint is deep sleep: both buttons must be RTC-capable or
+ * EXT1 wake is impossible. On the ESP32-S3 that means GPIO0..21, which every
+ * input above satisfies. Avoided within that range: GPIO0 and GPIO3 are
+ * strapping pins, and GPIO19/GPIO20 are the native USB D-/D+ pair — the same
+ * peripheral app/debug.overlay puts the debug console on and OpenOCD debugs
+ * through, so the panel's RESET and BUSY sit on 8 and 9 instead.
  *
- * The last two have no nodes here because nothing reads them yet. They are
- * named so the deep-sleep and power work finds the range already divided:
- * battery sense has to be ADC1 (GPIO1..10) because ADC2 is unusable while
- * Wi-Fi is up, and GPIO1 is the only channel of those ten still free. VBUS
- * detect is digital, so it takes GPIO21 and leaves that channel alone. See
- * docs/hardware_wiring.md, including the divider VBUS needs off the 5 V rail.
+ * Battery sense has to be ADC1 (GPIO1..10) because ADC2 is unusable while
+ * Wi-Fi is up, and GPIO1 is the only channel of those ten free. VBUS detect is
+ * digital, so it takes GPIO21 and leaves that channel alone. Neither is a wake
+ * source: EXT1 takes one trigger polarity for the whole mask and the buttons
+ * have claimed active-low, so VBUS is polled instead. See
+ * CONFIG_TK_POWER_WAKE_ON_USB, and docs/hardware_wiring.md for the dividers.
+ *
+ * GPIO2 was the bring-up LED and is now unwired, which returns ADC1_CH2 to the
+ * spare pool. Free and RTC-capable: GPIO2, 5, 6, 7 and 14.
  *
  * Two through-hole buttons are valid bring-up substitutes for the KSC321G.
  * Wire each one to GND: the pins are active low with internal pull-ups, so
@@ -32,28 +34,68 @@
  *
  */
 
+#include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
     aliases {
         tk-category = &tk_category;
         tk-next = &tk_next;
+        tk-led-red = &led_red;
+        tk-led-green = &led_green;
     };
 
-    /*
-     * Bring-up only, read by src/main.c. The DevKitC-1's single onboard LED is
-     * an addressable WS2812 on GPIO48, so there is no `led0` alias to reuse —
-     * wire a discrete LED and resistor from this pin to GND.
-     */
     zephyr,user {
-        blink-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
-
         /*
          * The onboard addressable LED, which this firmware never drives. Named
          * here only so main.c can hold the line low: floating, it latches a
-         * colour from noise and keeps it across resets. Not on the target PCB.
+         * colour from noise and keeps it across resets. Not on the target PCB,
+         * and not the status LED — a WS2812 idles at about 0.6 mA with the
+         * emitters dark, which is twenty times the whole sleep budget.
          */
         ws2812-gpios = <&gpio0 48 GPIO_ACTIVE_HIGH>;
+
+        /*
+         * Battery sense: the tap of a 470k/470k divider off the charger's BAT
+         * pad, with 100 nF to ground. Half the pack voltage, so 1.85 to 2.10 V
+         * over the cell's useful range, read against the internal reference.
+         *
+         * The pack voltage rather than the 3.3 V rail, because the rail says
+         * nothing: the buck holds it flat above roughly 3.45 V and then passes
+         * the cell through at full duty.
+         */
+        io-channels = <&adc0 0>;
+
+        /*
+         * VBUS detect: the tap of a 100k/150k divider off the charger's VU pad,
+         * which puts 3.0 V on the pin against a V_IH of about 2.48 V. Read, not
+         * armed as a wake source — see CONFIG_TK_POWER_WAKE_ON_USB.
+         *
+         * Only USB-C raises this. The charger's DC and solar input does not
+         * reach VU, so charging from either is invisible to the firmware.
+         */
+        tk-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+    };
+
+    /*
+     * The status LEDs, each through its own resistor to ground.
+     *
+     * Two discrete packages on the bench and one bi-colour package on the
+     * target board, which is the same two pins either way — lighting both is
+     * amber. GPIO15 and GPIO16 rather than any of GPIO5 to GPIO7, because those
+     * three are the contiguous run of ADC1 channels being kept for rev A and an
+     * LED needs neither an ADC channel nor RTC capability.
+     */
+    tk_leds: tk-leds {
+        compatible = "gpio-leds";
+        led_red: red {
+            gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
+            label = "status red";
+        };
+        led_green: green {
+            gpios = <&gpio0 16 GPIO_ACTIVE_HIGH>;
+            label = "status green";
+        };
     };
 
     /*
@@ -182,6 +224,33 @@
 
 &light_sleep {
     status = "disabled";
+};
+
+/*
+ * Battery sense.
+ *
+ * `adc0` is the label Zephyr gives the peripheral whose `unit = <1>` — that is
+ * hardware ADC1, the one that keeps working while the radio is up. `adc1` is
+ * ADC2 and shares its hardware with Wi-Fi, so a reading taken during a sync can
+ * simply fail. The naming is worth knowing before changing this line.
+ *
+ * ADC_GAIN_1_4 is the 12 dB attenuation, which reads to about 3.1 V. Halved by
+ * the divider, a 4.2 V cell arrives as 2.1 V with room above it. The reference
+ * is internal and supply-independent, so a sagging rail does not skew the
+ * reading — which matters, because a sagging rail is exactly when it is read.
+ */
+&adc0 {
+    status = "okay";
+    #address-cells = <1>;
+    #size-cells = <0>;
+
+    channel@0 {
+        reg = <0>;
+        zephyr,gain = "ADC_GAIN_1_4";
+        zephyr,reference = "ADC_REF_INTERNAL";
+        zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+        zephyr,resolution = <12>;
+    };
 };
 
 /*

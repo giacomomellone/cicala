@@ -44,11 +44,6 @@
         };
     };
 
-    /* Bring-up blinky pin, so src/main.c builds for qemu too. */
-    zephyr,user {
-        blink-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
-    };
-
     /*
      * A dummy panel the size of the real one. It discards what it is given, so
      * `just fw-sim` proves the render path runs end to end without showing
