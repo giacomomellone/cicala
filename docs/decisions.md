@@ -801,3 +801,79 @@ The bootloader is deliberately not published there. It is not something a device
 Cache lifetimes are split rather than defaulted: sixty seconds on the two manifests, immutable on everything they name. A manifest cached for an hour is an hour in which a release reaches nobody, while an artifact is named after its version and never changes.
 
 The whole procedure, from buying the domain to the first device that updates itself, is in [hosting.md](hosting.md).
+
+## 2026-08-09: The power bench gets a bq25185 and a 1500 mAh cell, and neither is the product part
+
+[prototype bom](prototype_bom.md) planned Stage 2 around an Adafruit 4755 (BQ24074) and a 500 mAh LP503035, and said not to buy them yet. What was bought instead is an Adafruit 6092 — a bq25185 with a TPS62569 3.3 V buck on the same board — and an EEMB 524261, 3.7 V and 1500 mAh.
+
+The charger board is the better bench part for a reason that has nothing to do with the charger: it brings its own regulated 3.3 V at 1 A, so the rig runs off a cell without a second regulator to build or a devkit LDO to burn a volt in. It also breaks out USB D+ and D-, which makes the single-connector arrangement rev A wants testable now rather than after a PCB.
+
+The cell is not the product cell and is not meant to be. At roughly 61 x 42 x 5.2 mm it does not fit the 30 x 35 x 5 mm slot in [device prototype](device_prototype.md), let alone the 84 x 56 x 16 mm envelope; `hardware/pcb/BOM.md` keeps the 503035 and this branch does not touch the enclosure. Its job is to make the discharge long enough to measure.
+
+Charge current is cut to 500 mA with the jumper on the back, which is 0.33C. Inside EEMB's standard rate, and a full charge lands near three and a half hours — clear of the chip's unmodifiable six-hour safety timeout, which would otherwise stop a slow charge part-way and look like a fault.
+
+The rev A charger stays open. `hardware/pcb/BOM.md` still says "BQ2407x class, exact part open", and the 6092's onboard buck overlaps the XC6220 already chosen there. That is a decision the bench should inform rather than one this purchase makes.
+
+Accepted cost: the runtime figures this bench produces are for a cell three times the size of the one the product is designed around, so they scale and cannot be quoted.
+
+## 2026-08-09: Charged is a guess, and only the LED is allowed to believe it
+
+The bq25185 exposes no charge-status pin. Adafruit's board has an orange LED wired to it and no pad, so the firmware cannot be told that charging has terminated — it can only look at the cell.
+
+`CHARGING` and `CHARGED` are therefore one visit to external power split by a voltage threshold, `CONFIG_TK_POWER_FULL_MV`. A lithium cell under constant-voltage charge sits near 4.2 V for the last hour while the current tapers, so this reports full early, by an amount that depends on what the load is doing. There is no reading that would do better.
+
+That is acceptable for an LED. Somebody glancing at a device to see whether it is done is not harmed by being told so ten minutes early, and the failure is self-correcting — they unplug it and it works. It would not be acceptable anywhere else, so nothing else reads it: the sync window, the refresh gate and the sleep inhibitor all ask about external power or about the floor, never about full.
+
+The split earns its keep in the state machine rather than costing anything there. One visit to external power opens one sync window, and crossing the threshold in either direction does not open another — which matters, because during a taper the reading crosses it more than once.
+
+Accepted cost: a green LED means "probably finished", and the docs have to say so rather than letting somebody infer a measurement that was never taken.
+
+## 2026-08-09: VBUS is read at boot, not armed as a wake source
+
+The plan was always that VBUS on GPIO21 would join the deep-sleep wake mask, and [firmware architecture](firmware_architecture.md) said so: "VBUS detect joins the mask with the opposite polarity, since plugging in drives it high." It cannot. EXT1 takes one trigger polarity for the entire pin mask, and the ESP32-S3 does not define `SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN`, so a pin that is interesting when high cannot share a mask with two buttons that are interesting when low.
+
+EXT0 can. It is a separate single-pin trigger with its own polarity, it is available on this SoC, and `esp_sleep_enable_ext0_wakeup(21, 1)` would do exactly what was wanted. The reason not to is in Espressif's `sleep_modes.c`: arming EXT0 forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep, where EXT1 alone leaves that domain off. That is a permanent standby cost against a 30 uA budget, paid on every sleep for the rest of the device's life, to save one button press.
+
+So VBUS is polled — at boot, and every `CONFIG_TK_POWER_SAMPLE_MS` while awake. Plugging in does not wake a sleeping device; the next press does, and that boot finds VBUS high and opens the window. The gesture is "plug it in, press Next", which is the one [design](design.md) specified in the first place.
+
+The EXT0 path is written up as `CONFIG_TK_POWER_WAKE_ON_USB`, default off, so the cost can be measured rather than argued about.
+
+Accepted cost: a device plugged in and left alone does not sync until somebody touches it.
+
+## 2026-08-09: The device stays awake for as long as it is plugged in
+
+Sleeping is decided by `sleep_now()`, which already refuses while a refresh is in flight and while the portal is on air. External power is now a third refusal, and it is a stronger one than the others: it holds for the whole charge, not for a bounded window.
+
+The reason is the status LEDs. They need the SoC running to be lit, and red handing over to green across a charge is most of what they are for — a device that went dark five minutes into an overnight charge would be reporting that it had stopped charging. On mains the current this costs is not the cell's.
+
+`CONFIG_TK_POWER_CHARGE_WINDOW_MS` survives, but it now bounds only the sync and update window rather than wakefulness. A device left on a charger overnight should not retry a download for eight hours; it should stay lit and stop asking.
+
+This deleted something. An earlier draft gave the retained block a `charge_window_spent` flag and a layout version bump, because a device that slept mid-charge could not work out whether it had already synced — VBUS stays high for hours and there is no charge-status pin to distinguish a fresh plug-in from an old one. Staying awake removes the question entirely: from the press that opens the window to the unplug, the device never sleeps, so the answer is in RAM. The retained block is unchanged.
+
+Accepted cost: a fault that leaves VBUS reading high would keep the device awake indefinitely and flatten the cell it thinks is charging.
+
+## 2026-08-09: Two plain LEDs, because an addressable one never turns off
+
+The device needed a way to say things the panel cannot — that a press was refused because the cell is flat, that a charge is running, that the portal is on air. Saying any of them on the e-paper is itself a refresh, which is the thing being refused.
+
+The DevKitC has an addressable LED on GPIO48 and it is the wrong part. A WS2812 is not an LED with a driver; it is a controller — oscillator, shift register, data reshaping buffer — that happens to have three emitters attached. That controller is powered whenever the rail is up, so the package idles at around 0.6 mA with every emitter dark. Against a 30 uA whole-device budget that is twenty times the target, spent to display nothing, and fixing it means a high-side FET and a GPIO to drive it.
+
+Two GPIOs, two resistors and two dice cost nothing at all when both pins are low. The bench uses two discrete LEDs and rev A uses one bi-colour package on the same two pins, so the firmware is identical and only the lens differs.
+
+Red and green is the whole palette, since lighting both is amber, and there are more conditions than colours. The two pairs that would collide are separated by rhythm instead: a low-battery blink against a steady portal amber, and a transfer pulse against a steady charged green. Blue and magenta, which an earlier sketch used for the portal and for a failed ADC, are simply unreachable — the portal moved to amber and the ADC fault left the LED entirely, since it is a bench condition the console already reports and a fourth thing to tell apart would make the other three harder to read.
+
+The bring-up LED on GPIO2 went with this. It toggled on every question that reached the panel, which mattered before the panel was wired and does not now. Its pin returns to the ADC1 pool, which [hardware wiring](hardware_wiring.md) always said was what it was being kept for.
+
+Accepted cost: two separate packages on the bench do not blend into amber — they read as a red LED and a green LED both lit. Every transition and every priority rule is still exercised; only the final appearance waits for the rev A part.
+
+## 2026-08-09: One USB-C on rev A, and a boot strap to go with it
+
+The ESP32-S3 has a USB Serial/JTAG controller in silicon on GPIO19 and GPIO20. It presents two interfaces at once — a vendor JTAG interface OpenOCD claims and a CDC-ACM the host sees as a serial port — which `app/debug.overlay` already uses for the debug console, and esptool can drive the ROM download mode through the same CDC interface.
+
+So rev A needs no CP2102, no auto-reset transistor pair, and no second connector. One USB-C: VBUS to the bq25185 input, D+ and D- to GPIO19 and GPIO20. `hardware/pcb/BOM.md` already lists a USB-C with 5.1 kOhm CC pulldowns and no bridge chip, so this confirms an assumption that was made without being written down.
+
+It obliges one thing the current board gets for free. Download mode over USB Serial/JTAG is normally entered by command, but an image that reconfigures those two pins, or that crashes before USB enumerates, can only be recovered by strapping IO0 low at reset. The two product buttons are on GPIO4 and GPIO17. Rev A therefore wants a test point or an internal button on IO0, and that is the difference between a board somebody can rescue and a brick.
+
+Worth stating next to it: a sleeping device is not on the bus at all. Deep sleep stops USB enumerating, so the port disappears between presses, which is already true today and surprises everyone once.
+
+Not verified. Nothing in this repo has yet flashed over `/dev/cu.usbmodem*` — `just fw-flash` targets the CP2102 and `debug.overlay`'s own header still asserts that flashing wants the UART jack. It is one bench check, and until it is run this is a plan rather than a finding.

@@ -6,14 +6,17 @@ the data contract in [sync_protocol.md](sync_protocol.md), the pins and the
 board in [hardware wiring](hardware_wiring.md), rationale in
 [decisions.md](decisions.md).
 
-**Status: the tabletop loop is built, its state survives a reboot, and the
-device can be put on a network.** `input`, `app_fsm`, `qdb` with its bag,
-`layout`, `retained`, the panel and the setup `portal` all exist and are
-tested, as are `sync` and the firmware update path built on it. Still design:
-`power`. Deep sleep is on in the everyday image, and the state that has to
-outlive a wake lives in RTC memory. Deep sleep and the radio are both on in
-the everyday image now; the images that measure something turn them back off. Items marked *verify* have not been run on
-hardware. The [firmware primer](firmware_primer.md) is the hands-on tour.
+**Status: every module is built.** `input`, `app_fsm`, `qdb` with its bag,
+`layout`, `retained`, the panel, the setup `portal`, `sync` and the firmware
+update path all exist and are tested, and `power` and `status` now join them.
+Deep sleep and the radio are both on in the everyday image; the images that
+measure something turn them back off.
+
+What is *not* done is the copper. The two dividers and the two status LEDs
+`power` reads and drives are described in [hardware wiring](hardware_wiring.md)
+and have not been built, so nothing about the power path has been seen on
+hardware. Items marked *verify* have not been run on a board. The
+[firmware primer](firmware_primer.md) is the hands-on tour.
 
 ## The one constraint
 
@@ -24,7 +27,15 @@ and every thread stack are gone, and waking runs `main()` from the top.
   between wake and sleep.
 - "Next question under 1 s" is a **boot-time** budget, not a scheduling one.
 - Persisted state lives in **RTC slow memory**, never in `.bss`.
-- Sleep is never called. It is what happens when no thread is runnable.
+- Sleep is called rather than fallen into. The SoC's deep-sleep state is marked
+  disabled in its own devicetree and documented as reachable only through
+  `sys_poweroff()`, so `src/sleep.c` decides — after an idle timer, and only
+  once nothing objects.
+
+**External power suspends all of it.** While VBUS is high the device does not
+sleep at all: the status LEDs need the SoC running, and red handing over to
+green across a charge is most of what they are for. The budget above is about
+what a cell has to pay for, and a charger is not the cell.
 
 ## Threads and data flow
 
@@ -87,15 +98,27 @@ several. What is left on `net` is the portal's state machine, the translation
 of management events into it, and the tick its deadlines need — which is why
 6 KB is enough where the design once said 12.
 
-There is no power thread. With `CONFIG_PM` the idle thread picks the sleep
-state once nothing is runnable, so the design's job is to make every thread
-block with **no timeout** when the table is quiet. `net` inhibits sleep from the
-moment the entry gesture starts being confirmed until the portal ends — `sleep_now()` asks `tk_net_is_active()` and reschedules
-rather than calling `sys_poweroff()`, which is what a PM lock would mean on a
-device that stops the SoC explicitly. Nothing else inhibits sleep.
+There is no power thread, and `power` does not get one. Sampling the ADC and
+reading the VBUS pin is microseconds and never blocks, so it runs as a delayable
+work item on the system workqueue. It could not live on `app` in any case: that
+thread blocks with `K_FOREVER` whenever nothing is happening, and that is
+precisely the property which lets the device reach deep sleep. Giving it a
+periodic timeout so power could be sampled would trade the sleep budget for a
+reading nobody is waiting for.
 
-`CONFIG_PM` is off today, so nothing sleeps yet — but `app` already blocks with
-`K_FOREVER` except in `REFRESHING`, which is the property enabling it later.
+`sleep_now()` refuses for three reasons, in order, each rescheduling the idle
+timer rather than calling `sys_poweroff()`:
+
+| Asked | Meaning | For how long |
+|---|---|---|
+| `tk_app_is_settled()` | a refresh is in flight, or a deck is named but not drawn from | until the machine settles |
+| `tk_net_is_active()` | the portal is on air; sleeping would lose the session | the portal window |
+| `tk_power_external()` | VBUS is high | the whole time it is plugged in |
+
+The third is the strongest and the newest. The status LEDs need the SoC running
+to be lit, so a device that slept mid-charge would be reporting that it had
+stopped charging. `CONFIG_TK_POWER_CHARGE_WINDOW_MS` still exists but now bounds
+only the sync and update window, not wakefulness.
 
 ## What each module owns
 
@@ -120,6 +143,11 @@ free to be C++.
 | `portal_fsm` | `lib/portal/` | a scan, an AP result, a form, a join result | when to scan, serve, join, stop |
 | `net_logic` | `app/src/net_logic.cpp` | the machine's decisions | `chan_service`, and calls into `portal` |
 | `portal` | `app/src/portal.c` | those calls | SoftAP, DHCP, DNS, HTTP, credentials |
+| `power` | `app/src/power.c` | ADC1 channel 0, the VBUS pin | a millivolt reading and a VBUS bit |
+| `power_fsm` | `lib/power/` | that reading | a state, and one sync window per plug-in |
+| `power_logic` | `app/src/power_logic.cpp` | the machine's decisions | `chan_power`, and the answers `sleep` and `app_logic` ask for |
+| `status_led` | `lib/status/` | power, the portal, a transfer | which colour, and at what rhythm |
+| `status` | `app/src/status.c` | `chan_power` | two GPIOs |
 | `channels` | `app/src/channels.c` | — | the channel definitions themselves |
 
 `lib/` is everything that compiles without a Zephyr header, which is what lets
@@ -273,7 +301,7 @@ the question on the glass *is* something, a press *happened*.
 | `chan_render` | event | seq, result, was-full | `display` | `app` | built |
 | `chan_service` | event | the portal's current card | `net` | `app` | built |
 | `chan_corpus` | event | the language now in use | `net` | `app` | built |
-| `chan_power` | state | USB, charging, mV | workqueue | `app`, `net` | design |
+| `chan_power` | state | state, mV, USB | workqueue | `status` | built |
 
 All observers are message subscribers, so a publish never blocks a publisher.
 
@@ -297,6 +325,19 @@ Two contract rules that are easy to violate:
   matches against it. A second publisher would break that guard rather than
   merely race it, so the portal's card travels on `chan_service` and `app`
   turns it into a card.
+- **`sleep` must not observe `chan_power`.** Every observer of a channel that
+  `sleep` listens on rearms the idle timer, and a sample arrives every
+  `CONFIG_TK_POWER_SAMPLE_MS` — five times `CONFIG_TK_SLEEP_IDLE_MS`. That
+  happens to be survivable today and would stop the device sleeping forever the
+  moment either number moved. `sleep.c` calls `tk_power_external()` directly
+  instead, which is also how it asks `net` whether the portal is up.
+
+`app` does not observe `chan_power` either, for a smaller reason: the refresh
+gate wants the current answer at the moment of a press, not the last one that
+was broadcast, so `app_logic` asks `tk_power_refresh_allowed()` when it is about
+to draw. The channel exists for the things that react to a change rather than
+query one, which today is the status LEDs and tomorrow is the portal's status
+page.
 
 ## Modules
 
@@ -315,6 +356,8 @@ flowchart TB
         LAY[layout<br/><i>UTF-8 · accents · wrap</i>]
         PFSM[portal_fsm<br/><i>the setup machine</i>]
         PBITS[portal dns · form · page<br/><i>parse · render · escape</i>]
+        PWRFSM[power_fsm<br/><i>what a millivolt means</i>]
+        SLED[status_led<br/><i>which condition wins</i>]
     end
 
     subgraph glue["firmware/app/src — Zephyr-bound"]
@@ -331,11 +374,10 @@ flowchart TB
         FETCH[fetch.c<br/><i>one GET, a sink per caller</i>]
         SYNCC[sync.cpp<br/><i>bundle: verify, store</i>]
         OTAC[ota.cpp<br/><i>image: verify, stage</i>]
-    end
-
-    subgraph todo["still design"]
-        direction LR
-        POWER[power<br/><i>ADC, VBUS, PM</i>]:::t
+        PWRC[power.c<br/><i>ADC, VBUS, workqueue</i>]
+        PWRL[power_logic.cpp<br/><i>machine behind a C API</i>]
+        STATC[status.c<br/><i>two pins, blink timing</i>]
+        STATL[status_logic.cpp<br/><i>arbiter behind a C API</i>]
     end
 
     FSM --> APPFSM
@@ -359,7 +401,13 @@ flowchart TB
     SYNCC --> FETCH
     OTAC --> FETCH
     SYNCC --> CHAN
-    POWER -.-> CHAN
+    FSM --> PWRFSM
+    PWRFSM --> PWRL
+    PWRC --> PWRL
+    PWRL --> CHAN
+    SLED --> STATL
+    STATC --> STATL
+    CHAN --> STATC
 
     classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
 ```
@@ -714,8 +762,8 @@ question.
 
 ## The wake path
 
-Once deep sleep exists, the same work happens from a cold boot instead. This is
-the design, not the current build — `CONFIG_PM` is off and nothing sleeps yet:
+The same work, from a cold boot, because a wake *is* a cold boot. This is what
+the everyday image does today:
 
 ```mermaid
 sequenceDiagram
@@ -740,6 +788,90 @@ sequenceDiagram
 
 A Category press follows the same path, advancing the retained deck and drawing
 its name rather than a question.
+
+## Power
+
+One reading — millivolts at the pack, and whether VBUS is high — turns into one
+state, and three parts of the firmware ask that state a different question.
+
+```mermaid
+stateDiagram-v2
+    [*] --> UNKNOWN
+    UNKNOWN --> NORMAL: first reading
+    NORMAL --> LOW: under TK_REFRESH_MIN_MV
+    LOW --> CRITICAL: under TK_POWER_CRITICAL_MV
+    CRITICAL --> LOW: back over, plus hysteresis
+    LOW --> NORMAL: back over, plus hysteresis
+
+    NORMAL --> CHARGING: VBUS
+    LOW --> CHARGING: VBUS
+    CRITICAL --> CHARGING: VBUS
+    UNKNOWN --> CHARGING: VBUS
+    CHARGING --> CHARGED: over TK_POWER_FULL_MV
+    CHARGED --> CHARGING: back under, plus hysteresis
+    CHARGING --> UNKNOWN: unplugged
+    CHARGED --> UNKNOWN: unplugged
+```
+
+Four things about that shape are load-bearing.
+
+**Downwards is immediate and upwards is not.** Hysteresis applies only on the
+way back up. Being slow to notice a cell getting worse costs something; being
+slow to notice it recovering costs nothing.
+
+**Readings are sticky, so one sample can walk several rungs.** On battery the
+device is awake for about `CONFIG_TK_SLEEP_IDLE_MS` per press and then stops
+existing, so the machine sees one or two samples in its entire life. A first
+reading taken on a flat cell has to reach CRITICAL on its own rather than
+waiting for two more samples that will never arrive. All averaging happens in
+the sampler instead, as a burst at boot.
+
+**Unplugging returns to UNKNOWN, not to NORMAL.** The first reading after a
+charge carries surface charge and reads high, so the ladder re-derives rather
+than trusting where it just was.
+
+**UNKNOWN permits refreshes.** A failed ADC must not stop the device drawing
+questions. It is also the fail state, so a table bug degrades to a device that
+works and says nothing about its cell.
+
+`CHARGED` is a voltage estimate and nothing but the LED may read it — see the
+decision log. Charge termination cannot be sensed: the charger exposes no /CHG
+pin, and a cell under constant-voltage charge sits near 4.2 V for the last hour.
+
+### Who asks what
+
+| Asker | Question | Answer used for |
+|---|---|---|
+| `app_logic` | is a refresh allowed? | drawing, or leaving the glass alone |
+| `sleep` | is external power present? | staying awake for the whole charge |
+| `net` | is the charge window still open? | joining a network on a button wake |
+| `status` | what state, exactly? | which LED, at what rhythm |
+
+### The two LEDs
+
+A red LED and a green one; lighting both is amber. That is the whole palette
+and there are more conditions than colours, so two pairs are separated by
+rhythm instead. Highest priority first:
+
+| Condition | Shown as |
+|---|---|
+| a press refused on a flat cell | red, three blinks |
+| a press refused on a low cell | amber, one blink |
+| a sync or an update running | green, slow pulse |
+| the portal on air | amber, steady |
+| charged | green, steady |
+| charging | red, steady |
+| on the cell, healthy | dark |
+
+Blinks are transient and fall back to whatever was underneath rather than to
+darkness — a burst that ended dark would tell somebody mid-charge that their
+device had stopped. The pairs that share a colour are exactly the ones rhythm
+separates: a low-battery blink against a steady portal amber, and a transfer
+pulse against a steady charged green.
+
+A failed ADC reading shows nothing. It is a bench condition, the console reports
+it, and a fourth thing to distinguish would make the other three harder to read
+across a table.
 
 ## Where state lives
 
@@ -897,8 +1029,22 @@ flowchart LR
     classDef held fill:#f4efe6,stroke:#b0a086
 ```
 
-VBUS detect joins the mask with the opposite polarity, since plugging in drives
-it high.
+**VBUS cannot join this mask, and an earlier version of this page was wrong to
+say it would.** `esp_sleep_enable_ext1_wakeup()` takes one trigger polarity for
+every pin in the mask; the buttons have claimed active-low and VBUS is
+interesting when it is high. Per-pin polarity exists on some Espressif parts —
+`SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN` — and the ESP32-S3 is not one of them.
+
+EXT0 would do it. It is a separate single-pin trigger with its own polarity and
+it is available here, so `esp_sleep_enable_ext0_wakeup(21, 1)` is a real option.
+Arming it forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep,
+where EXT1 alone leaves that domain off — a standing cost against a 30 µA budget
+to save one button press. It is written up as `CONFIG_TK_POWER_WAKE_ON_USB`,
+default off, so the cost can be measured rather than argued about.
+
+So plugging in does not wake the device. The next press does, and `power` reads
+VBUS at boot before any thread starts, which is what lets `net` find external
+power and open the sync window on that same boot.
 
 The consequence worth stating: the mask is state recomputed on every sleep
 rather than configured once.
@@ -972,10 +1118,18 @@ suites that drive the two buttons run in the default macOS loop.
   40 KB of HTML against a 4 KB page buffer, so it has to be paginated or sent
   across several handler calls, which the HTTP server already supports by
   calling back until `final_chunk`.
-- CI does not build or test this firmware. `.github/workflows/firmware.yml`
-  runs in an `espressif/idf` container and gates on a `firmware/CMakeLists.txt`
-  that has not existed since the move to Zephyr, so the job always no-ops. The
-  suites run only when somebody runs them.
+- **Nothing about power has been seen on hardware.** The two dividers and the
+  two LEDs are not built, so `TK_POWER_DIVIDER_NUM` and `_DEN` are unverified
+  guesses at a ratio, and `TK_REFRESH_MIN_MV` is still the 3200 it was invented
+  as rather than the voltage at which a refresh actually corrupts. The suites
+  cover the branches — the ladder, the hysteresis, the window, the gate and the
+  blink, the last two end to end against an emulated ADC — but a suite cannot
+  tell anyone what a real cell reads. See "Bringing the rig up" in
+  [hardware wiring](hardware_wiring.md).
+- Whether the device should say anything at all on a flat cell beyond three red
+  blinks. The panel cannot: a card saying "the battery is flat" is itself the
+  refresh being refused. The portal's status page could, and a card drawn while
+  charging could, since refreshing is safe then. Neither is built.
 - The refresh counter has to reach RTC memory before the full-refresh interval
   means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
   always refreshes fully — correct today, and wrong the moment deep sleep makes
