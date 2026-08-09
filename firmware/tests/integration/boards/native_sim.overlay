@@ -4,12 +4,47 @@
  * this only references it.
  */
 
+#include <zephyr/dt-bindings/adc/adc.h>
+#include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
 / {
     aliases {
         tk-category = &tk_category;
         tk-next = &tk_next;
+        tk-led-red = &led_red;
+        tk-led-green = &led_green;
+    };
+
+    /* See the qemu overlay beside this one for what adc_emul is doing here,
+     * and why the channel child is not optional. */
+    adc0: adc {
+        compatible = "zephyr,adc-emul";
+        nchannels = <1>;
+        ref-internal-mv = <3300>;
+        #io-channel-cells = <1>;
+        #address-cells = <1>;
+        #size-cells = <0>;
+        status = "okay";
+
+        channel@0 {
+            reg = <0>;
+            zephyr,gain = "ADC_GAIN_1";
+            zephyr,reference = "ADC_REF_INTERNAL";
+            zephyr,acquisition-time = <ADC_ACQ_TIME_DEFAULT>;
+            zephyr,resolution = <12>;
+        };
+    };
+
+    zephyr,user {
+        io-channels = <&adc0 0>;
+        tk-vbus-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+    };
+
+    tk_leds: tk-leds {
+        compatible = "gpio-leds";
+        led_red: red { gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>; label = "status red"; };
+        led_green: green { gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>; label = "status green"; };
     };
 
     tk_buttons: tk-buttons {

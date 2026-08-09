@@ -18,9 +18,11 @@
 #include "channels.h"
 #include "corpus.h"
 #include "language.h"
+#include "power.h"
 #include "qdb.hpp"
 #include "retained_block.hpp"
 #include "sleep.h"
+#include "status.h"
 
 LOG_MODULE_REGISTER(tk_app, LOG_LEVEL_INF);
 
@@ -141,6 +143,13 @@ public:
 
     bool draw(uint8_t deck) override
     {
+        // Before bag.draw(), which mutates the retained shuffle state: gating
+        // after it would burn a question from the no-repeat cycle on every
+        // press the cell was too flat to answer.
+        if (!refresh_allowed()) {
+            return false;
+        }
+
         uint16_t index = 0;
         tk::Question question;
 
@@ -187,6 +196,13 @@ public:
 
     bool show_category(uint8_t deck) override
     {
+        // Before ++_seq, for the same reason draw() gates before the bag: a
+        // sequence number handed out and never used makes the guard that drops
+        // a late render match against something that never happened.
+        if (!refresh_allowed()) {
+            return false;
+        }
+
         const char *label = tk_deck_label(deck);
 
         struct tk_question_msg msg = {};
@@ -227,6 +243,10 @@ public:
 
     bool show_service() override
     {
+        if (!refresh_allowed()) {
+            return false;
+        }
+
         struct tk_question_msg msg = {};
 
         msg.seq = ++_seq;
@@ -281,6 +301,37 @@ public:
     }
 
 private:
+    /**
+     * Whether the cell can carry a refresh, and the whole answer to a press
+     * that cannot.
+     *
+     * A partial refresh attempted near brownout can leave the panel in a
+     * corrupted state, so under CONFIG_TK_REFRESH_MIN_MV the previous question
+     * stays on the glass. Returning false sends the state machine to FAIL,
+     * which claims the deck and parks in SHOWING — one press, one round trip,
+     * nothing drawn, and the device still sleeps afterwards.
+     *
+     * The log line is not decoration. FAIL says nothing of its own and draw()'s
+     * other failure says "deck yielded nothing", so without the millivolts here
+     * a flat cell and an empty deck read identically on the console.
+     *
+     * The LEDs are told separately because the panel cannot be: saying "the
+     * battery is flat" on the glass is itself the refresh being refused.
+     */
+    bool refresh_allowed()
+    {
+        if (tk_power_refresh_allowed()) {
+            return true;
+        }
+
+        LOG_WRN("%u mV is under the %d mV floor; the panel keeps what it has",
+                tk_power_millivolts(), CONFIG_TK_REFRESH_MIN_MV);
+
+        tk_status_note_refresh_blocked();
+
+        return false;
+    }
+
     uint32_t _seq = 0;
     uint8_t _last_deck = 0;
     bool _last_was_question = false;
