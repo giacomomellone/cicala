@@ -1,0 +1,10 @@
+# The application's policy symbols: the blink and pulse periods are
+# CONFIG_TK_STATUS_LED_* values, and the header falls back to its own defaults
+# when they are absent. A suite built without these would be timing numbers
+# nobody ships.
+
+mainmenu "tischkarte status tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"
