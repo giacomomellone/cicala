@@ -360,6 +360,29 @@ so the sync window does not fire on every flash and the LED does not go red ever
 time you work on the board. It also means a devkit cable feeds the rig invisibly:
 any "running on battery" measurement taken with one in is a lie.
 
+### Which cables, for which job
+
+The CP2102 sits on the DevKitC's 5 V rail, so plugging either devkit jack in
+powers 3V3 through the board's own LDO. **The normal console and "running on the
+cell" are therefore not the same session** — every job below picks one.
+
+| Job | Cell | Charger USB-C | DevKitC jacks | Console |
+|---|---|---|---|---|
+| Flashing, and everyday logic work | out, or switch open | — | UART, plus USB for the debug build | full |
+| Watching a charge run red → green | in | in | out | none; the LEDs are the readout |
+| Anything about battery behaviour | in | out | out | none |
+| Sleep current | in | out | out | meter in series with the cell |
+
+That is what the two status LEDs are for. The cases with no console are exactly
+the ones where the panel cannot say anything either, which is why a refused press
+gets three red blinks rather than a log line.
+
+A console *while* genuinely on the cell needs the native jack and a cable whose
+VBUS wire is not connected: the USB-Serial-JTAG peripheral is inside the SoC and
+runs from the chip's own 3.3 V, so only D+, D− and ground have to arrive.
+*verify:* not tried here, and it is the same peripheral the rev A connector rests
+on.
+
 ## Cables
 
 Keep both USB cables connected while developing. They can share a host.
@@ -374,7 +397,9 @@ anything opening that port resets the chip — which is why the debug build move
 its console to the native USB side, where no such circuit exists.
 
 A third cable matters now: the **charger's** USB-C. That is the one the firmware
-sees. Plugging the DevKitC in is not plugging the device in.
+sees — plugging the DevKitC in is not plugging the device in. It carries power
+only. The 6092 is a charger, and the D+/D− it breaks out go nowhere until
+somebody wires them.
 
 Rev A collapses all three into one USB-C on the charger input, with D+ and D− to
 GPIO19/20 — see [decisions](decisions.md) for why that needs no CP2102 and what
