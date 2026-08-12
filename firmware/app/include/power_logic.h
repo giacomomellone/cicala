@@ -26,8 +26,15 @@ extern "C" {
  */
 void tk_power_post_sample(uint16_t mv, bool usb);
 
-/** Tick the machine once. For the callers that need a clock, not a reading. */
-void tk_power_run(void);
+/**
+ * Hand the machine the VBUS pin alone, and let it settle.
+ *
+ * For the tick where the conversion failed but the pin still answered. VBUS is
+ * an independent GPIO, so a broken divider must cost the battery reading and
+ * nothing else: without this the USB bit freezes at whatever the last good
+ * sample said, and a device unplugged after that never sleeps again.
+ */
+void tk_power_post_usb(bool usb);
 
 /** Current state, as a `enum tk_power_state` value. */
 uint8_t tk_power_state(void);

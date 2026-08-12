@@ -58,6 +58,17 @@ static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(TK_USER_NODE, tk_vbus_g
 static void power_sample(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(sample_work, power_sample);
 
+/*
+ * What came up at boot, checked before each is used.
+ *
+ * The two are independent on purpose. VBUS is a plain GPIO on its own pin, so
+ * an ADC that never came ready must not take the USB bit down with it — that
+ * bit is what `net` joins a network on and what keeps the device from sleeping
+ * on a charger, and freezing it is worse than not having it.
+ */
+static bool adc_ready;
+static bool vbus_ready;
+
 /**
  * One conversion, in millivolts at the pin.
  *
@@ -116,6 +127,13 @@ static bool read_tap_mv(int32_t *mv)
  */
 static bool read_pack_mv(uint16_t *mv)
 {
+    if (!adc_ready) {
+        /* Silently: power_start() has already said why, and repeating it every
+         * CONFIG_TK_POWER_SAMPLE_MS would bury whatever else the console has
+         * to say. */
+        return false;
+    }
+
     int32_t total = 0;
     int taken = 0;
 
@@ -142,9 +160,13 @@ static bool read_pack_mv(uint16_t *mv)
     return true;
 }
 
-/** True when VBUS is high. A read error is reported as unplugged. */
+/** True when VBUS is high. A pin that never came ready reads as unplugged. */
 static bool read_vbus(void)
 {
+    if (!vbus_ready) {
+        return false;
+    }
+
     const int level = gpio_pin_get_dt(&vbus);
 
     if (level < 0) {
@@ -164,17 +186,25 @@ static void power_sample(struct k_work *work)
         return;
     }
 
+    /*
+     * Read on every tick, in both branches. VBUS is its own pin and costs one
+     * register read, so the state of the ADC has no business deciding whether
+     * anybody hears about it: a bit that froze at "plugged in" would keep
+     * tk_power_external() true, and sleep.c refuses to sleep while that holds.
+     */
+    const bool usb = read_vbus();
+
     uint16_t mv = 0;
 
     if (read_pack_mv(&mv)) {
-        tk_power_post_sample(mv, read_vbus());
+        tk_power_post_sample(mv, usb);
     } else {
         /*
          * Still tick the machine. It owns the charge window, and a window that
          * stopped closing because the ADC failed would hold the device awake
          * on a charger indefinitely.
          */
-        tk_power_run();
+        tk_power_post_usb(usb);
     }
 
     (void) k_work_reschedule(&sample_work, K_MSEC(TK_POWER_INTERVAL_MS));
@@ -185,27 +215,40 @@ static int power_start(void)
     if (!adc_is_ready_dt(&battery)) {
         LOG_ERR("ADC %s is not ready; running without a battery reading",
                 battery.dev != NULL ? battery.dev->name : "?");
-        return 0;
-    }
-
-    const int err = adc_channel_setup_dt(&battery);
-
-    if (err != 0) {
-        LOG_ERR("could not set up ADC channel %u: %d", battery.channel_id, err);
-        return 0;
+    } else if (adc_channel_setup_dt(&battery) != 0) {
+        LOG_ERR("could not set up ADC channel %u; running without a battery reading",
+                battery.channel_id);
+    } else {
+        adc_ready = true;
     }
 
     if (!gpio_is_ready_dt(&vbus)) {
         LOG_ERR("VBUS pin is not ready; the device will believe it is on battery");
     } else {
         (void) gpio_pin_configure_dt(&vbus, GPIO_INPUT);
+        vbus_ready = true;
     }
 
     /*
-     * Synchronous, and before any thread starts. See the header comment: `net`
-     * reads VBUS as it starts up and would otherwise be told UNKNOWN.
+     * Synchronous, and before any thread starts — and reached even when the
+     * ADC did not come up. See the header comment: `net` reads VBUS as it
+     * starts up, `status` listens for the first publish on chan_power, and
+     * neither of those depends on there being a conversion. Returning early
+     * here left the work item unscheduled, so VBUS was never read at all and
+     * every boot looked like a boot on battery.
      */
     power_sample(NULL);
+
+    if (tk_power_external() && tk_power_millivolts() < CONFIG_TK_POWER_PLAUSIBLE_MV) {
+        /*
+         * VBUS reads high and the pack reads like nothing at all, which on a
+         * bench rig usually means neither divider is fitted and both pins are
+         * floating. Worth saying, because the consequence is quiet: external
+         * power inhibits sleep, so the device simply never sleeps again.
+         */
+        LOG_WRN("VBUS is high but the pack reads %u mV; check both dividers are fitted",
+                tk_power_millivolts());
+    }
 
     return 0;
 }

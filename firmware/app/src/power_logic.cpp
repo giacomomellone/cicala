@@ -83,15 +83,15 @@ public:
 Io io;
 tk::PowerFsm fsm(io);
 
-} // namespace
-
-void tk_power_post_sample(uint16_t mv, bool usb)
-{
-    fsm.post_sample(mv, usb);
-    tk_power_run();
-}
-
-void tk_power_run(void)
+/**
+ * Tick until the state stops moving.
+ *
+ * Both entry points below end here rather than exposing it, because a caller
+ * that ticked without posting anything would be asking the machine to re-read a
+ * clock nobody wound: the charge window is the only thing time alone moves, and
+ * every tick that can move it arrives with a VBUS bit attached.
+ */
+void settle()
 {
     /* Bounded rather than while(changed), for the reason tk_net_run() is: a
      * table bug that made two states point at each other would otherwise spin
@@ -108,6 +108,20 @@ void tk_power_run(void)
     }
 
     LOG_ERR("power state machine did not settle");
+}
+
+} // namespace
+
+void tk_power_post_sample(uint16_t mv, bool usb)
+{
+    fsm.post_sample(mv, usb);
+    settle();
+}
+
+void tk_power_post_usb(bool usb)
+{
+    fsm.post_usb(usb);
+    settle();
 }
 
 uint8_t tk_power_state(void)
