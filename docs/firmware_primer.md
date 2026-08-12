@@ -118,9 +118,12 @@ sed -n '15,45p' deps/zephyr/boards/espressif/esp32s3_devkitc/esp32s3_devkitc_pro
 ```
 
 You will see an `aliases` block with `watchdog0` and not much else. In
-particular there is no `led0`, which is why the bring-up LED here does not use
-the usual `DT_ALIAS(led0)` — the DevKitC-1's only onboard LED is an addressable
-WS2812, so ours is a discrete one on a pin we name.
+particular there is no `led0`, which is why the two status LEDs are declared in
+our own overlay and reached through `DT_ALIAS(tk_led_red)` and
+`DT_ALIAS(tk_led_green)` rather than through the usual `led0`. The DevKitC-1's
+only onboard LED is an addressable WS2812, which this firmware never drives —
+its controller idles at about 0.6 mA with the emitters dark, against a
+whole-device budget of 30 µA.
 
 **Look at what we add:**
 
@@ -135,41 +138,50 @@ Zephyr picks it up automatically because it sits in `app/boards/`.
 plus overlay, fully resolved:
 
 ```sh
-less build/esp32s3/zephyr/zephyr.dts
+less build/esp32s3/app/zephyr/zephyr.dts
 ```
+
+The `app/` in that path is `--sysbuild`, which `just fw-build` passes so the
+bootloader is built alongside the application. It moves the application's output
+one level down; a build without it writes to `build/esp32s3/zephyr/` instead.
 
 **Now change something and watch it move.** In the overlay, find:
 
 ```dts
 zephyr,user {
-    blink-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+    tk-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
 };
 ```
 
-Change `2` to `21` — not to one of the pins the selector, Next or the panel
-already claim — then rebuild and grep the generated header:
+Change `21` to `14` — one of the spare RTC-capable pins, and not one Category,
+Next, the panel, the battery divider or the LEDs already claim — then rebuild
+and grep the generated header:
 
 ```sh
 just fw-build
-grep -m1 -A3 "zephyr_user.*blink_gpios" build/esp32s3/zephyr/include/generated/zephyr/devicetree_generated.h
+grep -m1 -A3 "zephyr_user.*tk_vbus_gpios" build/esp32s3/app/zephyr/include/generated/zephyr/devicetree_generated.h
 ```
 
-That 1 MB header is what `GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), blink_gpios)`
-in `app/src/main.c` expands into. The C source never mentions a pin number, so
-moving the LED is an overlay edit and the same source still builds for the
-host.
+That 1 MB header is what `GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios)`
+in `app/src/power.c` expands into. The C source never mentions a pin number, so
+moving VBUS detect is an overlay edit and the same source still builds for the
+host — and for the test suites, whose overlays put the same property on an
+emulated controller instead. Put the `21` back afterwards: the pin is where the
+divider is soldered.
 
 `zephyr,user` is a conventional catch-all node for application-specific
-properties that do not deserve a binding of their own. Good for bring-up, and
-not where the real selector and panel go — those have proper `gpio-keys` and
+properties that do not deserve a binding of their own — here, the battery ADC
+channel and the VBUS pin. It is not where things with a real binding go: the
+buttons, the LEDs and the panel have proper `gpio-keys`, `gpio-leds` and
 `solomon,ssd1680` nodes in the same overlay.
 
-The pins in that overlay are chosen, not arbitrary. Every selector contact and
-Next sits on GPIO0..21, the ESP32-S3's RTC-capable range, because EXT1
-deep-sleep wake works on no other pins; and the panel avoids GPIO19/20, which
-are the native USB pair the debug console and JTAG both use. They stay in the
+The pins in that overlay are chosen, not arbitrary. Category and Next both sit
+on GPIO0..21, the ESP32-S3's RTC-capable range, because EXT1 deep-sleep wake
+works on no other pins; the panel avoids GPIO19/20, which are the native USB
+pair the debug console and JTAG both use; and battery sense takes an ADC1
+channel, because ADC2 stops answering while the radio is up. They stay in the
 overlay rather than in C so the same application logic moves to the target PCB
-by changing one file.
+by changing one file. [Hardware wiring](hardware_wiring.md) has the whole map.
 
 ---
 
@@ -194,7 +206,7 @@ source.
 **See the resolved values:**
 
 ```sh
-grep "^CONFIG_TK_" build/esp32s3/zephyr/.config
+grep "^CONFIG_TK_" build/esp32s3/app/zephyr/.config
 ```
 
 ```

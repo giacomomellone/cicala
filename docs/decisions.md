@@ -838,6 +838,8 @@ So VBUS is polled — at boot, and every `CONFIG_TK_POWER_SAMPLE_MS` while awake
 
 The EXT0 path is written up as `CONFIG_TK_POWER_WAKE_ON_USB`, default off, so the cost can be measured rather than argued about.
 
+*2026-08-12: written up became built.* `sleep_now()` arms EXT0 on the same `tk-vbus-gpios` pin `power.c` samples, still behind that symbol and still off by default — a switch that changed nothing was a measurement nobody could take. An EXT0 wake reports no button, so no press is replayed and `net` takes its cold-boot branch, which is what waking on a plug-in is for. Neither half is verified: no board has slept yet.
+
 Accepted cost: a device plugged in and left alone does not sync until somebody touches it.
 
 ## 2026-08-09: The device stays awake for as long as it is plugged in
@@ -877,3 +879,15 @@ It obliges one thing the current board gets for free. Download mode over USB Ser
 Worth stating next to it: a sleeping device is not on the bus at all. Deep sleep stops USB enumerating, so the port disappears between presses, which is already true today and surprises everyone once.
 
 Not verified. Nothing in this repo has yet flashed over `/dev/cu.usbmodem*` — `just fw-flash` targets the CP2102 and `debug.overlay`'s own header still asserts that flashing wants the UART jack. It is one bench check, and until it is run this is a plan rather than a finding.
+
+## 2026-08-12: A floor under the ladder, rather than an image that cannot draw a card
+
+`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. That is the exact case `app/CMakeLists.txt` says the symbol exists to avoid — "a board with no divider fitted would read a floating pin and refuse to refresh" — and it is what the bench would have hit on the next flash: a floating GPIO1 reads *something*, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
+
+The alternative was to hold the board-conf enable until the copper exists. Rejected: it would leave the power path in every image except the one anybody flashes, which is how a module rots.
+
+So `lib/power` gets a floor instead. Below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 2500 mV — a reading is not a very flat cell but no cell at all, and the machine returns to UNKNOWN, which already permits refreshes and is already the fail state. The threshold is sound rather than convenient: a protected cell disconnects between 2.5 and 3.0 V and the 3.3 V buck stops before that, so an SoC that is still executing cannot be reading 2.4 V from its own pack.
+
+The VBUS half cannot be fixed the same way. It is a digital pin, high is high, and software cannot tell a floating input from a charger. An internal pull-down is not the answer either — it would load the planned 100k/150k divider to about 1.3 V, under V_IH, so the divider would stop working once it was fitted. What the firmware does instead is say so: a boot that finds VBUS high while the pack reads implausible logs a warning naming both dividers. The remedy is a jumper, and [hardware wiring](hardware_wiring.md) now asks for one.
+
+Accepted cost: a real cell discharged below 2.5 V reads as UNKNOWN and the device stops refusing refreshes at exactly the point it should be most careful. That is a state a protected cell reaches by disconnecting, so the device is not running to have an opinion about it.

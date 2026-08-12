@@ -803,6 +803,10 @@ stateDiagram-v2
     CRITICAL --> LOW: back over, plus hysteresis
     LOW --> NORMAL: back over, plus hysteresis
 
+    NORMAL --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
+    LOW --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
+    CRITICAL --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
+
     NORMAL --> CHARGING: VBUS
     LOW --> CHARGING: VBUS
     CRITICAL --> CHARGING: VBUS
@@ -813,7 +817,7 @@ stateDiagram-v2
     CHARGED --> UNKNOWN: unplugged
 ```
 
-Four things about that shape are load-bearing.
+Five things about that shape are load-bearing.
 
 **Downwards is immediate and upwards is not.** Hysteresis applies only on the
 way back up. Being slow to notice a cell getting worse costs something; being
@@ -834,9 +838,30 @@ than trusting where it just was.
 questions. It is also the fail state, so a table bug degrades to a device that
 works and says nothing about its cell.
 
+**There is a floor under the ladder, and it is not another rung.** A reading
+below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 2500 mV — returns to UNKNOWN from
+wherever it was. An SoC that is still running is not being fed by a pack at
+2.4 V: the protection circuit and the 3.3 V buck both give up above that, so
+such a number is a divider that is not fitted and a pin that is floating. That
+is the state of the bench rig today, and without the floor the boot reading
+walks to CRITICAL before any thread starts and every press — including the one
+that draws the first card — is refused, on a device whose LEDs are not wired
+either.
+
 `CHARGED` is a voltage estimate and nothing but the LED may read it — see the
 decision log. Charge termination cannot be sensed: the charger exposes no /CHG
 pin, and a cell under constant-voltage charge sits near 4.2 V for the last hour.
+
+The two inputs are independent all the way through, and that is a requirement
+rather than an accident of layout. VBUS is a plain GPIO; the pack reading is an
+ADC behind a divider. `power.c` reads the pin on every tick whether or not the
+conversion worked, and posts it either way — through `tk_power_post_sample()`
+when there is a reading to go with it and `tk_power_post_usb()` when there is
+not. A USB bit that froze because the divider broke would keep
+`tk_power_external()` true, and `sleep_now()` refuses to sleep for as long as
+that holds: the device would stay awake on the cell until it was flat. Boot has
+the same shape — an ADC that never comes ready still schedules the sampler, so
+VBUS is read, `chan_power` carries a first value, and `net` sees the plug-in.
 
 ### Who asks what
 
@@ -872,6 +897,26 @@ pulse against a steady charged green.
 A failed ADC reading shows nothing. It is a bench condition, the console reports
 it, and a fourth thing to distinguish would make the other three harder to read
 across a table.
+
+**One writer.** The arbiter in `lib/status` holds mutable burst state, and the
+three things that change it arrive from three contexts: `app` on a refused
+press, `net` on a transfer, and the system workqueue on every power sample. The
+workqueue is cooperative at priority −1 and preempts both threads. So the two
+calls that come from a thread — `tk_status_set_activity()` and
+`tk_status_note_refresh_blocked()` — set an atomic flag and reschedule the tick,
+and the tick is what tells the arbiter. Nothing else touches it.
+
+```mermaid
+flowchart LR
+    APP["app thread<br/><i>refused press</i>"] -- flag --> TICK
+    NET["net thread<br/><i>transfer starts, ends</i>"] -- flag --> TICK
+    WQ["workqueue<br/><i>chan_power listener</i>"] --> TICK["status_tick<br/><i>system workqueue</i>"]
+    TICK --> LED["StatusLed<br/><i>lib/status</i>"] --> PINS["two GPIOs"]
+```
+
+Without that, a press refused while the sampler happened to be running could arm
+a burst the tick had already decided not to run — and the blink is the only
+answer a refused press gets.
 
 ## Where state lives
 
@@ -1035,16 +1080,23 @@ every pin in the mask; the buttons have claimed active-low and VBUS is
 interesting when it is high. Per-pin polarity exists on some Espressif parts —
 `SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN` — and the ESP32-S3 is not one of them.
 
-EXT0 would do it. It is a separate single-pin trigger with its own polarity and
-it is available here, so `esp_sleep_enable_ext0_wakeup(21, 1)` is a real option.
-Arming it forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep,
-where EXT1 alone leaves that domain off — a standing cost against a 30 µA budget
-to save one button press. It is written up as `CONFIG_TK_POWER_WAKE_ON_USB`,
-default off, so the cost can be measured rather than argued about.
+EXT0 does it. It is a separate single-pin trigger with its own polarity and it is
+available here, so `sleep_now()` calls `esp_sleep_enable_ext0_wakeup()` on the
+VBUS pin under `CONFIG_TK_POWER_WAKE_ON_USB` — **default off**, because arming it
+forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep, where EXT1
+alone leaves that domain off. That is a standing cost against a 30 µA budget to
+save one button press. The symbol exists so the cost can be measured rather than
+argued about; nobody has measured it yet, and *verify* covers both halves — that
+a plug-in wakes the device, and what the powered RTC domain adds to the sleep
+current.
 
-So plugging in does not wake the device. The next press does, and `power` reads
-VBUS at boot before any thread starts, which is what lets `net` find external
-power and open the sync window on that same boot.
+An EXT0 wake carries no button. `latch_wake_button()` reports `TK_WAKE_NONE`, so
+nothing is replayed and `net` takes its cold-boot branch, which is the wanted
+behaviour: nobody pressed anything, and the reason to wake was to sync.
+
+With the symbol off, plugging in does not wake the device. The next press does,
+and `power` reads VBUS at boot before any thread starts, which is what lets `net`
+find external power and open the sync window on that same boot.
 
 The consequence worth stating: the mask is state recomputed on every sleep
 rather than configured once.

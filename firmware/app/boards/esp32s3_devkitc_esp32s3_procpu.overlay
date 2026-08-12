@@ -20,10 +20,12 @@
  *
  * Battery sense has to be ADC1 (GPIO1..10) because ADC2 is unusable while
  * Wi-Fi is up, and GPIO1 is the only channel of those ten free. VBUS detect is
- * digital, so it takes GPIO21 and leaves that channel alone. Neither is a wake
- * source: EXT1 takes one trigger polarity for the whole mask and the buttons
- * have claimed active-low, so VBUS is polled instead. See
- * CONFIG_TK_POWER_WAKE_ON_USB, and docs/hardware_wiring.md for the dividers.
+ * digital, so it takes GPIO21 and leaves that channel alone. Neither is armed
+ * as a wake source in the default image: EXT1 takes one trigger polarity for
+ * the whole mask and the buttons have claimed active-low, so VBUS is polled
+ * instead. CONFIG_TK_POWER_WAKE_ON_USB arms it through EXT0 at the price of a
+ * powered RTC domain on every sleep. See docs/hardware_wiring.md for the
+ * dividers.
  *
  * GPIO2 was the bring-up LED and is now unwired, which returns ADC1_CH2 to the
  * spare pool. Free and RTC-capable: GPIO2, 5, 6, 7 and 14.
@@ -68,8 +70,13 @@
 
         /*
          * VBUS detect: the tap of a 100k/150k divider off the charger's VU pad,
-         * which puts 3.0 V on the pin against a V_IH of about 2.48 V. Read, not
-         * armed as a wake source — see CONFIG_TK_POWER_WAKE_ON_USB.
+         * which puts 3.0 V on the pin against a V_IH of about 2.48 V. Polled,
+         * and armed as an EXT0 wake source only when
+         * CONFIG_TK_POWER_WAKE_ON_USB is set, which by default it is not.
+         *
+         * Fit this divider, or tie the pin to ground, before flashing an image
+         * with CONFIG_TK_POWER on. Floating, it can read high, and a device
+         * that believes it is plugged in never sleeps.
          *
          * Only USB-C raises this. The charger's DC and solar input does not
          * reach VU, so charging from either is invisible to the firmware.

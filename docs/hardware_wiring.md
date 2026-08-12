@@ -131,10 +131,10 @@ its hardware with Wi-Fi**, so a reading taken while the radio is up can fail.
 Battery voltage has to be sampled during a sync, which is precisely when the
 radio is up, so it needs ADC1 — GPIO1 to GPIO10.
 
-Of those ten, GPIO4 is Category, GPIO8 to GPIO10 are the panel, GPIO2 is the
-bring-up LED and GPIO3 is a strapping pin. That leaves GPIO1, GPIO5, GPIO6 and
-GPIO7 — and GPIO1 is taken here so the run of three stays contiguous for
-whatever the rev A board needs.
+Of those ten, GPIO4 is Category, GPIO8 to GPIO10 are the panel and GPIO3 is a
+strapping pin. That leaves GPIO1, GPIO2, GPIO5, GPIO6 and GPIO7 — and GPIO1 is
+taken here so the run of three from GPIO5 stays contiguous for whatever the
+rev A board needs.
 
 VBUS detect is a digital input with no such constraint, so it takes GPIO21 and
 leaves the last ADC1 channel to the measurement that cannot go anywhere else.
@@ -169,13 +169,23 @@ holds that flat while the cell is above roughly 3.45 V and then passes the cell
 through at full duty, so the rail says nothing about state of charge over most
 of a discharge.
 
-Neither pin is a wake source. `esp_sleep_enable_ext1_wakeup()` takes one trigger
-polarity for the whole mask, the buttons have claimed active-low, and VBUS is
-interesting when high — and the ESP32-S3 does not define
-`SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN`. EXT0 would do it and costs a powered
-RTC domain on every sleep; see `CONFIG_TK_POWER_WAKE_ON_USB` and the decision
-log. So plugging in does not wake the device. The next press does, and that boot
-finds VBUS high and opens the sync window.
+Neither pin is a wake source in the image `just fw-build` produces.
+`esp_sleep_enable_ext1_wakeup()` takes one trigger polarity for the whole mask,
+the buttons have claimed active-low, and VBUS is interesting when high — and the
+ESP32-S3 does not define `SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN`. EXT0 does it
+and costs a powered RTC domain on every sleep, which is why
+`CONFIG_TK_POWER_WAKE_ON_USB` exists and is off; turn it on to measure that cost.
+With it off, plugging in does not wake the device. The next press does, and that
+boot finds VBUS high and opens the sync window.
+
+**Until both dividers are fitted, ground GPIO21.** A floating input can read
+high, and a device that believes it is plugged in never sleeps — it stays awake
+on the cell until the cell is flat, and joins a network on every press. Software
+cannot tell that reading apart from a real plug-in: it is a digital pin, and
+high is high. A jumper to the − rail, or the divider itself, is the whole fix.
+The battery half needs no such care: a reading under
+`CONFIG_TK_POWER_PLAUSIBLE_MV` is treated as no cell rather than as a flat one,
+so an unfitted battery divider costs the voltage reading and nothing else.
 
 The order Category advances through is the deck order in
 `questions/schema.json` → `x-tischkarte.decks`, duplicated in `tk_deck_name()`.
@@ -459,8 +469,21 @@ just fw-monitor
 
 - Boot logs `active deck: 0 new_people` and the panel shows that name.
 - One Category press names the next deck; six return to where they started.
-- One Next press produces exactly one question and one LED toggle.
+- One Next press produces exactly one question.
 - Holding a button and releasing it counts once, not twice.
+
+All four hold with neither divider fitted, which is the state the image is first
+flashed onto. GPIO1 reads whatever a floating input picks up, the log reports
+that number, and anything under `CONFIG_TK_POWER_PLAUSIBLE_MV` is treated as no
+cell rather than as a flat one — so the state stays `UNKNOWN` and refreshes are
+allowed. What the device will not do is refuse the first card.
+
+GPIO21 has no such protection, so ground it until its divider is on. Left
+floating and reading high, the device believes it is charging: it never sleeps
+and joins a network on every press. If the battery pin is floating too, the boot
+log says so — `VBUS is high but the pack reads N mV; check both dividers are
+fitted` — but with a real cell divider fitted and only GPIO21 loose, nothing
+warns, because a high pin is all a plug-in ever looks like.
 
 ## Bench measurements
 
