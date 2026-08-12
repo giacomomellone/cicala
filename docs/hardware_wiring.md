@@ -24,7 +24,7 @@ up" builds it, in the order that keeps a mistake cheap.
 | Adafruit 6092 | bq25185 USB/DC/solar charger with a TPS62569 3.3 V/1 A buck. Powers the rig and charges the cell |
 | EEMB 524261, 3.7 V 1500 mAh LiPo | Bench cell, JST-PH. Three times the capacity of the 503035 the product is designed around, so it discharges slowly enough to measure |
 | Red and green LED, one resistor each | Status. Two packages here, one bi-colour package on the target board |
-| 2 × 470 kΩ, 100 kΩ, 150 kΩ, 100 nF ceramic | The two dividers |
+| 2 × 470 kΩ (or 2 × 1 MΩ), 100 kΩ, 150 kΩ, 100 nF ceramic | The two dividers |
 | Breadboard and jumpers | — |
 
 Everything runs at 3.3 V, so no level shifting anywhere.
@@ -34,11 +34,11 @@ of a microamp across a 235 kΩ source is tenths of a volt of error in the readin
 the capacitor is there to steady.
 
 **1/8 W is ample for every resistor here.** The dividers dissipate microwatts —
-4.5 µA through the battery pair, 20 µA through the VBUS pair — and an LED run at
-a few milliamps puts single-digit milliwatts in its series resistor, against a
-125 mW rating. What the dividers do want is **1 % metal film** rather than 5 %
-carbon: the ratio scales the reading directly, and `TK_POWER_DIVIDER_NUM`/`_DEN`
-exist to absorb what is left.
+single-digit µA through the battery pair, 20 µA through the VBUS pair — and an
+LED run at a few milliamps puts single-digit milliwatts in its series resistor,
+against a 125 mW rating. What the dividers do want is **1 % metal film** rather
+than 5 % carbon: the ratio scales the reading directly, and
+`TK_POWER_DIVIDER_NUM`/`_DEN` exist to absorb what is left.
 
 ## The whole rig
 
@@ -146,10 +146,30 @@ The capacitor sits across the lower resistor, physically next to the pin. It is
 not optional: the SAR ADC wants a low source impedance and this is 235 kΩ, so
 without a reservoir the reading wanders.
 
-470 kΩ rather than the 100 kΩ that would settle faster, because unlike the VBUS
-divider this one is across the cell forever: 4.5 µA at 4.2 V, which fits under a
-30 µA budget on its own. That is what lets the bench run it unswitched.
-`hardware/pcb/README.md` still requires rev A to switch it, and it should.
+**Any equal pair works, and the value is a trade.** Unlike the VBUS divider this
+one is across the cell forever, so what it costs is standing current; what it
+buys is a source the ADC can drive.
+
+| Pair | Standing draw at 4.2 V | Source impedance |
+|---|---|---|
+| 100k / 100k | 21 µA | 50 kΩ |
+| 470k / 470k | 4.5 µA | 235 kΩ |
+| 1M / 1M | 2.1 µA | 500 kΩ |
+
+All three are 2:1, so the tap and `CONFIG_TK_POWER_DIVIDER_NUM`/`_DEN` do not
+change with the choice. 470k is what the BOM lists; **1M is better and is the
+one to fit if it is what is on hand**, since it halves a current that is paid
+forever. Its stiffer source shows up as ADC input leakage — tens of nA, so
+roughly 25 mV of offset against 12 mV at 470k — which is nothing beside a
+3200 mV floor, and is an offset rather than a ratio, so it is the reason bench
+measurement 5 asks for readings at both ends of the range.
+
+100k is the one to avoid, and only for the current: 21 µA is 70 % of a 30 µA
+budget. On this rig it is invisible anyway — the DevKitC's own power LED draws a
+hundred times more — so fit it if it is all you have and move on.
+
+`hardware/pcb/README.md` still requires rev A to switch this divider, whatever
+value it ends up with, and it should.
 
 Tap **BAT**, which is the cell — not the 3.3 V rail. The buck holds that flat
 above roughly 3.45 V and then passes the cell through at full duty, so the rail
