@@ -567,6 +567,26 @@ config TK_POWER_CRITICAL_MV
       from one amber blink to three red ones. Set at the knee of a lithium
       discharge curve, where the remaining capacity is small and falling fast.
 
+config TK_POWER_PLAUSIBLE_MV
+    int "Lowest pack reading that could be a cell (mV)"
+    default 2500
+    depends on TK_POWER
+    help
+      Under this, the reading is not a cell and the machine says UNKNOWN — which
+      permits refreshes — rather than walking down to CRITICAL and refusing
+      them.
+
+      A protected 18650 disconnects between 2.5 and 3.0 V, and the 3.3 V buck
+      stops before that, so an SoC still running cannot be reading 2.4 V from
+      its own pack. What it is reading is a divider that is not there: a
+      floating ADC pin, a broken solder joint, an unpopulated rig. All of those
+      arrive as some low number and none of them is a reason to stop drawing
+      questions.
+
+      2500 rather than something nearer zero because the failure to catch is a
+      floating pin picking up a volt or so of anything, not a pin reading
+      exactly nought.
+
 config TK_POWER_FULL_MV
     int "Cell voltage that counts as charged (mV)"
     default 4150
@@ -657,14 +677,22 @@ config TK_POWER_WAKE_ON_USB
 
       The buttons wake through EXT1, which takes one trigger polarity for the
       whole pin mask, and VBUS is high when it is interesting — so VBUS cannot
-      join that mask. It can use EXT0, which is a separate single-pin trigger
-      with its own polarity and is available on this SoC. The cost is in
-      Espressif's sleep_modes.c: arming EXT0 forces ESP_PD_DOMAIN_RTC_PERIPH to
-      stay powered through every sleep, where EXT1 alone leaves it off.
+      join that mask. It uses EXT0 instead, a separate single-pin trigger with
+      its own polarity, armed by src/sleep.c from the same tk-vbus-gpios
+      property src/power.c samples.
 
-      That is a permanent standby cost against a 30 uA budget, paid to save one
-      button press — plugging in and then pressing Next is the gesture the
-      design specified anyway. Turn it on to measure what it actually costs.
+      What turning this on costs is in Espressif's sleep_modes.c: arming EXT0
+      forces ESP_PD_DOMAIN_RTC_PERIPH to stay powered through every sleep, where
+      EXT1 alone leaves it off. That is a permanent standby cost against a 30 uA
+      budget, paid on every sleep for the life of the device, to save one button
+      press — plugging in and then pressing Next is the gesture the design
+      specified anyway.
+
+      How much it costs has not been measured, which is the reason the symbol
+      exists: turn it on, sleep the board, and put a meter on it.
+
+      An EXT0 wake reports no button, so the device replays no press and `net`
+      takes its cold-boot branch — plugging in wakes the device and syncs it.
 
 config TK_DEBUG_POWER
     bool "Log the cell voltage continuously"

@@ -133,6 +133,83 @@ ZTEST(tk_power, test_one_reading_on_a_flat_cell_walks_the_whole_ladder)
     zassert_false(fsm.refresh_allowed());
 }
 
+ZTEST(tk_power, test_a_reading_too_low_to_be_a_cell_is_not_a_flat_cell)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    // What an unfitted divider reads: a floating pin, on a rig whose SoC is
+    // plainly still running. Walking the ladder from here would refuse every
+    // refresh on the strength of a pin nobody wired.
+    sample(fsm, kPlausibleMv - 1, false);
+
+    zassert_equal(fsm.get_current_state(), STATE(UNKNOWN));
+    zassert_true(fsm.refresh_allowed(), "an unwired divider must not blank the panel");
+}
+
+ZTEST(tk_power, test_the_floor_itself_is_a_cell)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    sample(fsm, kPlausibleMv, false);
+
+    // Under CONFIG_TK_POWER_CRITICAL_MV, so this is a real reading of a cell
+    // that is nearly gone — which is a different thing from no reading at all.
+    zassert_equal(fsm.get_current_state(), STATE(CRITICAL));
+    zassert_false(fsm.refresh_allowed());
+}
+
+ZTEST(tk_power, test_a_cell_that_falls_off_the_bottom_gives_the_panel_back)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    sample(fsm, kCriticalMv - 1, false);
+    zassert_equal(fsm.get_current_state(), STATE(CRITICAL));
+
+    // The divider fails part-way through a boot rather than before it. Every
+    // rung has to let go, not just the one the machine happened to start on.
+    sample(fsm, kPlausibleMv - 1, false);
+    zassert_equal(fsm.get_current_state(), STATE(UNKNOWN));
+    zassert_true(fsm.refresh_allowed());
+
+    sample(fsm, 3800, false);
+    zassert_equal(fsm.get_current_state(), STATE(NORMAL), "and a real reading is believed again");
+}
+
+ZTEST(tk_power, test_the_floor_leaves_the_hysteresis_alone)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    boot_to_normal(fsm);
+
+    sample(fsm, kRefreshMinMv - 50, false);
+    zassert_equal(fsm.get_current_state(), STATE(LOW));
+
+    sample(fsm, kRefreshMinMv + 10, false);
+    zassert_equal(fsm.get_current_state(), STATE(LOW), "still inside the hysteresis band");
+
+    sample(fsm, kRefreshMinMv + kHysteresisMv, false);
+    zassert_equal(fsm.get_current_state(), STATE(NORMAL));
+}
+
+ZTEST(tk_power, test_external_power_outranks_the_floor)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    // Both dividers unfitted is the state of the bench rig: the pack reads
+    // nothing believable and VBUS still says what it says. The pin is the
+    // measurement here, and it is the one `net` and `sleep` act on.
+    sample(fsm, kPlausibleMv - 1, true);
+
+    zassert_equal(fsm.get_current_state(), STATE(CHARGING));
+    zassert_true(fsm.external());
+    zassert_equal(io.opens, 1);
+}
+
 ZTEST(tk_power, test_the_refresh_floor_is_where_low_begins)
 {
     FakePowerIo io;
@@ -342,6 +419,57 @@ ZTEST(tk_power, test_a_second_plug_in_gets_its_own_window)
 
     zassert_equal(io.opens, 2);
     zassert_true(fsm.charge_window_open());
+}
+
+/*
+ * The VBUS pin on its own. It is a plain GPIO and the pack reading is an ADC
+ * behind a divider, so the pin has to keep working when the divider does not —
+ * a USB bit stuck at true holds the device awake until the cell is flat.
+ */
+
+ZTEST(tk_power, test_the_usb_pin_is_believed_without_a_reading)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    // The ADC never answered, so nothing has been measured at all.
+    fsm.post_usb(true);
+    settle(fsm);
+
+    zassert_equal(fsm.get_current_state(), STATE(CHARGING));
+    zassert_true(fsm.external(), "net asks this before it joins a network");
+    zassert_equal(io.opens, 1, "and the sync window is the reason it asks");
+}
+
+ZTEST(tk_power, test_unplugging_is_noticed_after_the_adc_stops_answering)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    sample(fsm, 3900, true);
+    zassert_equal(fsm.get_current_state(), STATE(CHARGING));
+
+    // From here the divider fails: every tick has a pin and no conversion.
+    fsm.post_usb(false);
+    settle(fsm);
+
+    zassert_false(fsm.external(), "sleep_now() would otherwise never sleep again");
+    zassert_equal(io.closes, 1, "and the charge window would never close");
+}
+
+ZTEST(tk_power, test_the_usb_pin_alone_is_not_a_measurement)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+
+    fsm.post_usb(false);
+    settle(fsm);
+
+    // Nothing has read the cell, so there is nothing to say about it — and
+    // UNKNOWN permits refreshes, which is what a device with a dead ADC needs.
+    zassert_equal(fsm.get_current_state(), STATE(UNKNOWN));
+    zassert_equal(fsm.millivolts(), 0);
+    zassert_true(fsm.refresh_allowed());
 }
 
 ZTEST(tk_power, test_every_state_change_is_published)

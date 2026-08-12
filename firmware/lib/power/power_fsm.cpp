@@ -15,15 +15,18 @@ const Fsm::StateTransition PowerFsm::_transitions[] = {
     {STATE(NORMAL),    TRANSITION(REPEAT),     STATE(NORMAL),     0       },
     {STATE(NORMAL),    TRANSITION(SANK),       STATE(LOW),        0       },
     {STATE(NORMAL),    TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(NORMAL),    TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(LOW),       TRANSITION(REPEAT),     STATE(LOW),        0       },
     {STATE(LOW),       TRANSITION(SANK),       STATE(CRITICAL),   0       },
     {STATE(LOW),       TRANSITION(ROSE),       STATE(NORMAL),     0       },
     {STATE(LOW),       TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(LOW),       TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(CRITICAL),  TRANSITION(REPEAT),     STATE(CRITICAL),   0       },
     {STATE(CRITICAL),  TRANSITION(ROSE),       STATE(LOW),        0       },
     {STATE(CRITICAL),  TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(CRITICAL),  TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(CHARGING),  TRANSITION(REPEAT),     STATE(CHARGING),   0       },
     {STATE(CHARGING),  TRANSITION(FULL),       STATE(CHARGED),    0       },
@@ -56,6 +59,11 @@ void PowerFsm::post_sample(uint16_t mv, bool usb)
     _mv = mv;
     _usb = usb;
     _measured = true;
+}
+
+void PowerFsm::post_usb(bool usb)
+{
+    _usb = usb;
 }
 
 bool PowerFsm::refresh_allowed() const
@@ -158,14 +166,25 @@ int PowerFsm::handle_current_state()
 
 int PowerFsm::on_unknown()
 {
+    /*
+     * External power first, and before the "has anything been read" test.
+     * VBUS is a plain pin and arrives on its own through post_usb(), so a rig
+     * whose ADC never answers still knows it is plugged in — which is what
+     * `net` and the sleep inhibitor are actually asking about.
+     */
+    if (_usb) {
+        return TRANSITION(PLUGGED);
+    }
+
     if (!_measured) {
-        // Nothing has been read yet. `_usb` is only set by a sample, so there
-        // is nothing to say about external power either.
+        // Nothing has been read yet, and nothing says external power either.
         return TRANSITION(REPEAT);
     }
 
-    if (_usb) {
-        return TRANSITION(PLUGGED);
+    if (!plausible()) {
+        // Not a cell. Staying here is the whole point of the floor: UNKNOWN
+        // permits refreshes, and walking the ladder from here would not.
+        return TRANSITION(REPEAT);
     }
 
     /*
@@ -182,6 +201,10 @@ int PowerFsm::on_normal()
         return TRANSITION(PLUGGED);
     }
 
+    if (!plausible()) {
+        return TRANSITION(IMPLAUSIBLE);
+    }
+
     if (_mv < kRefreshMinMv) {
         return TRANSITION(SANK);
     }
@@ -193,6 +216,10 @@ int PowerFsm::on_low()
 {
     if (_usb) {
         return TRANSITION(PLUGGED);
+    }
+
+    if (!plausible()) {
+        return TRANSITION(IMPLAUSIBLE);
     }
 
     // Downwards immediately, upwards only past the hysteresis. Getting worse is
@@ -212,6 +239,16 @@ int PowerFsm::on_critical()
 {
     if (_usb) {
         return TRANSITION(PLUGGED);
+    }
+
+    /*
+     * Below CRITICAL there is one more rung, and it is not a worse cell: a
+     * reading that keeps falling past the floor stopped being a measurement of
+     * a pack somewhere on the way down. Refusing refreshes on the strength of
+     * it is refusing them on the strength of a floating pin.
+     */
+    if (!plausible()) {
+        return TRANSITION(IMPLAUSIBLE);
     }
 
     if ((uint32_t) _mv >= (uint32_t) kCriticalMv + kHysteresisMv) {

@@ -29,6 +29,17 @@
  * its place during the two windows that really do last minutes — a charge, and
  * a portal session. Averaging across a burst of readings, which is the thing
  * that actually has to work on battery, belongs to whoever calls post_sample().
+ *
+ * ## The floor under the ladder
+ *
+ * A reading below kPlausibleMv is not treated as a very flat cell but as no
+ * cell at all, and lands the machine in UNKNOWN. An SoC that is still running
+ * is not being fed by a pack at 2.4 V — the protection circuit and the buck
+ * both give up before that — so such a reading is a divider that is not there:
+ * a floating pin on a rig where nobody has fitted one. Without the floor that
+ * rig walks the ladder to CRITICAL before any thread starts and refuses every
+ * refresh, including the first card, which is the one failure the panel cannot
+ * report. UNKNOWN permits refreshes, so this fails towards a device that works.
  */
 
 #pragma once
@@ -52,6 +63,12 @@ constexpr uint16_t kRefreshMinMv = 3200;
 constexpr uint16_t kCriticalMv = CONFIG_TK_POWER_CRITICAL_MV;
 #else
 constexpr uint16_t kCriticalMv = 3000;
+#endif
+
+#ifdef CONFIG_TK_POWER_PLAUSIBLE_MV
+constexpr uint16_t kPlausibleMv = CONFIG_TK_POWER_PLAUSIBLE_MV;
+#else
+constexpr uint16_t kPlausibleMv = 2500;
 #endif
 
 #ifdef CONFIG_TK_POWER_FULL_MV
@@ -123,13 +140,14 @@ public:
      * and FULL exists because CHARGING has two ways out that are not UNPLUGGED.
      */
     enum class Transition {
-        REPEAT = 0, ///< nothing changed; stay put
-        MEASURED,   ///< the first honest reading of this boot arrived
-        SANK,       ///< the cell dropped past a threshold
-        ROSE,       ///< it came back past one, by more than the hysteresis
-        PLUGGED,    ///< external power is present
-        UNPLUGGED,  ///< it is not, and was
-        FULL,       ///< the cell reads full while charging
+        REPEAT = 0,  ///< nothing changed; stay put
+        MEASURED,    ///< the first honest reading of this boot arrived
+        SANK,        ///< the cell dropped past a threshold
+        ROSE,        ///< it came back past one, by more than the hysteresis
+        PLUGGED,     ///< external power is present
+        UNPLUGGED,   ///< it is not, and was
+        FULL,        ///< the cell reads full while charging
+        IMPLAUSIBLE, ///< the reading is too low to be a cell at all
     };
 
     explicit PowerFsm(PowerIo &io);
@@ -143,6 +161,20 @@ public:
      * samples that, on battery, will never come.
      */
     void post_sample(uint16_t mv, bool usb);
+
+    /**
+     * Whether VBUS is present, with no reading attached.
+     *
+     * For the tick that has a pin but no conversion. VBUS is a plain GPIO and
+     * the ADC is a divider, so a broken divider must not freeze the USB bit:
+     * a device whose last sample said CHARGING and whose ADC then failed would
+     * otherwise believe it was still plugged in until it was rebooted, and
+     * never sleep again.
+     *
+     * Deliberately not a measurement — it leaves `_mv` alone and does not make
+     * the machine believe it has read the cell.
+     */
+    void post_usb(bool usb);
 
     PowerState state() const { return static_cast<PowerState>(get_current_state()); }
 
@@ -173,6 +205,9 @@ private:
 
     /** Shared by CHARGING and CHARGED, which differ only in the FULL test. */
     int on_external();
+
+    /** False when the last reading is too low to have come from a cell. */
+    bool plausible() const { return _mv >= kPlausibleMv; }
 
     /** Publish if the state just changed or the reading has moved enough. */
     void report(bool force);
