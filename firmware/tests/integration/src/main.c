@@ -27,9 +27,28 @@ static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(tk_led_gr
 
 static const struct adc_dt_spec cell = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
 
-/** A comfortable cell, and one under CONFIG_TK_REFRESH_MIN_MV. */
+/*
+ * The VBUS pin, on the same emulated controller as the buttons, so a charger
+ * can be plugged and unplugged with gpio_emul_input_set(). On the board this is
+ * the tap of a divider off the charger's VU pad; here it is whatever the last
+ * test left it at, which is why every test that touches it puts it back.
+ */
+static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios);
+
+/**
+ * A comfortable cell, and one under CONFIG_TK_POWER_CRITICAL_MV.
+ *
+ * 2800 rather than 3000. On the threshold itself the suite reached CRITICAL
+ * only through adc_emul rounding — TAP_MV(3000) goes in as 1500 mV, comes back
+ * as 1499, and doubles to 2998 — which is two millivolts nothing here controls.
+ * Rounding the other way would have stopped the machine at LOW, and the LED
+ * test below would then have been asserting on an amber one-blink burst
+ * instead of a red three-blink one, alone, while the refusal tests stayed
+ * green. It also has to stay above CONFIG_TK_POWER_PLAUSIBLE_MV, which is where
+ * a reading stops being a cell at all.
+ */
 #define HEALTHY_MV 3900
-#define FLAT_MV 3000
+#define FLAT_MV 2800
 
 /*
  * The emulated ADC reads the divider tap, not the pack, exactly as the board
@@ -63,6 +82,26 @@ static void set_cell_mv(uint16_t pack_mv)
     k_sleep(K_MSEC(CONFIG_TK_POWER_SAMPLE_MS * 3));
 }
 
+/** Plug the charger in, or pull it out, and wait for the same. */
+static void set_vbus(bool plugged)
+{
+    zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, plugged ? 1 : 0));
+    k_sleep(K_MSEC(CONFIG_TK_POWER_SAMPLE_MS * 3));
+}
+
+/*
+ * Wait out any blink still running.
+ *
+ * A burst is at most three blinks, and ztest promises no order for the cases
+ * below — so a test that reads the pins for a steady colour has to outlast
+ * whatever the test before it armed, or it is asserting on where in somebody
+ * else's blink it happened to land.
+ */
+static void settle_leds(void)
+{
+    k_sleep(K_MSEC(CONFIG_TK_STATUS_LED_BLINK_MS * 8));
+}
+
 /* Debounce, the app thread, and the display thread finishing. The dummy panel
  * returns immediately, so this is mostly the debounce. */
 #define PRESS_WAIT K_MSEC(CONFIG_TK_BUTTON_DEBOUNCE_MS + 300)
@@ -81,9 +120,14 @@ static int questions;
 static int renders;
 static int last_render_result;
 
+/** The last thing `power` said about itself, so the pin can be checked. */
+static struct tk_power_msg last_power;
+
 static void observe(const struct zbus_channel *chan)
 {
-    if (chan == &chan_question) {
+    if (chan == &chan_power) {
+        last_power = *(const struct tk_power_msg *) zbus_chan_const_msg(chan);
+    } else if (chan == &chan_question) {
         last_question = *(const struct tk_question_msg *) zbus_chan_const_msg(chan);
         questions++;
 
@@ -102,6 +146,7 @@ static void observe(const struct zbus_channel *chan)
 ZBUS_LISTENER_DEFINE(test_obs, observe);
 ZBUS_CHAN_ADD_OBS(chan_question, test_obs, 4);
 ZBUS_CHAN_ADD_OBS(chan_render, test_obs, 4);
+ZBUS_CHAN_ADD_OBS(chan_power, test_obs, 4);
 
 static void press(const struct gpio_dt_spec *button)
 {
@@ -119,6 +164,11 @@ static void *suite_setup(void)
      */
     zassert_ok(gpio_emul_input_set(category.port, category.pin, 1));
     zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, 1));
+
+    /* VBUS is active high, so low is already unplugged. Said out loud because
+     * the tests below leave it wherever they left it. */
+    zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, 0));
+
     k_sleep(PRESS_WAIT);
 
     zassert_ok(tk_input_init());
@@ -308,9 +358,81 @@ ZTEST(tk_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
     zassert_equal(last_question.kind, TK_CARD_QUESTION);
 }
 
+/*
+ * VBUS, driven on the emulated pin. It is an independent GPIO rather than a
+ * second ADC channel, which is what lets a device with a broken divider still
+ * know it is plugged in — and knowing that is what keeps it from sleeping on a
+ * charger and what opens the sync window.
+ */
+
+ZTEST(tk_integration, test_the_usb_bit_follows_the_pin)
+{
+    set_cell_mv(HEALTHY_MV);
+    set_vbus(false);
+
+    zassert_false(last_power.usb, "nothing is plugged in yet");
+
+    set_vbus(true);
+
+    zassert_true(last_power.usb, "plugging in has to reach the channel");
+    zassert_equal(last_power.state, TK_POWER_CHARGING);
+
+    set_vbus(false);
+
+    zassert_false(last_power.usb, "and so does unplugging");
+    zassert_equal(last_power.state, TK_POWER_NORMAL,
+                  "unplugging re-derives from the cell rather than trusting where it was");
+}
+
+ZTEST(tk_integration, test_external_power_answers_a_press_the_cell_would_not)
+{
+    set_cell_mv(FLAT_MV);
+
+    questions = 0;
+    press(&next_button);
+    zassert_equal(questions, 0, "on the cell alone this press is refused");
+
+    set_vbus(true);
+
+    questions = 0;
+    press(&next_button);
+
+    zassert_equal(questions, 1, "external power pays for the refresh");
+    zassert_equal(last_question.kind, TK_CARD_QUESTION);
+    zassert_equal(last_render_result, 0);
+
+    /* The cell first, then the plug. Unplugging a flat cell walks the ladder
+     * back down to CRITICAL and arms a blink for the next test to trip over. */
+    set_cell_mv(HEALTHY_MV);
+    set_vbus(false);
+}
+
+ZTEST(tk_integration, test_a_charge_is_red_until_the_cell_is_full)
+{
+    set_cell_mv(HEALTHY_MV);
+    set_vbus(true);
+    settle_leds();
+
+    zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0, "charging is steady red");
+    zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+
+    set_cell_mv(CONFIG_TK_POWER_FULL_MV + 50);
+
+    zassert_true(gpio_emul_output_get(led_green.port, led_green.pin) > 0, "and full is green");
+    zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0);
+
+    set_vbus(false);
+    set_cell_mv(HEALTHY_MV);
+
+    zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
+                  "unplugged and healthy shows nothing at all");
+    zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+}
+
 ZTEST(tk_integration, test_a_refused_press_is_answered_on_the_red_led)
 {
     set_cell_mv(HEALTHY_MV);
+    settle_leds();
 
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
                   "a healthy cell shows nothing at all");

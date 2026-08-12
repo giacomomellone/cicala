@@ -456,36 +456,35 @@ static void net_thread(void *p1, void *p2, void *p3)
          * every question the device ever answers.
          */
         LOG_INF("woken by a button; not joining a network");
-    } else if (tk_wake_button() != TK_WAKE_NONE) {
+    } else {
+        if (tk_wake_button() != TK_WAKE_NONE) {
+            /*
+             * The charging window: a press, on external power, with the window
+             * still open. This is the trigger the design has always specified —
+             * "USB power plus a known network" — and it is reachable now that
+             * VBUS is wired and read at boot.
+             *
+             * One window per plug-in, not one per press: the device does not
+             * sleep while external power is in, so this is reached once — on
+             * the press that ended the last battery sleep.
+             */
+            LOG_INF("woken on external power; joining to sync");
+        } else {
+            /*
+             * A cold boot: power-on, the reset pin, or a cell that went flat.
+             * Rare once the device sleeps, which is the right frequency for
+             * something nobody is waiting on — and the moment somebody is most
+             * likely to be holding the device and able to read a card.
+             */
+            LOG_INF("cold boot; joining to sync");
+        }
+
         /*
-         * The charging window: a press, on external power, with the window
-         * still open. This is the trigger the design has always specified —
-         * "USB power plus a known network" — and it is reachable now that VBUS
-         * is wired and read at boot.
-         *
          * The association takes up to CONFIG_TK_NET_CONNECT_TIMEOUT_MS and it
-         * happens in front of the press that started it. That is safe rather
+         * happens in front of whatever started this boot. That is safe rather
          * than merely tolerable: `net`, `app` and `display` are separate
          * threads, so the question is drawn and refreshed while the radio is
          * still associating. Do not "fix" this by moving it after the draw.
-         *
-         * One window per plug-in, not one per press: the device does not sleep
-         * while external power is in, so this branch is reached once — on the
-         * press that ended the last battery sleep.
-         */
-        LOG_INF("woken on external power; joining to sync");
-
-        if (tk_portal_connect_stored()) {
-            sync_when_connected = true;
-            sync_deadline = k_uptime_get() + CONFIG_TK_NET_CONNECT_TIMEOUT_MS;
-            atomic_set(&sync_busy, 1);
-        }
-    } else {
-        /*
-         * A cold boot: power-on, the reset pin, or a cell that went flat.
-         * Rare once the device sleeps, which is the right frequency for
-         * something nobody is waiting on — and the moment somebody is most
-         * likely to be holding the device and able to read a card.
          */
         if (tk_portal_connect_stored()) {
             sync_when_connected = true;
