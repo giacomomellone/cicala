@@ -27,6 +27,7 @@
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/atomic.h>
 #include <zephyr/zbus/zbus.h>
 
 #include "channels.h"
@@ -51,6 +52,27 @@ static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(tk_led_gr
 static void status_tick(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(tick_work, status_tick);
 
+/*
+ * What other threads have asked the arbiter for, as flags rather than as calls.
+ *
+ * The arbiter is a single object with mutable burst state, and the work item
+ * below reads and writes all of it. `app` calls tk_status_note_refresh_blocked()
+ * and `net` calls tk_status_set_activity(), both from their own threads, while
+ * the system workqueue runs at priority -1 and preempts either of them
+ * mid-call. The failure that costs something is precise: a refused press arms a
+ * burst, the sampler's work item preempts between arming the flag and filling
+ * in the colour, and the tick starts a burst of zero blinks with the previous
+ * colour — so the press that was turned away is answered by nothing, and that
+ * blink is the only answer such a press gets.
+ *
+ * So nothing outside this work item touches the arbiter. That is the argument
+ * the comment on on_power() below already makes for the pins, applied to the
+ * state behind them.
+ */
+static atomic_t pending_busy = ATOMIC_INIT(0);
+static atomic_t pending_activity = ATOMIC_INIT(0);
+static atomic_t pending_blocked = ATOMIC_INIT(0);
+
 static void apply(uint8_t colour)
 {
     const bool red = colour == TK_STATUS_RED || colour == TK_STATUS_AMBER;
@@ -63,6 +85,27 @@ static void apply(uint8_t colour)
 static void status_tick(struct k_work *work)
 {
     ARG_UNUSED(work);
+
+    /*
+     * Whatever arrived since the last tick, told to the arbiter here.
+     *
+     * Refusals collapse rather than queue: two presses between one tick and
+     * the next produce one burst. Both callers reschedule this work item with
+     * K_NO_WAIT, and the debounce is CONFIG_TK_BUTTON_DEBOUNCE_MS, so the gap
+     * a second press would have to land in is the length of one work item.
+     */
+    if (atomic_cas(&pending_activity, 1, 0)) {
+        tk_status_post_activity(atomic_get(&pending_busy) != 0);
+    }
+
+    if (atomic_cas(&pending_blocked, 1, 0)) {
+        /*
+         * The state is not carried in from the app thread: the arbiter already
+         * has it from the last sample, and passing it again would be a second
+         * source of truth for the same fact.
+         */
+        tk_status_post_power(tk_power_state(), true);
+    }
 
     const int64_t now = k_uptime_get();
 
@@ -80,10 +123,12 @@ static void refresh(void)
 }
 
 /*
- * Runs on the workqueue, since chan_power is published from there. Setting the
- * pins from here directly would be correct today and wrong the moment anything
- * publishes from another context, so it goes through the same work item as
- * everything else.
+ * Runs where the tick runs: chan_power is published from the system workqueue,
+ * and the one publish that is not — power.c's synchronous boot sample — happens
+ * at SYS_INIT, before any static thread has started. So this may talk to the
+ * arbiter directly. The pins still go through the work item, because setting
+ * them from here would be correct today and wrong the moment anything publishes
+ * from somewhere else.
  */
 static void on_power(const struct zbus_channel *chan)
 {
@@ -103,20 +148,18 @@ static void on_power(const struct zbus_channel *chan)
 ZBUS_LISTENER_DEFINE(tk_status_obs, on_power);
 ZBUS_CHAN_ADD_OBS(chan_power, tk_status_obs, 5);
 
+/* Called from the `net` thread. Leaves the flag for the tick to pick up. */
 void tk_status_set_activity(bool busy)
 {
-    tk_status_post_activity(busy);
+    atomic_set(&pending_busy, busy ? 1 : 0);
+    atomic_set(&pending_activity, 1);
     refresh();
 }
 
+/* Called from the `app` thread, on the press that was turned away. */
 void tk_status_note_refresh_blocked(void)
 {
-    /*
-     * The state is not carried in: the arbiter already has it from the last
-     * sample, and passing it again from the app thread would be a second
-     * source of truth for the same fact.
-     */
-    tk_status_post_power(tk_power_state(), true);
+    atomic_set(&pending_blocked, 1);
     refresh();
 }
 
