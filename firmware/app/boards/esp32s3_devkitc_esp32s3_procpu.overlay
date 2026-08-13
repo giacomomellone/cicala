@@ -54,8 +54,11 @@
          * colour from noise and keeps it across resets. Not on the target PCB,
          * and not the status LED — a WS2812 idles at about 0.6 mA with the
          * emitters dark, which is twenty times the whole sleep budget.
+         *
+         * This is GPIO48. Pins above 31 live on gpio1, whose index is the pin
+         * number minus 32.
          */
-        ws2812-gpios = <&gpio0 48 GPIO_ACTIVE_HIGH>;
+        ws2812-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
 
         /*
          * Battery sense: the tap of a 470k/470k divider off the charger's BAT

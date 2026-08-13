@@ -30,6 +30,23 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 - Always update the docs when modifying the architecture, use mermaid diagrams to explain data flow and other useful diagrams
 - Make use of comments, be clear and use plain simple english
 
+**Comments describe the code, not its history.** Write for someone reading the
+file for the first time, who does not know what it used to say. A comment
+explains what a thing is and why it is that way. It is not a changelog, a bug
+report, or a note to whoever got it wrong.
+
+So: no "not X, but Y", no "this used to be", no "fixed", no symptom of a bug that
+no longer exists, and no naming of the mistake a value replaced. State the rule
+that is true — "pins above 31 live on gpio1, index is the pin minus 32" — rather
+than the error somebody made against it.
+
+Why a decision went one way belongs in the comment while it is still
+load-bearing: "470 kΩ rather than 100 kΩ, because this divider is across the cell
+forever" earns its place, because the next person will otherwise economise on the
+wrong axis. Why a *fix* went one way belongs in the commit message, and if it
+moved the design, in `docs/decisions.md`. The same rule holds for `docs/`: those
+pages say what is true now, and the decision log carries what was tried before.
+
 ## Testing
 
 Write tests alongside the code, in the same change, wherever they add value. The bar is whether a test would catch a real regression: logic with branches, parsing and validation, state transitions, format and protocol code, and any bug you fix all qualify. Skip them for glue that only wires existing pieces together, for generated files, and for anything whose only assertion would restate the implementation.

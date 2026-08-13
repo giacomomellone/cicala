@@ -103,6 +103,13 @@ Avoided: GPIO0 and GPIO3 are strapping pins, GPIO26–32 are the SPI flash,
 GPIO33–37 are the octal PSRAM on the N8R8, GPIO43/44 are the UART0 console, and
 GPIO48 is the onboard WS2812.
 
+Zephyr splits this SoC's pins across two controllers: **`gpio0` carries 0–31 and
+`gpio1` carries 32–53.** A pin above 31 is written `<&gpio1 N-32 …>`, so GPIO48
+is `<&gpio1 16 …>`. Nothing in the map above is in that range, and neither is
+any spare, so it comes up only when reaching for the onboard LED. Getting the
+controller wrong is a runtime failure rather than a build error — the pin is
+checked against the port's mask when it is configured.
+
 Spare and RTC-capable: **GPIO2, 5, 6, 7 and 14.** Four of the five are ADC1
 channels, which is the state the map is kept in — the measurement that cannot go
 anywhere else has somewhere to go, and so does the next one.
