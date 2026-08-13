@@ -518,6 +518,16 @@ static void net_thread(void *p1, void *p2, void *p3)
             atomic_set(&sync_busy, 0);
         }
 
+        /*
+         * Told to the LEDs from here rather than sampled from `chan_power`,
+         * because a publish is deadbanded: on a resting cell nothing reaches
+         * that channel for minutes at a time, and the portal would go on air
+         * with the LEDs still dark. This loop ticks while the portal is up and
+         * runs once more on the way to blocking when it comes down, so both
+         * edges arrive. Same answer tk_net_is_active() gives sleep.c.
+         */
+        tk_status_set_portal(tk_net_is_active());
+
         (void) k_sem_take(&wake, tk_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
     }
 }

@@ -18,6 +18,7 @@
 
 #include "channels.h"
 #include "input.h"
+#include "status.h"
 
 static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios);
 static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios);
@@ -426,6 +427,33 @@ ZTEST(tk_integration, test_a_charge_is_red_until_the_cell_is_full)
 
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
                   "unplugged and healthy shows nothing at all");
+    zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+}
+
+/*
+ * The portal's amber, driven through the same call `net` makes. `net` itself is
+ * not in this image — there is no radio on qemu — so what this pins is the half
+ * that lives in status.c: a condition handed in from another thread reaching the
+ * arbiter and the pins. Sampling it from chan_power instead left the LEDs dark
+ * for a whole setup session, because a publish is deadbanded and a resting cell
+ * does not move 20 mV.
+ */
+ZTEST(tk_integration, test_the_portal_shows_amber)
+{
+    set_cell_mv(HEALTHY_MV);
+    settle_leds();
+
+    tk_status_set_portal(true);
+    k_sleep(K_MSEC(CONFIG_TK_STATUS_LED_BLINK_MS));
+
+    zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0, "amber is both lit");
+    zassert_true(gpio_emul_output_get(led_green.port, led_green.pin) > 0, "amber is both lit");
+
+    tk_status_set_portal(false);
+    k_sleep(K_MSEC(CONFIG_TK_STATUS_LED_BLINK_MS));
+
+    zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
+                  "and it goes away when the portal does");
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 }
 

@@ -898,18 +898,24 @@ A failed ADC reading shows nothing. It is a bench condition, the console reports
 it, and a fourth thing to distinguish would make the other three harder to read
 across a table.
 
-**One writer.** The arbiter in `lib/status` holds mutable burst state, and the
-three things that change it arrive from three contexts: `app` on a refused
-press, `net` on a transfer, and the system workqueue on every power sample. The
-workqueue is cooperative at priority −1 and preempts both threads. So the two
-calls that come from a thread — `tk_status_set_activity()` and
-`tk_status_note_refresh_blocked()` — set an atomic flag and reschedule the tick,
-and the tick is what tells the arbiter. Nothing else touches it.
+**One writer.** The arbiter in `lib/status` holds mutable burst state, and what
+changes it arrives from three contexts: `app` on a refused press, `net` on a
+transfer or a portal going on air, and the system workqueue on every power
+publish. The workqueue is cooperative at priority −1 and preempts both threads.
+So the calls that come from a thread — `tk_status_set_activity()`,
+`tk_status_set_portal()` and `tk_status_note_refresh_blocked()` — set an atomic
+flag and reschedule the tick, and the tick is what tells the arbiter. Nothing
+else touches it.
+
+Every condition is **pushed** for the same reason: `chan_power` publishes only on
+a state change or a reading that has moved past the deadband, so on a resting
+cell it can carry nothing for minutes. Anything sampled at that moment is a
+condition the LEDs learn about late or not at all.
 
 ```mermaid
 flowchart LR
     APP["app thread<br/><i>refused press</i>"] -- flag --> TICK
-    NET["net thread<br/><i>transfer starts, ends</i>"] -- flag --> TICK
+    NET["net thread<br/><i>transfer, portal on air</i>"] -- flag --> TICK
     WQ["workqueue<br/><i>chan_power listener</i>"] --> TICK["status_tick<br/><i>system workqueue</i>"]
     TICK --> LED["StatusLed<br/><i>lib/status</i>"] --> PINS["two GPIOs"]
 ```

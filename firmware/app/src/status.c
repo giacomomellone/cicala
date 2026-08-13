@@ -31,7 +31,6 @@
 #include <zephyr/zbus/zbus.h>
 
 #include "channels.h"
-#include "net.h"
 #include "power_logic.h"
 #include "status.h"
 #include "status_logic.h"
@@ -57,21 +56,22 @@ static K_WORK_DELAYABLE_DEFINE(tick_work, status_tick);
  *
  * The arbiter is a single object with mutable burst state, and the work item
  * below reads and writes all of it. `app` calls tk_status_note_refresh_blocked()
- * and `net` calls tk_status_set_activity(), both from their own threads, while
- * the system workqueue runs at priority -1 and preempts either of them
- * mid-call. The failure that costs something is precise: a refused press arms a
- * burst, the sampler's work item preempts between arming the flag and filling
- * in the colour, and the tick starts a burst of zero blinks with the previous
- * colour — so the press that was turned away is answered by nothing, and that
- * blink is the only answer such a press gets.
+ * and `net` calls tk_status_set_activity() and tk_status_set_portal(), all from
+ * their own threads, while the system workqueue runs at priority -1 and
+ * preempts any of them mid-call. The failure that costs something is precise: a
+ * refused press arms a burst, the sampler's work item preempts between arming
+ * the flag and filling in the colour, and the tick starts a burst of zero
+ * blinks with the previous colour — so the press that was turned away is
+ * answered by nothing, and that blink is the only answer such a press gets.
  *
- * So nothing outside this work item touches the arbiter. That is the argument
- * the comment on on_power() below already makes for the pins, applied to the
- * state behind them.
+ * So nothing outside this work item touches the arbiter, and the same argument
+ * on_power() makes for the pins holds for the state behind them.
  */
 static atomic_t pending_busy = ATOMIC_INIT(0);
 static atomic_t pending_activity = ATOMIC_INIT(0);
 static atomic_t pending_blocked = ATOMIC_INIT(0);
+static atomic_t pending_portal = ATOMIC_INIT(0);
+static atomic_t pending_portal_on = ATOMIC_INIT(0);
 
 static void apply(uint8_t colour)
 {
@@ -96,6 +96,10 @@ static void status_tick(struct k_work *work)
      */
     if (atomic_cas(&pending_activity, 1, 0)) {
         tk_status_post_activity(atomic_get(&pending_busy) != 0);
+    }
+
+    if (atomic_cas(&pending_portal, 1, 0)) {
+        tk_status_post_portal(atomic_get(&pending_portal_on) != 0);
     }
 
     if (atomic_cas(&pending_blocked, 1, 0)) {
@@ -134,12 +138,6 @@ static void on_power(const struct zbus_channel *chan)
 {
     const struct tk_power_msg *msg = zbus_chan_const_msg(chan);
 
-    /*
-     * The portal is asked here rather than pushed from `net`: it has no event
-     * to push on — it goes on air inside a state machine that has no reason to
-     * know about LEDs — and every power sample comes past this point anyway.
-     */
-    tk_status_post_portal(tk_net_is_active());
     tk_status_post_power(msg->state, false);
 
     refresh();
@@ -153,6 +151,14 @@ void tk_status_set_activity(bool busy)
 {
     atomic_set(&pending_busy, busy ? 1 : 0);
     atomic_set(&pending_activity, 1);
+    refresh();
+}
+
+/* Called from the `net` thread's loop, which runs while the portal is up. */
+void tk_status_set_portal(bool on_air)
+{
+    atomic_set(&pending_portal_on, on_air ? 1 : 0);
+    atomic_set(&pending_portal, 1);
     refresh();
 }
 

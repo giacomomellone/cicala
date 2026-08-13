@@ -30,6 +30,16 @@ extern "C" {
 void tk_status_set_activity(bool busy);
 
 /**
+ * The setup portal is on air, or has gone off it.
+ *
+ * A condition rather than an event: pass true for as long as the portal is
+ * reachable, false once it is not. `net` posts it from its own loop, which
+ * ticks while the portal runs and blocks when it does not, so both edges
+ * arrive.
+ */
+void tk_status_set_portal(bool on_air);
+
+/**
  * A press was turned away because the cell is under the refresh floor.
  *
  * An event, not a condition: called once per refused press. It is the only
@@ -54,6 +64,11 @@ void tk_status_off(void);
 static inline void tk_status_set_activity(bool busy)
 {
     (void) busy;
+}
+
+static inline void tk_status_set_portal(bool on_air)
+{
+    (void) on_air;
 }
 
 static inline void tk_status_note_refresh_blocked(void) {}
