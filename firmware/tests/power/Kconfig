@@ -1,0 +1,10 @@
+# The application's policy symbols: every threshold the machine compares
+# against is a CONFIG_TK_* value, and the header falls back to its own defaults
+# when they are absent. A suite built without these would pass against numbers
+# nobody ships.
+
+mainmenu "tischkarte power tests"
+
+rsource "../../Kconfig.policy"
+
+source "Kconfig.zephyr"

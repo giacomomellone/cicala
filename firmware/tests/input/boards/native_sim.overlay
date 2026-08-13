@@ -1,5 +1,5 @@
 /*
- * Same nodes as firmware/app/boards/native_sim.overlay, minus the blink pin.
+ * Same nodes as firmware/app/boards/native_sim.overlay.
  *
  */
 

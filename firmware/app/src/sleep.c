@@ -40,7 +40,9 @@
 #include "app_logic.h"
 #include "channels.h"
 #include "net.h"
+#include "power.h"
 #include "sleep.h"
+#include "status.h"
 
 LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 
@@ -56,13 +58,30 @@ LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 
 /*
  * Every input that should bring the device back. Same nodes input.c reads, so
- * the pins cannot drift apart; VBUS detect joins this list when it is wired,
- * with the opposite polarity, since plugging in drives it high.
+ * the pins cannot drift apart.
+ *
+ * VBUS does not join this list and cannot: esp_sleep_enable_ext1_wakeup() takes
+ * one trigger polarity for the whole mask, the buttons have claimed active-low,
+ * and VBUS is interesting when it is high. The ESP32-S3 does not define
+ * SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN, so there is no per-pin polarity to
+ * fall back on. EXT0 is a separate single-pin trigger that does work, and
+ * CONFIG_TK_POWER_WAKE_ON_USB arms it — off by default, because arming it keeps
+ * RTC_PERIPH powered through every sleep. With it off, VBUS is polled at boot.
  */
 static const struct gpio_dt_spec wake_pins[] = {
     GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios),
     GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios),
 };
+
+#if IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)
+
+/*
+ * The VBUS pin, taken from the same devicetree property src/power.c reads, so
+ * the pin cannot be armed here and sampled there from two different numbers.
+ */
+static const struct gpio_dt_spec vbus_pin = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios);
+
+#endif
 
 /*
  * The panel's control lines.
@@ -175,7 +194,10 @@ enum tk_wake_source tk_wake_button(void)
  * against the silicon.
  *
  * A boot that was not a wake leaves this at TK_WAKE_NONE, which is what a
- * power-on and the reset button both are.
+ * power-on and the reset button both are — and, with
+ * CONFIG_TK_POWER_WAKE_ON_USB on, what an EXT0 wake on VBUS is too. That is the
+ * wanted answer rather than a gap: nobody pressed anything, so there is no
+ * press to replay, and `net` takes its cold-boot branch and syncs.
  */
 static int latch_wake_button(void)
 {
@@ -291,6 +313,23 @@ static void sleep_now(struct k_work *work)
         return;
     }
 
+    if (tk_power_external()) {
+        /*
+         * Plugged in, so stay up for the whole charge rather than for a window.
+         *
+         * The status LEDs are the reason. They need the SoC running to be lit,
+         * and red handing over to green across a charge is most of what they
+         * are for — a device that went dark five minutes into an overnight
+         * charge would be reporting that it had stopped charging. The current
+         * this costs is the charger's, not the cell's.
+         *
+         * Third, after the two above: if a refresh is in flight or the portal
+         * is on air, those are the reasons, and they are more specific.
+         */
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+        return;
+    }
+
     const uint64_t mask = open_pin_mask();
 
     if (mask == 0) {
@@ -316,7 +355,36 @@ static void sleep_now(struct k_work *work)
         return;
     }
 
+#if IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)
+    /*
+     * VBUS, on its own trigger and its own polarity.
+     *
+     * Reached only when external power is absent — tk_power_external() above
+     * returns before this — so arming for a high level cannot satisfy the wake
+     * condition on the way into sleep, the way an armed button held down would.
+     *
+     * The cost is not in this call. Espressif's sleep_modes.c forces
+     * ESP_PD_DOMAIN_RTC_PERIPH to stay powered whenever EXT0 is armed, where
+     * EXT1 alone leaves that domain off, and it is paid on every sleep for the
+     * life of the device. That is what CONFIG_TK_POWER_WAKE_ON_USB is off by
+     * default for, and what turning it on is for measuring.
+     */
+    const int vbus_err = esp_sleep_enable_ext0_wakeup((gpio_num_t) vbus_pin.pin, 1);
+
+    if (vbus_err != 0) {
+        LOG_ERR("could not arm EXT0 on GPIO%u: %d", vbus_pin.pin, vbus_err);
+        return;
+    }
+#endif
+
     hold_wake_pins(mask);
+
+    /* After every reason not to sleep has been ruled out, so a device that
+     * decides to stay awake does not blink dark first. Deep sleep isolates the
+     * pads and the LEDs would go out on their own; doing it here also cancels
+     * a blink that would otherwise be rescheduled into a device that has
+     * stopped existing. */
+    tk_status_off();
 
     /* Before the pins are parked: this is the last thing that uses the bus,
      * and holding CS would take it away mid-command. */
@@ -333,7 +401,11 @@ static void sleep_now(struct k_work *work)
      * nothing, wake to an unstamped block, and report a cold boot forever.
      */
 
-    LOG_INF("sleeping, wake on any of GPIO mask %llx", mask);
+    if (IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)) {
+        LOG_INF("sleeping, wake on any of GPIO mask %llx, or on VBUS", mask);
+    } else {
+        LOG_INF("sleeping, wake on any of GPIO mask %llx", mask);
+    }
 
     /*
      * Flush, rather than wait and hope.

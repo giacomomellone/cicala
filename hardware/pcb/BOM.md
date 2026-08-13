@@ -18,6 +18,9 @@ BOM. For development-board and physical-model purchases, use
 | R1, R2 | 5.1 kΩ USB-C CC pull-downs | 0402 | — | 2 | 0.02 EUR |
 | BT1 | Protected 503035 LiPo, 500 mAh | wire/JST-PH | supplier qualification open | 1 | 4–6 EUR |
 | Q1, L1, D1, D2 | SSD1680 boost circuit | reference packages | per Good Display design | 1 set | 0.50 EUR |
+| D3 | Status LED, bi-colour red/green, common cathode | 0603 or 3 mm | open | 1 | about 0.20 EUR |
+| R3, R4 | Status LED series resistors | 0402 | value from the bench measurement | 2 | 0.02 EUR |
+| TP1 | IO0 test point or internal button | pad or SMD switch | open | 1 | TBD |
 | — | USB ESD/input protection, VBUS sense, e-paper load switch, switched battery sense, passives, test pads | mixed | open | — | TBD |
 | MECH1 | Small round Category cap with overload stop | custom | open | 1 | TBD |
 | MECH2 | Larger rounded-pill Next cap with shallow concave top and overload stop | custom | open | 1 | TBD |

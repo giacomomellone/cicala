@@ -147,18 +147,66 @@ struct tk_render_msg {
     bool was_full;
 };
 
+/**
+ * Where power stands.
+ *
+ * The C face of `tk::PowerState` in lib/power. Same order, and power_logic.cpp
+ * casts between them, so a value added here has to be added there.
+ */
+enum tk_power_state {
+    /** Nothing measured yet, or the reading made no sense. Refreshes allowed. */
+    TK_POWER_UNKNOWN = 0,
+    /** On the cell, above the refresh floor. */
+    TK_POWER_NORMAL,
+    /** On the cell, under CONFIG_TK_REFRESH_MIN_MV. Refreshes refused. */
+    TK_POWER_LOW,
+    /** On the cell, nearly flat. Refreshes refused, and said so loudly. */
+    TK_POWER_CRITICAL,
+    /** External power is in. */
+    TK_POWER_CHARGING,
+    /** External power is in and the cell reads full. An estimate — see lib/power. */
+    TK_POWER_CHARGED,
+};
+
+/**
+ * State channel: the cell, and whether anything is feeding it.
+ *
+ * Published by the system workqueue from `power`, read by `app` and `net`.
+ *
+ * Deliberately not read by `sleep`. Adding it to that file's listener would
+ * rearm the idle timer on every sample, and TK_POWER_SAMPLE_MS is five times
+ * TK_SLEEP_IDLE_MS — survivable today, and a device that never sleeps again
+ * the moment either number moves. `sleep.c` calls tk_power_external() instead.
+ */
+struct tk_power_msg {
+    /** At the pack, with the divider undone. 0 before the first reading. */
+    uint16_t mv;
+    /**
+     * One of `enum tk_power_state`, stored as a byte.
+     *
+     * Not the enum type itself, for the reason tk_question_msg::kind is not.
+     */
+    uint8_t state;
+    /** VBUS. Says nothing about whether current is flowing into the cell. */
+    bool usb;
+};
+
 ZBUS_CHAN_DECLARE(chan_category);
 ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
 ZBUS_CHAN_DECLARE(chan_service);
 ZBUS_CHAN_DECLARE(chan_corpus);
 ZBUS_CHAN_DECLARE(chan_render);
+ZBUS_CHAN_DECLARE(chan_power);
 
 /** Deck id for logs, as it appears in questions/schema.json. "?" outside 0..5. */
 const char *tk_deck_name(uint8_t deck);
 
 /** What a card is, for logs. "?" for a value outside `enum tk_card`. */
 const char *tk_card_name(uint8_t kind);
+
+/** Where power stands, for logs. "?" outside `enum tk_power_state`. */
+const char *tk_power_name(uint8_t state);
 
 /**
  * Deck name as it should be read, for the panel.

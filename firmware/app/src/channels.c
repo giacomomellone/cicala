@@ -24,6 +24,9 @@ ZBUS_CHAN_DEFINE(chan_corpus, struct tk_corpus_msg, NULL, NULL, ZBUS_OBSERVERS_E
 ZBUS_CHAN_DEFINE(chan_render, struct tk_render_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
                  ZBUS_MSG_INIT(.seq = 0, .result = 0, .was_full = false));
 
+ZBUS_CHAN_DEFINE(chan_power, struct tk_power_msg, NULL, NULL, ZBUS_OBSERVERS_EMPTY,
+                 ZBUS_MSG_INIT(.mv = 0, .state = TK_POWER_UNKNOWN, .usb = false));
+
 /*
  * Index order is the order Category advances through, and matches
  * questions/schema.json x-tischkarte.decks. This table is the one place a log
@@ -76,4 +79,20 @@ const char *tk_card_name(uint8_t kind)
     }
 
     return card_names[kind];
+}
+
+/* Same order as enum tk_power_state, which is the same order as
+ * tk::PowerState. Reads as the sentence the power log puts it in:
+ * "3812 mV, charging". */
+static const char *const power_names[] = {
+    "unknown", "on the cell", "low", "critical", "charging", "charged",
+};
+
+const char *tk_power_name(uint8_t state)
+{
+    if (state >= ARRAY_SIZE(power_names)) {
+        return "?";
+    }
+
+    return power_names[state];
 }

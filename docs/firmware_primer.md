@@ -8,15 +8,13 @@ with the repository root as the working directory.
 The design this implements is [firmware architecture](firmware_architecture.md).
 The reasons behind each choice are in [decisions](decisions.md).
 
-**Status: the tabletop loop works.** Turning the selector or pressing Next
-draws a question and renders it. Deep sleep, the power path, Wi-Fi sync and the
-setup portal are still design, so this primer covers the machinery as much as
-the product.
+**Status: the whole device works on the bench.** A press draws a question and
+renders it, the device sleeps between presses, the setup portal and Wi-Fi sync
+run, and the power path reads its cell and drives two status LEDs.
 
-This primer describes the current DIP-switch breadboard and its code. The
-[device prototype](device_prototype.md) now targets adjacent Category and Next
-buttons, but that input transition waits until a second physical button is
-available.
+This primer describes the breadboard rig and its code; the object it becomes is
+[device prototype](device_prototype.md), and the wiring is
+[hardware wiring](hardware_wiring.md).
 
 ---
 
@@ -34,19 +32,29 @@ firmware/
 │   ├── include/                channels.h, input.h, panel.h, app_logic.h
 │   └── src/
 │       ├── channels.c          zbus channel definitions
-│       ├── input.c             selector one-hot + settle, Next
+│       ├── input.c             Category and Next, debounced
 │       ├── app.c               the app thread and its subscriber
 │       ├── app_logic.cpp       state machine + question store behind a C API
 │       ├── display.c           the display thread
 │       ├── panel.cpp           CFB, refresh policy, accent marks
+│       ├── sleep.c             the idle timer, the wake mask, deep sleep
+│       ├── net.c               the net thread, Wi-Fi events, the portal
+│       ├── sync.cpp / ota.cpp  bundle and firmware downloads
+│       ├── power.c             the ADC, the VBUS pin, the sampler
+│       ├── status.c            two GPIOs and the tick that drives them
 │       └── main.c              boot only; the threads do the work
 ├── lib/                        hardware-free C++17
 │   ├── fsm/                    table-driven state machine
 │   ├── app_fsm/                the tabletop machine built on it
 │   ├── qdb/                    QDB2 reader and shuffle bag
-│   └── layout/                 UTF-8, accents, word wrap
-└── tests/                      smoke, fsm, input, app_fsm, qdb,
-                                layout, panel, integration
+│   ├── layout/                 UTF-8, accents, word wrap
+│   ├── retained/               the RTC block and its seal
+│   ├── portal/                 the setup state machine
+│   ├── sync/ · ed25519/        manifests, signatures
+│   ├── power/                  what a millivolt reading means
+│   └── status/                 what the two LEDs should be doing
+└── tests/                      one suite per lib, plus input, panel,
+                                soak, portal and integration
 ```
 
 `deps/` is absent from the tree: it is Zephyr itself, cloned by `just fw-init`,
@@ -118,9 +126,12 @@ sed -n '15,45p' deps/zephyr/boards/espressif/esp32s3_devkitc/esp32s3_devkitc_pro
 ```
 
 You will see an `aliases` block with `watchdog0` and not much else. In
-particular there is no `led0`, which is why the bring-up LED here does not use
-the usual `DT_ALIAS(led0)` — the DevKitC-1's only onboard LED is an addressable
-WS2812, so ours is a discrete one on a pin we name.
+particular there is no `led0`, which is why the two status LEDs are declared in
+our own overlay and reached through `DT_ALIAS(tk_led_red)` and
+`DT_ALIAS(tk_led_green)` rather than through the usual `led0`. The DevKitC-1's
+only onboard LED is an addressable WS2812, which this firmware never drives —
+its controller idles at about 0.6 mA with the emitters dark, against a
+whole-device budget of 30 µA.
 
 **Look at what we add:**
 
@@ -135,41 +146,50 @@ Zephyr picks it up automatically because it sits in `app/boards/`.
 plus overlay, fully resolved:
 
 ```sh
-less build/esp32s3/zephyr/zephyr.dts
+less build/esp32s3/app/zephyr/zephyr.dts
 ```
+
+The `app/` in that path is `--sysbuild`, which `just fw-build` passes so the
+bootloader is built alongside the application. It moves the application's output
+one level down; a build without it writes to `build/esp32s3/zephyr/` instead.
 
 **Now change something and watch it move.** In the overlay, find:
 
 ```dts
 zephyr,user {
-    blink-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+    tk-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
 };
 ```
 
-Change `2` to `21` — not to one of the pins the selector, Next or the panel
-already claim — then rebuild and grep the generated header:
+Change `21` to `14` — one of the spare RTC-capable pins, and not one Category,
+Next, the panel, the battery divider or the LEDs already claim — then rebuild
+and grep the generated header:
 
 ```sh
 just fw-build
-grep -m1 -A3 "zephyr_user.*blink_gpios" build/esp32s3/zephyr/include/generated/zephyr/devicetree_generated.h
+grep -m1 -A3 "zephyr_user.*tk_vbus_gpios" build/esp32s3/app/zephyr/include/generated/zephyr/devicetree_generated.h
 ```
 
-That 1 MB header is what `GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), blink_gpios)`
-in `app/src/main.c` expands into. The C source never mentions a pin number, so
-moving the LED is an overlay edit and the same source still builds for the
-host.
+That 1 MB header is what `GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios)`
+in `app/src/power.c` expands into. The C source never mentions a pin number, so
+moving VBUS detect is an overlay edit and the same source still builds for the
+host — and for the test suites, whose overlays put the same property on an
+emulated controller instead. Put the `21` back afterwards: the pin is where the
+divider is soldered.
 
 `zephyr,user` is a conventional catch-all node for application-specific
-properties that do not deserve a binding of their own. Good for bring-up, and
-not where the real selector and panel go — those have proper `gpio-keys` and
+properties that do not deserve a binding of their own — here, the battery ADC
+channel and the VBUS pin. It is not where things with a real binding go: the
+buttons, the LEDs and the panel have proper `gpio-keys`, `gpio-leds` and
 `solomon,ssd1680` nodes in the same overlay.
 
-The pins in that overlay are chosen, not arbitrary. Every selector contact and
-Next sits on GPIO0..21, the ESP32-S3's RTC-capable range, because EXT1
-deep-sleep wake works on no other pins; and the panel avoids GPIO19/20, which
-are the native USB pair the debug console and JTAG both use. They stay in the
+The pins in that overlay are chosen, not arbitrary. Category and Next both sit
+on GPIO0..21, the ESP32-S3's RTC-capable range, because EXT1 deep-sleep wake
+works on no other pins; the panel avoids GPIO19/20, which are the native USB
+pair the debug console and JTAG both use; and battery sense takes an ADC1
+channel, because ADC2 stops answering while the radio is up. They stay in the
 overlay rather than in C so the same application logic moves to the target PCB
-by changing one file.
+by changing one file. [Hardware wiring](hardware_wiring.md) has the whole map.
 
 ---
 
@@ -186,15 +206,15 @@ values rather than a copy that drifts:
 cat firmware/Kconfig.policy
 ```
 
-These are the values the architecture deliberately leaves open — the selector
-settle window, the refresh interval, the depth cap. They are Kconfig rather
+These are the values the architecture deliberately leaves open — the button
+debounce, the refresh interval, the depth cap, every power threshold. They are Kconfig rather
 than `#define` so they can be changed per board and per test without editing
 source.
 
 **See the resolved values:**
 
 ```sh
-grep "^CONFIG_TK_" build/esp32s3/zephyr/.config
+grep "^CONFIG_TK_" build/esp32s3/app/zephyr/.config
 ```
 
 ```
@@ -368,7 +388,7 @@ Linux only, which is what `just fw-test-linux` (Docker) and CI are for.
 
 Emulated GPIO is available on both. `CONFIG_GPIO_EMUL` is selected by a
 `zephyr,gpio-emul` node in the devicetree, not by the host, so a suite that
-drives the selector and Next — `tests/input` — runs under qemu on macOS like
+drives Category and Next — `tests/input` — runs under qemu on macOS like
 any other. Its overlay is `tests/input/boards/qemu_xtensa_dc233c.overlay`.
 
 **Fixtures.** `qdb` tests will run against real question bundles rather than

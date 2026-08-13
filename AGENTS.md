@@ -9,7 +9,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/` — ESP32-S3 device, Zephyr. The tabletop loop works: selector and Next in, question out on the e-paper. Deep sleep, power, sync and the portal are still design. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
+- `firmware/` — ESP32-S3 device, Zephyr. Every module is built and runs on the breadboard rig: the tabletop loop, deep sleep, the setup portal, bundle sync, signed OTA, and the power path with its two status LEDs. What is still unmeasured is current — the devkit's own indicators swamp a 30 µA budget, so the sleep figure waits for rev A. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.
@@ -30,9 +30,28 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 - Always update the docs when modifying the architecture, use mermaid diagrams to explain data flow and other useful diagrams
 - Make use of comments, be clear and use plain simple english
 
+**Comments describe the code, not its history.** Write for someone reading the
+file for the first time, who does not know what it used to say. A comment
+explains what a thing is and why it is that way. It is not a changelog, a bug
+report, or a note to whoever got it wrong.
+
+So: no "not X, but Y", no "this used to be", no "fixed", no symptom of a bug that
+no longer exists, and no naming of the mistake a value replaced. State the rule
+that is true — "pins above 31 live on gpio1, index is the pin minus 32" — rather
+than the error somebody made against it.
+
+Why a decision went one way belongs in the comment while it is still
+load-bearing: "470 kΩ rather than 100 kΩ, because this divider is across the cell
+forever" earns its place, because the next person will otherwise economise on the
+wrong axis. Why a *fix* went one way belongs in the commit message, and if it
+moved the design, in `docs/decisions.md`. The same rule holds for `docs/`: those
+pages say what is true now, and the decision log carries what was tried before.
+
 ## Testing
 
 Write tests alongside the code, in the same change, wherever they add value. The bar is whether a test would catch a real regression: logic with branches, parsing and validation, state transitions, format and protocol code, and any bug you fix all qualify. Skip them for glue that only wires existing pieces together, for generated files, and for anything whose only assertion would restate the implementation.
+
+**End-to-end tests.** Use one when the thing that can break lives between the parts, not inside them: a user flow through the real site (play, browse, contribute), a bundle written by `tools/` and read back by the firmware, sync or OTA over the wire, or a bug that unit tests passed through. Drive the real artifact — the built site, the real YAML database, the actual bundle file — not mocks. Skip e2e for pure logic, single-function behavior, and anything a unit test already pins down; they are slow and they fail for reasons that are not the code. The website has no e2e harness yet, so adding the first one means adding the runner too.
 
 Each part of the tree has a harness already, so a new test almost never needs new infrastructure:
 

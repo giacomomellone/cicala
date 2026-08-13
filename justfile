@@ -310,6 +310,26 @@ fw-build-retain: fw-fixtures
 fw-retain: fw-build-retain
     {{ west }} flash --no-rebuild -d build/esp32s3-retain {{ portflag }}
 
+# The everyday image, saying out loud what it measures. Samples the cell every
+# second instead of every CONFIG_TK_POWER_SAMPLE_MS and logs the raw conversion
+# beside the converted millivolts, which is what calibrates
+# CONFIG_TK_POWER_DIVIDER_NUM and _DEN against a multimeter on the charger's
+# BAT pad — and, left running, records a discharge curve unattended.
+#
+# It still sleeps, so on battery the console restarts every press. Run it on
+# external power to watch a charge, where the device stays awake throughout.
+
+# build the everyday image with the cell voltage logged (see CONFIG_TK_DEBUG_POWER)
+[group('firmware')]
+fw-build-power: fw-fixtures
+    {{ west }} build -b {{ board }} firmware/app -d build/esp32s3-power --sysbuild -- \
+        -DCONFIG_TK_DEBUG_POWER=y
+
+# flash it, then `just fw-monitor` and compare against a meter on the BAT pad
+[group('firmware')]
+fw-power: fw-build-power
+    {{ west }} flash --no-rebuild -d build/esp32s3-power {{ portflag }}
+
 # Deep sleep. The device powers down when the table goes quiet and every wake
 # runs main() from the top, so the console restarts with each press. The
 # default image never sleeps; this is the one that does.

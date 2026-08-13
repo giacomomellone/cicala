@@ -10,6 +10,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/app_fsm tk_app_fsm)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/power tk_power)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/status tk_status)
 
 # Every application source except main.c, whose only job is starting the input
 # layer — which this suite does itself, after arranging the pins.
@@ -23,11 +25,16 @@ target_sources(app PRIVATE
     ${TK_APP}/src/input.c
     ${TK_APP}/src/language.c
     ${TK_APP}/src/panel.cpp
+    ${TK_APP}/src/power.c
+    ${TK_APP}/src/power_logic.cpp
     ${TK_APP}/src/retained_block.cpp
+    ${TK_APP}/src/status.c
+    ${TK_APP}/src/status_logic.cpp
 )
 
 target_include_directories(app PRIVATE ${TK_APP}/include)
-target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
+target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained tk_power
+    tk_status)
 
 # Both shipped corpora, because app/src/corpus.c carries every language the
 # image offers and the suite builds the same file the application does.

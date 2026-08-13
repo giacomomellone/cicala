@@ -16,7 +16,14 @@
 
 LOG_MODULE_DECLARE(tk_app, LOG_LEVEL_INF);
 
-#define APP_STACK_SIZE 2048
+/*
+ * 3072 against a high-water mark of 1728 measured on the board, so 44 % spare.
+ * The deepest path is the boot render, where this thread walks app_logic into
+ * the question store and the layout before handing a card to `display`, and the
+ * margin is there for a longer question or one more frame of nesting. This is
+ * the thread that owns every press, so it is the wrong one to run close.
+ */
+#define APP_STACK_SIZE 3072
 #define APP_PRIORITY 5
 
 /* Of the four channels this thread subscribes to, chan_service carries the

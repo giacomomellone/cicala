@@ -32,7 +32,9 @@
 #include "net_logic.h"
 #include "ota.h"
 #include "portal.h"
+#include "power.h"
 #include "sleep.h"
+#include "status.h"
 #include "sync.h"
 
 LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
@@ -294,6 +296,12 @@ static void drain_events(void)
 
         if (sync_when_connected) {
             sync_when_connected = false;
+
+            /* Alongside sync_busy rather than inside run_sync(): the LEDs and
+             * the sleep inhibitor are answering the same question, and one
+             * bracket for both keeps them from disagreeing. */
+            tk_status_set_activity(true);
+
             run_sync(false);
 
             /* Questions first, firmware second. The corpus download is seconds
@@ -305,6 +313,7 @@ static void drain_events(void)
                 run_ota();
             }
 
+            tk_status_set_activity(false);
             atomic_set(&sync_busy, 0);
         }
     }
@@ -315,8 +324,10 @@ static void drain_events(void)
 
     if (pending & EV_SYNC) {
         atomic_set(&sync_busy, 1);
+        tk_status_set_activity(true);
         run_sync(true);
         run_ota();
+        tk_status_set_activity(false);
         atomic_set(&sync_busy, 0);
     }
 }
@@ -437,27 +448,43 @@ static void net_thread(void *p1, void *p2, void *p3)
         LOG_INF("both buttons held through boot — entering setup");
         tk_net_post_start();
         /* Nothing else to do until somebody asks. */
-    } else if (tk_wake_button() != TK_WAKE_NONE) {
+    } else if (tk_wake_button() != TK_WAKE_NONE && !tk_power_charge_window_open()) {
         /*
-         * A deep-sleep wake, which is to say somebody pressed a button and is
-         * waiting for a question. Deep sleep makes every press a fresh boot, so
-         * joining here would put a radio association in front of every question
-         * the device ever answers — for a connection nothing yet uses.
-         *
-         * That leaves a cold boot as the only automatic trigger, and once the
-         * device sleeps a cold boot is rare: first power-up, the reset pin, or
-         * a flat cell. The deliberate path is the service gesture, which brings
-         * the portal up and joins the saved network as the last step of its
-         * flow. The charging window the design actually wants needs VBUS on
-         * GPIO21, which is reserved and unwired.
+         * A deep-sleep wake on battery, which is to say somebody pressed a
+         * button and is waiting for a question. Deep sleep makes every press a
+         * fresh boot, so joining here would put a radio association in front of
+         * every question the device ever answers.
          */
         LOG_INF("woken by a button; not joining a network");
     } else {
+        if (tk_wake_button() != TK_WAKE_NONE) {
+            /*
+             * The charging window: a press, on external power, with the window
+             * still open. This is the trigger the design has always specified —
+             * "USB power plus a known network" — and it is reachable now that
+             * VBUS is wired and read at boot.
+             *
+             * One window per plug-in, not one per press: the device does not
+             * sleep while external power is in, so this is reached once — on
+             * the press that ended the last battery sleep.
+             */
+            LOG_INF("woken on external power; joining to sync");
+        } else {
+            /*
+             * A cold boot: power-on, the reset pin, or a cell that went flat.
+             * Rare once the device sleeps, which is the right frequency for
+             * something nobody is waiting on — and the moment somebody is most
+             * likely to be holding the device and able to read a card.
+             */
+            LOG_INF("cold boot; joining to sync");
+        }
+
         /*
-         * A cold boot: power-on, the reset pin, or a cell that went flat.
-         * Rare once the device sleeps, which is the right frequency for
-         * something nobody is waiting on — and the moment somebody is most
-         * likely to be holding the device and able to read a card.
+         * The association takes up to CONFIG_TK_NET_CONNECT_TIMEOUT_MS and it
+         * happens in front of whatever started this boot. That is safe rather
+         * than merely tolerable: `net`, `app` and `display` are separate
+         * threads, so the question is drawn and refreshed while the radio is
+         * still associating. Do not "fix" this by moving it after the draw.
          */
         if (tk_portal_connect_stored()) {
             sync_when_connected = true;
@@ -490,6 +517,21 @@ static void net_thread(void *p1, void *p2, void *p3)
             sync_when_connected = false;
             atomic_set(&sync_busy, 0);
         }
+
+        /*
+         * Where the LEDs learn the portal is on air. Pushed from here rather
+         * than read off chan_power, because that channel publishes only on a
+         * state change or a reading that has moved past the deadband, and on a
+         * resting cell it can carry nothing for minutes. This loop ticks while
+         * the portal is up and runs once more on the way to blocking when it
+         * comes down, so both edges arrive.
+         *
+         * tk_net_portal_active() rather than tk_net_is_active(): the wider
+         * question also counts a sync and the boot gesture, which are reasons
+         * to stay awake. Amber is the portal alone, and a transfer has its own
+         * colour through tk_status_set_activity() above.
+         */
+        tk_status_set_portal(tk_net_portal_active());
 
         (void) k_sem_take(&wake, tk_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
     }

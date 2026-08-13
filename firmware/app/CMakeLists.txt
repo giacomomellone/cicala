@@ -17,6 +17,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/retained tk_retained)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/portal tk_portal)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/ed25519 tk_ed25519)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/sync tk_sync)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/power tk_power)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../lib/status tk_status)
 
 # Application logic is C++17; the files that use zbus's observer macros stay C,
 # because those expand to out-of-order designated initializers.
@@ -45,6 +47,11 @@ target_sources_ifdef(CONFIG_FILE_SYSTEM_LITTLEFS app PRIVATE src/corpus_store.c)
 target_sources_ifdef(CONFIG_TK_SLEEP app PRIVATE src/sleep.c)
 target_sources_ifdef(CONFIG_TK_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
 
+# The cell, and what its voltage means. Out of the default image because a
+# board with no divider fitted would read a floating pin and refuse to refresh.
+target_sources_ifdef(CONFIG_TK_POWER app PRIVATE src/power.c src/power_logic.cpp)
+target_sources_ifdef(CONFIG_TK_STATUS_LED app PRIVATE src/status.c src/status_logic.cpp)
+
 # fetch.c belongs to whichever of the two downloaders is built, and both use it
 # unchanged — a bundle into RAM, an image into flash, one socket path.
 target_sources_ifdef(CONFIG_TK_SYNC app PRIVATE src/fetch.c src/sync.cpp)
@@ -66,7 +73,7 @@ target_include_directories(app PRIVATE include ${CMAKE_CURRENT_SOURCE_DIR}/../co
 # the time find_package(Zephyr) returns, so anything added after has to be
 # linked by hand.
 target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_portal tk_ed25519
-    tk_sync tk_retained)
+    tk_sync tk_retained tk_power tk_status)
 
 # The factory-preloaded corpora, compiled into the image so a device whose
 # Wi-Fi is never configured still works. Built from the question database by
