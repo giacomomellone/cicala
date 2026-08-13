@@ -47,24 +47,6 @@ jobs:
           npm ci
           npm test
           npm run build
-      - name: Include latest device bundles under /device (best effort)
-        if: github.event_name == 'push'
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          tag=$(gh release list --limit 50 --json tagName -q '[.[].tagName | select(startswith("db-"))][0]' || true)
-          if [ -n "$tag" ]; then
-            mkdir -p website/dist/device
-            gh release download "$tag" --dir website/dist/device
-            echo "included bundles from $tag"
-          else
-            echo "no db-* release yet — skipping"
-          fi
-      - uses: actions/upload-artifact@v4
-        with:
-          name: site-dist
-          path: website/dist
       # Deploy is intentionally the only host-specific step; the build above
       # works on any static host (spec §7.1). Runs only when CF secrets exist.
       # The device fetches from the site, so the release has to be on it. The
@@ -117,6 +99,13 @@ jobs:
             -p 'firmware.json' -p 'tischkarte-*.bin'
           echo "published $tag:"
           ls -l website/dist/device
+
+      # After /device/ is populated, so the artifact carries what the deploy
+      # carries rather than the site alone.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: website/dist
 
       # Devices fetch from here, not from the Pages deploy above: Pages upgrades
       # every request to HTTPS, and Zephyr's HTTP client does not follow a
