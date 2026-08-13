@@ -909,3 +909,11 @@ The divider constants need no calibration. `TK_POWER_DIVIDER_NUM`/`_DEN` stay at
 A charger that reports **charge termination** would remove an estimate from the design. The bq25185 has no such pin, so CHARGED is inferred from voltage and runs early by an amount that depends on load — acceptable for an LED, and the reason nothing else is allowed to read it.
 
 Accepted cost: the sleep budget stays a target rather than a measurement until rev A exists, so the runtime figure in the design is still arithmetic rather than an observation.
+
+## 2026-08-14: The charged threshold has to clear the charger, not approach it
+
+`TK_POWER_FULL_MV` was 4150 mV, fifty under the bq25185's 4.2 V regulation point. On the bench that threshold is unreachable: the divider reads about 40 mV low, so 4150 reported needs 4190 at the cell, and constant-voltage charge approaches 4.2 V asymptotically while the device draws its share of the current. The cell sat at 4140 mV for an hour and the LED stayed red.
+
+An unreachable threshold costs the whole green half of a two-colour palette, to buy precision in a number the decision log already describes as an estimate that runs early by an unknown amount. 4050 instead — about 4090 at the cell, which is a full-enough LiPo for something glanced at across a table, and far enough below the regulation point that divider error and charger tolerance both fit in the gap.
+
+Accepted cost: green arrives earlier than before, on a signal that was never a termination measurement.

@@ -72,16 +72,22 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_TITLE: ${{ steps.apply.outputs.pr_title }}
+          PR_LANG: ${{ steps.apply.outputs.lang }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          branch="question/issue-${{ github.event.issue.number }}"
+          branch="question/issue-${ISSUE_NUMBER}"
           git config user.name "tischkarte-bot"
           git config user.email "bot@users.noreply.github.com"
           git checkout -b "$branch"
           git add questions/
           git commit -m "$PR_TITLE"
           git push -u origin "$branch" --force
-          gh pr create --title "$PR_TITLE" \
-            --body "Automated promotion of an approved question submission. Review per questions/${{ steps.apply.outputs.lang }}/STYLE.md, then merge.
-
-Closes #${{ github.event.issue.number }}" \
+          # printf rather than a multi-line string: every line of a `run: |`
+          # block has to stay indented under it, and a body written across raw
+          # newlines here would either carry that indentation into the PR or
+          # end the block early.
+          body=$(printf '%s\n\nCloses #%s\n' \
+            "Automated promotion of an approved question submission. Review per questions/${PR_LANG}/STYLE.md, then merge." \
+            "$ISSUE_NUMBER")
+          gh pr create --title "$PR_TITLE" --body "$body" \
             --label "question-submission" || echo "PR may already exist"
