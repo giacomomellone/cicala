@@ -524,9 +524,14 @@ static void net_thread(void *p1, void *p2, void *p3)
          * that channel for minutes at a time, and the portal would go on air
          * with the LEDs still dark. This loop ticks while the portal is up and
          * runs once more on the way to blocking when it comes down, so both
-         * edges arrive. Same answer tk_net_is_active() gives sleep.c.
+         * edges arrive.
+         *
+         * The portal alone, not tk_net_is_active(): that one also counts a sync
+         * and the boot gesture, which are reasons to stay awake rather than
+         * reasons to show amber. A transfer has its own colour, and it arrives
+         * through tk_status_set_activity() above.
          */
-        tk_status_set_portal(tk_net_is_active());
+        tk_status_set_portal(tk_net_portal_active());
 
         (void) k_sem_take(&wake, tk_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
     }
