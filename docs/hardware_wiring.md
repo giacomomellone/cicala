@@ -211,6 +211,22 @@ devkit USB with no charger board at all. `CONFIG_TK_POWER` is on in the board
 conf, so the firmware reads these pins whether or not anything is attached to
 them.
 
+```
+   no charger board yet
+
+      ┌──────────────────────────┐
+      │    ESP32-S3-DevKitC-1    │
+      │                          │        USB jack supplies 3V3
+      │   GPIO1  ●───────────────┼───┐    through the board's own LDO
+      │   GPIO21 ●───────────────┼───┤
+      │   GND    ●───────────────┼───┤
+      └──────────────────────────┘   │
+                                  ───┴───  − rail
+```
+
+Both jumpers come out when the dividers go in, one at a time — see stage 2 of
+"Bringing the rig up", which measures each tap before it touches a pin.
+
 **GPIO21**, because a floating input can read high, and a device that believes it
 is plugged in never sleeps — awake on the cell until the cell is flat, joining a
 network on every press. Software cannot tell that reading from a real plug-in: it
