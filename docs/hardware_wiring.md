@@ -206,14 +206,31 @@ believes it is on battery.
 
 ### Before either is fitted
 
-**Ground GPIO21.** A floating input can read high, and a device that believes it
+**Ground both pins.** Two jumpers to the − rail, and the everyday image runs on
+devkit USB with no charger board at all. `CONFIG_TK_POWER` is on in the board
+conf, so the firmware reads these pins whether or not anything is attached to
+them.
+
+**GPIO21**, because a floating input can read high, and a device that believes it
 is plugged in never sleeps — awake on the cell until the cell is flat, joining a
 network on every press. Software cannot tell that reading from a real plug-in: it
-is a digital pin, and high is high. A jumper to the − rail is the whole fix.
+is a digital pin, and high is high.
 
-The battery half needs no such care. A reading under
-`CONFIG_TK_POWER_PLAUSIBLE_MV` is treated as no cell rather than as a flat one,
-so an unfitted battery divider costs the voltage reading and nothing else.
+**GPIO1**, because the plausibility floor covers most of a floating pin's range
+but not all of it. Below `CONFIG_TK_POWER_PLAUSIBLE_MV` a reading is treated as
+no cell rather than as a flat one, which is what makes an unfitted divider
+harmless — but that threshold is a 1250 mV tap, and the refresh floor is a
+1600 mV tap:
+
+| Floating tap reads | The firmware concludes | Result |
+|---|---|---|
+| under 1.25 V | not a cell — `UNKNOWN` | draws questions |
+| **1.25 – 1.6 V** | **a flat cell** | **every press refused** |
+| over 1.6 V | a healthy cell | draws questions |
+
+Roughly a sixth of the pin's range lands in the middle row, and a high-impedance
+input picking up mains hum can sit anywhere. Grounded it reads 0, which is the
+top row, so one jumper removes the question.
 
 Neither pin is a wake source in the image `just fw-build` produces. EXT1 takes
 one trigger polarity for the whole mask, the buttons have claimed active-low, and
@@ -494,9 +511,11 @@ just fw-monitor
 - Holding a button and releasing it counts once, not twice.
 
 All four hold with neither divider fitted, which is the state the image is first
-flashed onto — see "Before either is fitted" above for why, and for the one thing
-that still needs a jumper. With both pins loose the boot log says so: `VBUS is
-high but the pack reads N mV; check both dividers are fitted`.
+flashed onto — **provided GPIO1 and GPIO21 are jumpered to the − rail**, for the
+reasons in "Before either is fitted" above. Left floating, either one can put the
+device somewhere it will not draw a card. With both loose and reading high, the
+boot log says so: `VBUS is high but the pack reads N mV; check both dividers are
+fitted`.
 
 ## Bench measurements
 
@@ -592,8 +611,13 @@ sit where they should. Details in `firmware/README.md`.
 
 ### 5. The battery reading, for the divider constants
 
-`just fw-power` samples once a second and logs the raw conversion beside the
-converted millivolts. Put a meter on the BAT pad and compare.
+`just fw-power` is the everyday image plus `CONFIG_TK_DEBUG_POWER=y`, and that
+one symbol is the whole difference: it samples once a second instead of every
+`CONFIG_TK_POWER_SAMPLE_MS`, and logs the raw conversion beside the converted
+millivolts. The ordinary image reports the cell too, but only when the state
+changes or the reading has moved more than 20 mV, so a resting cell goes quiet —
+which is why calibration and the discharge curve want this build and nothing else
+does. Put a meter on the BAT pad and compare.
 
 ```
 [tk_power_adc] raw 2412 -> 1943 mV at the pin
