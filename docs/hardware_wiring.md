@@ -502,17 +502,41 @@ higher one wins. Note the number, then pick a remedy from "Powering the rig".
 
 ### 6. With firmware
 
-- `just fw-power` reports millivolts within about 2 % of a meter on the BAT pad.
-  Calibrating the divider constants is bench measurement 5 below.
+Flashing needs the DevKitC's UART jack, so this is the one stage that runs with a
+devkit cable in — and therefore with the contention stage 5 just had you measure.
+That is fine for everything here: the divider taps **BAT**, which is the cell
+terminal, so the reading is the cell's whether or not the cell is the thing
+powering the rig. Same for VBUS, which is read from VU and does not move when the
+devkit is plugged in.
+
+One command builds and flashes:
+
+```sh
+just fw-power     # the everyday image plus CONFIG_TK_DEBUG_POWER
+just fw-monitor
+```
+
+- Millivolts once a second, raw beside converted. Against a meter on the BAT pad
+  they should agree within about 2 %. Calibrating `TK_POWER_DIVIDER_NUM` and
+  `_DEN` from that comparison is bench measurement 5 below; put the result in
+  `firmware/Kconfig.policy` and rebuild before going on.
 - Plug and unplug the charger's USB-C and watch the logged VBUS flag follow.
 - The LEDs, in one pass: unplugged and healthy is dark, charging is red, past
   `CONFIG_TK_POWER_FULL_MV` is green, the portal is amber, and a press below
   `CONFIG_TK_REFRESH_MIN_MV` is three red blinks with the panel unchanged.
 
-What good looks like: the device runs from the cell with no USB attached, reports
-a voltage that tracks a meter, goes red when the charger's USB-C is plugged and
-green when the cell fills, refuses to refresh below the floor and says so, and
-goes dark two seconds after being unplugged.
+Then put the everyday image back and pull the devkit's cable, which is the one
+check that cannot have a console:
+
+```sh
+just fw-flash
+```
+
+The device should run from the cell alone, answer presses, go red when the
+charger's USB-C is plugged and green when the cell fills, refuse to refresh below
+the floor and say so on the LEDs, and go dark two seconds after being unplugged.
+All of that is judged on the panel and the two LEDs — which is the point of
+having them, and is what a device with no cable attached can say.
 
 ## Checking it
 
