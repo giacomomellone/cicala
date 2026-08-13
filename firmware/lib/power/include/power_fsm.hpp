@@ -74,7 +74,7 @@ constexpr uint16_t kPlausibleMv = 2500;
 #ifdef CONFIG_TK_POWER_FULL_MV
 constexpr uint16_t kFullMv = CONFIG_TK_POWER_FULL_MV;
 #else
-constexpr uint16_t kFullMv = 4150;
+constexpr uint16_t kFullMv = 4050;
 #endif
 
 #ifdef CONFIG_TK_POWER_HYSTERESIS_MV

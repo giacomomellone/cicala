@@ -589,7 +589,7 @@ config TK_POWER_PLAUSIBLE_MV
 
 config TK_POWER_FULL_MV
     int "Cell voltage that counts as charged (mV)"
-    default 4150
+    default 4050
     depends on TK_POWER
     help
       An estimate, and it must not be read as anything else. The bq25185 on the
@@ -599,6 +599,17 @@ config TK_POWER_FULL_MV
 
       Acceptable for an LED somebody glances at. Not acceptable as an input to
       anything that decides something, which is why nothing else reads it.
+
+      Keep it well under the charger's own regulation voltage. Two things eat
+      the gap from opposite ends: the divider reads about 40 mV low on the
+      bench, and constant-voltage charge approaches 4.2 V asymptotically while
+      the system draws its share of the current, so the last tens of millivolts
+      can take an hour or never arrive. A threshold set close to 4.2 V is one
+      the LED never reaches, which costs the whole green half of the palette to
+      buy precision in an estimate that is not precise.
+
+      4050 here is roughly 4090 mV at the cell, which is a full-enough LiPo for
+      something somebody glances at across a table.
 
 config TK_POWER_HYSTERESIS_MV
     int "Millivolts a reading must clear a threshold by to cross back (mV)"
