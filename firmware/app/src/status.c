@@ -54,18 +54,17 @@ static K_WORK_DELAYABLE_DEFINE(tick_work, status_tick);
 /*
  * What other threads have asked the arbiter for, as flags rather than as calls.
  *
- * The arbiter is a single object with mutable burst state, and the work item
- * below reads and writes all of it. `app` calls tk_status_note_refresh_blocked()
- * and `net` calls tk_status_set_activity() and tk_status_set_portal(), all from
- * their own threads, while the system workqueue runs at priority -1 and
- * preempts any of them mid-call. The failure that costs something is precise: a
- * refused press arms a burst, the sampler's work item preempts between arming
- * the flag and filling in the colour, and the tick starts a burst of zero
- * blinks with the previous colour — so the press that was turned away is
- * answered by nothing, and that blink is the only answer such a press gets.
+ * The arbiter is a single object with mutable burst state that the work item
+ * below both reads and writes. Its callers are not on that work item: `app`
+ * calls tk_status_note_refresh_blocked() and `net` calls
+ * tk_status_set_activity() and tk_status_set_portal(), each from its own
+ * thread, and the system workqueue is cooperative at priority -1 and preempts
+ * all of them. A burst is armed in two steps — a flag, then a colour and a
+ * count — so a tick landing between them starts a burst of zero blinks in the
+ * previous colour, and the press that armed it is answered by nothing.
  *
- * So nothing outside this work item touches the arbiter, and the same argument
- * on_power() makes for the pins holds for the state behind them.
+ * So nothing outside this work item touches the arbiter. That is the argument
+ * on_power() makes for the pins, applied to the state behind them.
  */
 static atomic_t pending_busy = ATOMIC_INIT(0);
 static atomic_t pending_activity = ATOMIC_INIT(0);

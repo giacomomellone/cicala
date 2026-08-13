@@ -10,24 +10,16 @@ existing USB-powered breadboard before PCB layout, enclosure integration, or
     The renders communicate layout and use. They do not replace CAD, component
     drawings, tolerance analysis, antenna work, or a verified PCB.
 
-!!! note "The breadboard still uses the DIP switch"
-
-    The current firmware reads six one-hot category inputs from the six-way DIP
-    switch and one Next button. That rig and its code remain unchanged until a
-    second physical button is available. The two-button interface below is the
-    target product design, not a description of the current wiring.
-
 ![Warm-ivory device with one e-paper display and adjacent Category and Next buttons](assets/device-prototype/hero.webp)
 
-## Evaluation of the proposal
+## Why two buttons
 
-The rotary selector should go. Its fixed labels take most of the space above
-the display, freeze the category count and language into the enclosure, and
-add a shaft, seal, mechanical support, and uncommon switch. The firmware
-already proves that a category name can be rendered on e-paper. Printing the
-active category there removes the need for a labelled detent.
+The rotary selector was dropped. Its fixed labels took most of the space above
+the display, froze the category count and language into the enclosure, and
+added a shaft, seal, mechanical support, and an uncommon switch. A category name
+renders on e-paper, which removes the need for a labelled detent.
 
-The device instead has two adjacent buttons:
+The device has two adjacent buttons:
 
 - **Category** advances through the six categories in a fixed order and shows
   the selected name on the e-paper;
@@ -85,10 +77,8 @@ This gives every state a visible result:
   stored category;
 - removing power leaves the last category and question readable on the panel.
 
-The eventual two-button firmware will retain the category alongside the other
-RTC state and default to New People after total state loss. That behavior is
-not implemented in this documentation change. The current firmware continues
-to obtain the category from the DIP switch after every boot.
+The firmware retains the category alongside the other RTC state and defaults to
+New People after total state loss.
 
 ## Candidate controls
 
@@ -145,11 +135,23 @@ The later two-button rev A board must account for:
 - antenna keep-out clear of the display, battery, button hardware, and copper;
 - hidden development pads, with no extra user-facing controls.
 
-The current DevKitC overlay is deliberately different: six active-low,
-one-hot DIP-switch inputs provide the category and one tactile input provides
-Next. It remains the firmware contract until the second button is on the bench.
-Changing that input model, retained state, channels, and tests is a later code
-change.
+Four of these the bench has now put numbers or constraints on:
+
+- **No always-on indicator, anywhere.** The bench cannot measure its own sleep
+  current because the DevKitC's power LED and WS2812 sit on the 3V3 rail. Rev A
+  is the first board that can produce that number, and only if nothing on it
+  draws continuously. That includes a power LED.
+- **The battery divider wants 1 MΩ over 470 kΩ**, and switching over both. 1M/1M
+  halves the standing draw to 2.1 µA and costs about 25 mV of ADC-leakage offset
+  at the tap, which is nothing against thresholds 200 mV apart. Switched, it
+  costs nothing at all, which is what a product should spend here.
+- **VBUS detect earns its place.** It is what opens the sync window on a
+  plug-in, what keeps the device awake through a charge, and what the status LED
+  reads. Tap it from the USB rail, not from a wider DC input.
+- **A charge-status pin would be worth having.** The bq25185 has none, so
+  "charged" is inferred from voltage and is early by an amount that depends on
+  load. Nothing but the LED may read it. A charger that reports termination
+  removes an estimate from the design.
 
 The question bundle still stores each question once with a six-bit deck mask
 and depth metadata. Normal playback excludes depth 3. See
@@ -162,30 +164,24 @@ and depth metadata. Normal playback excludes depth 3. See
 The website exercises all six deck choices, overlapping membership, Wild tone,
 the New People default, and the depth 1–2 playback cap.
 
-### 2. Current USB-powered breadboard and firmware
+### 2. USB-powered breadboard and firmware — passed
 
-Keep using the ESP32-S3 DevKitC, assembled 2.13-inch e-paper module, six-way
-DIP switch, and existing through-hole Next button. Do not change the firmware
-input contract merely to match a render. Develop and test flashing, storage,
-current deck selection, button debounce, rendering, refresh policy, and
-optional Wi-Fi sync while powered from USB. The
-[prototype BOM](prototype_bom.md) describes this rig.
+The ESP32-S3 DevKitC, the assembled 2.13-inch e-paper module and two tactile
+switches. Flashing, storage, deck selection, debounce, rendering, refresh policy
+and Wi-Fi sync all run there. The [prototype BOM](prototype_bom.md) describes the
+rig and [hardware wiring](hardware_wiring.md) wires it.
 
-Gate:
+Gate, all met:
 
-- every DIP-switch input maps to the intended deck;
-- zero or several active inputs fail safely;
-- one Next press advances exactly once;
+- one Next press advances exactly once, and a held button counts once;
 - every released English and German question fits;
-- partial updates remain readable through a representative run;
+- partial updates remain readable through a representative run — 193 of them,
+  which is where the full-refresh interval comes from;
 - firmware can be flashed and debugged without extra programming hardware.
 
-### 3. Two-button interaction bench
+### 3. Two-button interaction bench — passed
 
-After a second button is available, replace the DIP-switch input contract in a
-separate firmware change and test the Category path before schematic capture.
-
-Gate:
+Gate, all met except the last, which needs people rather than a bench:
 
 - Category advances exactly one deck in the fixed order and wraps once;
 - the displayed category always matches the deck used by Next;
@@ -195,14 +191,21 @@ Gate:
   unacceptably;
 - Category and Next are distinguishable without explanation.
 
-### 4. Battery and power-path bench
+### 4. Battery and power-path bench — passed except current
 
-Add a protected cell and a charger with a real system power path only after the
-charge current is supported by the selected cell data sheet. Prove charging
-under system load, USB/battery handover, Wi-Fi peaks, cutoff behavior, brownout
-margin, and sleep current before laying out the complete board.
+A bq25185 charger board, a protected cell and both sense dividers on the
+breadboard. What it proved: charging under system load, USB and battery
+handover, the device reading its own cell within 1 % of a meter, VBUS detection
+at boot, the sync window opening on a plug-in, and the device staying awake for
+the whole charge and running from the cell alone with no USB attached.
 
-### 5. Controls, PCB, and enclosure integration
+What it cannot prove is **sleep current**, and this is the finding that matters
+for rev A: the DevKitC's own power LED and WS2812 draw one to two orders of
+magnitude more than the 30 µA budget, so no figure taken on this rig bounds
+anything. Brownout margin and the voltage at which a refresh actually corrupts
+are also still open — see the acceptance targets below.
+
+### 5. Controls, PCB, and enclosure integration — next
 
 Import manufacturer STEP models, place the tested buttons, PCB, and battery,
 then build the first printed enclosure.

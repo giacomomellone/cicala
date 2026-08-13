@@ -9,7 +9,7 @@ An open-source system for conversation questions, in three parts sharing one dat
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/` — ESP32-S3 device, Zephyr. Every module is built: the tabletop loop, deep sleep, the setup portal, bundle sync, signed OTA, and the power path with its two status LEDs. What is not done is the copper — the battery and VBUS dividers are described but not wired, so nothing about power has run on hardware. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
+- `firmware/` — ESP32-S3 device, Zephyr. Every module is built and runs on the breadboard rig: the tabletop loop, deep sleep, the setup portal, bundle sync, signed OTA, and the power path with its two status LEDs. What is still unmeasured is current — the devkit's own indicators swamp a 30 µA budget, so the sleep figure waits for rev A. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.

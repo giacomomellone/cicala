@@ -891,3 +891,21 @@ So `lib/power` gets a floor instead. Below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 25
 The VBUS half cannot be fixed the same way. It is a digital pin, high is high, and software cannot tell a floating input from a charger. An internal pull-down is not the answer either — it would load the planned 100k/150k divider to about 1.3 V, under V_IH, so the divider would stop working once it was fitted. What the firmware does instead is say so: a boot that finds VBUS high while the pack reads implausible logs a warning naming both dividers. The remedy is a jumper, and [hardware wiring](hardware_wiring.md) now asks for one.
 
 Accepted cost: a real cell discharged below 2.5 V reads as UNKNOWN and the device stops refusing refreshes at exactly the point it should be most careful. That is a state a protected cell reaches by disconnecting, so the device is not running to have an opinion about it.
+
+## 2026-08-14: The power bench passed, and what it hands rev A
+
+The rig is built: an Adafruit 6092 with a bq25185, a 1500 mAh cell, both sense dividers and two status LEDs on a breadboard, feeding a DevKitC from the charger's 3.3 V buck. Everything the power path was written for now runs on it — the device reads its own cell within 1 % of a meter, sees VBUS on the first sample of a boot, opens one sync window per plug-in, stays awake for the whole charge, refuses a refresh below the floor and says so on the LEDs, and runs from the cell alone with no USB attached.
+
+One number the bench cannot produce, and it is the one the design is about. **Sleep current is unmeasurable on a DevKitC.** Its power LED draws one to two milliamps from the 3V3 rail continuously and its onboard WS2812 idles at roughly another 0.6 mA, together one to two orders of magnitude above a 30 µA budget, under which the bq25185 and TPS62569 quiescent currents disappear entirely. Nothing measured here bounds rev A, and no runtime can be extrapolated from it.
+
+That makes rev A the first board that can answer the question, and it only can if nothing on it draws continuously — which promotes "no always-on indicator" from a preference to a layout requirement, a power LED included.
+
+Three smaller findings go with it:
+
+The battery divider should be **1 MΩ over 470 kΩ**, and switched over both. 1M/1M halves the standing draw to 2.1 µA; what it costs is a 500 kΩ source, which shows up as roughly 25 mV of ADC-leakage offset at the tap against thresholds 200 mV apart. Switched, it costs nothing at all, which is what a product should spend across a cell it is supposed to be preserving.
+
+The divider constants need no calibration. `TK_POWER_DIVIDER_NUM`/`_DEN` stay at 2/1: the rig logs 3890 mV against 3930 on a meter, 1.0 % low, and the error is an offset rather than a ratio, so scaling it would overcorrect at the low end where the reading decides something. It also errs towards refusing early, which is the safe direction.
+
+A charger that reports **charge termination** would remove an estimate from the design. The bq25185 has no such pin, so CHARGED is inferred from voltage and runs early by an amount that depends on load — acceptable for an LED, and the reason nothing else is allowed to read it.
+
+Accepted cost: the sleep budget stays a target rather than a measurement until rev A exists, so the runtime figure in the design is still arithmetic rather than an observation.

@@ -8,15 +8,13 @@ with the repository root as the working directory.
 The design this implements is [firmware architecture](firmware_architecture.md).
 The reasons behind each choice are in [decisions](decisions.md).
 
-**Status: the tabletop loop works.** Turning the selector or pressing Next
-draws a question and renders it. Deep sleep, the power path, Wi-Fi sync and the
-setup portal are still design, so this primer covers the machinery as much as
-the product.
+**Status: the whole device works on the bench.** A press draws a question and
+renders it, the device sleeps between presses, the setup portal and Wi-Fi sync
+run, and the power path reads its cell and drives two status LEDs.
 
-This primer describes the current DIP-switch breadboard and its code. The
-[device prototype](device_prototype.md) now targets adjacent Category and Next
-buttons, but that input transition waits until a second physical button is
-available.
+This primer describes the breadboard rig and its code; the object it becomes is
+[device prototype](device_prototype.md), and the wiring is
+[hardware wiring](hardware_wiring.md).
 
 ---
 
@@ -34,19 +32,29 @@ firmware/
 │   ├── include/                channels.h, input.h, panel.h, app_logic.h
 │   └── src/
 │       ├── channels.c          zbus channel definitions
-│       ├── input.c             selector one-hot + settle, Next
+│       ├── input.c             Category and Next, debounced
 │       ├── app.c               the app thread and its subscriber
 │       ├── app_logic.cpp       state machine + question store behind a C API
 │       ├── display.c           the display thread
 │       ├── panel.cpp           CFB, refresh policy, accent marks
+│       ├── sleep.c             the idle timer, the wake mask, deep sleep
+│       ├── net.c               the net thread, Wi-Fi events, the portal
+│       ├── sync.cpp / ota.cpp  bundle and firmware downloads
+│       ├── power.c             the ADC, the VBUS pin, the sampler
+│       ├── status.c            two GPIOs and the tick that drives them
 │       └── main.c              boot only; the threads do the work
 ├── lib/                        hardware-free C++17
 │   ├── fsm/                    table-driven state machine
 │   ├── app_fsm/                the tabletop machine built on it
 │   ├── qdb/                    QDB2 reader and shuffle bag
-│   └── layout/                 UTF-8, accents, word wrap
-└── tests/                      smoke, fsm, input, app_fsm, qdb,
-                                layout, panel, integration
+│   ├── layout/                 UTF-8, accents, word wrap
+│   ├── retained/               the RTC block and its seal
+│   ├── portal/                 the setup state machine
+│   ├── sync/ · ed25519/        manifests, signatures
+│   ├── power/                  what a millivolt reading means
+│   └── status/                 what the two LEDs should be doing
+└── tests/                      one suite per lib, plus input, panel,
+                                soak, portal and integration
 ```
 
 `deps/` is absent from the tree: it is Zephyr itself, cloned by `just fw-init`,
@@ -198,8 +206,8 @@ values rather than a copy that drifts:
 cat firmware/Kconfig.policy
 ```
 
-These are the values the architecture deliberately leaves open — the selector
-settle window, the refresh interval, the depth cap. They are Kconfig rather
+These are the values the architecture deliberately leaves open — the button
+debounce, the refresh interval, the depth cap, every power threshold. They are Kconfig rather
 than `#define` so they can be changed per board and per test without editing
 source.
 
@@ -380,7 +388,7 @@ Linux only, which is what `just fw-test-linux` (Docker) and CI are for.
 
 Emulated GPIO is available on both. `CONFIG_GPIO_EMUL` is selected by a
 `zephyr,gpio-emul` node in the devicetree, not by the host, so a suite that
-drives the selector and Next — `tests/input` — runs under qemu on macOS like
+drives Category and Next — `tests/input` — runs under qemu on macOS like
 any other. Its overlay is `tests/input/boards/qemu_xtensa_dc233c.overlay`.
 
 **Fixtures.** `qdb` tests will run against real question bundles rather than

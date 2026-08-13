@@ -37,16 +37,14 @@ static const struct adc_dt_spec cell = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
 static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios);
 
 /**
- * A comfortable cell, and one under CONFIG_TK_POWER_CRITICAL_MV.
+ * A comfortable cell, and one flat enough to reach CRITICAL.
  *
- * 2800 rather than 3000. On the threshold itself the suite reached CRITICAL
- * only through adc_emul rounding — TAP_MV(3000) goes in as 1500 mV, comes back
- * as 1499, and doubles to 2998 — which is two millivolts nothing here controls.
- * Rounding the other way would have stopped the machine at LOW, and the LED
- * test below would then have been asserting on an amber one-blink burst
- * instead of a red three-blink one, alone, while the refusal tests stayed
- * green. It also has to stay above CONFIG_TK_POWER_PLAUSIBLE_MV, which is where
- * a reading stops being a cell at all.
+ * Clear of CONFIG_TK_POWER_CRITICAL_MV rather than equal to it. A value goes
+ * through TAP_MV() and back through adc_emul, and that round trip moves a
+ * millivolt or two, so a value sitting on the threshold decides between LOW and
+ * CRITICAL on rounding this suite does not control — and the two states differ
+ * in the LED they light. It also has to stay above
+ * CONFIG_TK_POWER_PLAUSIBLE_MV, below which a reading stops being a cell at all.
  */
 #define HEALTHY_MV 3900
 #define FLAT_MV 2800
@@ -432,11 +430,9 @@ ZTEST(tk_integration, test_a_charge_is_red_until_the_cell_is_full)
 
 /*
  * The portal's amber, driven through the same call `net` makes. `net` itself is
- * not in this image — there is no radio on qemu — so what this pins is the half
- * that lives in status.c: a condition handed in from another thread reaching the
- * arbiter and the pins. Sampling it from chan_power instead left the LEDs dark
- * for a whole setup session, because a publish is deadbanded and a resting cell
- * does not move 20 mV.
+ * not in this image — there is no radio on qemu — so what this covers is the
+ * half that lives in status.c: a condition handed in from another thread
+ * reaching the arbiter and then the pins.
  */
 ZTEST(tk_integration, test_the_portal_shows_amber)
 {

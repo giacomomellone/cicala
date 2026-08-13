@@ -5,14 +5,18 @@ The shopping list is [prototype bom](prototype_bom.md), the object this becomes
 is [device prototype](device_prototype.md), and the firmware that drives it is
 [firmware architecture](firmware_architecture.md).
 
-**Status:** the buttons and the panel are wired and drawing questions, and the
-refresh policy, timings and RTC retention have been measured — see "Bench
-measurements" at the end, which is also the procedure for repeating any of them.
+**Status:** the whole rig is built. Buttons, panel, charger, cell, both dividers
+and both status LEDs are wired and working — the device reads its cell, sees
+VBUS, opens a sync window on a plug-in, stays awake on a charger, and runs from
+the cell with no USB attached. Refresh policy, timings and RTC retention are
+measured; see "Bench measurements" at the end, which is also the procedure for
+repeating any of them.
 
-The power path is **written in firmware and not yet built in copper.** The
-charger, the cell, the two dividers and the two status LEDs describe what the
-firmware expects; nothing marked *verify* has been measured. "Bringing the rig
-up" builds it, in the order that keeps a mistake cheap.
+What is still open is current. The DevKitC's own power LED and WS2812 draw one
+to two orders of magnitude more than the 30 µA sleep budget, so no sleep figure
+taken here bounds anything; that measurement waits for rev A. `TK_REFRESH_MIN_MV`
+is also still the 3200 it was guessed at. "Bringing the rig up" is the build
+order, kept because it is what a second rig would follow.
 
 ## Parts
 
@@ -364,22 +368,11 @@ board and set the devicetree compatible to match:
 The overlay targets V3/V4, which is what is sold now. The older two are 120 rows
 rather than 122, so `height` changes with the compatible.
 
-### Two traps in the driver
+### The driver behind it
 
-In Zephyr 4.4 the SSD16xx driver sits behind MIPI-DBI rather than on SPI
-directly: the display node is a child of a `zephyr,mipi-dbi-spi` node that owns
-the bus and the D/C and reset pins. Putting those properties on the display node
-itself is the older binding and does not bind at all.
-
-Its `full` and `partial` children are not decoration — the driver offers partial
-refresh only when a partial profile exists, and picks between them by the
-blanking state. So a full refresh is a sandwich: `display_blanking_on()`,
-`display_write()`, `display_blanking_off()`, and the update happens on the third
-call. A partial refresh is a plain write with blanking already off. Doing only
-the first half loads the image and never shows it — the refresh returns in about
-20 ms with nothing changed, and the update is deferred onto whichever later call
-turns blanking off, which then runs long and shows the previous image. A real
-bug, found on the bench: the dummy display accepts blanking calls in any order.
+The panel is bound through MIPI-DBI and its refresh policy has two traps worth
+knowing before debugging a blank screen — both in
+[firmware architecture](firmware_architecture.md#two-things-the-panel-driver-decides-for-you).
 
 ## Powering the rig from the cell
 
@@ -576,7 +569,8 @@ Measured on a Waveshare 2.13-inch V4:
 | Refresh after a deep-sleep wake | 624 ms, against 2919 ms before the panel patch | [patching zephyr](firmware_patches.md) |
 | Peak thread stack | logging 89%, everything else 18–38% | `LOG_PROCESS_THREAD_STACK_SIZE` = 2048 |
 | RTC memory across a warm reboot | kept, three times running | the retained block works on the chip |
-| Battery reading against a meter | not measured | `TK_POWER_DIVIDER_NUM` / `_DEN` |
+| Battery reading against a meter | 3890 mV logged against 3930 metered, 1.0 % low | `TK_POWER_DIVIDER_NUM` / `_DEN` stay at 2/1 |
+| VBUS detect, plug and unplug | follows on the first sample of a boot | the sync window and the sleep inhibitor |
 | Where a refresh actually corrupts | not measured | `TK_REFRESH_MIN_MV`, still at its guessed 3200 |
 | Discharge curve | not measured | nothing yet; the first runtime figure |
 | Current: idle, refresh, Wi-Fi, per LED, asleep | not measured | rev A's resistor values, and the sleep budget |

@@ -12,10 +12,11 @@ update path all exist and are tested, and `power` and `status` now join them.
 Deep sleep and the radio are both on in the everyday image; the images that
 measure something turn them back off.
 
-What is *not* done is the copper. The two dividers and the two status LEDs
-`power` reads and drives are described in [hardware wiring](hardware_wiring.md)
-and have not been built, so nothing about the power path has been seen on
-hardware. Items marked *verify* have not been run on a board. The
+The copper is built too. Both dividers and both status LEDs are on the
+breadboard, and the device reads its cell, sees VBUS, opens a sync window on a
+plug-in, stays awake on a charger and runs from the cell alone. What no bench
+here can answer is current: the DevKitC's own indicators draw far more than the
+whole sleep budget. Items marked *verify* have not been run on a board. The
 [firmware primer](firmware_primer.md) is the hands-on tour.
 
 ## The one constraint
@@ -760,6 +761,28 @@ sequenceDiagram
 A Category press is the same path, ending in the deck's name rather than a
 question.
 
+### Two things the panel driver decides for you
+
+In Zephyr 4.4 the SSD16xx driver sits behind MIPI-DBI rather than on SPI
+directly: the display node is a child of a `zephyr,mipi-dbi-spi` node that owns
+the bus and the D/C and reset pins. Putting those properties on the display node
+itself is the older binding and does not bind at all.
+
+Its `full` and `partial` children are what make a partial refresh available —
+the driver offers one only when a partial profile exists, and picks between the
+two by the blanking state. So a full refresh is a sandwich:
+`display_blanking_on()`, `display_write()`, `display_blanking_off()`, with the
+update happening on the third call. A partial refresh is a plain write with
+blanking already off.
+
+Half a sandwich loads the image and never shows it. The write returns in about
+20 ms with nothing changed on the glass, and the update is deferred onto
+whichever later call turns blanking off — which then runs long and shows the
+previous image. `panel.cpp` brackets it for that reason, and the dummy display
+the suites run against accepts blanking calls in any order, so this is bench
+knowledge rather than something a test will tell you.
+
+
 ## The wake path
 
 The same work, from a cold boot, because a wake *is* a cold boot. This is what
@@ -843,10 +866,11 @@ below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 2500 mV — returns to UNKNOWN from
 wherever it was. An SoC that is still running is not being fed by a pack at
 2.4 V: the protection circuit and the 3.3 V buck both give up above that, so
 such a number is a divider that is not fitted and a pin that is floating. That
-is the state of the bench rig today, and without the floor the boot reading
-walks to CRITICAL before any thread starts and every press — including the one
-that draws the first card — is refused, on a device whose LEDs are not wired
-either.
+is the state of any rig before its copper is built, and without the floor the
+boot reading walks to CRITICAL before a thread starts and every press — the one
+that draws the first card included — is refused. The floor does not cover the
+whole range a floating pin can sit in; the rest is a jumper, and
+[hardware wiring](hardware_wiring.md) asks for it.
 
 `CHARGED` is a voltage estimate and nothing but the LED may read it — see the
 decision log. Charge termination cannot be sensed: the charger exposes no /CHG
@@ -1176,13 +1200,12 @@ suites that drive the two buttons run in the default macOS loop.
   40 KB of HTML against a 4 KB page buffer, so it has to be paginated or sent
   across several handler calls, which the HTTP server already supports by
   calling back until `final_chunk`.
-- **Nothing about power has been seen on hardware.** The two dividers and the
-  two LEDs are not built, so `TK_POWER_DIVIDER_NUM` and `_DEN` are unverified
-  guesses at a ratio, and `TK_REFRESH_MIN_MV` is still the 3200 it was invented
-  as rather than the voltage at which a refresh actually corrupts. The suites
-  cover the branches — the ladder, the hysteresis, the window, the gate and the
-  blink, the last two end to end against an emulated ADC — but a suite cannot
-  tell anyone what a real cell reads. See "Bringing the rig up" in
+- **Two power numbers are still guesses.** `TK_REFRESH_MIN_MV` is the 3200 it
+  was invented as rather than the voltage at which a refresh actually corrupts,
+  and the sleep current has never been measured, because the DevKitC's own power
+  LED and WS2812 draw one to two orders of magnitude more than the budget they
+  would be measured against. The divider ratio is no longer among them: the rig
+  logs 3890 mV against 3930 on a meter. See "Bench measurements" in
   [hardware wiring](hardware_wiring.md).
 - Whether the device should say anything at all on a flat cell beyond three red
   blinks. The panel cannot: a card saying "the battery is flat" is itself the

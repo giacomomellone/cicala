@@ -519,17 +519,17 @@ static void net_thread(void *p1, void *p2, void *p3)
         }
 
         /*
-         * Told to the LEDs from here rather than sampled from `chan_power`,
-         * because a publish is deadbanded: on a resting cell nothing reaches
-         * that channel for minutes at a time, and the portal would go on air
-         * with the LEDs still dark. This loop ticks while the portal is up and
-         * runs once more on the way to blocking when it comes down, so both
-         * edges arrive.
+         * Where the LEDs learn the portal is on air. Pushed from here rather
+         * than read off chan_power, because that channel publishes only on a
+         * state change or a reading that has moved past the deadband, and on a
+         * resting cell it can carry nothing for minutes. This loop ticks while
+         * the portal is up and runs once more on the way to blocking when it
+         * comes down, so both edges arrive.
          *
-         * The portal alone, not tk_net_is_active(): that one also counts a sync
-         * and the boot gesture, which are reasons to stay awake rather than
-         * reasons to show amber. A transfer has its own colour, and it arrives
-         * through tk_status_set_activity() above.
+         * tk_net_portal_active() rather than tk_net_is_active(): the wider
+         * question also counts a sync and the boot gesture, which are reasons
+         * to stay awake. Amber is the portal alone, and a transfer has its own
+         * colour through tk_status_set_activity() above.
          */
         tk_status_set_portal(tk_net_portal_active());
 

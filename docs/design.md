@@ -56,11 +56,11 @@ Hard rules:
   adding status UI, and a hidden saved collection would introduce a mode.
 - Wi-Fi is optional. Sync runs while charging and never interrupts use.
 
-The service gesture ships as both buttons held through a boot rather than
-USB-plus-Next: VBUS detect is reserved on GPIO21 and not wired, so the device
-cannot yet tell that it has been plugged in. USB-plus-Next becomes the primary
-trigger once it can, and the button hold stays as the fallback — a device whose
-power path has failed should still be serviceable. See the decision log.
+The service gesture is both buttons held through a boot. VBUS detect on GPIO21
+now works, so the device does know it has been plugged in — that is what opens
+the sync window on the press after a plug-in. The button hold stays as the way
+into setup, because a device whose power path has failed should still be
+serviceable. See the decision log.
 
 ## Six decks
 
@@ -119,7 +119,7 @@ Favorites remain on the website because a browser can show confirmation and
 ownership without changing the physical object's interaction.
 
 The visual language is warm paper, quiet typography, and one accent. Motion is
-limited to the 120 ms question fade and selector state transition.
+limited to the 120 ms question fade and the category change.
 
 ## Deferred work
 

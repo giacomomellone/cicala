@@ -230,12 +230,11 @@ static int power_start(void)
     }
 
     /*
-     * Synchronous, and before any thread starts — and reached even when the
-     * ADC did not come up. See the header comment: `net` reads VBUS as it
-     * starts up, `status` listens for the first publish on chan_power, and
-     * neither of those depends on there being a conversion. Returning early
-     * here left the work item unscheduled, so VBUS was never read at all and
-     * every boot looked like a boot on battery.
+     * Synchronous, and before any thread starts. Reached whether or not the
+     * ADC came up: see the header comment — `net` reads VBUS as it starts and
+     * `status` listens for the first publish on chan_power, and neither of
+     * those depends on there being a conversion. This call is also what
+     * schedules the work item, so everything after it hangs off reaching here.
      */
     power_sample(NULL);
 
