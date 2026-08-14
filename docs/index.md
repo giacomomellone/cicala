@@ -13,6 +13,7 @@ An open-source system for conversation questions: a community-maintained [questi
 - **[firmware primer](firmware_primer.md)**: introduction to the device firmware and to Zephyr as this project uses it — build inputs, devicetree, Kconfig, tests, debugging.
 - **[firmware architecture](firmware_architecture.md)**: threads, the messages between them, and which modules depend on Zephyr.
 - **[decisions](decisions.md)**: append-only decision log (ADR-lite), including every dependency justification.
+- **[contribution pipeline](contribution_pipeline.md)**: how a question gets from a form into the database, the site and a device — the labels, the automatic checks, and which rule is enforced where.
 - **[languages](languages.md)**: multilingual policy. Independent corpora, the incubator, maintainers.
 - **[sync protocol](sync_protocol.md)**: device sync flow and the `.qdb.gz` bundle format, byte by byte.
 - **[votes](votes.md)**: the agreed v2 voting design (not built; seams are in place).
