@@ -78,9 +78,9 @@ public:
 private:
     static void write_setup(struct tk_service_msg &msg)
     {
-        const char *const prefix = "Setup: join ";
-        const char *const middle = "\npass ";
-        const char *const suffix = "\nthen open 192.168.4.1";
+        const char *const prefix = "Setup: join \"";
+        const char *const middle = "\"\npassword: \"";
+        const char *const suffix = "\"\nthen open 192.168.4.1";
         const char *const ssid = tk_portal_ap_ssid();
         const char *const password = tk_portal_ap_password();
 
