@@ -562,7 +562,7 @@ What the original reasoning was actually protecting is narrower than "the everyd
 
 The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf` rather than `prj.conf`. `prj.conf` is shared with qemu and native_sim, `CONFIG_WIFI_ESP32` needs a devicetree node only this SoC has, and putting it there breaks `just fw-sim`. The second Wi-Fi node AP+STA needs is in the matching board overlay for the same reason.
 
-`just fw-portal` remains: the same image with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture. The gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
+A portal image remains: the same image with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture. The gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
 
 ## 2026-08-06: The qemu overlay had not followed the Category button
 

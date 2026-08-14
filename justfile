@@ -136,7 +136,8 @@ fw-patch:
 fw-unpatch:
     {{ west }} patch -b patches -l patches.yml clean
 
-# Point the Espressif monitor at the ELF used for address decoding.
+# Set the build directory west uses when a command runs without -d. The
+# Espressif monitor reads it to find the ELF for address decoding.
 [private]
 _west-build-dir dir:
     @{{ west }} config build.dir-fmt {{ dir }}
@@ -179,6 +180,26 @@ fw-doctor:
 # Profiles: release, debug, charset, soak, retain, power, portal, corpus, bench,
 # and ota. Bench requires a host. OTA requires one on its first build.
 
+# Map a profile to its build directory. Rejects unknown profiles, so callers
+# can rely on the name having been checked.
+[private]
+_fw-dir profile:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    case "{{ profile }}" in
+        release)
+            echo "build/esp32s3"
+            ;;
+        debug|charset|soak|retain|power|portal|corpus|bench|ota)
+            echo "build/esp32s3-{{ profile }}"
+            ;;
+        *)
+            echo "unknown firmware profile: {{ profile }}" >&2
+            echo "profiles: release debug charset soak retain power portal corpus bench ota" >&2
+            exit 2
+            ;;
+    esac
+
 # build a firmware profile: `just fw-build [profile] [host] [port]`
 [group('firmware')]
 fw-build profile="release" host="" port="8000": _fw-fixtures
@@ -187,7 +208,7 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
 
     profile="{{ profile }}"
     host="{{ host }}"
-    dir="build/esp32s3"
+    dir=$({{ just_executable() }} _fw-dir "$profile")
     sysbuild=false
     cmake=()
 
@@ -196,36 +217,28 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
             sysbuild=true
             ;;
         debug)
-            dir="build/esp32s3-debug"
             cmake+=("-DEXTRA_CONF_FILE=debug.conf" "-DEXTRA_DTC_OVERLAY_FILE=debug.overlay")
             ;;
         charset)
-            dir="build/esp32s3-charset"
             cmake+=("-DCONFIG_TK_DEBUG_CHARSET=y")
             ;;
         soak)
-            dir="build/esp32s3-soak"
             cmake+=("-DEXTRA_CONF_FILE=soak.conf")
             ;;
         retain)
-            dir="build/esp32s3-retain"
             cmake+=("-DEXTRA_CONF_FILE=soak.conf" "-DCONFIG_TK_DEBUG_SOAK_REBOOT=y")
             ;;
         power)
-            dir="build/esp32s3-power"
             sysbuild=true
             cmake+=("-DCONFIG_TK_DEBUG_POWER=y")
             ;;
         portal)
-            dir="build/esp32s3-portal"
             cmake+=("-DCONFIG_TK_DEBUG_PORTAL=y")
             ;;
         corpus)
-            dir="build/esp32s3-corpus"
             cmake+=("-DCONFIG_TK_DEBUG_CORPUS_STORE=y")
             ;;
         bench)
-            dir="build/esp32s3-bench"
             if [ -z "$host" ]; then
                 echo "bench profile requires the server host: just fw-build bench <host>" >&2
                 exit 2
@@ -238,7 +251,6 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
             )
             ;;
         ota)
-            dir="build/esp32s3-ota"
             sysbuild=true
             if [ -z "$host" ]; then
                 if [ ! -d "$dir" ]; then
@@ -257,11 +269,6 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
                 "-DCONFIG_TK_OTA_BASE_URL=\"http://$host:{{ port }}\""
             )
             ;;
-        *)
-            echo "unknown firmware profile: $profile" >&2
-            echo "profiles: release debug charset soak retain power portal corpus bench ota" >&2
-            exit 2
-            ;;
     esac
 
     command=({{ west }} build -b "{{ board }}" firmware/app -d "$dir")
@@ -274,16 +281,7 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
 fw-flash profile="release" host="" port="8000": (fw-build profile host port)
     #!/usr/bin/env bash
     set -euo pipefail
-    case "{{ profile }}" in
-        release) dir="build/esp32s3" ;;
-        debug|charset|soak|retain|power|portal|corpus|bench|ota)
-            dir="build/esp32s3-{{ profile }}"
-            ;;
-        *)
-            echo "unknown firmware profile: {{ profile }}" >&2
-            exit 2
-            ;;
-    esac
+    dir=$({{ just_executable() }} _fw-dir "{{ profile }}")
     {{ west }} flash --no-rebuild -d "$dir" {{ portflag }}
 
 # open Kconfig for the release application (q to quit, s to save)
@@ -325,33 +323,22 @@ fw-ota-serve port="8000":
 fw-monitor profile="release":
     #!/usr/bin/env bash
     set -euo pipefail
-    case "{{ profile }}" in
-        release) dir="build/esp32s3"; monitor_port="{{ monport }}" ;;
-        debug) dir="build/esp32s3-debug"; monitor_port="{{ usbmonport }}" ;;
-        charset|soak|retain|power|portal|corpus|bench|ota)
-            dir="build/esp32s3-{{ profile }}"
-            monitor_port="{{ monport }}"
-            ;;
-        *)
-            echo "unknown firmware profile: {{ profile }}" >&2
-            exit 2
-            ;;
-    esac
-    {{ west }} config build.dir-fmt "$dir"
-    {{ west }} espressif monitor $monitor_port
+    dir=$({{ just_executable() }} _fw-dir "{{ profile }}")
+    {{ just_executable() }} _west-build-dir "$dir"
+    {{ west }} espressif monitor {{ if profile == "debug" { usbmonport } else { monport } }}
+
+[private]
+_fw-debugserver:
+    {{ west }} debugserver --no-rebuild -d build/esp32s3-debug \
+        --config firmware/app/support/esp32s3_builtin_jtag.cfg
 
 # OpenOCD gdb server on :3333 for the devkit (built-in USB-JTAG)
 [group('firmware')]
-fw-debugserver: (fw-build "debug")
-    {{ west }} debugserver --no-rebuild -d build/esp32s3-debug \
-        --config firmware/app/support/esp32s3_builtin_jtag.cfg
+fw-debugserver: (fw-build "debug") _fw-debugserver
 
 # flash the debug image and start its JTAG server
 [group('firmware')]
-fw-debug: (fw-build "debug")
-    {{ west }} flash --no-rebuild -d build/esp32s3-debug {{ portflag }}
-    {{ west }} debugserver --no-rebuild -d build/esp32s3-debug \
-        --config firmware/app/support/esp32s3_builtin_jtag.cfg
+fw-debug: (fw-flash "debug") _fw-debugserver
 
 # run the application on the host under qemu (ctrl-a x to exit)
 [group('firmware')]
