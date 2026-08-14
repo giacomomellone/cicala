@@ -8,6 +8,10 @@ node_modules/
 website/dist/
 website/.astro/
 
+# playwright output (traces and screenshots of failed e2e runs)
+website/test-results/
+website/playwright-report/
+
 # generated data (rebuilt by tools/build_site_data.py in CI)
 website/src/data/*.json
 

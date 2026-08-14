@@ -917,3 +917,37 @@ Accepted cost: the sleep budget stays a target rather than a measurement until r
 An unreachable threshold costs the whole green half of a two-colour palette, to buy precision in a number the decision log already describes as an estimate that runs early by an unknown amount. 4050 instead — about 4090 at the cell, which is a full-enough LiPo for something glanced at across a table, and far enough below the regulation point that divider error and charger tolerance both fit in the gap.
 
 Accepted cost: green arrives earlier than before, on a signal that was never a termination measurement.
+
+## 2026-08-14: The contribution vocabulary lives in the schema, not in three copies
+
+A contributor meets the deck, tag and depth vocabulary in three places: the website form, the GitHub issue form, and the validator. All three had their own copy, and the depth strings had already drifted — the website prefilled `3 — consequential disclosure` where the issue form declares `3 — vulnerability, conflict, fear, loss, or consequential disclosure`. GitHub drops a dropdown prefill it does not recognise, so every depth-3 submission arrived with its required depth field blank and the contributor had to fill it in again on a page they had been told was prefilled.
+
+`questions/schema.json` `x-tischkarte` already held the decks and tags; it now also holds `depthLabels`, the exact option strings of the issue form. `website/src/config.ts` restates them so no page parses the schema at runtime, and two tests hold the copies to the original: a Python one over the issue template, a vitest one over the website constants.
+
+Accepted cost: an option string cannot be reworded in one place any more — the schema and both forms move together, which is the point.
+
+## 2026-08-14: A submission is checked while the issue is open, not at approval
+
+Duplicates, denylist hits and text-rule violations were caught by `validate.py` inside the promotion job, which runs when a maintainer applies `approved`. A rejected submission therefore failed a workflow with no comment anywhere: the issue still looked approved, the contributor was told nothing, and the reason lived in the Actions tab.
+
+`promote_issue.py check` now runs on issue open and on every edit. It parses the form, appends the entry to a temp copy of the database, and runs the real validator over it — the same rules that decide at merge time, rather than a second implementation of them. What it finds goes on the issue as a comment, with a `needs-changes` label that comes off when an edit passes. The promotion job additionally reports its own failures on the issue and removes `approved`, so a failed promotion is visible and retryable.
+
+The website form closes the same loop earlier still: it now holds the active language's corpus and refuses a question the database already has, with a link to the one that exists.
+
+Accepted cost: an editing contributor can generate several comments on one issue, and the check job runs on every edit to a question-submission issue.
+
+## 2026-08-14: Playwright for the website end-to-end suite
+
+First e2e runner in the tree (`website/e2e/`, `just test-e2e`). It drives the real `astro build` output through a real browser, which is what the vitest suites cannot do: the bugs it found on its first run lived between the built HTML and the island scripts, not inside either. Kept out of `just test` because it downloads a ~95 MB browser; CI runs it as its own job in the site workflow.
+
+Chosen over the alternatives on one property: it can assert against the same generated payloads the page fetches, so a test states what the site should do rather than restating what it does.
+
+Accepted cost: one more devDependency and a browser download in CI.
+
+## 2026-08-14: `[hidden]` needs an author-level rule
+
+Every island shows and hides things by setting the `hidden` property. The browser implements that as `display: none` in its own stylesheet, which any class rule in `global.css` outranks — so `.btn`, `.btn-quiet`, `.toolbar-row` and `.field .sub` were each silently defeating it. In practice: the incubator note on the contribute page was permanently visible, "show more" stayed on the browse page with nothing more to show, and a shared read-only deck offered its owner's share, export and import buttons.
+
+One rule at the top of `global.css` — `[hidden] { display: none !important }` — is the standard fix, and `!important` is load-bearing rather than lazy here: the rule has to win against a class regardless of specificity.
+
+Accepted cost: an element that genuinely needs to be laid out while carrying `hidden` would need a different mechanism. Nothing does.

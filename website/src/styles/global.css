@@ -9,6 +9,14 @@
   padding: 0;
 }
 
+/* The `hidden` attribute is how every island shows and hides things. The
+   browser implements it as `display: none` in its own stylesheet, which any
+   class here would outrank, so state the rule at author level and make it win
+   over whatever display the element's class sets. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   background: var(--paper);
   color: var(--ink);

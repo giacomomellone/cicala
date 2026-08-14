@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { DECKS, PLAYBACK_DEPTH_MAX } from "../src/config";
+import { DECKS, DEPTH_OPTIONS, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
+import schema from "../../questions/schema.json";
+
+const cfg = schema["x-tischkarte"];
 
 describe("decks", () => {
   it("keeps the absolute-selector order from questions/schema.json", () => {
@@ -15,5 +18,31 @@ describe("decks", () => {
 
   it("keeps depth 3 outside initial playback", () => {
     expect(PLAYBACK_DEPTH_MAX).toBe(2);
+  });
+});
+
+// The website restates the vocabulary so that no page has to parse the schema
+// at runtime. These pin the copy to the original.
+describe("the schema is the source of truth", () => {
+  it("agrees on the deck order", () => {
+    expect([...DECKS]).toEqual(cfg.decks);
+  });
+
+  it("agrees on the tags", () => {
+    expect([...TAGS]).toEqual(cfg.tags);
+  });
+
+  it("agrees on the playback depth", () => {
+    expect(PLAYBACK_DEPTH_MAX).toBe(cfg.playbackDepthMax);
+  });
+
+  it("agrees on the issue form's depth options", () => {
+    expect([...DEPTH_OPTIONS]).toEqual(cfg.depthLabels);
+  });
+
+  it("has one depth option per allowed depth", () => {
+    expect(DEPTH_OPTIONS).toHaveLength(3);
+    for (const [i, label] of DEPTH_OPTIONS.entries())
+      expect(label.startsWith(String(i + 1))).toBe(true);
   });
 });

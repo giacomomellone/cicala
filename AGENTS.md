@@ -51,12 +51,12 @@ pages say what is true now, and the decision log carries what was tried before.
 
 Write tests alongside the code, in the same change, wherever they add value. The bar is whether a test would catch a real regression: logic with branches, parsing and validation, state transitions, format and protocol code, and any bug you fix all qualify. Skip them for glue that only wires existing pieces together, for generated files, and for anything whose only assertion would restate the implementation.
 
-**End-to-end tests.** Use one when the thing that can break lives between the parts, not inside them: a user flow through the real site (play, browse, contribute), a bundle written by `tools/` and read back by the firmware, sync or OTA over the wire, or a bug that unit tests passed through. Drive the real artifact — the built site, the real YAML database, the actual bundle file — not mocks. Skip e2e for pure logic, single-function behavior, and anything a unit test already pins down; they are slow and they fail for reasons that are not the code. The website has no e2e harness yet, so adding the first one means adding the runner too.
+**End-to-end tests.** Use one when the thing that can break lives between the parts, not inside them: a user flow through the real site (play, browse, contribute), a bundle written by `tools/` and read back by the firmware, sync or OTA over the wire, or a bug that unit tests passed through. Drive the real artifact — the built site, the real YAML database, the actual bundle file — not mocks. Skip e2e for pure logic, single-function behavior, and anything a unit test already pins down; they are slow and they fail for reasons that are not the code.
 
 Each part of the tree has a harness already, so a new test almost never needs new infrastructure:
 
 - `tools/` — Python `unittest`, run by `just test-tools`.
-- `website/` — vitest, run by `just test-website`.
+- `website/` — vitest for units (`just test-website`); Playwright for end-to-end (`just test-e2e`), which builds the site and drives it in a browser. e2e stays out of `just test` because it downloads a browser; CI runs it as its own job.
 - `firmware/` — ztest suites under `firmware/tests/`, run by `just fw-test` (qemu) or `just fw-test-linux` (native_sim, Linux only). Both platforms emulate GPIO: `CONFIG_GPIO_EMUL` follows a `zephyr,gpio-emul` devicetree node, not the host.
 
 `just test` runs everything that needs no hardware, and is what CI runs. Run it before proposing a change.

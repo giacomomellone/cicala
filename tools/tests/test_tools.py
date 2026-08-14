@@ -8,6 +8,7 @@ import gzip
 import hashlib
 import io
 import json
+import os
 import shutil
 import sys
 import tempfile
@@ -22,7 +23,9 @@ sys.path.insert(0, str(TOOLS))
 import build_bundle  # noqa: E402
 import build_firmware_manifest  # noqa: E402
 import build_site_data  # noqa: E402
+import promote_issue  # noqa: E402
 import validate  # noqa: E402
+import yaml  # noqa: E402
 
 
 def run_quiet(main, argv):
@@ -377,3 +380,259 @@ class TestFirmwareManifest(unittest.TestCase):
             )
             self.assertEqual(code, 1)
             self.assertIn("MCUboot header", err)
+
+
+# --------------------------------------------------------- contribution path
+
+ISSUE_TEMPLATE = REPO / ".github" / "ISSUE_TEMPLATE" / "new-question.yml"
+
+
+def issue_form_options():
+    """The options of every dropdown in the new-question issue form, by id."""
+    form = yaml.safe_load(ISSUE_TEMPLATE.read_text(encoding="utf-8"))
+    return {
+        field["id"]: field["attributes"]["options"]
+        for field in form["body"]
+        if field.get("type") == "dropdown"
+    }
+
+
+def schema_config():
+    return json.loads((REPO / "questions" / "schema.json").read_text(encoding="utf-8"))[
+        "x-tischkarte"
+    ]
+
+
+class TestIssueFormVocabulary(unittest.TestCase):
+    """The issue form is the only place a contributor picks these values, and
+    the website prefills it by option string. A value that is not declared
+    here is dropped by GitHub, leaving a required field blank."""
+
+    def setUp(self):
+        self.options = issue_form_options()
+        self.cfg = schema_config()
+
+    def test_deck_options_are_the_schema_decks_in_selector_order(self):
+        self.assertEqual(self.options["decks"], self.cfg["decks"])
+
+    def test_tag_options_are_the_schema_tags(self):
+        self.assertEqual(self.options["tags"], self.cfg["tags"])
+
+    def test_depth_options_are_the_schema_depth_labels(self):
+        self.assertEqual(self.options["depth"], self.cfg["depthLabels"])
+
+    def test_every_shipped_language_can_be_chosen(self):
+        expected = [f"{lang['name']} ({code})" for code, lang in self.cfg["languages"].items()]
+        self.assertEqual(self.options["language"][: len(expected)], expected)
+        self.assertIn("other", self.options["language"][-1])
+
+    def test_each_depth_label_starts_with_its_number(self):
+        for i, label in enumerate(self.cfg["depthLabels"], start=1):
+            self.assertTrue(label.startswith(str(i)), label)
+
+
+def rendered_issue(
+    language="English (en)",
+    decks="new_people, close",
+    depth=None,
+    question="When did you last change your mind about something important?",
+    tags="_No response_",
+    credit="_No response_",
+    cc0="- [X] I dedicate this question to the public domain (CC0-1.0).",
+):
+    """An issue body in the shape GitHub renders an issue form into."""
+    if depth is None:
+        depth = schema_config()["depthLabels"][1]
+    return (
+        f"### Language\n\n{language}\n\n"
+        f"### Decks\n\n{decks}\n\n"
+        f"### Depth\n\n{depth}\n\n"
+        f"### Question\n\n{question}\n\n"
+        f"### Tags (optional)\n\n{tags}\n\n"
+        f"### Name for credit (optional)\n\n{credit}\n\n"
+        f"### Public domain dedication\n\n{cc0}\n"
+    )
+
+
+class PromoteCase(TmpDb):
+    """A temp database plus a way to run promote_issue.py against it."""
+
+    def setUp(self):
+        super().setUp()
+        self.addCleanup(setattr, promote_issue, "ROOT", promote_issue.ROOT)
+        promote_issue.ROOT = self.tmp
+        self.write("questions/en/questions.yaml", "")
+
+    def promote(self, body, mode="apply", issue="7"):
+        env = {"ISSUE_BODY": body, "ISSUE_NUMBER": issue}
+        old = {k: os.environ.get(k) for k in env}
+        os.environ.update(env)
+        os.environ.pop("GITHUB_OUTPUT", None)
+        self.addCleanup(
+            lambda: [
+                os.environ.__setitem__(k, v) if v is not None else os.environ.pop(k, None)
+                for k, v in old.items()
+            ]
+        )
+        argv = sys.argv
+        sys.argv = ["promote_issue.py", mode]
+        try:
+            with redirect_stdout(io.StringIO()) as out, redirect_stderr(io.StringIO()) as err:
+                try:
+                    code = promote_issue.main()
+                except SystemExit as exc:
+                    code = exc.code
+            return code, out.getvalue(), err.getvalue()
+        finally:
+            sys.argv = argv
+
+    def corpus(self):
+        return yaml.safe_load((self.tmp / "questions" / "en" / "questions.yaml").read_text("utf-8"))
+
+
+class TestPromoteIssue(PromoteCase):
+    """promote_issue.py turns an approved issue into a database entry. It runs
+    on untrusted text, so what it accepts and refuses is the gate."""
+
+    def test_an_approved_issue_becomes_an_entry_the_validator_accepts(self):
+        code, _, _ = self.promote(rendered_issue())
+        self.assertEqual(code, 0)
+
+        entry = self.corpus()[0]
+        self.assertEqual(entry["decks"], ["new_people", "close"])
+        self.assertEqual(entry["depth"], 2)
+        self.assertNotIn("id", entry)  # validate.py --fix assigns it
+
+        code, _, err = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
+        self.assertEqual(code, 0, err)
+        code, _, err = run_quiet(validate.main, ["--root", str(self.tmp)])
+        self.assertEqual(code, 0, err)
+        self.assertRegex(self.corpus()[0]["id"], r"^q-[0-9a-f]{8}$")
+
+    def test_every_depth_label_the_form_offers_parses(self):
+        for i, label in enumerate(schema_config()["depthLabels"], start=1):
+            with self.subTest(depth=i):
+                self.write("questions/en/questions.yaml", "")
+                code, _, _ = self.promote(
+                    rendered_issue(depth=label, question=f"Question number {i} here?")
+                )
+                self.assertEqual(code, 0)
+                self.assertEqual(self.corpus()[0]["depth"], i)
+
+    def test_an_unticked_cc0_box_is_refused(self):
+        code, _, err = self.promote(rendered_issue(cc0="- [ ] I dedicate this…"))
+        self.assertEqual(code, 1)
+        self.assertIn("CC0", err)
+        self.assertEqual(self.corpus(), None)
+
+    def test_dark_questions_outside_wild_are_refused(self):
+        code, _, err = self.promote(rendered_issue(decks="new_people, close", tags="dark"))
+        self.assertEqual(code, 1)
+        self.assertIn("wild", err)
+
+    def test_a_new_language_exits_for_the_incubator_explainer(self):
+        code, _, _ = self.promote(rendered_issue(language="other / new language"))
+        self.assertEqual(code, 78)
+
+    def test_an_unshipped_language_is_refused_rather_than_creating_a_directory(self):
+        code, _, err = self.promote(rendered_issue(language="Français (fr)"))
+        self.assertEqual(code, 1)
+        self.assertIn("not a shipped language", err)
+        self.assertFalse((self.tmp / "questions" / "fr").exists())
+
+    def test_quotes_and_backslashes_survive_into_valid_yaml(self):
+        text = 'What did you mean by \\"really\\", exactly?'
+        code, _, _ = self.promote(rendered_issue(question=text))
+        self.assertEqual(code, 0)
+        self.assertEqual(self.corpus()[0]["text"], text)
+
+    def test_a_credit_is_kept_and_capped(self):
+        code, _, _ = self.promote(rendered_issue(credit="A" * 60))
+        self.assertEqual(code, 0)
+        self.assertEqual(self.corpus()[0]["author"], "A" * 40)
+
+    def test_unknown_tags_are_dropped_rather_than_written(self):
+        code, _, _ = self.promote(rendered_issue(tags="memory, sneaky-injected-tag"))
+        self.assertEqual(code, 0)
+        self.assertEqual(self.corpus()[0]["tags"], ["memory"])
+
+    def test_parse_mode_reads_the_issue_without_touching_the_database(self):
+        code, out, _ = self.promote(rendered_issue(), mode="parse")
+        self.assertEqual(code, 0)
+        self.assertIn("lang: en", out)
+        self.assertEqual(self.corpus(), None)
+
+
+class TestCheckSubmission(PromoteCase):
+    """`check` mode answers the submitter while the issue is still open, using
+    the same validator that decides at merge time. It writes nothing."""
+
+    def test_a_good_submission_passes_and_writes_nothing(self):
+        code, out, _ = self.promote(rendered_issue(), mode="check")
+        self.assertEqual(code, 0)
+        self.assertIn("passes every automatic check", out)
+        self.assertEqual(self.corpus(), None)
+
+    def test_a_duplicate_is_caught_before_a_maintainer_reads_it(self):
+        existing = "What did you last change your mind about, and why?"
+        self.write(
+            "questions/en/questions.yaml",
+            self.question(existing) + '  id: q-abcdef01\n  added: "2026-01-01"\n',
+        )
+        code, _, err = self.promote(rendered_issue(question=existing), mode="check")
+        self.assertEqual(code, 1)
+        self.assertIn("duplicate", err)
+        self.assertNotIn(str(self.tmp), err)  # no temp path leaks into the reply
+
+    def test_a_denylisted_word_is_caught(self):
+        code, _, err = self.promote(
+            rendered_issue(question="What is the worst badword you ever heard?"),
+            mode="check",
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("denylist", err)
+
+    def test_a_too_long_question_is_caught(self):
+        code, _, err = self.promote(rendered_issue(question="W" * 200 + "?"), mode="check")
+        self.assertEqual(code, 1)
+        self.assertIn("too long", err)
+
+    def test_a_missing_question_mark_is_caught(self):
+        code, _, err = self.promote(
+            rendered_issue(question="Tell me about your best day ever."),
+            mode="check",
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("must end with", err)
+
+    def test_the_reply_says_each_thing_once_and_nothing_about_ids(self):
+        """The comment goes to a contributor, so it carries their problems and
+        not the validator's bookkeeping."""
+        code, _, err = self.promote(
+            rendered_issue(question="Tell me about your best day ever."),
+            mode="check",
+        )
+        self.assertEqual(code, 1)
+        lines = [line for line in err.splitlines() if line.startswith("error: ")]
+        self.assertEqual(len(lines), 1, lines)
+        self.assertNotIn("required property", err)
+        self.assertNotIn("--fix", err)
+
+    def test_an_unshipped_language_is_reported_rather_than_crashing(self):
+        code, _, err = self.promote(rendered_issue(language="Français (fr)"), mode="check")
+        self.assertEqual(code, 1)
+        self.assertIn("not a shipped language", err)
+
+    def test_the_check_runs_against_the_real_database_without_touching_it(self):
+        before = (REPO / "questions" / "en" / "questions.yaml").read_bytes()
+        promote_issue.ROOT = REPO
+        try:
+            code, out, err = self.promote(
+                rendered_issue(question="Which unremarkable Tuesday would you happily live again?"),
+                mode="check",
+            )
+        finally:
+            promote_issue.ROOT = self.tmp
+        self.assertEqual(code, 0, err)
+        self.assertIn("passes every automatic check", out)
+        self.assertEqual((REPO / "questions" / "en" / "questions.yaml").read_bytes(), before)

@@ -1,7 +1,12 @@
 // The contribute form's pre-validation must mirror tools/validate.py —
 // these cases are the same ones tools/tests/test_tools.py checks in Python.
 import { describe, expect, it } from "vitest";
-import { questionTextIssue } from "../src/lib/rules";
+import {
+  buildTextIndex,
+  collapse,
+  duplicateOf,
+  questionTextIssue,
+} from "../src/lib/rules";
 
 describe("questionTextIssue", () => {
   it("accepts a plain valid question", () => {
@@ -19,8 +24,10 @@ describe("questionTextIssue", () => {
     expect(questionTextIssue("Tell me about your best day ever.")).toBe("mark");
   });
 
-  it("rejects multi-line text", () => {
-    expect(questionTextIssue("What matters\nmost to you today?")).toBe("mark");
+  it("rejects multi-line text, and says so rather than blaming the ?", () => {
+    expect(questionTextIssue("What matters\nmost to you today?")).toBe(
+      "multiline",
+    );
   });
 
   it("rejects too-short and too-long text", () => {
@@ -35,5 +42,50 @@ describe("questionTextIssue", () => {
     const q140 = "W".repeat(139) + "?";
     expect(q140.length).toBe(140);
     expect(questionTextIssue(q140)).toBeNull();
+  });
+
+  // The rules run on the text as stored, which is what promote_issue.py
+  // writes: whitespace collapsed, ends trimmed.
+  it("measures the stored text, not the padding around it", () => {
+    const q140 = "W".repeat(139) + "?";
+    expect(questionTextIssue(`   ${q140}   `)).toBeNull();
+    expect(questionTextIssue("  Why is it?  ")).toBeNull();
+    expect(questionTextIssue("What  did   you  learn today?")).toBeNull();
+  });
+});
+
+describe("collapse", () => {
+  it("matches what the database stores", () => {
+    expect(collapse("  What   did\n you  learn today?  ")).toBe(
+      "What did you learn today?",
+    );
+  });
+});
+
+describe("duplicateOf", () => {
+  const index = buildTextIndex([
+    { id: "q-11111111", text: "What did you learn today?" },
+    { id: "q-22222222", text: "Wofür bist du heute dankbar?" },
+  ]);
+
+  it("finds an exact match", () => {
+    expect(duplicateOf("What did you learn today?", index)).toBe("q-11111111");
+  });
+
+  it("ignores case, padding and repeated spaces, like validate.py", () => {
+    expect(duplicateOf("  WHAT   did you LEARN today?  ", index)).toBe(
+      "q-11111111",
+    );
+  });
+
+  it("compares composed and decomposed accents as equal", () => {
+    const decomposed = "Wofür bist du heute dankbar?".normalize("NFD");
+    expect(decomposed).not.toBe("Wofür bist du heute dankbar?");
+    expect(duplicateOf(decomposed, index)).toBe("q-22222222");
+  });
+
+  it("returns null for a question the database does not have", () => {
+    expect(duplicateOf("Which unremarkable Tuesday would you relive?", index))
+      .toBeNull();
   });
 });

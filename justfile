@@ -529,6 +529,12 @@ test-tools:
 test-website:
     cd website && npm test
 
+# website end-to-end suite: builds the site and drives it in a real browser
+[group('tests')]
+test-e2e *args: data
+    cd website && npx playwright install --with-deps chromium
+    cd website && npx playwright test {{ args }}
+
 # copy the real question bundles into firmware/tests/fixtures/
 [group('tests')]
 fw-fixtures: bundle

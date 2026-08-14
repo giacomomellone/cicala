@@ -62,10 +62,15 @@
     }
   },
   "x-tischkarte": {
-    "description": "Project config consumed by the validation and build tools. Not part of the JSON Schema vocabulary.",
+    "description": "Project config consumed by the validation and build tools, and by the two places a contributor meets this vocabulary: the website form and the GitHub issue form. `depthLabels` are the exact option strings of the issue form's depth dropdown, indexed by depth minus one — GitHub drops a prefilled dropdown value that is not one of the declared options, so the strings have to agree character for character. Not part of the JSON Schema vocabulary.",
     "questionFile": "questions.yaml",
     "decks": ["new_people", "close", "family", "work", "here", "wild"],
     "playbackDepthMax": 2,
+    "depthLabels": [
+      "1 — little public exposure",
+      "2 — a personal construction",
+      "3 — vulnerability, conflict, fear, loss, or consequential disclosure"
+    ],
     "tags": ["icebreaker", "reflective", "spicy", "dark", "hypothetical", "memory", "wouldyourather"],
     "keyOrder": ["id", "text", "decks", "depth", "tags", "origin", "author", "added"],
     "defaultTerminators": ["?"],

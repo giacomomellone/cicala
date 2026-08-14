@@ -20,6 +20,7 @@ nav:
   - firmware architecture: firmware_architecture.md
   - patching zephyr: firmware_patches.md
   - decisions: decisions.md
+  - contribution pipeline: contribution_pipeline.md
   - languages: languages.md
   - sync protocol: sync_protocol.md
   - firmware updates: firmware_update.md

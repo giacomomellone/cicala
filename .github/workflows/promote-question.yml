@@ -2,7 +2,7 @@ name: promote-question
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, edited, labeled]
 
 permissions:
   contents: write
@@ -43,6 +43,88 @@ jobs:
           gh issue comment "${{ github.event.issue.number }}" --body \
             "Thanks! New languages start in the incubator rather than as direct submissions — see [docs/languages.md](../blob/main/docs/languages.md) for how a language graduates (≥150 native questions, a fluent maintainer, a style guide and a denylist). Open an issue titled \`lang: <code>\` if you want to start one — we'd love that."
 
+  # On open and on every edit: run the submission through the same validator
+  # that decides at merge time, and say so on the issue. Without this the
+  # submitter learns about a duplicate or a denylisted word only when a
+  # maintainer approves it and the promotion fails, hours or days later.
+  check:
+    if: >
+      (github.event.action == 'opened' || github.event.action == 'edited') &&
+      contains(github.event.issue.labels.*.name, 'question-submission')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml jsonschema
+      - name: Check the submission
+        id: check
+        continue-on-error: true
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -o pipefail
+          python tools/promote_issue.py check 2>&1 | tee check-output.txt
+      - name: Say what is wrong, or that nothing is
+        uses: actions/github-script@v7
+        env:
+          PASSED: ${{ steps.check.outcome == 'success' }}
+          FIRST_LOOK: ${{ github.event.action == 'opened' }}
+        with:
+          script: |
+            const fs = require('fs');
+            const passed = process.env.PASSED === 'true';
+            const firstLook = process.env.FIRST_LOOK === 'true';
+
+            // A passing edit needs no comment — the label coming off says it.
+            if (passed && !firstLook) {
+              try {
+                await github.rest.issues.removeLabel({
+                  ...context.repo,
+                  issue_number: context.issue.number,
+                  name: 'needs-changes',
+                });
+              } catch { /* the label was not on the issue */ }
+              return;
+            }
+
+            let output = '';
+            try { output = fs.readFileSync('check-output.txt', 'utf8'); } catch {}
+            const body = passed
+              ? [
+                  'Thanks! This passes every automatic check — the text rules, the',
+                  'deck and tone rules, the per-language denylist, and a check that',
+                  'the question is not already in the database.',
+                  '',
+                  'A maintainer who speaks your language reviews it from here.',
+                ].join('\n')
+              : [
+                  '**This submission cannot be merged as written.**',
+                  '',
+                  '```',
+                  output.slice(-4000) || '(no output captured — see the workflow log)',
+                  '```',
+                  'Edit the issue above and the check runs again. The rules are in',
+                  '[CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) and in your',
+                  "language's style guide.",
+                ].join('\n');
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+            if (!passed) {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: context.issue.number,
+                labels: ['needs-changes'],
+              });
+            }
+
   # On approval: parse the issue, append the entry, run validate --fix, open a
   # PR that requests review from the language's CODEOWNERS and closes the issue
   # on merge.
@@ -63,11 +145,16 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
-        run: python tools/promote_issue.py apply
+        run: |
+          set -o pipefail
+          python tools/promote_issue.py apply 2>&1 | tee promote-output.txt
       - name: Assign id and validate
         run: |
-          python tools/validate.py --fix
-          python tools/validate.py
+          set -o pipefail
+          {
+            python tools/validate.py --fix
+            python tools/validate.py
+          } 2>&1 | tee -a promote-output.txt
       - name: Open the pull request
         env:
           GH_TOKEN: ${{ github.token }}
@@ -90,4 +177,37 @@ jobs:
             "Automated promotion of an approved question submission. Review per questions/${PR_LANG}/STYLE.md, then merge." \
             "$ISSUE_NUMBER")
           gh pr create --title "$PR_TITLE" --body "$body" \
-            --label "question-submission" || echo "PR may already exist"
+            --label "question-submission"
+
+      # A promotion that dies leaves the issue looking approved and nothing
+      # else, so the next person to notice is whoever eventually checks the
+      # Actions tab. Put the reason on the issue and take the label back off,
+      # which is also what makes a second attempt possible.
+      - name: Report a failed promotion on the issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = '';
+            try { output = fs.readFileSync('promote-output.txt', 'utf8'); } catch {}
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number: context.issue.number,
+              body: [
+                '**Promotion failed, so nothing was merged.**',
+                '',
+                '```',
+                output.slice(-4000) || '(no output captured — see the workflow log)',
+                '```',
+                'The `approved` label has been removed. Fix the issue body and',
+                're-approve to try again.',
+              ].join('\n'),
+            });
+            try {
+              await github.rest.issues.removeLabel({
+                ...context.repo,
+                issue_number: context.issue.number,
+                name: 'approved',
+              });
+            } catch { /* already removed */ }
