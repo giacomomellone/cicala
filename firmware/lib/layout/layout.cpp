@@ -14,7 +14,12 @@ bool has_glyph(uint32_t cp)
 
 bool is_space(char c)
 {
-    return c == ' ' || c == '\t' || c == '\n';
+    return c == ' ' || c == '\t';
+}
+
+bool is_line_break(char c)
+{
+    return c == '\n';
 }
 
 struct Decomposition {
@@ -245,7 +250,14 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
         pos += used;
 
         Glyph decomposed[2];
-        uint8_t n = decompose(cp, decomposed);
+        uint8_t n;
+
+        if (cp == '\n') {
+            decomposed[0] = {'\n', Mark::NONE};
+            n = 1;
+        } else {
+            n = decompose(cp, decomposed);
+        }
 
         if (n == 0) {
             // Keep unsupported input visible in the rendered text.
@@ -270,6 +282,11 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
             at++;
         }
 
+        if (at < glyphs && is_line_break(out[at].base)) {
+            at++;
+            continue;
+        }
+
         if (at >= glyphs) {
             break;
         }
@@ -284,10 +301,11 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
         line.offset = at;
         line.cells = 0;
 
-        while (at < glyphs) {
+        while (at < glyphs && !is_line_break(out[at].base)) {
             uint16_t word_end = at;
 
-            while (word_end < glyphs && !is_space(out[word_end].base)) {
+            while (word_end < glyphs && !is_space(out[word_end].base) &&
+                   !is_line_break(out[word_end].base)) {
                 word_end++;
             }
 
@@ -300,6 +318,11 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
 
                 if (at < glyphs && out[at].base == ' ') {
                     at++;
+                }
+
+                if (at < glyphs && is_line_break(out[at].base)) {
+                    at++;
+                    break;
                 }
 
                 continue;

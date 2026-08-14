@@ -6,11 +6,13 @@
 
 #include <string.h>
 
+#include <app_version.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/zbus/zbus.h>
 
 #include "app_logic.h"
 #include "channels.h"
+#include "language.h"
 #include "portal.h"
 #include "portal_dns.hpp"
 #include "portal_form.hpp"
@@ -44,7 +46,7 @@ public:
 
         switch (card) {
         case tk::PortalCard::SETUP:
-            /* The setup card includes the access-point name. */
+            /* The setup card includes the access-point name and session password. */
             write_setup(msg);
             break;
 
@@ -77,10 +79,13 @@ private:
     static void write_setup(struct tk_service_msg &msg)
     {
         const char *const prefix = "Setup: join ";
-        const char *const middle = " then open 192.168.4.1";
+        const char *const middle = "\npass ";
+        const char *const suffix = "\nthen open 192.168.4.1";
         const char *const ssid = tk_portal_ap_ssid();
+        const char *const password = tk_portal_ap_password();
 
-        const size_t n = strlen(prefix) + strlen(ssid) + strlen(middle);
+        const size_t n = strlen(prefix) + strlen(ssid) + strlen(middle) + strlen(password) +
+                         strlen(suffix);
 
         if (n >= sizeof(msg.text)) {
             /* Fall back to the SSID if the full instruction does not fit. */
@@ -97,6 +102,8 @@ private:
         at = stpcpy_bounded(at, prefix);
         at = stpcpy_bounded(at, ssid);
         at = stpcpy_bounded(at, middle);
+        at = stpcpy_bounded(at, password);
+        at = stpcpy_bounded(at, suffix);
 
         msg.len = static_cast<uint16_t>(at - msg.text);
     }
@@ -200,8 +207,19 @@ int tk_page_saved(char *out, size_t out_size, const char *ssid)
     return tk::page_saved(out, static_cast<uint16_t>(out_size), ssid);
 }
 
+int tk_page_notice(char *out, size_t out_size, const char *heading, const char *body)
+{
+    return tk::page_notice(out, static_cast<uint16_t>(out_size), heading, body);
+}
+
+int tk_page_forget_confirm(char *out, size_t out_size)
+{
+    return tk::page_forget_confirm(out, static_cast<uint16_t>(out_size));
+}
+
 int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *saved_ssid,
-                   bool connected, const char *station_ip)
+                   bool connected, const char *station_ip, const char *connection_error,
+                   const char *sync_result, uint32_t window_remaining_s)
 {
     tk::PortalStatus status = {};
 
@@ -211,14 +229,17 @@ int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *
     tk_app_corpus(corpus_version, sizeof(corpus_version), &corpus_count);
 
     status.ap_ssid = ap_ssid;
-    /* The status page currently identifies the board, not a firmware version. */
     status.board = CONFIG_BOARD_TARGET;
-    status.corpus_language = CONFIG_TK_CORPUS_LANGUAGE;
+    status.firmware_version = APP_VERSION_STRING;
+    status.corpus_language = tk_language();
     status.corpus_version = corpus_version;
     status.corpus_count = corpus_count;
     status.saved_ssid = saved_ssid;
     status.station_connected = connected;
     status.station_ip = station_ip;
+    status.connection_error = connection_error;
+    status.sync_result = sync_result;
+    status.window_remaining_s = window_remaining_s;
 
     return tk::page_status(out, static_cast<uint16_t>(out_size), status);
 }

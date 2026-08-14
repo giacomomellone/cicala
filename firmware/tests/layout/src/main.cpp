@@ -1,6 +1,8 @@
 
 #include <zephyr/ztest.h>
 
+#include <string.h>
+
 #include "layout.hpp"
 #include "qdb.hpp"
 
@@ -163,6 +165,17 @@ ZTEST(tk_layout, test_wrapping_breaks_on_spaces_and_drops_them)
     zassert_equal(layout.count, 2);
     zassert_true(line_reads(layout, 0, "one two"), "no trailing space on a wrapped line");
     zassert_true(line_reads(layout, 1, "three four"));
+}
+
+ZTEST(tk_layout, test_explicit_line_breaks_start_new_lines)
+{
+    const char *text = "join network\npass secret\nthen open";
+
+    zassert_true(wrap(text, strlen(text), 20, glyphs, kMaxGlyphs, layout));
+    zassert_equal(layout.count, 3);
+    zassert_true(line_reads(layout, 0, "join network"));
+    zassert_true(line_reads(layout, 1, "pass secret"));
+    zassert_true(line_reads(layout, 2, "then open"));
 }
 
 ZTEST(tk_layout, test_a_word_longer_than_the_line_is_broken)

@@ -270,14 +270,8 @@ ZTEST(tk_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothing)
 ZTEST(tk_portal, test_page_status_never_shows_the_saved_password)
 {
     const PortalStatus status = {
-        .ap_ssid = "Tischkarte-A1B2",
-        .board = "esp32s3_devkitc",
-        .corpus_language = "en",
-        .corpus_version = "2026.07.2",
-        .corpus_count = 240,
-        .saved_ssid = "Cafe Krone",
-        .station_connected = true,
-        .station_ip = "192.168.1.44",
+        "Tischkarte-A1B2", "esp32s3_devkitc", "en", "2026.07.2", 240, "0.1.0",
+        "Cafe Krone", true, "192.168.1.44", "", "Questions are up to date.", 287,
     };
 
     zassert_true(page_status(page, sizeof(page), status) > 0);
@@ -286,27 +280,38 @@ ZTEST(tk_portal, test_page_status_never_shows_the_saved_password)
     zassert_true(contains(page, "esp32s3_devkitc"));
     zassert_true(contains(page, "240 in en"));
     zassert_true(contains(page, "2026.07.2"));
+    zassert_true(contains(page, "0.1.0"));
     zassert_true(contains(page, "Cafe Krone"));
-    zassert_true(contains(page, "connected"));
+    zassert_true(contains(page, "Connected"));
     zassert_true(contains(page, "192.168.1.44"));
+    zassert_true(contains(page, "287 seconds left"));
+    zassert_true(contains(page, "Questions are up to date."));
 }
 
 ZTEST(tk_portal, test_page_status_reports_an_unconfigured_device)
 {
     const PortalStatus status = {
-        .ap_ssid = "Tischkarte-A1B2",
-        .board = "esp32s3_devkitc",
-        .corpus_language = "en",
-        .corpus_version = "2026.07.2",
-        .corpus_count = 240,
-        .saved_ssid = nullptr,
-        .station_connected = false,
-        .station_ip = "",
+        "Tischkarte-A1B2", "esp32s3_devkitc", "en", "2026.07.2", 240, "0.1.0", nullptr,
+        false, "", "Wi-Fi error -5", "", 12,
     };
 
     zassert_true(page_status(page, sizeof(page), status) > 0);
     zassert_true(contains(page, "none"), "no saved network says so plainly");
-    zassert_true(contains(page, "not connected"));
+    zassert_true(contains(page, "Offline"));
+    zassert_true(contains(page, "Wi-Fi error -5"));
+}
+
+ZTEST(tk_portal, test_page_notice_escapes_its_message)
+{
+    zassert_true(page_notice(page, sizeof(page), "Done", "Use <network> & save") > 0);
+    zassert_true(contains(page, "Use &lt;network&gt; &amp; save"));
+}
+
+ZTEST(tk_portal, test_page_forget_requires_confirmation)
+{
+    zassert_true(page_forget_confirm(page, sizeof(page)) > 0);
+    zassert_true(contains(page, "Confirm and forget Wi-Fi"));
+    zassert_true(contains(page, "Your questions and language stay intact."));
 }
 
 ZTEST(tk_portal, test_page_reports_a_buffer_too_small_rather_than_writing_past_it)

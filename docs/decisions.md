@@ -951,3 +951,10 @@ Every island shows and hides things by setting the `hidden` property. The browse
 One rule at the top of `global.css` — `[hidden] { display: none !important }` — is the standard fix, and `!important` is load-bearing rather than lazy here: the rule has to win against a class regardless of specificity.
 
 Accepted cost: an element that genuinely needs to be laid out while carrying `hidden` would need a different mechanism. Nothing does.
+
+## 2026-08-15: The setup access point uses a session password
+
+The setup access point now uses WPA2-PSK. Each portal session gets a fresh
+password made from three lowercase words and a digit using the device random
+source. It remains in RAM, appears on the e-paper service card, and is not
+shown by the web status page. The password is cleared when the portal closes.

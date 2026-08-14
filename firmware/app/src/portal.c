@@ -16,6 +16,7 @@
 #include <zephyr/net/socket.h>
 #include <zephyr/net/wifi_credentials.h>
 #include <zephyr/net/wifi_mgmt.h>
+#include <zephyr/random/random.h>
 
 #include <zephyr/zbus/zbus.h>
 
@@ -39,6 +40,8 @@ LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
 #define DNS_PORT 53
 #define HTTP_PORT 80
 
+#define AP_PASSWORD_MAX 32
+
 /* One page, built in full before any of it is sent. */
 #define PAGE_BUF_SIZE 4096
 
@@ -49,6 +52,18 @@ static struct net_if *ap_iface;
 static struct net_if *sta_iface;
 
 static char ap_ssid[TK_SSID_MAX];
+static char ap_password[AP_PASSWORD_MAX];
+
+static const char *const ap_password_words[] = {
+    "apple",  "beacon", "birch",  "blue",   "cabin",  "cactus", "cedar", "cloud",
+    "comet",  "copper", "dawn",   "delta",  "dove",   "ember",  "fern",   "flame",
+    "forest", "frost",  "glade",  "gold",   "harbor", "hazel",  "honey", "island",
+    "jade",   "juniper", "kite",  "lilac",  "maple",  "meadow", "mint",  "moon",
+    "moss",    "north",  "ocean",  "olive",  "orbit",  "pebble", "pine",  "plum",
+    "pond",    "quartz", "rain",   "raven",  "river",  "robin",  "rose",  "sage",
+    "sand",    "shore",  "silver", "sky",    "spruce", "stone",  "sun",   "swift",
+    "thistle", "tulip",  "valley", "violet", "wave",   "willow", "winter", "wren",
+};
 
 /* The scan list, written by the net_mgmt callback and read by the HTTP server thread. */
 static struct tk_scan_entry scan_results[CONFIG_TK_NET_SCAN_MAX];
@@ -59,6 +74,10 @@ static K_MUTEX_DEFINE(scan_lock);
 static char pending_ssid[TK_SSID_MAX];
 static bool station_connected;
 static char station_ip[NET_IPV4_ADDR_LEN];
+static char connection_error[48];
+static char sync_result[80];
+static int64_t portal_started_ms;
+static K_MUTEX_DEFINE(portal_state_lock);
 
 static bool serving;
 static int dns_sock = -1;
@@ -105,6 +124,35 @@ const char *tk_portal_ap_ssid(void)
     return ap_ssid;
 }
 
+const char *tk_portal_ap_password(void)
+{
+    return ap_password;
+}
+
+static bool generate_ap_password(void)
+{
+    uint32_t random[4];
+
+    if (sys_csrand_get(random, sizeof(random)) != 0) {
+        LOG_ERR("could not obtain random bytes for the setup password");
+        return false;
+    }
+
+    const int n = snprintf(ap_password, sizeof(ap_password), "%s-%s-%s-%u",
+                           ap_password_words[random[0] % ARRAY_SIZE(ap_password_words)],
+                           ap_password_words[random[1] % ARRAY_SIZE(ap_password_words)],
+                           ap_password_words[random[2] % ARRAY_SIZE(ap_password_words)],
+                           (unsigned int) (random[3] % 10));
+
+    if (n <= 0 || (size_t) n >= sizeof(ap_password)) {
+        ap_password[0] = '\0';
+        LOG_ERR("generated setup password did not fit");
+        return false;
+    }
+
+    return true;
+}
+
 bool tk_portal_station_connected(void)
 {
     return station_connected;
@@ -133,6 +181,82 @@ void tk_portal_set_station_connected(bool connected)
             break;
         }
     }
+}
+
+void tk_portal_set_connection_error(int error)
+{
+    k_mutex_lock(&portal_state_lock, K_FOREVER);
+    (void) snprintf(connection_error, sizeof(connection_error), "Wi-Fi error %d", error);
+    k_mutex_unlock(&portal_state_lock);
+}
+
+void tk_portal_clear_connection_error(void)
+{
+    k_mutex_lock(&portal_state_lock, K_FOREVER);
+    connection_error[0] = '\0';
+    k_mutex_unlock(&portal_state_lock);
+}
+
+void tk_portal_copy_connection_error(char *out, size_t out_size)
+{
+    if (out == NULL || out_size == 0) {
+        return;
+    }
+
+    k_mutex_lock(&portal_state_lock, K_FOREVER);
+    (void) strncpy(out, connection_error, out_size - 1);
+    out[out_size - 1] = '\0';
+    k_mutex_unlock(&portal_state_lock);
+}
+
+void tk_portal_set_sync_result(const char *result)
+{
+    k_mutex_lock(&portal_state_lock, K_FOREVER);
+    (void) strncpy(sync_result, result != NULL ? result : "", sizeof(sync_result) - 1);
+    sync_result[sizeof(sync_result) - 1] = '\0';
+    k_mutex_unlock(&portal_state_lock);
+}
+
+void tk_portal_copy_sync_result(char *out, size_t out_size)
+{
+    if (out == NULL || out_size == 0) {
+        return;
+    }
+
+    k_mutex_lock(&portal_state_lock, K_FOREVER);
+    (void) strncpy(out, sync_result, out_size - 1);
+    out[out_size - 1] = '\0';
+    k_mutex_unlock(&portal_state_lock);
+}
+
+uint32_t tk_portal_window_remaining_s(void)
+{
+    if (!serving || portal_started_ms == 0) {
+        return 0;
+    }
+
+    const int64_t remaining = CONFIG_TK_PORTAL_WINDOW_MS - (k_uptime_get() - portal_started_ms);
+
+    return remaining > 0 ? (uint32_t) ((remaining + 999) / 1000) : 0;
+}
+
+int tk_portal_forget_credentials(void)
+{
+    const int err = wifi_credentials_delete_all();
+
+    if (err != 0) {
+        return err;
+    }
+
+    if (sta_iface != NULL) {
+        (void) net_mgmt(NET_REQUEST_WIFI_DISCONNECT, sta_iface, NULL, 0);
+    }
+
+    pending_ssid[0] = '\0';
+    tk_portal_set_station_connected(false);
+    tk_portal_clear_connection_error();
+
+    return 0;
 }
 
 /* ------------------------------------------------------------------- scan */
@@ -205,15 +329,18 @@ bool tk_portal_scan_start(void)
 
 bool tk_portal_ap_start(void)
 {
+    if (!generate_ap_password()) {
+        return false;
+    }
+
     struct wifi_connect_req_params config = {
         .ssid = (const uint8_t *) ap_ssid,
         .ssid_length = strlen(ap_ssid),
-        .psk = NULL,
-        .psk_length = 0,
+        .psk = (const uint8_t *) ap_password,
+        .psk_length = strlen(ap_password),
         .channel = WIFI_CHANNEL_ANY,
         .band = WIFI_FREQ_BAND_2_4_GHZ,
-        /* The setup access point is open. */
-        .security = WIFI_SECURITY_TYPE_NONE,
+        .security = WIFI_SECURITY_TYPE_PSK,
     };
 
     if (ap_iface == NULL) {
@@ -370,6 +497,7 @@ bool tk_portal_serve_start(void)
     }
 
     serving = true;
+    portal_started_ms = k_uptime_get();
 
     LOG_INF("portal serving on http://%s", AP_ADDR);
 
@@ -393,6 +521,7 @@ void tk_portal_teardown(void)
         }
 
         serving = false;
+        portal_started_ms = 0;
     }
 
     if (ap_iface != NULL) {
@@ -401,6 +530,8 @@ void tk_portal_teardown(void)
         (void) net_addr_pton(NET_AF_INET, AP_ADDR, &addr);
         (void) net_if_ipv4_addr_rm(ap_iface, &addr);
     }
+
+    memset(ap_password, 0, sizeof(ap_password));
 
     LOG_INF("portal down");
 }
@@ -544,6 +675,27 @@ static int setup_handler(struct http_client_ctx *client, enum http_transaction_s
     return send_page("/", n, response);
 }
 
+static int rescan_handler(struct http_client_ctx *client, enum http_transaction_status status,
+                          const struct http_request_ctx *request,
+                          struct http_response_ctx *response, void *user_data)
+{
+    ARG_UNUSED(client);
+    ARG_UNUSED(request);
+    ARG_UNUSED(user_data);
+
+    if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+        return 0;
+    }
+
+    const bool started = tk_portal_scan_start();
+    const int n = tk_page_notice(
+        (char *) page_buf, sizeof(page_buf), started ? "Scanning" : "Scan unavailable",
+        started ? "The network list is refreshing. Return to setup in a few seconds."
+                : "The radio could not start a scan. You can still type a network name.");
+
+    return send_page("/scan", n, response);
+}
+
 static int status_handler(struct http_client_ctx *client, enum http_transaction_status status,
                           const struct http_request_ctx *request,
                           struct http_response_ctx *response, void *user_data)
@@ -556,9 +708,16 @@ static int status_handler(struct http_client_ctx *client, enum http_transaction_
         return 0;
     }
 
-    const int n = tk_page_status((char *) page_buf, sizeof(page_buf), ap_ssid,
-                                 pending_ssid[0] != '\0' ? pending_ssid : NULL, station_connected,
-                                 station_ip);
+    char last_error[48] = {};
+    char last_sync[80] = {};
+
+    tk_portal_copy_connection_error(last_error, sizeof(last_error));
+    tk_portal_copy_sync_result(last_sync, sizeof(last_sync));
+
+    const int n = tk_page_status(
+        (char *) page_buf, sizeof(page_buf), ap_ssid,
+        pending_ssid[0] != '\0' ? pending_ssid : NULL, station_connected, station_ip, last_error,
+        last_sync, tk_portal_window_remaining_s());
 
     return send_page("/status", n, response);
 }
@@ -595,32 +754,19 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
         return 0;
     }
 
-    char lang[TK_LANGUAGE_LEN] = {0};
-
     const int ssid_len = tk_form_field(form_body, (uint16_t) form_len, "ssid", ssid, sizeof(ssid));
     const int psk_len = tk_form_field(form_body, (uint16_t) form_len, "psk", psk, sizeof(psk));
-    const int lang_len = tk_form_field(form_body, (uint16_t) form_len, "lang", lang, sizeof(lang));
 
     form_len = 0;
 
-    /* The language is applied on its own. */
-    if (lang_len > 0 && strcmp(lang, tk_language()) != 0) {
-        if (tk_language_set(lang) == 0) {
-            const struct tk_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
-
-            /* `app` reopens the store. */
-            (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
-        }
-    }
-
-    /* Allow language-only changes without network credentials. */
     if (ssid_len <= 0) {
-        LOG_INF("no network name in the form; language only");
-
-        const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+        const int n = tk_page_notice((char *) page_buf, sizeof(page_buf), "No network selected",
+                                     "Choose a network or type its name, then save it.");
 
         return send_page("/save", n, response);
     }
+
+    tk_portal_clear_connection_error();
 
     const enum wifi_security_type type =
         psk_len > 0 ? WIFI_SECURITY_TYPE_PSK : WIFI_SECURITY_TYPE_NONE;
@@ -646,7 +792,99 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
     return send_page("/save", n, response);
 }
 
-/* "Check for new questions". */
+static int language_handler(struct http_client_ctx *client, enum http_transaction_status status,
+                            const struct http_request_ctx *request,
+                            struct http_response_ctx *response, void *user_data)
+{
+    ARG_UNUSED(client);
+    ARG_UNUSED(user_data);
+
+    if (status == HTTP_SERVER_TRANSACTION_ABORTED || status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+        form_len = 0;
+        return 0;
+    }
+
+    if (request != NULL && request->data_len > 0) {
+        const size_t room = sizeof(form_body) - form_len;
+        const size_t take = request->data_len < room ? request->data_len : room;
+
+        memcpy(&form_body[form_len], request->data, take);
+        form_len += take;
+    }
+
+    if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+        return 0;
+    }
+
+    char lang[TK_LANGUAGE_LEN] = {0};
+    const int lang_len = tk_form_field(form_body, (uint16_t) form_len, "lang", lang, sizeof(lang));
+
+    form_len = 0;
+
+    if (lang_len != 2 || tk_language_set(lang) != 0) {
+        const int n = tk_page_notice((char *) page_buf, sizeof(page_buf), "Language not saved",
+                                     "That language is not available in this device image.");
+
+        return send_page("/language", n, response);
+    }
+
+    const struct tk_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
+
+    /* `app` reopens the store. */
+    (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
+
+    const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+
+    return send_page("/language", n, response);
+}
+
+static int forget_handler(struct http_client_ctx *client, enum http_transaction_status status,
+                          const struct http_request_ctx *request,
+                          struct http_response_ctx *response, void *user_data)
+{
+    ARG_UNUSED(client);
+    ARG_UNUSED(request);
+    ARG_UNUSED(user_data);
+
+    if (status == HTTP_SERVER_TRANSACTION_ABORTED || status == HTTP_SERVER_TRANSACTION_COMPLETE) {
+        form_len = 0;
+        return 0;
+    }
+
+    if (request != NULL && request->data_len > 0) {
+        const size_t room = sizeof(form_body) - form_len;
+        const size_t take = request->data_len < room ? request->data_len : room;
+
+        memcpy(&form_body[form_len], request->data, take);
+        form_len += take;
+    }
+
+    if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
+        return 0;
+    }
+
+    char confirm[8] = {0};
+    const int confirm_len =
+        tk_form_field(form_body, (uint16_t) form_len, "confirm", confirm, sizeof(confirm));
+
+    form_len = 0;
+
+    if (confirm_len != 6 || strcmp(confirm, "forget") != 0) {
+        const int n = tk_page_forget_confirm((char *) page_buf, sizeof(page_buf));
+
+        return send_page("/forget", n, response);
+    }
+
+    const int err = tk_portal_forget_credentials();
+    const int n = tk_page_notice(
+        (char *) page_buf, sizeof(page_buf), err == 0 ? "Wi-Fi forgotten" : "Could not forget Wi-Fi",
+        err == 0 ? "The saved network was removed. The device will stay offline until you set it up again."
+                 : "The saved network could not be removed. Try again or restart the device.");
+
+    return send_page("/forget", n, response);
+}
+
+/* Check for new questions and firmware. */
 static int sync_handler(struct http_client_ctx *client, enum http_transaction_status status,
                         const struct http_request_ctx *request, struct http_response_ctx *response,
                         void *user_data)
@@ -661,7 +899,9 @@ static int sync_handler(struct http_client_ctx *client, enum http_transaction_st
 
     tk_net_notify_sync();
 
-    const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+    const int n = tk_page_notice(
+        (char *) page_buf, sizeof(page_buf), "Update requested",
+        "The device is checking for new questions and firmware. The result will appear on the device.");
 
     return send_page("/sync", n, response);
 }
@@ -708,6 +948,13 @@ static struct http_resource_detail_dynamic status_detail = {
     .cb = status_handler,
 };
 
+static struct http_resource_detail_dynamic rescan_detail = {
+    .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+               .bitmask_of_supported_http_methods = BIT(HTTP_POST),
+               .content_type = "text/html"},
+    .cb = rescan_handler,
+};
+
 static struct http_resource_detail_dynamic save_detail = {
     .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
                .bitmask_of_supported_http_methods = BIT(HTTP_POST),
@@ -715,11 +962,25 @@ static struct http_resource_detail_dynamic save_detail = {
     .cb = save_handler,
 };
 
+static struct http_resource_detail_dynamic language_detail = {
+    .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+               .bitmask_of_supported_http_methods = BIT(HTTP_POST),
+               .content_type = "text/html"},
+    .cb = language_handler,
+};
+
 static struct http_resource_detail_dynamic sync_detail = {
     .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
                .bitmask_of_supported_http_methods = BIT(HTTP_POST),
                .content_type = "text/html"},
     .cb = sync_handler,
+};
+
+static struct http_resource_detail_dynamic forget_detail = {
+    .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
+               .bitmask_of_supported_http_methods = BIT(HTTP_POST),
+               .content_type = "text/html"},
+    .cb = forget_handler,
 };
 
 static struct http_resource_detail_dynamic catchall_detail = {
@@ -737,5 +998,8 @@ HTTP_SERVICE_DEFINE(tk_portal, NULL, &http_port, CONFIG_HTTP_SERVER_MAX_CLIENTS,
 
 HTTP_RESOURCE_DEFINE(setup_resource, tk_portal, "/", &setup_detail);
 HTTP_RESOURCE_DEFINE(status_resource, tk_portal, "/status", &status_detail);
+HTTP_RESOURCE_DEFINE(rescan_resource, tk_portal, "/scan", &rescan_detail);
 HTTP_RESOURCE_DEFINE(save_resource, tk_portal, "/save", &save_detail);
+HTTP_RESOURCE_DEFINE(language_resource, tk_portal, "/language", &language_detail);
 HTTP_RESOURCE_DEFINE(sync_resource, tk_portal, "/sync", &sync_detail);
+HTTP_RESOURCE_DEFINE(forget_resource, tk_portal, "/forget", &forget_detail);

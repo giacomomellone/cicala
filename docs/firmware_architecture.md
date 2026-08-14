@@ -301,10 +301,16 @@ the arbiter and GPIO writes, so blink state has a single writer.
 ## Setup, sync, and updates
 
 Holding Category and Next for `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` during boot opens
-the setup portal. The device scans first, starts an open access point, serves
-DHCP/DNS/HTTP, stores submitted credentials, then joins the selected network.
-The portal closes at its configured deadline. Its status page never shows the
-stored password.
+the setup portal. The device scans first, starts a WPA2 access point with a
+fresh session password, serves DHCP/DNS/HTTP, stores submitted credentials, then
+joins the selected network. The password is generated from the device random
+source, shown on the e-paper service card, and cleared when the portal closes.
+The setup page can rescan nearby networks and save the question language
+separately from Wi-Fi. Its status page shows the access-point name, remaining
+portal window, board and firmware versions, corpus information, connection
+diagnostics, and the last requested sync result. It can request a question or
+firmware update, or forget all saved Wi-Fi credentials after confirmation. The
+stored password is never shown. The portal closes at its configured deadline.
 
 ```mermaid
 stateDiagram-v2

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -24,6 +25,9 @@ int tk_portal_init(void);
 
 /** The name this device's setup network announces. */
 const char *tk_portal_ap_ssid(void);
+
+/** The password for this portal session's setup network. */
+const char *tk_portal_ap_password(void);
 
 /** Begin a scan on the station interface. */
 bool tk_portal_scan_start(void);
@@ -54,6 +58,27 @@ bool tk_portal_station_connected(void);
 
 /** Remember that the station joined, or dropped. */
 void tk_portal_set_station_connected(bool connected);
+
+/** Remember why the last station connection failed. */
+void tk_portal_set_connection_error(int error);
+
+/** Clear the last station connection error after a new attempt starts. */
+void tk_portal_clear_connection_error(void);
+
+/** Copy the last station connection error into a caller-owned buffer. */
+void tk_portal_copy_connection_error(char *out, size_t out_size);
+
+/** Copy the last sync result into a caller-owned buffer. */
+void tk_portal_copy_sync_result(char *out, size_t out_size);
+
+/** Remember the result shown after a user-requested sync. */
+void tk_portal_set_sync_result(const char *result);
+
+/** Seconds until the portal's hard deadline, rounded up. */
+uint32_t tk_portal_window_remaining_s(void);
+
+/** Forget every saved Wi-Fi network. Return zero on success. */
+int tk_portal_forget_credentials(void);
 
 #ifdef __cplusplus
 }

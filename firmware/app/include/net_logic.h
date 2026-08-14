@@ -48,8 +48,13 @@ int tk_page_setup(char *out, size_t out_size, const struct tk_scan_entry *nets, 
 
 int tk_page_saved(char *out, size_t out_size, const char *ssid);
 
+int tk_page_notice(char *out, size_t out_size, const char *heading, const char *body);
+
+int tk_page_forget_confirm(char *out, size_t out_size);
+
 int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *saved_ssid,
-                   bool connected, const char *station_ip);
+                   bool connected, const char *station_ip, const char *connection_error,
+                   const char *sync_result, uint32_t window_remaining_s);
 
 /** --------------------------------------------------------------- the wire */
 

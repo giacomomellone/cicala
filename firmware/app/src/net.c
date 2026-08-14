@@ -93,6 +93,9 @@ static void tk_net_show_sync_result(enum tk_sync_result result, uint16_t count, 
         msg.len = sizeof(msg.text) - 1;
     }
 
+    msg.text[msg.len] = '\0';
+    tk_portal_set_sync_result(msg.text);
+
     (void) zbus_chan_pub(&chan_service, &msg, K_MSEC(100));
 }
 
@@ -146,10 +149,12 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
         const struct wifi_status *status = (const struct wifi_status *) cb->info;
 
         if (status->status == 0) {
+            tk_portal_clear_connection_error();
             tk_portal_set_station_connected(true);
             raise(EV_CONNECTED);
         } else {
             LOG_WRN("the network refused us: %d", status->status);
+            tk_portal_set_connection_error(status->status);
             raise(EV_REFUSED);
         }
 
