@@ -143,9 +143,10 @@ connect that logic to Zephyr devices, threads, zbus, storage, and networking.
 C interfaces isolate the C++ libraries from Zephyr macros that require C
 designated initializers.
 
-The application has input, app, display, network, power, and status threads.
-They communicate through typed zbus channels. `main.c` initializes shared
-services and starts the threads. The full thread and data flow is in
+Dedicated threads run the app, display, network, and portal DNS work. Input
+callbacks run on the system workqueue; power, status, and sleep use delayed
+work. They communicate through typed zbus channels. `main.c` initializes the
+shared services. The full execution and data flow is in
 [firmware architecture](firmware_architecture.md).
 
 The generic FSM uses a transition table and an injected clock. A self-loop does

@@ -109,8 +109,8 @@ The firmware suites read real bundles emitted by `build_bundle.py`.
 `firmware/tests/qdb` also decodes the worked example above byte for byte.
 
 The device reader checks every declared length at `open()` and rejects trailing
-bytes. Its implementation is described under "qdb — the question store" in
-[firmware_architecture.md](firmware_architecture.md).
+bytes. Its implementation is described in
+[QDB reader](firmware_architecture.md#qdb-reader).
 
 ## Device flow
 

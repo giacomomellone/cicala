@@ -882,7 +882,7 @@ Not verified. Nothing in this repo has yet flashed over `/dev/cu.usbmodem*` — 
 
 ## 2026-08-12: A floor under the ladder, rather than an image that cannot draw a card
 
-`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. That is the exact case `app/CMakeLists.txt` says the symbol exists to avoid — "a board with no divider fitted would read a floating pin and refuse to refresh" — and it is what the bench would have hit on the next flash: a floating GPIO1 reads _something_, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
+`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. A board with no divider fitted reads a floating pin and can refuse every refresh. That is what the bench would have hit on the next flash: a floating GPIO1 reads _something_, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
 
 The alternative was to hold the board-conf enable until the copper exists. Rejected: it would leave the power path in every image except the one anybody flashes, which is how a module rots.
 

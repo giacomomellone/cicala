@@ -76,7 +76,8 @@ OpenOCD on port 3333. `just fw-debugserver` starts the server without flashing.
 - Normal playback includes depths 1 and 2. Depth 3 remains browse-only.
 - Holding both buttons through boot opens the setup portal.
 - External power keeps the device awake and opens the sync and update window.
-- LOW and CRITICAL battery states refuse panel refreshes and blink red.
+- LOW and CRITICAL battery states refuse panel refreshes. LOW blinks amber
+  once; CRITICAL blinks red three times.
 
 Wi-Fi is optional. Every release image contains the shipped corpora, and a
 stored corpus replaces its compiled counterpart only after validation.
