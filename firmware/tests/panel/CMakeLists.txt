@@ -9,7 +9,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 
-# The application's own panel source, not a copy.
 target_sources(app PRIVATE
     src/main.cpp
     ${TK_APP}/src/panel.cpp
@@ -24,7 +23,7 @@ set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 foreach(lang en de)
   if(NOT EXISTS ${fixtures}/${lang}.qdb)
     message(FATAL_ERROR
-      "missing ${fixtures}/${lang}.qdb — run `just fw-fixtures` (or `just fw-test`, which does)")
+      "missing ${fixtures}/${lang}.qdb — run `just fw-test`")
   endif()
 
   generate_inc_file_for_target(app

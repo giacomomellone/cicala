@@ -38,9 +38,7 @@ def _construct_mapping(loader, node, deep=False):
     return mapping
 
 
-LineLoader.add_constructor(
-    yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping
-)
+LineLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_mapping)
 
 
 def normalize_text(text: str) -> str:
@@ -48,7 +46,7 @@ def normalize_text(text: str) -> str:
 
 
 def compute_id(lang: str, text: str) -> str:
-    payload = f"{lang}|{normalize_text(text)}".encode("utf-8")
+    payload = f"{lang}|{normalize_text(text)}".encode()
     return "q-" + hashlib.sha256(payload).hexdigest()[:8]
 
 
@@ -144,9 +142,9 @@ def check_text_rules(text: str, lang: str, cfg: dict, path, line, rep: Reporter)
     stripped = text.rstrip("".join(closing)) if closing else text
     if not stripped or stripped[-1] not in terminators:
         rep.error(
-            path, line,
-            f"text must end with one of {terminators!r} "
-            "(a closing quote/bracket after it is fine)",
+            path,
+            line,
+            f"text must end with one of {terminators!r} (a closing quote/bracket after it is fine)",
         )
 
 
@@ -155,7 +153,8 @@ def check_denylist(text: str, terms: list[str], path, line, rep: Reporter):
     for term in terms:
         if re.search(rf"(?<!\w){re.escape(term)}(?!\w)", normalized):
             rep.error(
-                path, line,
+                path,
+                line,
                 f'text matches denylist term "{term}" — a maintainer must review '
                 "this entry manually (see questions/<lang>/denylist.txt)",
             )
@@ -210,11 +209,15 @@ def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--fix", action="store_true",
-                        help="assign missing ids/dates and rewrite clean corpora")
-    parser.add_argument("--root", type=Path,
-                        default=Path(__file__).resolve().parent.parent,
-                        help="repository root (for tests)")
+    parser.add_argument(
+        "--fix", action="store_true", help="assign missing ids/dates and rewrite clean corpora"
+    )
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=Path(__file__).resolve().parent.parent,
+        help="repository root (for tests)",
+    )
     args = parser.parse_args(argv)
 
     rep = Reporter()
@@ -242,16 +245,16 @@ def main(argv=None) -> int:
         else:
             denylist = []
             (rep.warn if incubator else rep.error)(
-                rel, 0, "missing denylist.txt" + (" — required before graduation" if incubator else "")
+                rel,
+                0,
+                "missing denylist.txt" + (" — required before graduation" if incubator else ""),
             )
         if not (lang_dir / "STYLE.md").exists():
             (rep.warn if incubator else rep.error)(
                 rel, 0, "missing STYLE.md" + (" — required before graduation" if incubator else "")
             )
 
-        unexpected = [
-            p.name for p in sorted(lang_dir.glob("*.yaml")) if p.name != question_file
-        ]
+        unexpected = [p.name for p in sorted(lang_dir.glob("*.yaml")) if p.name != question_file]
         for name in unexpected:
             rep.error(rel / name, 1, f"question data must live in {question_file}")
 
@@ -291,7 +294,8 @@ def main(argv=None) -> int:
                 norm = normalize_text(text)
                 if norm in seen_texts:
                     rep.error(
-                        rpath, line,
+                        rpath,
+                        line,
                         f"duplicate question text within language '{lang}' "
                         f"(first seen at {seen_texts[norm]})",
                     )
@@ -315,7 +319,9 @@ def main(argv=None) -> int:
         minimum = 1 if incubator else 10
         for deck, count in coverage.items():
             if count < minimum:
-                rep.warn(rpath, 0, f"deck '{deck}' has {count} questions; target is at least {minimum}")
+                rep.warn(
+                    rpath, 0, f"deck '{deck}' has {count} questions; target is at least {minimum}"
+                )
 
         if args.fix and len(rep.errors) == file_error_count:
             formatted = format_file(lang, entries, key_order)
@@ -325,7 +331,7 @@ def main(argv=None) -> int:
 
     for rpath, line, origin in origin_refs:
         if origin not in all_ids:
-            rep.warn(rpath, line, f"origin {origin} does not exist (anymore) in the database")
+            rep.warn(rpath, line, f"origin {origin} is missing from the database")
 
     for warning in rep.warnings:
         print(warning, file=sys.stderr)

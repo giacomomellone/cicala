@@ -1,6 +1,5 @@
 tests:
   tischkarte.integration:
-    # Emulated GPIO and a dummy display, so the whole application runs.
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim

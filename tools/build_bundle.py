@@ -36,9 +36,7 @@ import validate  # noqa: E402
 from build_site_data import git_version  # noqa: E402
 
 
-def build_bundle_bytes(
-    lang: str, version: str, questions: list[dict], decks: list[str]
-) -> bytes:
+def build_bundle_bytes(lang: str, version: str, questions: list[dict], decks: list[str]) -> bytes:
     out = bytearray()
     out += b"QDB2"
     for s in (version, lang):
@@ -74,28 +72,33 @@ def parse_bundle(blob: bytes):
 
     def take_str8():
         nonlocal pos
-        n = raw[pos]; pos += 1
-        s = raw[pos:pos + n].decode("utf-8"); pos += n
+        n = raw[pos]
+        pos += 1
+        s = raw[pos : pos + n].decode("utf-8")
+        pos += n
         return s
 
     version, lang = take_str8(), take_str8()
-    decks = json.loads((Path(__file__).resolve().parent.parent /
-                        "questions" / "schema.json").read_text())["x-tischkarte"]["decks"]
+    decks = json.loads(
+        (Path(__file__).resolve().parent.parent / "questions" / "schema.json").read_text()
+    )["x-tischkarte"]["decks"]
     (count,) = struct.unpack_from("<H", raw, pos)
     pos += 2
     items = []
     for _ in range(count):
         mask, metadata, tlen = struct.unpack_from("<BBH", raw, pos)
         pos += 4
-        text = raw[pos:pos + tlen].decode("utf-8")
+        text = raw[pos : pos + tlen].decode("utf-8")
         pos += tlen
-        items.append({
-            "text": text,
-            "decks": [deck for bit, deck in enumerate(decks) if mask & (1 << bit)],
-            "depth": (metadata & 0b11) + 1,
-            "spicy": bool(metadata & (1 << 2)),
-            "dark": bool(metadata & (1 << 3)),
-        })
+        items.append(
+            {
+                "text": text,
+                "decks": [deck for bit, deck in enumerate(decks) if mask & (1 << bit)],
+                "depth": (metadata & 0b11) + 1,
+                "spicy": bool(metadata & (1 << 2)),
+                "dark": bool(metadata & (1 << 3)),
+            }
+        )
     result = {"version": version, "lang": lang, "questions": items}
     if pos != len(raw):
         raise ValueError(f"{len(raw) - pos} trailing bytes")
@@ -107,32 +110,28 @@ def sign_digest(digest: bytes, key_path: Path) -> str:
         tf.write(digest)
         tf.flush()
         out = subprocess.run(
-            ["openssl", "pkeyutl", "-sign", "-inkey", str(key_path),
-             "-rawin", "-in", tf.name],
-            capture_output=True, check=True,
+            ["openssl", "pkeyutl", "-sign", "-inkey", str(key_path), "-rawin", "-in", tf.name],
+            capture_output=True,
+            check=True,
         )
     return base64.b64encode(out.stdout).decode("ascii")
 
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--root", type=Path,
-                        default=Path(__file__).resolve().parent.parent)
-    parser.add_argument("--out", type=Path, default=None,
-                        help="output directory (default: <root>/dist/bundles)")
-    parser.add_argument("--version", default=None,
-                        help="release version (default: git describe)")
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument(
+        "--out", type=Path, default=None, help="output directory (default: <root>/dist/bundles)"
+    )
+    parser.add_argument("--version", default=None, help="release version (default: git describe)")
     parser.add_argument("--min-fw", default="0.1.0")
-    parser.add_argument("--sign-key", type=Path, default=None,
-                        help="ed25519 private key PEM; omit for an unsigned dev build")
-    # http, not https: the device has no clock and cannot validate a
-    # certificate, so the ed25519 signature is what protects the corpus. See
-    # docs/decisions.md.
-    #
-    # The host must therefore be one that does not upgrade the request — a
-    # redirect to https is fatal rather than slow, because Zephyr's HTTP client
-    # does not follow one. That is a different host from the website, and the
-    # default below is deliberately unresolvable until it exists.
+    parser.add_argument(
+        "--sign-key",
+        type=Path,
+        default=None,
+        help="ed25519 private key PEM; omit for an unsigned dev build",
+    )
+    # Artifact signatures authenticate downloads; the device has no trusted clock.
     parser.add_argument("--base-url", default="http://tischkarte.invalid/device")
     args = parser.parse_args(argv)
 
@@ -147,8 +146,7 @@ def main(argv=None) -> int:
         return 1
     decks = cfg["decks"]
 
-    # schema 3: `url` points at the raw .qdb a device downloads, and size,
-    # sha256 and sig all describe those bytes. See docs/sync_protocol.md.
+    # These fields describe the raw .qdb downloaded by the device.
     manifest = {"schema": 3, "version": version, "min_fw": args.min_fw, "languages": {}}
     for lang, lang_dir, incubator in validate.discover_languages(args.root):
         if incubator:
@@ -160,17 +158,15 @@ def main(argv=None) -> int:
         for entry in entries:
             entry.pop("__line__", None)
             if "id" not in entry:
-                print(f"{path}: entry without id — run tools/validate.py --fix first",
-                      file=sys.stderr)
+                print(
+                    f"{path}: entry without id — run tools/validate.py --fix first", file=sys.stderr
+                )
                 return 1
         count = len(entries)
 
         raw = build_bundle_bytes(lang, version, entries, decks)
         gz = compress_bundle(raw)
 
-        # Both are published. The device takes the raw one, because Zephyr
-        # carries no inflate and the saving is about 9 KB per language per
-        # release; the gzip is for the website and for people.
         raw_name = f"bundle-{lang}-{version}.qdb"
         gz_name = f"bundle-{lang}-{version}.qdb.gz"
         (out_dir / raw_name).write_bytes(raw)
@@ -188,11 +184,9 @@ def main(argv=None) -> int:
             "sig": sig,
             "count": count,
         }
-        print(f"{raw_name}: {count} questions, {len(raw)} bytes "
-              f"({len(gz)} gzipped)")
+        print(f"{raw_name}: {count} questions, {len(raw)} bytes ({len(gz)} gzipped)")
 
-    (out_dir / "manifest.json").write_text(
-        json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"manifest.json: version {version}")
     return 0
 

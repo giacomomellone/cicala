@@ -1,13 +1,11 @@
 {
   "recommendations": [
-    // C/C++ — clangd rather than ms-vscode.cpptools: it reads the
-    // compile_commands.json west generates, so devicetree-generated headers
-    // and Kconfig defines resolve without hand-maintaining include paths.
+    // clangd reads Zephyr's generated compile database.
     "llvm-vs-code-extensions.vscode-clangd",
-    // cpptools is still needed for the cppdbg debug adapter in launch.json.
+    // cppdbg provides the launch.json debug adapter.
     "ms-vscode.cpptools",
 
-    // Zephyr file types
+    // Zephyr file types.
     "trond-snekvik.devicetree",
     "trond-snekvik.kconfig-lang",
 
@@ -18,8 +16,7 @@
     "nefrob.vscode-just-syntax"
   ],
   "unwantedRecommendations": [
-    // Conflicts with clangd's own indexer; keep cpptools installed for the
-    // debugger but let clangd own IntelliSense.
+    // Keep clangd as the only C/C++ indexer.
     "ms-vscode.cpptools-extension-pack"
   ]
 }

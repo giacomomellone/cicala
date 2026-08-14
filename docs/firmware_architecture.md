@@ -1,1233 +1,387 @@
 # Firmware architecture
 
-Structure of the ESP32-S3 application: threads, the messages between them, and
-which modules depend on Zephyr. Interaction rules are in [design.md](design.md),
-the data contract in [sync_protocol.md](sync_protocol.md), the pins and the
-board in [hardware wiring](hardware_wiring.md), rationale in
-[decisions.md](decisions.md).
+The ESP32-S3 firmware runs the tabletop interaction, preserves state through
+deep sleep, manages the setup portal, and installs signed question and firmware
+updates. See [design.md](design.md) for interaction rules,
+[sync_protocol.md](sync_protocol.md) for bundle formats, and
+[hardware_wiring.md](hardware_wiring.md) for the breadboard pins.
 
-**Status: every module is built.** `input`, `app_fsm`, `qdb` with its bag,
-`layout`, `retained`, the panel, the setup `portal`, `sync` and the firmware
-update path all exist and are tested, and `power` and `status` now join them.
-Deep sleep and the radio are both on in the everyday image; the images that
-measure something turn them back off.
+Every module builds and runs on the breadboard. Whole-device sleep current is
+still unmeasured because the DevKitC indicators exceed the 30 µA target. The
+[firmware primer](firmware_primer.md) covers setup and common development
+tasks.
 
-The copper is built too. Both dividers and both status LEDs are on the
-breadboard, and the device reads its cell, sees VBUS, opens a sync window on a
-plug-in, stays awake on a charger and runs from the cell alone. What no bench
-here can answer is current: the DevKitC's own indicators draw far more than the
-whole sleep budget. Items marked *verify* have not been run on a board. The
-[firmware primer](firmware_primer.md) is the hands-on tour.
+## Runtime model
 
-## The one constraint
+ESP32-S3 deep sleep restarts the application. SRAM and thread stacks are lost;
+`main()` runs again after a button wake. State needed across wakes lives in RTC
+slow memory or flash.
 
-Below 30 µA means deep sleep, and on the ESP32-S3 deep sleep is a reboot: SRAM
-and every thread stack are gone, and waking runs `main()` from the top.
+The device enters deep sleep after the idle timeout when all three conditions
+hold:
 
-- The steady state is **off**, not idle. Threads live for the milliseconds
-  between wake and sleep.
-- "Next question under 1 s" is a **boot-time** budget, not a scheduling one.
-- Persisted state lives in **RTC slow memory**, never in `.bss`.
-- Sleep is called rather than fallen into. The SoC's deep-sleep state is marked
-  disabled in its own devicetree and documented as reachable only through
-  `sys_poweroff()`, so `src/sleep.c` decides — after an idle timer, and only
-  once nothing objects.
+1. the tabletop state machine has settled;
+2. the portal, sync, and update paths are idle;
+3. external power is absent.
 
-**External power suspends all of it.** While VBUS is high the device does not
-sleep at all: the status LEDs need the SoC running, and red handing over to
-green across a charge is most of what they are for. The budget above is about
-what a cell has to pay for, and a charger is not the cell.
-
-## Threads and data flow
-
-Every arrow is a zbus message. `app` is the only thread that decides anything;
-everything else reports or renders. Solid boxes and arrows are built; dashed
-ones are design.
+External power keeps the application awake. It also opens a bounded window for
+sync and update checks.
 
 ```mermaid
 flowchart LR
-    ISR([GPIO interrupts]):::hw --> WQ
+    GPIO[Category and Next GPIO] --> WQ[system workqueue<br/>debounce]
+    WQ -->|chan_category / chan_next| APP[app thread<br/>tabletop policy]
+    APP --> QDB[qdb + shuffle bag]
+    APP -->|chan_question| DISPLAY[display thread]
+    DISPLAY --> PANEL[e-paper]
+    DISPLAY -->|chan_render| APP
 
-    WQ["`**system workqueue**
-    coop -1 · 1.5 KB
-    input.c — debounce`"]
-
-    APP["`**app**
-    prio 5 · 2 KB
-    app.c + app_logic.cpp`"]
-
-    DSP["`**display**
-    prio 6 · 2.5 KB
-    display.c + panel.cpp`"]
-
-    NET["`**net**
-    prio 8 · 6 KB
-    portal · sync later`"]
-
-    WQ -- chan_category --> APP
-    WQ -- chan_next --> APP
-    WQ -. chan_power .-> APP
-    WQ -. chan_power .-> NET
-    APP -- chan_question --> DSP
-    DSP -- chan_render --> APP
-    NET -- chan_service --> APP
-    NET -. chan_corpus .-> APP
-
-    DSP --> PANEL[/e-paper/]:::hw
-    APP --> QDB[(qdb · corpus in flash)]:::store
-    NET --> NVS[(NVS · Wi-Fi credentials)]:::store
-    NET -. replaces .-> QDB
-
-    classDef hw fill:#f4efe6,stroke:#b0a086
-    classDef store fill:#eef1f4,stroke:#8a97a6
-    classDef todo fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
+    POWER[power work item<br/>cell ADC + VBUS] -->|chan_power| STATUS[status LEDs]
+    NET[net thread<br/>portal · sync · OTA] -->|chan_service / chan_corpus| APP
+    NET --> NVS[(NVS)]
+    NET --> LFS[(LittleFS)]
 ```
 
-A thread exists only where something must block independently.
+The display has its own thread because an e-paper refresh can block for up to
+two seconds. The app thread remains responsive and can apply the rule that
+presses during a refresh are discarded. Network coordination also has a thread;
+short ADC and VBUS reads run as delayed work.
 
-| Context | Blocks on | Why not merged |
-|---|---|---|
-| system workqueue | nothing (delayed work) | An input thread would buy nothing; the `gpio-keys` driver already owns the debounce |
-| `app` | its zbus queue | — |
-| `display` | the panel, 0.3–2 s | So `app` stays awake during a refresh and can drop the Next press |
-| `net` | its semaphore | Portal and sync never overlap, so one thread serves both |
+## Code boundaries
 
-`net` is a coordinator rather than the thread that does the networking. The
-HTTP server has its own thread, the DHCP server runs on the socket-service
-thread, the DNS responder has one of its own, and the Wi-Fi driver spawns
-several. What is left on `net` is the portal's state machine, the translation
-of management events into it, and the tick its deadlines need — which is why
-6 KB is enough where the design once said 12.
+Hardware-free policy lives in `firmware/lib/`. Zephyr threads, drivers,
+channels, and storage adapters live in `firmware/app/src/`.
 
-There is no power thread, and `power` does not get one. Sampling the ADC and
-reading the VBUS pin is microseconds and never blocks, so it runs as a delayable
-work item on the system workqueue. It could not live on `app` in any case: that
-thread blocks with `K_FOREVER` whenever nothing is happening, and that is
-precisely the property which lets the device reach deep sleep. Giving it a
-periodic timeout so power could be sampled would trade the sleep budget for a
-reading nobody is waiting for.
+| Area                                         | Owns                                                                |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| `lib/fsm`                                    | table-driven state machine engine with an injectable clock          |
+| `lib/app_fsm`                                | Category, Next, render, and service-card policy                     |
+| `lib/qdb`                                    | QDB2 validation and draw-without-repeats state                      |
+| `lib/layout`                                 | UTF-8 decoding, accent composition, and line wrapping               |
+| `lib/portal`                                 | portal state machine, form parsing, DNS replies, and HTML rendering |
+| `lib/power`                                  | battery and external-power states                                   |
+| `lib/status`                                 | LED priority and blink patterns                                     |
+| `lib/sync`                                   | manifest parsing and version comparison                             |
+| `lib/retained`                               | validation of the RTC-retained block                                |
+| `lib/ed25519`                                | detached-signature verification                                     |
+| `app/src/input.c`                            | Category and Next events from `gpio-keys`                           |
+| `app/src/app.c`, `app_logic.cpp`             | app thread, state machine effects, and corpus binding               |
+| `app/src/display.c`, `panel.cpp`             | display thread, layout, and refresh policy                          |
+| `app/src/net.c`, `net_logic.cpp`, `portal.c` | Wi-Fi, setup, and network events                                    |
+| `app/src/fetch.c`, `sync.cpp`, `ota.cpp`     | HTTP transport and signed updates                                   |
+| `app/src/power.c`, `power_logic.cpp`         | ADC/VBUS sampling and power state publication                       |
+| `app/src/status.c`, `status_logic.cpp`       | serialized LED output                                               |
+| `app/src/sleep.c`                            | idle timer, wake sources, and pin state for deep sleep              |
 
-`sleep_now()` refuses for three reasons, in order, each rescheduling the idle
-timer rather than calling `sys_poweroff()`:
-
-| Asked | Meaning | For how long |
-|---|---|---|
-| `tk_app_is_settled()` | a refresh is in flight, or a deck is named but not drawn from | until the machine settles |
-| `tk_net_is_active()` | the portal is on air; sleeping would lose the session | the portal window |
-| `tk_power_external()` | VBUS is high | the whole time it is plugged in |
-
-The third is the strongest and the newest. The status LEDs need the SoC running
-to be lit, so a device that slept mid-charge would be reporting that it had
-stopped charging. `CONFIG_TK_POWER_CHARGE_WINDOW_MS` still exists but now bounds
-only the sync and update window, not wakefulness.
-
-## What each module owns
-
-Every module has one job, one input and one output. The rule that decides which
-language a file is in is mechanical: `ZBUS_CHAN_DEFINE`, `ZBUS_MSG_SUBSCRIBER_DEFINE`
-and `ZBUS_CHAN_ADD_OBS` expand to out-of-order designated initializers, which C
-allows and C++17 rejects, so files using them are `.c` and everything else is
-free to be C++.
-
-| Module | File | In | Out |
-|---|---|---|---|
-| `input` | `app/src/input.c` | key events via the `gpio-keys` driver | `chan_category`, `chan_next` |
-| `app` | `app/src/app.c` | those two channels, plus `chan_render` | calls into `app_logic` |
-| `retained` | `lib/retained/` | the block RTC memory handed back | whether it survived, or a zeroed one |
-| `app_logic` | `app/src/app_logic.cpp` | posts from `app.c` | `chan_question` |
-| `app_fsm` | `lib/app_fsm/` | the active deck, a press, a render result | which deck to draw, and when |
-| `qdb` | `lib/qdb/` | a QDB2 byte range, a deck, a depth cap | one question, no repeats |
-| `layout` | `lib/layout/` | UTF-8 text, a column count | lines of base glyph + mark |
-| `panel` | `app/src/panel.cpp` | a question | pixels, and a full/partial choice |
-| `display` | `app/src/display.c` | `chan_question` | `chan_render` |
-| `net` | `app/src/net.c` | the boot gesture, Wi-Fi events | drives the portal machine |
-| `portal_fsm` | `lib/portal/` | a scan, an AP result, a form, a join result | when to scan, serve, join, stop |
-| `net_logic` | `app/src/net_logic.cpp` | the machine's decisions | `chan_service`, and calls into `portal` |
-| `portal` | `app/src/portal.c` | those calls | SoftAP, DHCP, DNS, HTTP, credentials |
-| `power` | `app/src/power.c` | ADC1 channel 0, the VBUS pin | a millivolt reading and a VBUS bit |
-| `power_fsm` | `lib/power/` | that reading | a state, and one sync window per plug-in |
-| `power_logic` | `app/src/power_logic.cpp` | the machine's decisions | `chan_power`, and the answers `sleep` and `app_logic` ask for |
-| `status_led` | `lib/status/` | power, the portal, a transfer | which colour, and at what rhythm |
-| `status` | `app/src/status.c` | `chan_power` | two GPIOs |
-| `channels` | `app/src/channels.c` | — | the channel definitions themselves |
-
-`lib/` is everything that compiles without a Zephyr header, which is what lets
-the suites run it on a host. `app/src/` is the glue that gives it threads,
-channels and a display.
-
-## Where the questions come from
-
-The corpus is not fetched at runtime yet. Every shipped language is compiled
-into the image, which is the factory-preloaded set [design.md](design.md)
-promises: a device whose Wi-Fi is never configured still works, and the setup
-portal's language choice has something to switch to. Each bundle is about
-7 KB, which is a better trade than a portal offering a language the device
-cannot show.
-
-Which one is open is `app/src/language.c`'s answer, kept in the same NVS as the
-Wi-Fi credentials and falling back to `CONFIG_TK_CORPUS_LANGUAGE`. Changing it
-publishes `chan_corpus`; `app` reopens the store and rebinds the bag, whose
-fingerprint no longer matches, so the shuffle bag resets — indices into the
-English corpus mean nothing once the German one is open.
-
-```mermaid
-flowchart LR
-    YAML[/"questions/*.yaml<br/><i>the source of truth</i>"/]
-    BUILD["tools/build_bundle.py"]
-    QDB[/"dist/bundles/*.qdb.gz<br/><i>gzip, signed</i>"/]
-    RAW[/"tests/fixtures/*.qdb<br/><i>decompressed</i>"/]
-    INC["generate_inc_file_for_target"]
-    IMG[("corpus in flash")]
-    QDB["qdb::open()"]
-
-    YAML --> BUILD
-    BUILD --> QDB
-    QDB -- "just fw-fixtures" --> RAW
-    RAW --> INC
-    INC --> IMG
-    IMG --> QDB
-
-    classDef f fill:#f7f5f1,stroke:#9a8f7d
-```
-
-The same decompressed bundle feeds the `qdb`, `layout` and `panel` suites, so
-the corpus the tests check is the corpus the device ships. When `sync` lands,
-`open()` points at a LittleFS file instead and the embedded copy becomes the
-fallback. That half is built: `app/src/corpus_store.c` reads `/corpus/<lang>.qdb`
-into RAM and `app_logic` prefers it, falling back to the compiled-in corpus when
-there is none, when it does not fit, or when it does not parse. What is missing
-is the part that puts a file there.
-
-## qdb — the question store
-
-`qdb` is the only thing that knows what a question is. It answers exactly one
-question itself: *given this deck, what should the device show next?* It is
-plain C++17 with no Zephyr headers, about 370 lines, and it is two pieces that
-share a header.
-
-### The reader
-
-`Qdb` is a decoder for the QDB2 format in [sync_protocol.md](sync_protocol.md).
-It does not own or copy the bundle — `open()` takes a pointer and a length, and
-every `Question` it hands back points into that buffer. The bundle outlives the
-questions drawn from it.
-
-Two decisions worth knowing:
-
-- **Everything is validated at `open()`.** It walks all records once, checking
-  every declared length against the buffer, and refuses the bundle on bad
-  magic, a truncated record, trailing bytes, or a corpus larger than the bag can
-  track. A file that would run off the end is rejected once, at the start,
-  rather than on whichever draw first reaches the bad offset.
-- **There is no offset table.** `at(index)` walks the records from the start.
-  With 240 questions that is microseconds, and it costs no RAM on a device whose
-  memory budget is the reason the corpus lives in flash at all.
-
-A question is **eligible** for a deck when its deck-mask bit is set and its
-depth is within `CONFIG_TK_PLAYBACK_DEPTH_MAX`. That is the whole filter, and it
-is where the two editorial rules land: depth 3 is never drawn automatically, and
-the tone-flagged questions carry only the Wild bit, so no other deck can reach
-them.
-
-### The bag
-
-`Bag` is the draw-without-repeats policy. Its state is a plain struct, sized to
-live in RTC memory so it can survive the reboot that deep sleep really is:
-
-```
-fingerprint   4 B     which bundle this state describes
-recent[20]   40 B     question indices last seen, shared across decks
-drawn[6][16] 384 B    one bit per question, per deck
-```
-
-Under 450 bytes of the 8 KB available. Keeping it out of NVS means a Next press
-costs no flash write, so button life rather than flash endurance bounds the
-device.
-
-A draw applies exclusions in order of how much each one matters, and gives up
-on them in the same order:
-
-```mermaid
-flowchart TB
-    START([draw deck, depth]) --> A{"eligible,<br/>not drawn,<br/>not recent?"}
-    A -- yes --> PICK
-    A -- no --> B{"eligible,<br/>not drawn?"}
-    B -- yes --> PICK
-    B -- no --> RESET["clear this deck's bitmap<br/><i>the cycle is complete</i>"]
-    RESET --> C{"eligible,<br/>not recent?"}
-    C -- yes --> PICK
-    C -- no --> D{"eligible at all?"}
-    D -- yes --> PICK
-    D -- no --> FAIL([no question — deck yields nothing])
-    PICK["pick uniformly among candidates<br/>mark drawn · push onto the ring"] --> OUT([question])
-
-    classDef q fill:#f7f5f1,stroke:#9a8f7d
-    class A,B,C,D q
-```
-
-The order encodes what is negotiable. **The bag is the guarantee**: every
-eligible question in a deck is shown once before any is shown twice, and the
-bitmap is only cleared when the cycle is genuinely complete. **The ring is a
-courtesy** and is dropped first, because the smallest shipped deck is no bigger
-than the ring — Here has 20 eligible questions in English and 12 in German
-against a 20-entry ring — and honouring it there would leave nothing to draw.
-Refusing to answer a press is worse than repeating a question sooner than
-ideal.
-
-The ring is shared across decks rather than kept per deck. Close and New People
-overlap heavily, so a per-deck ring would let a Category press hand back a
-question just read under the other name.
-
-`fingerprint` is a cheap hash of the bundle's version, language and count.
-`bind()` compares it and wipes the state when it differs — without that, a
-synced bundle would leave bitmaps indexing questions that no longer exist. It
-is already in place even though sync is not, because it is the part that would
-be painful to add afterwards.
-
-Randomness is injected as a function pointer rather than called directly, which
-is what lets the suite run a deterministic sequence and the device use its
-hardware RNG.
+Files that define zbus objects stay in C because Zephyr's macros use
+initializers that C++17 rejects. C++ policy is exposed to those files through
+small C APIs.
 
 ## Channels
 
-One channel is **state** (it holds its last value, so anyone can read "what is
-true now") and the rest are **events**. That distinction is the domain model:
-the question on the glass *is* something, a press *happened*.
+`chan_question` and `chan_power` hold current state. The other channels carry
+events.
 
-| Channel | Kind | Carries | Published by | Read by | Status |
-|---|---|---|---|---|---|
-| `chan_category` | event | timestamp, press duration | workqueue | `app` | built |
-| `chan_next` | event | timestamp, press duration | workqueue | `app` | built |
-| `chan_question` | state | seq, deck, text | `app` | `display` | built |
-| `chan_render` | event | seq, result, was-full | `display` | `app` | built |
-| `chan_service` | event | the portal's current card | `net` | `app` | built |
-| `chan_corpus` | event | the language now in use | `net` | `app` | built |
-| `chan_power` | state | state, mV, USB | workqueue | `status` | built |
+| Channel         | Carries                            | Publisher       | Consumer |
+| --------------- | ---------------------------------- | --------------- | -------- |
+| `chan_category` | timestamp and press duration       | input work item | app      |
+| `chan_next`     | timestamp and press duration       | input work item | app      |
+| `chan_question` | sequence, category, and text       | app             | display  |
+| `chan_render`   | sequence, result, and refresh type | display         | app      |
+| `chan_service`  | setup or sync result card          | net             | app      |
+| `chan_corpus`   | active language change             | net             | app      |
+| `chan_power`    | power state, millivolts, and VBUS  | power work item | status   |
 
-All observers are message subscribers, so a publish never blocks a publisher.
+Messages use subscribers, so publishers do not wait for consumers.
+`chan_question` copies the text into the message. This keeps it valid if sync
+replaces the underlying corpus before the display thread reads it.
 
-`chan_question` carries the text by value — `CONFIG_TK_MAX_QUESTION_BYTES` of
-it — rather than a pointer into the corpus. A sync can replace the bundle
-between the publish and the render, and a 128-byte copy is cheaper than the
-rule that would otherwise be needed about who may free what.
+The app is the only publisher of `chan_question` and owns its sequence number.
+Render results with an older sequence are ignored. Corpus changes take effect
+on the next requested draw and do not refresh the panel by themselves.
 
-Two contract rules that are easy to violate:
+## Question data
 
-- **Press duration travels but is never read by policy.** It exists so a table
-  study can answer "did anyone try to long-press?". Long press is Next.
-- **`chan_corpus` must not trigger a redraw.** A new bundle applies on the next
-  *requested* draw. A sync that fires by itself is housekeeping and stays
-  silent; a sync somebody asked for reports on the panel through
-  `chan_service`, which is a different channel and a deliberate exception. See
-  the decision log.
-- **`app` is the only publisher of `chan_question`.** `net` has something to
-  put on the panel and still does not publish it: `app_logic` owns the sequence
-  number every card is stamped with, and the guard that drops a late render
-  matches against it. A second publisher would break that guard rather than
-  merely race it, so the portal's card travels on `chan_service` and `app`
-  turns it into a card.
-- **`sleep` must not observe `chan_power`.** Every observer of a channel that
-  `sleep` listens on rearms the idle timer, and a sample arrives every
-  `CONFIG_TK_POWER_SAMPLE_MS` — five times `CONFIG_TK_SLEEP_IDLE_MS`. That
-  happens to be survivable today and would stop the device sleeping forever the
-  moment either number moved. `sleep.c` calls `tk_power_external()` directly
-  instead, which is also how it asks `net` whether the portal is up.
+Every shipped language is compiled into the firmware. A valid synced corpus in
+LittleFS takes precedence; the compiled copy remains the fallback.
 
-`app` does not observe `chan_power` either, for a smaller reason: the refresh
-gate wants the current answer at the moment of a press, not the last one that
-was broadcast, so `app_logic` asks `tk_power_refresh_allowed()` when it is about
-to draw. The channel exists for the things that react to a change rather than
-query one, which today is the status LEDs and tomorrow is the portal's status
-page.
+```mermaid
+flowchart LR
+    YAML[questions/*.yaml] --> BUILD[tools/build_bundle.py]
+    BUILD --> GZIP[dist/bundles/*.qdb.gz]
+    GZIP --> RAW[firmware test fixtures<br/>raw QDB2]
+    RAW --> EMBED[compiled corpora]
+    HTTP[verified sync download] --> LFS[(LittleFS /corpus)]
+    EMBED --> OPEN[qdb::open]
+    LFS --> OPEN
+```
 
-## Modules
+The selected language is stored in NVS. Changing it reopens the corpus and
+publishes `chan_corpus`. Binding the shuffle bag to a different bundle
+fingerprint clears indices that belong to the previous corpus.
 
-The split that matters is not epaper-versus-input, it is **what needs
-hardware**. Everything in the upper box runs under qemu and is tested without a
-board. `fsm` touches Zephyr only for its default clock, which tests override,
-so every timeout is exercised without sleeping.
+### QDB reader
+
+`Qdb::open()` validates the whole QDB2 buffer: magic, record lengths, question
+count, and trailing bytes. Questions point into that buffer, so the buffer must
+outlive every returned view.
+
+`Qdb::at()` walks records from the start. The shipped corpora are small enough
+that an offset table would cost more RAM than the scan saves.
+
+A question is eligible when its category bit is set and its depth does not
+exceed `CONFIG_TK_PLAYBACK_DEPTH_MAX`. Corpus validation restricts dark and
+spicy questions to Wild.
+
+### Shuffle bag
+
+The bag tracks drawn questions per category and keeps a recent-question ring
+shared by all categories. A draw applies these rules:
 
 ```mermaid
 flowchart TB
-    subgraph pure["firmware/lib — hardware-free · C++17 · runs under qemu"]
-        direction LR
-        FSM[fsm<br/><i>transition table engine</i>]
-        APPFSM[app_fsm<br/><i>the only decision maker</i>]
-        QDB[qdb<br/><i>QDB2 reader · bag</i>]
-        LAY[layout<br/><i>UTF-8 · accents · wrap</i>]
-        PFSM[portal_fsm<br/><i>the setup machine</i>]
-        PBITS[portal dns · form · page<br/><i>parse · render · escape</i>]
-        PWRFSM[power_fsm<br/><i>what a millivolt means</i>]
-        SLED[status_led<br/><i>which condition wins</i>]
-    end
-
-    subgraph glue["firmware/app/src — Zephyr-bound"]
-        direction LR
-        CHAN[channels.c<br/><i>zbus definitions</i>]
-        INPUT[input.c<br/><i>ISR, debounce, settle</i>]
-        APPC[app.c<br/><i>thread + subscriber</i>]
-        LOGIC[app_logic.cpp<br/><i>fsm + qdb, behind a C API</i>]
-        DISP[display.c<br/><i>thread</i>]
-        PANEL[panel.cpp<br/><i>CFB, marks, refresh</i>]
-        NETC[net.c<br/><i>thread + wifi events</i>]
-        NLOG[net_logic.cpp<br/><i>machine behind a C API</i>]
-        PORTALC[portal.c<br/><i>SoftAP, DHCP, DNS, HTTP</i>]
-        FETCH[fetch.c<br/><i>one GET, a sink per caller</i>]
-        SYNCC[sync.cpp<br/><i>bundle: verify, store</i>]
-        OTAC[ota.cpp<br/><i>image: verify, stage</i>]
-        PWRC[power.c<br/><i>ADC, VBUS, workqueue</i>]
-        PWRL[power_logic.cpp<br/><i>machine behind a C API</i>]
-        STATC[status.c<br/><i>two pins, blink timing</i>]
-        STATL[status_logic.cpp<br/><i>arbiter behind a C API</i>]
-    end
-
-    FSM --> APPFSM
-    APPFSM --> LOGIC
-    QDB --> LOGIC
-    LAY --> PANEL
-    APPC --> LOGIC
-    LOGIC --> CHAN
-    INPUT --> CHAN
-    DISP --> PANEL
-    DISP --> CHAN
-    APPC --> CHAN
-    FSM --> PFSM
-    PFSM --> NLOG
-    PBITS --> PORTALC
-    NETC --> NLOG
-    NLOG --> PORTALC
-    NLOG --> CHAN
-    NETC --> SYNCC
-    NETC --> OTAC
-    SYNCC --> FETCH
-    OTAC --> FETCH
-    SYNCC --> CHAN
-    FSM --> PWRFSM
-    PWRFSM --> PWRL
-    PWRC --> PWRL
-    PWRL --> CHAN
-    SLED --> STATL
-    STATC --> STATL
-    CHAN --> STATC
-
-    classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
+    START([draw]) --> A{eligible,<br/>undrawn,<br/>not recent?}
+    A -- yes --> PICK[pick uniformly]
+    A -- no --> B{eligible and undrawn?}
+    B -- yes --> PICK
+    B -- no --> RESET[clear this category's drawn bitmap]
+    RESET --> C{eligible and not recent?}
+    C -- yes --> PICK
+    C -- no --> D{any eligible question?}
+    D -- yes --> PICK
+    D -- no --> FAIL([no question])
+    PICK --> MARK[mark drawn and add to recent ring]
 ```
 
-`panel.cpp` is C++ although it sits in the Zephyr-bound box: it calls `layout`
-directly, and the display and CFB APIs are ordinary functions with none of the
-macro trouble that keeps the others in C.
+Every eligible question in a category is shown once before that category's
+bitmap resets. The recent ring is relaxed when it would prevent a draw. The bag
+state lives in RTC slow memory, so ordinary Next presses do not write flash.
 
-C++ stops at the Zephyr boundary for one mechanical reason: `ZBUS_CHAN_DEFINE`
-and several HAL macros expand to out-of-order designated initializers, legal in
-C and rejected by C++17. Keeping those files `.c` means upstream samples paste
-in unmodified.
+## Tabletop state machine
 
-## The tabletop state machine
-
-`app_fsm` uses the `Fsm` base class: the transition table is the
-specification, `handle_current_state()` only picks which transition to return,
-and each state gets its own `on_*()` handler so the table stays readable.
+Category advances the active category and displays its name. Next draws a
+question from the active category. A cold boot displays the active category;
+a button wake replays the latched Category or Next action.
 
 ```mermaid
 stateDiagram-v2
     [*] --> BOOT
-    BOOT --> BOOT: REPEAT — no deck yet, no timeout
-    BOOT --> SHOWING: RETAINED — panel already holds this deck
-    BOOT --> CATEGORY: CONTINUE — announce the deck
-    CATEGORY --> REFRESHING: CONTINUE
-    CATEGORY --> FAIL: FAILED
-    SHOWING --> SHOWING: REPEAT — idle → deep sleep
-    SHOWING --> CATEGORY: RELABEL — Category advanced the deck
-    SHOWING --> DRAWING: REDRAW — Next
-    SHOWING --> SERVICE: SERVICE — the portal has something to say
-    SERVICE --> REFRESHING: CONTINUE
-    SERVICE --> FAIL: FAILED
-    DRAWING --> REFRESHING: CONTINUE
-    DRAWING --> FAIL: FAILED — deck yields nothing
-    REFRESHING --> REFRESHING: REPEAT — refresh timeout
-    REFRESHING --> SHOWING: CONTINUE — render done
-    REFRESHING --> FAIL: FAILED — render reported an error
-    FAIL --> SHOWING: CONTINUE
+    BOOT --> SHOWING: retained question matches
+    BOOT --> DRAWING: Next wake
+    BOOT --> CATEGORY: cold boot or Category wake
+    CATEGORY --> REFRESHING: category card queued
+    CATEGORY --> FAIL: queue failed
+    SHOWING --> DRAWING: Next
+    SHOWING --> CATEGORY: Category
+    SHOWING --> SERVICE: service card pending
+    DRAWING --> REFRESHING: question queued
+    DRAWING --> FAIL: no question
+    SERVICE --> REFRESHING: service card queued
+    SERVICE --> FAIL: queue failed
+    REFRESHING --> SHOWING: matching render result
+    REFRESHING --> FAIL: error or timeout
+    FAIL --> SHOWING
 ```
 
-Transitions are named for what happened, not for where they lead — the table
-owns the destinations. `REDRAW`, `RELABEL` and `RETAINED` exist because
-`SHOWING` and `BOOT` have more than one way out and `CONTINUE` cannot mean all
-of them.
+The following rules sit at the state-machine boundary:
 
-**Category announces the deck; Next asks a question.** The deck's
-name goes on the panel and stays there until someone presses. That is what
-makes the deck legible without printing the six names on the case, which is
-what lets one button reach all six: a deck you can read on the glass does not
-need a labelled detent.
+- Presses received during `REFRESHING` are discarded.
+- Service cards take priority when the machine returns to `SHOWING`.
+- Each draw, category card, or service card clears stale render state before it
+  queues a refresh.
+- A failed category or draw is considered settled until another input arrives.
+- `CONFIG_TK_REFRESH_TIMEOUT_MS` prevents a stalled panel from holding the
+  machine in `REFRESHING` forever.
 
-`SHOWING` checks Next before a deck change, so a press made while the name is
-up gets a question rather than the name again.
+## Display
 
-The table above is `firmware/lib/app_fsm/app_fsm.cpp` line for line, and
-`firmware/tests/app_fsm` drives every edge in it with a fake display and an
-injected clock.
+`panel.cpp` lays out UTF-8 text through `lib/layout`, draws through Zephyr CFB,
+and selects full or partial refresh. A full refresh is forced at boot and after
+`CONFIG_TK_FULL_REFRESH_INTERVAL` partial updates.
 
-| State | Handler | Leaves when |
-|---|---|---|
-| `BOOT` | `on_boot()` | a deck is known, which is immediate — it comes from RTC memory |
-| `CATEGORY` | `on_category()` | immediately — the deck's name is sent in `on_enter_state()` |
-| `SHOWING` | `on_showing()` | Next arrives, or the deck differs from the one on screen |
-| `DRAWING` | `on_drawing()` | immediately — the draw itself happens in `on_enter_state()` |
-| `SERVICE` | `on_service()` | immediately — the card is sent in `on_enter_state()` |
-| `REFRESHING` | `on_refreshing()` | the display reports back, or `CONFIG_TK_REFRESH_TIMEOUT_MS` passes |
-| `FAIL` | `on_fail()` | immediately |
+The SSD16xx driver performs a full update when blanking changes from on to off.
+`panel.cpp` therefore uses `display_blanking_on()`, `display_write()`, then
+`display_blanking_off()` for a full refresh. A partial refresh writes while
+blanking is already off.
 
-`BOOT` has no timeout. The deck comes from RTC memory and is known immediately,
-so it is never waited on in practice; the state stays because a corpus that
-fails to open is still a reason not to draw. `REFRESHING` has one, so a dead
-panel cannot wedge the device.
+The local Zephyr patch controlled by `firmware/patches.yml` preserves the image
+during driver initialization. Without it, every deep-sleep wake would clear the
+bistable panel before the app could decide that no refresh was needed.
 
-Two rules are in the handlers rather than the table, because they are about
-what the machine remembers rather than where it goes:
+Before system power-off, `sleep.c` sends the panel controller to deep sleep and
+holds its reset, D/C, and chip-select pins inactive.
 
-- **A press that lands during `REFRESHING` is dropped, not queued.** A panel
-  takes up to two seconds; honouring presses made during it would spend that
-  time drawing questions nobody has read.
-- **Entering `FAIL` adopts the active deck as the one on screen.** Without
-  that, a deck yielding nothing would leave `SHOWING` looking at a deck it has
-  not drawn, ask again, fail again, and spin. Adopting it means the device sits
-  on the previous question until the user presses or turns something.
-- **Entering `DRAWING` discards any render result still pending.** It can only
-  belong to an earlier question, one whose refresh timed out and then finished
-  anyway. Left in place it satisfies the next refresh the instant that refresh
-  begins, so the panel is told to draw and the machine calls it done in the same
-  breath. This was a real bug on hardware: one press appeared to do nothing, and
-  the next showed two questions in quick succession. `app_logic` adds a second
-  guard by matching the `seq` on `chan_render` against the last question
-  published, so a late result is dropped before it reaches the machine at all.
+## Retained state and wake
 
-**A press that lands during `REFRESHING` is dropped; a service card is not.**
-The two are opposites on purpose. A press made while the panel is busy is
-asking for time nobody has read yet, so honouring it spends two seconds badly.
-A service card is somebody standing at the device waiting to be told which
-network to join, and the panel is free within a couple of seconds.
+`app/src/retained_block.cpp` places one validated block in `.rtc_noinit` inside
+RTC slow memory. It contains:
 
-Service entry was specified here as *not* a state, on the grounds that the
-tabletop face stays a question display. It stays a question display, and it is
-a state anyway. The reason is mechanical rather than aesthetic: `app_logic`
-owns the sequence number every card carries and drops any render whose `seq` is
-not the one last published, so a card published from the `net` thread would
-allocate a sequence number behind its back and break that guard. Routing it
-through `SHOWING → SERVICE → REFRESHING → SHOWING` gives the card the same
-refresh accounting as everything else, and `app` stays the only publisher of
-`chan_question`. A press during setup still draws a question.
+- shuffle-bag state and the shared recent ring;
+- the partial-refresh counter;
+- active and displayed categories;
+- whether the panel holds a question;
+- the last question sequence number.
 
-## Sync
-
-Built, apart from the transport. The flow below is what runs.
+The block carries a magic value, layout version, size, and payload hash. A
+failed check clears the whole block and selects New People. The block is sealed
+after each completed render.
 
 ```mermaid
-stateDiagram-v2
-    [*] --> IDLE
-    IDLE --> CHECK: USB + known Wi-Fi + battery ok
-    CHECK --> IDLE: already current
-    CHECK --> DOWNLOAD: newer version
-    DOWNLOAD --> VERIFY
-    VERIFY --> SWAP: size → sha256 → ed25519
-    SWAP --> IDLE: decompress, rename, chan_corpus
-    CHECK --> FAILED
-    DOWNLOAD --> FAILED
-    VERIFY --> FAILED
-    SWAP --> FAILED
-    FAILED --> IDLE: old bundle intact
+flowchart TB
+    BOOT([boot]) --> CHECK{retained block valid?}
+    CHECK -- no --> COLD[clear state<br/>select New People]
+    CHECK -- yes --> MATCH{panel holds a question<br/>from the active category?}
+    MATCH -- yes --> KEEP[keep panel unchanged]
+    MATCH -- no --> ACTION[replay wake action<br/>or show category]
+    COLD --> ACTION
 ```
 
-Checks run cheapest-first so a truncated download costs no signature work. Any
-failure leaves the previous bundle in place. The gzip in a `.qdb.gz` is transport
-only — `SWAP` decompresses, because a device that reboots on every press must
-not re-inflate the bundle each time.
+Category and Next are active-low RTC-capable inputs. At sleep time, firmware
+arms every input that currently reads high with EXT1 `ANY_LOW`. A held or stuck
+button is omitted from the mask, avoiding an immediate wake loop while leaving
+the other button usable. The EXT1 wake status is latched at `PRE_KERNEL_1` so
+later driver initialization cannot erase it. Next wins if both bits are set.
 
-## Firmware updates
+VBUS uses a separate active-high EXT0 trigger when
+`CONFIG_TK_POWER_WAKE_ON_USB` is enabled. It is disabled by default because it
+keeps the RTC peripheral domain powered. With the default setting, plugging in
+does not wake the device; the next button press wakes it, VBUS is sampled during
+boot, and the network window opens.
 
-Built. The same shape as the sync above, sharing the socket code in `fetch.c`,
-the manifest parser in `lib/sync`, the verifier in `lib/ed25519` and the
-cheapest-first check order. Full description in
-[firmware_update.md](firmware_update.md).
+## Power and status
 
-```mermaid
-flowchart LR
-    OTA["ota.cpp<br/><i>manifest · verify · stage</i>"]
-    SINK["fetch.c<br/><i>one GET, a sink per caller</i>"]
-    SLOT[("slot1_partition<br/>1344 KB at 0x170000")]
-    MB["MCUboot<br/><i>verifies, then copies</i>"]
-    APP["slot0<br/><i>the running image</i>"]
-
-    OTA --> SINK
-    SINK -->|"streamed, hashed as it goes"| SLOT
-    OTA -->|"boot_request_upgrade()<br/>only after all three checks"| SLOT
-    SLOT -->|"on the next boot"| MB
-    MB -->|"signature ok"| APP
-```
-
-Two differences from a bundle sync, both forced by size. An image is written
-before it is verified, because 780 KB does not fit in RAM — safe because
-nothing boots from slot1 until `boot_request_upgrade()` marks it. And installing
-is a restart rather than a rename: MCUboot does the copy, measured at 4.5
-seconds on this board, before any application code runs.
-
-`update_notice.c` is what tells the table afterwards, since the install happens
-where nobody can see it.
-
-## Where a synced corpus lives
-
-Built, ahead of anything that fetches one.
-
-```mermaid
-flowchart LR
-    NET["net<br/><i>verifies a bundle</i>"]:::t
-    STORE["corpus_store.c<br/><i>write · rename · read</i>"]
-    LFS[("LittleFS /corpus<br/>512 KB at 0x400000")]
-    BUF["one RAM buffer<br/><i>CONFIG_TK_MAX_CORPUS_BYTES</i>"]
-    EMB[("corpus.c<br/><i>every shipped language, in the image</i>")]
-    QDB["qdb::open()"]
-
-    NET -.-> STORE
-    STORE --> LFS
-    LFS --> BUF
-    BUF --> QDB
-    EMB --> QDB
-
-    classDef t fill:#f7f5f1,stroke:#b3aca0,stroke-dasharray:4 3,color:#7a736a
-```
-
-The partition sits above 0x400000, which nothing claims: the module carries
-8 MB and the devicetree includes the 4 MB table. Nothing existing moves, and
-that is the point — `storage_partition` holds the NVS with the Wi-Fi
-credentials and the chosen language in it, so carving the filesystem out of it
-would orphan them on every device already set up.
-
-**A synced corpus wins, and a compiled-in one is always there.** A device that
-never reaches a network works, a corpus that does not parse falls back with a
-complaint rather than leaving the panel with nothing to draw, and a bundle too
-large to read back is refused *before* it is written — storing one would have
-replaced a corpus that works with one that cannot be opened.
-
-**The whole file is read into RAM**, because `qdb` is a zero-copy reader:
-`Question::text` points into the bundle and has to stay valid for as long as the
-store is open, and a file's bytes are not contiguous in flash. One buffer,
-reused, sized against `CONFIG_TK_MAX_QUESTIONS` rather than against what ships
-today. The same buffer will hold a download while it is verified, since those
-are the same bytes.
-
-**The swap is a rename.** `fs_rename` replaces the destination, so a power cut
-either side of it leaves a whole corpus on disk — the old one or the new one,
-never half of either.
-
-`CONFIG_TK_DEBUG_CORPUS_STORE` writes the compiled-in corpus to the filesystem
-at boot so the next boot reads it back, which is the whole of what sync does
-with a bundle once it has verified one. Without it none of this could be
-exercised until the download existed, and a first failure could then have been
-in either half.
-
-### What is at rest, and in the clear
-
-Everything the device keeps between boots is readable by anyone holding it.
-`storage_partition` is NVS and NVS does not encrypt; the flash itself is not
-encrypted either. So `esptool read-flash 0x3b0000 0x30000` yields, as printable
-strings, the stored network name and **its password**, the chosen language and
-the installed versions. Measured on the bench: eighteen seconds, no gesture, no
-portal, device in its ordinary state.
-
-Nothing here is a mistake to be fixed in this layer — encrypting the value with
-a key that is also in the flash protects nobody. Closing it means the SoC's
-eFuse-backed flash encryption, which is a different bootloader, a devicetree
-change that orphans existing storage, and an irreversible per-device step. The
-decision log has the full reasoning and the argument for deferring it to the
-PCB stage. Until then the mitigation that costs nothing is to give the device a
-guest network.
-
-## The setup portal
-
-Built, behind `CONFIG_TK_NET`. It exists because a device with no way to be
-told an SSID can never sync, so it comes before sync rather than after it.
-
-The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf`
-rather than in `prj.conf`, because `prj.conf` is shared with qemu and
-native_sim, and both `CONFIG_WIFI_ESP32` and `src/sleep.c` need things only
-this SoC has. The second Wi-Fi node AP+STA requires is in the matching board
-overlay, as is the light-sleep state that has to be disabled.
-
-`soak.conf` sets `CONFIG_TK_NET=n`, and `CONFIG_TK_SLEEP` is unavailable there
-at all — it depends on neither debug symbol being set, because a soak run
-counts its own presses and the charset image remembers its page, and a wake is
-a reboot that loses both.
-
-Deep sleep also decides when the device joins a network, and the answer is
-almost never. A wake is a fresh boot, so joining on one would put a radio
-association in front of every question the device answers, for a connection
-nothing yet uses; `net.c` skips it when `tk_wake_button()` reports a wake. That
-leaves a cold boot, which after sleep lands means first power-up, the reset pin
-or a flat cell. The deliberate path is the service gesture, which joins the
-saved network as the last step of the portal's flow. The charging window the
-design wants needs VBUS on GPIO21, reserved and unwired.
-
-```mermaid
-stateDiagram-v2
-    [*] --> OFF
-    OFF --> SCANNING: both buttons held through a boot
-    SCANNING --> AP_STARTING: scan done, or the budget expired
-    AP_STARTING --> SERVING: the access point reports itself up
-    AP_STARTING --> SHUTDOWN: it did not
-    SERVING --> CONNECTING: the form was posted
-    SERVING --> SHUTDOWN: the window closed
-    CONNECTING --> CONNECTED: the network accepted us
-    CONNECTING --> SERVING: it refused, or never answered
-    CONNECTED --> SHUTDOWN: the window closed
-    SHUTDOWN --> OFF: everything torn down
-```
-
-Three orderings in that diagram are forced by the hardware rather than chosen,
-and all three come from the ESP32-S3 having one radio for two jobs.
-
-**The scan runs before the access point.** A scan hops every channel in the
-band for several seconds while a SoftAP sits on one, so scanning with a phone
-already associated stalls it and can drop the association. The list is a few
-seconds stale by the time anyone reads it, which is not a property of networks
-that move. A scan that never reports back still raises the access point: the
-page takes a typed network name, which a hidden network needs anyway.
-
-**Joining happens last, and the panel reports it.** In AP+STA mode the SoftAP
-is forced onto whatever channel the station lands on, so joining knocks the
-phone off the setup network. The browser that submitted the form is gone before
-the result exists. The form is therefore answered first and the join started
-afterwards, and the answer arrives on the e-paper.
-
-**Serving waits for the access point to report itself up.** A socket bound to
-192.168.4.1 fails with `-EADDRNOTAVAIL` until the interface actually carries
-that address.
-
-The captive sheet needs two things to be wrong at once, which is why both are
-arranged deliberately. DHCP hands out the device as the DNS server — an empty
-`CONFIG_NET_DHCPV4_SERVER_OPTION_DNS_ADDRESS` omits option 6 entirely and the
-whole flow silently fails there — and the DNS responder answers every A query
-with 192.168.4.1. The phone's probe then reaches the HTTP server's fallback
-resource, which redirects.
-
-The access point is **open**. A WPA2 setup network needs a passphrase the user
-has to be told, and the only places to tell them are the panel and the case.
-Open, plus a physical gesture to start it, plus a window that closes on its own,
-is the same posture most consumer setup flows take. The status page names the
-saved network and never its password.
-
-Entry is **both buttons held through a boot**, confirmed for
-`CONFIG_TK_PORTAL_ENTRY_HOLD_MS` rather than sampled once.
-[design.md](design.md) documents USB-plus-Next, which needs VBUS detect on
-GPIO21 — reserved, unwired, and absent from the devicetree. The buttons are
-read from the pins directly, because `input.c` publishes a press on release and
-ignores a release with no press behind it: a button already down at boot
-produces no event at all.
-
-## A press, as the firmware runs today
-
-Every participant below is a real thread or driver, and the whole path is
-covered by `firmware/tests/integration`.
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant BTN as Next button
-    participant GK as gpio-keys driver
-    participant WQ as system workqueue
-    participant APP as app thread
-    participant QDB as qdb + bag
-    participant DSP as display thread
-    participant PNL as panel + CFB
-
-    BTN->>GK: falling edge
-    GK->>GK: 30 ms debounce
-    BTN->>GK: rising edge (release)
-    GK->>WQ: input_report_key(KEY_ENTER)
-    WQ->>WQ: measure press duration
-    WQ->>APP: chan_next
-    APP->>APP: SHOWING → DRAWING
-    APP->>QDB: draw(deck, depth ≤ 2)
-    QDB-->>APP: question, marked drawn + ringed
-    APP->>DSP: chan_question (seq, deck, text)
-    APP->>APP: DRAWING → REFRESHING
-    DSP->>PNL: wrap, decompose accents, draw glyphs
-    PNL->>PNL: write with blanking off → partial refresh
-    PNL-->>DSP: done
-    DSP->>APP: chan_render (seq, result)
-    APP->>APP: REFRESHING → SHOWING, block on K_FOREVER
-    Note over APP,DSP: a press arriving between 11 and 17 is dropped
-```
-
-A Category press is the same path, ending in the deck's name rather than a
-question.
-
-### Two things the panel driver decides for you
-
-In Zephyr 4.4 the SSD16xx driver sits behind MIPI-DBI rather than on SPI
-directly: the display node is a child of a `zephyr,mipi-dbi-spi` node that owns
-the bus and the D/C and reset pins. Putting those properties on the display node
-itself is the older binding and does not bind at all.
-
-Its `full` and `partial` children are what make a partial refresh available —
-the driver offers one only when a partial profile exists, and picks between the
-two by the blanking state. So a full refresh is a sandwich:
-`display_blanking_on()`, `display_write()`, `display_blanking_off()`, with the
-update happening on the third call. A partial refresh is a plain write with
-blanking already off.
-
-Half a sandwich loads the image and never shows it. The write returns in about
-20 ms with nothing changed on the glass, and the update is deferred onto
-whichever later call turns blanking off — which then runs long and shows the
-previous image. `panel.cpp` brackets it for that reason, and the dummy display
-the suites run against accepts blanking calls in any order, so this is bench
-knowledge rather than something a test will tell you.
-
-
-## The wake path
-
-The same work, from a cold boot, because a wake *is* a cold boot. This is what
-the everyday image does today:
-
-```mermaid
-sequenceDiagram
-    autonumber
-    participant HW as Next button
-    participant Z as ROM + Zephyr init
-    participant A as app
-    participant Q as qdb
-    participant D as display
-
-    HW->>Z: EXT1 wake (a reboot, not a resume)
-    Z->>A: main()
-    A->>A: read the active deck from RTC memory
-    A->>Q: draw(deck, depth ≤ 2)
-    Q-->>A: question
-    A->>D: chan_question
-    D->>D: partial refresh
-    D-->>A: chan_render
-    A->>A: block with no timeout → deep sleep
-    Note over HW,D: under 1 s, end to end
-```
-
-A Category press follows the same path, advancing the retained deck and drawing
-its name rather than a question.
-
-## Power
-
-One reading — millivolts at the pack, and whether VBUS is high — turns into one
-state, and three parts of the firmware ask that state a different question.
+`power.c` samples the switched battery divider and VBUS. ADC failure leaves the
+state `UNKNOWN`; VBUS remains usable because it is read independently.
 
 ```mermaid
 stateDiagram-v2
     [*] --> UNKNOWN
-    UNKNOWN --> NORMAL: first reading
-    NORMAL --> LOW: under TK_REFRESH_MIN_MV
-    LOW --> CRITICAL: under TK_POWER_CRITICAL_MV
-    CRITICAL --> LOW: back over, plus hysteresis
-    LOW --> NORMAL: back over, plus hysteresis
-
-    NORMAL --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
-    LOW --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
-    CRITICAL --> UNKNOWN: under TK_POWER_PLAUSIBLE_MV
-
-    NORMAL --> CHARGING: VBUS
-    LOW --> CHARGING: VBUS
-    CRITICAL --> CHARGING: VBUS
-    UNKNOWN --> CHARGING: VBUS
-    CHARGING --> CHARGED: over TK_POWER_FULL_MV
-    CHARGED --> CHARGING: back under, plus hysteresis
-    CHARGING --> UNKNOWN: unplugged
-    CHARGED --> UNKNOWN: unplugged
+    UNKNOWN --> NORMAL: plausible cell reading
+    NORMAL --> LOW: below refresh floor
+    LOW --> CRITICAL: below critical threshold
+    CRITICAL --> LOW: recovered with hysteresis
+    LOW --> NORMAL: recovered with hysteresis
+    NORMAL --> UNKNOWN: implausible reading
+    LOW --> UNKNOWN: implausible reading
+    CRITICAL --> UNKNOWN: implausible reading
+    UNKNOWN --> CHARGING: VBUS high
+    NORMAL --> CHARGING: VBUS high
+    LOW --> CHARGING: VBUS high
+    CRITICAL --> CHARGING: VBUS high
+    CHARGING --> CHARGED: above full estimate
+    CHARGED --> CHARGING: below full estimate with hysteresis
+    CHARGING --> UNKNOWN: VBUS low
+    CHARGED --> UNKNOWN: VBUS low
 ```
 
-Five things about that shape are load-bearing.
+LOW and CRITICAL refuse panel refreshes. UNKNOWN permits them, so a missing or
+failed divider does not disable the tabletop interaction. Downward transitions
+are immediate. Recovery uses hysteresis. A reading below
+`CONFIG_TK_POWER_PLAUSIBLE_MV` is treated as an invalid divider reading.
 
-**Downwards is immediate and upwards is not.** Hysteresis applies only on the
-way back up. Being slow to notice a cell getting worse costs something; being
-slow to notice it recovering costs nothing.
+The CHARGED state is a voltage estimate; the breadboard charger has no
+termination-status output. External power keeps the device awake in both
+CHARGING and CHARGED.
 
-**Readings are sticky, so one sample can walk several rungs.** On battery the
-device is awake for about `CONFIG_TK_SLEEP_IDLE_MS` per press and then stops
-existing, so the machine sees one or two samples in its entire life. A first
-reading taken on a flat cell has to reach CRITICAL on its own rather than
-waiting for two more samples that will never arrive. All averaging happens in
-the sampler instead, as a burst at boot.
+The red and green LEDs share one priority arbiter:
 
-**Unplugging returns to UNKNOWN, not to NORMAL.** The first reading after a
-charge carries surface charge and reads high, so the ladder re-derives rather
-than trusting where it just was.
+| Condition                          | Output           |
+| ---------------------------------- | ---------------- |
+| critical refresh refused           | three red blinks |
+| low refresh refused                | one amber blink  |
+| sync or update active              | slow green pulse |
+| setup portal active                | steady amber     |
+| charged estimate                   | steady green     |
+| external power present             | steady red       |
+| healthy battery or unknown reading | off              |
 
-**UNKNOWN permits refreshes.** A failed ADC must not stop the device drawing
-questions. It is also the fail state, so a table bug degrades to a device that
-works and says nothing about its cell.
+Calls from app and network threads set atomic flags. The status work item owns
+the arbiter and GPIO writes, so blink state has a single writer.
 
-**There is a floor under the ladder, and it is not another rung.** A reading
-below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 2500 mV — returns to UNKNOWN from
-wherever it was. An SoC that is still running is not being fed by a pack at
-2.4 V: the protection circuit and the 3.3 V buck both give up above that, so
-such a number is a divider that is not fitted and a pin that is floating. That
-is the state of any rig before its copper is built, and without the floor the
-boot reading walks to CRITICAL before a thread starts and every press — the one
-that draws the first card included — is refused. The floor does not cover the
-whole range a floating pin can sit in; the rest is a jumper, and
-[hardware wiring](hardware_wiring.md) asks for it.
+## Setup, sync, and updates
 
-`CHARGED` is a voltage estimate and nothing but the LED may read it — see the
-decision log. Charge termination cannot be sensed: the charger exposes no /CHG
-pin, and a cell under constant-voltage charge sits near 4.2 V for the last hour.
+Holding Category and Next for `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` during boot opens
+the setup portal. The device scans first, starts an open access point, serves
+DHCP/DNS/HTTP, stores submitted credentials, then joins the selected network.
+The portal closes at its configured deadline. Its status page never shows the
+stored password.
 
-The two inputs are independent all the way through, and that is a requirement
-rather than an accident of layout. VBUS is a plain GPIO; the pack reading is an
-ADC behind a divider. `power.c` reads the pin on every tick whether or not the
-conversion worked, and posts it either way — through `tk_power_post_sample()`
-when there is a reading to go with it and `tk_power_post_usb()` when there is
-not. A USB bit that froze because the divider broke would keep
-`tk_power_external()` true, and `sleep_now()` refuses to sleep for as long as
-that holds: the device would stay awake on the cell until it was flat. Boot has
-the same shape — an ADC that never comes ready still schedules the sampler, so
-VBUS is read, `chan_power` carries a first value, and `net` sees the plug-in.
+```mermaid
+stateDiagram-v2
+    [*] --> OFF
+    OFF --> SCANNING: both buttons held through boot
+    SCANNING --> AP_STARTING: scan complete or timed out
+    AP_STARTING --> SERVING: access point ready
+    AP_STARTING --> SHUTDOWN: start failed
+    SERVING --> CONNECTING: credentials submitted
+    SERVING --> SHUTDOWN: portal deadline
+    CONNECTING --> CONNECTED: station joined
+    CONNECTING --> SERVING: join failed or timed out
+    CONNECTED --> SHUTDOWN: portal deadline
+    SHUTDOWN --> OFF
+```
 
-### Who asks what
+A cold boot with stored credentials checks for new data. A button wake also
+checks while the external-power window is open. Battery-only wakes skip Wi-Fi
+so the requested question is not delayed by network association.
 
-| Asker | Question | Answer used for |
-|---|---|---|
-| `app_logic` | is a refresh allowed? | drawing, or leaving the glass alone |
-| `sleep` | is external power present? | staying awake for the whole charge |
-| `net` | is the charge window still open? | joining a network on a button wake |
-| `status` | what state, exactly? | which LED, at what rhythm |
+Question sync performs these checks before storing a bundle:
 
-### The two LEDs
+1. manifest schema and minimum firmware version;
+2. version newer than the installed corpus;
+3. declared download size;
+4. SHA-256 digest;
+5. Ed25519 signature against the compiled public key.
 
-A red LED and a green one; lighting both is amber. That is the whole palette
-and there are more conditions than colours, so two pairs are separated by
-rhythm instead. Highest priority first:
+The verified bytes are written beside the installed corpus and renamed over it.
+A failure leaves the previous file intact. An automatic sync keeps the current
+panel content. A sync requested from the portal publishes a result card.
 
-| Condition | Shown as |
-|---|---|
-| a press refused on a flat cell | red, three blinks |
-| a press refused on a low cell | amber, one blink |
-| a sync or an update running | green, slow pulse |
-| the portal on air | amber, steady |
-| charged | green, steady |
-| charging | red, steady |
-| on the cell, healthy | dark |
+OTA uses the same fetch, manifest, hash, and signature code. The image streams
+into `slot1_partition`; it is marked for upgrade only after verification.
+MCUboot validates and installs it on the next boot. `update_notice.c` displays
+the installed version after a successful update. See
+[firmware_update.md](firmware_update.md).
 
-Blinks are transient and fall back to whatever was underneath rather than to
-darkness — a burst that ended dark would tell somebody mid-charge that their
-device had stopped. The pairs that share a colour are exactly the ones rhythm
-separates: a low-battery blink against a steady portal amber, and a transfer
-pulse against a steady charged green.
-
-A failed ADC reading shows nothing. It is a bench condition, the console reports
-it, and a fourth thing to distinguish would make the other three harder to read
-across a table.
-
-**One writer.** The arbiter in `lib/status` holds mutable burst state, and what
-changes it arrives from three contexts: `app` on a refused press, `net` on a
-transfer or a portal going on air, and the system workqueue on every power
-publish. The workqueue is cooperative at priority −1 and preempts both threads.
-So the calls that come from a thread — `tk_status_set_activity()`,
-`tk_status_set_portal()` and `tk_status_note_refresh_blocked()` — set an atomic
-flag and reschedule the tick, and the tick is what tells the arbiter. Nothing
-else touches it.
-
-Every condition is **pushed** for the same reason: `chan_power` publishes only on
-a state change or a reading that has moved past the deadband, so on a resting
-cell it can carry nothing for minutes. Anything sampled at that moment is a
-condition the LEDs learn about late or not at all.
+## Persistent storage and security
 
 ```mermaid
 flowchart LR
-    APP["app thread<br/><i>refused press</i>"] -- flag --> TICK
-    NET["net thread<br/><i>transfer, portal on air</i>"] -- flag --> TICK
-    WQ["workqueue<br/><i>chan_power listener</i>"] --> TICK["status_tick<br/><i>system workqueue</i>"]
-    TICK --> LED["StatusLed<br/><i>lib/status</i>"] --> PINS["two GPIOs"]
+    RTC[RTC slow memory<br/>bag · display · active category] -->|lost on total power loss| COLD[cold defaults]
+    NVS[NVS<br/>Wi-Fi credentials · language · versions] -->|cleared by factory reset| EMPTY[unset]
+    LFS[LittleFS<br/>synced QDB2 files] -->|atomic rename| NEW[new corpus]
+    SLOT[MCUboot secondary slot<br/>candidate firmware] -->|verified boot| APP[running image]
 ```
 
-Without that, a press refused while the sampler happened to be running could arm
-a burst the tick had already decided not to run — and the blink is the only
-answer a refused press gets.
-
-## Where state lives
-
-```mermaid
-flowchart LR
-    RTC["`**RTC slow memory** ~512 B of 8 KB
-    bag bitmaps · recent ring
-    current question · refresh counter
-    bundle fingerprint`"]
-    NVS["`**NVS** in storage_partition
-    Wi-Fi credentials
-    language · bundle version`"]
-    LFS["`**LittleFS**
-    decompressed QDB2 corpus`"]
-    ACT["`**RTC slow memory**
-    active deck`"]
-
-    RTC -- lost when --> B1[cell removed or flat]
-    NVS -- lost when --> B2[factory reset]
-    LFS -- replaced by --> B3[atomic sync swap]
-    ACT -- lost when --> B1
-
-    classDef k fill:#f7f5f1,stroke:#9a8f7d
-    class RTC,NVS,LFS,ACT k
-```
-
-Keeping the bag out of NVS means a Next press costs no flash write, so button
-life rather than flash endurance bounds the device.
-
-The Wi-Fi credentials are Zephyr's `wifi_credentials` on the settings backend,
-which puts them in the `storage_partition` the ESP32-S3 flash map already
-defines — 192 KB at 0x3b0000, of which settings takes 32 KB. No devicetree
-change was needed. They are written when the form is posted and before the
-station is asked to join, deliberately: a flash write on this SoC disables the
-instruction cache, and the Wi-Fi task runs out of it.
-
-The active deck is in RTC memory rather than nowhere. A rotary selector would
-have held its own state — the knob position *is* the deck, readable at zero
-power — and a button does not, so the deck it advances to has to be remembered.
-A cold block makes that New People.
-
-**The retained block is built.** `lib/retained` owns one struct — the bag's
-state, the partial-refresh counter, and what the panel is currently showing —
-and `app/src/retained_block.cpp` places it in `.rtc_noinit`, a NOLOAD section
-inside `rtc_slow_seg` that nothing zeroes at startup. `.rtc.bss` would survive
-the sleep and then be cleared on the way back up, which retains the memory and
-discards the point of it.
-
-RTC memory holds whatever it held, and a cold power-on is not distinguishable
-from a wake by content alone, so the block carries a magic number, a layout
-version, its own size and a hash of the payload. Anything failing that check is
-zeroed. The check is not decoration: `Bag::State` carries `recent_len` and
-`recent_next`, which index fixed arrays without bounds checks of their own, so
-a block of garbage accepted as state is an out-of-bounds write.
-
-```mermaid
-flowchart TB
-    BOOT([boot]) --> LOAD["retained_load()"]
-    LOAD --> Q{"magic · version<br/>size · payload hash<br/>all agree?"}
-
-    Q -- no --> ZERO["zero the block"]
-    ZERO --> COLD["**cold boot**
-    fresh shuffle cycle
-    next refresh is full
-    draw a question"]
-
-    Q -- yes --> WAKE{"was a question
-    on the glass,
-    from this deck?"}
-
-    WAKE -- yes --> FREE["**free wake**
-    bag continues · counter continues
-    nothing drawn at all"]
-    WAKE -- no --> DRAW["**wake**
-    bag continues · counter continues
-    draw, partial refresh"]
-
-    COLD --> SEAL
-    FREE --> SEAL
-    DRAW --> SEAL["seal after each render"]
-
-    classDef q fill:#f7f5f1,stroke:#9a8f7d
-    classDef bad fill:#f4efe6,stroke:#b0a086
-    class Q,WAKE q
-    class ZERO,COLD bad
-```
-
-The right-hand path is the one that pays for the whole mechanism. A cold boot
-costs a 2315 ms full refresh; a free wake costs nothing at all.
-
-`retained_matches()` therefore answers truthfully, and a wake to a question the
-panel already holds costs no refresh. A deck name does not count — waking to
-one means Category was pressed and Next never was, so the name stays up
-rather than being read as an answer.
-
-*Verified at link time:* the block lands at `0x50000000`, which is
-`rtc_slow_ram`, and takes `rtc_slow_seg` from 36 to 488 bytes of the 8 KB
-available. The `esp32s3_devkitc/esp32s3/procpu` board also lists `retained_mem`
-as supported, so Zephyr's driver API is available; the section attribute is
-used instead because it hands out a struct rather than a read/write interface,
-and the bag mutates in place.
-
-*Verified on hardware*, with `just fw-retain` — the soak image rebooting itself
-every three presses, since a warm reboot is what a deep-sleep wake will be.
-Across three consecutive reboots:
-
-```
-rst:0xc (RTC_SW_CPU_RST)
-<inf> tk_main: reset: software
-<inf> tk_app: retained state: kept across the reboot
-<inf> tk_soak: partial #6 of seq 7      <- before
-rst:0xc (RTC_SW_CPU_RST)
-<inf> tk_soak: partial #7 of seq 8      <- after
-```
-
-The bag continued its cycle, `seq` continued, the refresh counter continued so
-no full refresh followed a reboot, and nothing was drawn at boot — the first
-question arrives one soak interval later, which is `retained_matches()` sending
-`BOOT` straight to `SHOWING`.
-
-Only a warm reset keeps RTC memory. A reset through the DevKitC's EN pin
-reports as `rst:0x1 (POWERON)` and clears it, so the check needs an image that
-reboots itself.
-
-*Still unconfirmed:* `PM_STATE_SOFT_OFF` mapping to real deep sleep rather than
-light sleep, and whether a genuine wake behaves like the warm reboot tested
-here.
-
-### The EXT1 wake mask
-
-The mask is computed at sleep time from a live reading: every pin currently
-high, armed for ANY_LOW. Both buttons are open at rest, so both are normally in
-it. A button held down at the moment of sleep is already low and is left out,
-because arming it would satisfy the wake condition before sleep is entered —
-and leaving it out means the other button still wakes the device.
-
-```mermaid
-flowchart LR
-    subgraph rest["at rest, deck 2 selected"]
-        direction TB
-        P0["GPIO4 · deck 0 — open, high"]:::armed
-        P2["GPIO6 · deck 2 — CLOSED, low"]:::held
-        P5["GPIO16 · deck 5 — open, high"]:::armed
-        PN["GPIO17 · Next — open, high"]:::armed
-    end
-
-    rest --> MASK["EXT1 mask = every pin that is high<br/><i>ANY_LOW</i>"]
-    MASK --> SLEEP([deep sleep])
-    SLEEP --> W1["knob leaves 2<br/><i>nothing happens — 2 is not armed</i>"]
-    W1 --> W2["knob reaches 3<br/><i>GPIO7 goes low</i>"]
-    W2 --> WAKE([wake])
-    SLEEP --> NX["Next pressed<br/><i>GPIO17 goes low</i>"] --> WAKE
-
-    classDef armed fill:#eef1f4,stroke:#8a97a6
-    classDef held fill:#f4efe6,stroke:#b0a086
-```
-
-**VBUS cannot join this mask, and an earlier version of this page was wrong to
-say it would.** `esp_sleep_enable_ext1_wakeup()` takes one trigger polarity for
-every pin in the mask; the buttons have claimed active-low and VBUS is
-interesting when it is high. Per-pin polarity exists on some Espressif parts —
-`SOC_PM_SUPPORT_EXT1_WAKEUP_MODE_PER_PIN` — and the ESP32-S3 is not one of them.
-
-EXT0 does it. It is a separate single-pin trigger with its own polarity and it is
-available here, so `sleep_now()` calls `esp_sleep_enable_ext0_wakeup()` on the
-VBUS pin under `CONFIG_TK_POWER_WAKE_ON_USB` — **default off**, because arming it
-forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep, where EXT1
-alone leaves that domain off. That is a standing cost against a 30 µA budget to
-save one button press. The symbol exists so the cost can be measured rather than
-argued about; nobody has measured it yet, and *verify* covers both halves — that
-a plug-in wakes the device, and what the powered RTC domain adds to the sleep
-current.
-
-An EXT0 wake carries no button. `latch_wake_button()` reports `TK_WAKE_NONE`, so
-nothing is replayed and `net` takes its cold-boot branch, which is the wanted
-behaviour: nobody pressed anything, and the reason to wake was to sync.
-
-With the symbol off, plugging in does not wake the device. The next press does,
-and `power` reads VBUS at boot before any thread starts, which is what lets `net`
-find external power and open the sync window on that same boot.
-
-The consequence worth stating: the mask is state recomputed on every sleep
-rather than configured once.
+The current breadboard build does not enable flash encryption. Physical access
+to its flash exposes Wi-Fi credentials and stored corpora. Product provisioning
+needs ESP32-S3 eFuse-backed flash encryption before the device is used on a
+sensitive network.
 
 ## Testing boundary
 
 ```mermaid
 flowchart LR
-    A["fsm · app_fsm · qdb · layout<br/><b>no Zephyr headers</b>"] --> H
-    B["settle window · drop-during-refresh<br/>panel refresh policy · GPIO to panel<br/><i>gpio-emul + dummy display</i>"] --> H["qemu_xtensa/dc233c<br/><i>macOS, full kernel</i>"]
-    B --> N["native_sim<br/><i>Linux only, faster</i>"]
-    C["the image itself · ghosting<br/>timing · power · sleep current"] --> HW["breadboard<br/><i>hardware required</i>"]
-
-    classDef t fill:#eef1f4,stroke:#8a97a6
-    class H,N,HW t
+    PURE[fsm · app_fsm · qdb · layout<br/>portal · power · status] --> HOST[qemu or native_sim]
+    SEAMS[GPIO debounce · zbus flow<br/>panel policy · real QDB fixtures] --> HOST
+    PHYSICAL[panel image · timing · radio<br/>battery · sleep current] --> BENCH[breadboard or rev A]
 ```
 
-The dummy display accepts writes and discards them, so everything about
-rendering *except the picture* is testable off-target: that each shipped
-question lays out inside 25 × 7 cells, that accented text draws without
-falling back, and that full refreshes come round on the interval. Whether it
-looks right is a bench question.
+`just fw-test` runs the firmware suites under qemu. Linux can use
+`just fw-test-linux` for `native_sim`. Both platforms use `gpio-emul` for the
+button suites. Generated QDB fixtures keep the writer and firmware reader on
+the same data contract.
 
-Emulated GPIO is not a `native_sim` feature: `CONFIG_GPIO_EMUL` follows a
-`zephyr,gpio-emul` devicetree node and works on either host platform, so the
-suites that drive the two buttons run in the default macOS loop.
+The dummy display checks bounds, refresh selection, and channel behavior. Image
+quality, ghosting, radio behavior, power thresholds, and current require
+hardware.
 
-`qdb` suites run against real bundles built from the question database by
-`just fw-fixtures`, not hand-written bytes.
+## Open measurements
 
-## Open items
-
-- A partial refresh was once measured at 2769 ms during a portal session,
-  against the 622 ms the panel work recorded. It has not recurred: every
-  measurement since the networking configuration moved into the board files has
-  been 624–720 ms. Left here as something to watch rather than a known problem,
-  because nothing explains what was different about the run that produced it.
-- Whether the SoftAP surviving a station join is as disruptive as the datasheet
-  implies. The phone is dropped by design and the panel reports instead, which
-  works; whether the phone could have been kept has not been tested.
-- **TLS is not the plan any more**, and this is a decision rather than an open
-  item. The device has no clock, so it cannot validate a certificate under any
-  scheme; the Ed25519 signatures are the security boundary and do not care
-  about the transport. So the device fetches over plain HTTP, from a host
-  chosen for not upgrading the request — which is a hosting constraint, not a
-  firmware one, and means `/device/` is not served by the website. The TLS path
-  is still written behind `CONFIG_TK_SYNC_INSECURE=n` and still does not
-  compile against the vendored mbedtls 4 (`psa_crypto_ecp.c`,
-  `mbedtls_ecc_group_from_psa`); worth retrying at the next Zephyr bump for
-  confidentiality alone. See the decision log.
-- **The fetch has never completed on hardware.** Everything up to the TCP
-  connect has: the device joins, gets an address, resolves and asks. The bench
-  server was unreachable because the device is on a guest network that isolates
-  its clients from the LAN, and there is no public host yet. What this leaves
-  unverified is the HTTP response handling and the download itself; the parse,
-  the verification and the store are all covered by suites or by the bench.
-- Sizing. Three limits were found only by putting a phone on the network, each
-  as an error at the moment it was hit: the socket-service stack at 2400 of
-  2400 with the DHCP server on it, the Wi-Fi adapter's heap, and `NET_MAX_CONN`
-  at the 4 Zephyr picks once IPv6 is off. Nothing says the next limit has been
-  found, and none of them fails visibly — the phone associates and the page
-  simply does not load.
-- Curating the deck from the portal — browsing, hiding, and a favourites deck —
-  is proposed in [design.md](design.md) under "Deferred work". Three firmware
-  constraints are already known and are what would shape it. Per-question
-  identity is the first: a hash of the question text avoids a format change and
-  a second decoder, where a QDB3 with IDs does not. A favourites deck means
-  `TK_DECK_COUNT` goes from 6 to 7, which Category wraps through and the
-  retained per-deck bitmaps grow 64 bytes for, against an 8 KB budget. And
-  browsing cannot be rendered the way the three portal pages are: the corpus is
-  40 KB of HTML against a 4 KB page buffer, so it has to be paginated or sent
-  across several handler calls, which the HTTP server already supports by
-  calling back until `final_chunk`.
-- **Two power numbers are still guesses.** `TK_REFRESH_MIN_MV` is the 3200 it
-  was invented as rather than the voltage at which a refresh actually corrupts,
-  and the sleep current has never been measured, because the DevKitC's own power
-  LED and WS2812 draw one to two orders of magnitude more than the budget they
-  would be measured against. The divider ratio is no longer among them: the rig
-  logs 3890 mV against 3930 on a meter. See "Bench measurements" in
-  [hardware wiring](hardware_wiring.md).
-- Whether the device should say anything at all on a flat cell beyond three red
-  blinks. The panel cannot: a card saying "the battery is flat" is itself the
-  refresh being refused. The portal's status page could, and a card drawn while
-  charging could, since refreshing is safe then. Neither is built.
-- The refresh counter has to reach RTC memory before the full-refresh interval
-  means anything. `tk_panel_init()` seeds it with the interval, so a cold boot
-  always refreshes fully — correct today, and wrong the moment deep sleep makes
-  every press a cold boot, because every question would then cost a 2.3 s full
-  refresh instead of 622 ms. It is already listed under "Where state lives"; the
-  measured numbers are what make it load-bearing rather than tidy.
-- The bundled font. Zephyr's CFB fonts are 10x16 monospace and cover ASCII
-  only, so `lib/layout` decomposes accented letters into a base glyph plus a
-  mark that `app/src/panel.cpp` draws itself — enough for German, French,
-  Spanish and Italian without licensing a font file. Two gaps remain: `¿` and
-  `¡` fall back to `?` and `!`, and a monospace terminal font is not what this
-  object should look like. Latin-1 coverage is a requirement to put on the
-  eventual product font rather than a separate task.
-- Whether `build_bundle.py` should assert the device's text buffer size so an
-  over-long question fails in CI rather than on the device. Partly covered
-  already: the `layout` and `qdb` suites fold every shipped question at the
-  real panel geometry, so an over-long one fails a test — but only once
-  someone runs the firmware suites.
-- The recent ring is specified here as shared across decks; the website keeps a
-  per-deck window. They should agree before either is called done.
+- Measure whole-device deep-sleep current on rev A without DevKitC indicator
+  loads.
+- Measure the lowest reliable e-paper refresh voltage and set
+  `TK_REFRESH_MIN_MV` from that result.
+- Measure the current cost of enabling VBUS wake through EXT0.
+- Verify font coverage and layout for every released language.
+- Run multi-phone setup-portal and long-transfer stress tests.

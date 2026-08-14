@@ -1,12 +1,3 @@
-/*
- * What the two LEDs should be doing. No pins and no work queue: the clock is
- * an argument, so a three-blink burst and a five-minute portal session are
- * both checked in the same microsecond.
- *
- * The shape to keep in mind: a steady colour says what is true for minutes, a
- * transient preempts it for a moment, and the transient falls back to whatever
- * was underneath rather than to darkness.
- */
 
 #include <zephyr/ztest.h>
 
@@ -17,10 +8,8 @@ using namespace tk;
 namespace
 {
 
-/** One full on-off pair. */
 constexpr int64_t kBlinkPair = 2 * kStatusBlinkMs;
 
-/** Just past the end of a burst of `blinks`. */
 constexpr int64_t after(uint8_t blinks)
 {
     return (int64_t) blinks * kBlinkPair;
@@ -126,11 +115,9 @@ ZTEST(tk_status, test_pressing_again_asks_again_and_is_answered_again)
     led.set_power(PowerState::CRITICAL, false);
     zassert_equal(led.pattern(0).count, 3);
 
-    // The burst has run out and the device is still awake.
     const int64_t later = after(3) + 5000;
     zassert_equal(led.pattern(later).rhythm, Rhythm::STEADY);
 
-    // Same state, so nothing was entered — this is the press alone.
     led.set_power(PowerState::CRITICAL, true);
 
     const Pattern again = led.pattern(later);
@@ -155,8 +142,6 @@ ZTEST(tk_status, test_a_blink_and_a_steady_colour_are_told_apart_by_more_than_th
     StatusLed blinking;
     StatusLed steady;
 
-    // Both amber. On the glass one is the portal and the other is a refused
-    // press, and on the bench that is the pair most easily confused.
     blinking.set_power(PowerState::LOW, false);
     steady.set_portal(true);
 

@@ -1,10 +1,9 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 
-// Host-agnostic static build (spec §7.1): no adapters, no vendor features.
-// The site URL is a placeholder until the real domain exists — see
-// docs/DECISIONS.md "Placeholder org and domain".
+// Static output stays independent of a hosting vendor.
 export default defineConfig({
+  // Canonical origin until a custom domain is configured.
   site: "https://tischkarte.pages.dev",
   output: "static",
   trailingSlash: "never",
@@ -13,9 +12,7 @@ export default defineConfig({
   },
   vite: {
     build: {
-      // keep every data payload an addressable, cacheable file — never a
-      // base64 inline (the per-language recent lists sit under Vite's
-      // default 4 KB inline threshold)
+      // Keep small data payloads as separately cacheable files.
       assetsInlineLimit: 0,
     },
   },

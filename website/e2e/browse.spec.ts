@@ -29,7 +29,7 @@ test.describe("browse", () => {
     for (const text of await page.locator(`${rows} .row-q`).allInnerTexts())
       expect(text.toLowerCase()).toContain(needle.toLowerCase());
 
-    // one page of results is the whole result, so there is nothing more to show
+    // Hide pagination when every result fits on one page.
     await expect(page.locator("#b-more")).toBeHidden();
   });
 

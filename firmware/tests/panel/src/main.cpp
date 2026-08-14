@@ -1,14 +1,4 @@
-/*
- * Panel rendering, against a dummy display the same size as the real one.
- *
- * What this can check: that the whole CFB path runs, that every shipped
- * question renders without an error at the real geometry, and that the
- * full-versus-partial policy alternates the way the driver expects.
- *
- * What it cannot check: the image. The dummy display discards writes, and
- * ghosting, contrast and refresh timing need the panel on a bench — the
- * breadboard acceptance list in firmware/README.md is where those live.
- */
+/* Panel policy against a real-size display that discards pixels. */
 
 #include <zephyr/ztest.h>
 
@@ -46,10 +36,6 @@ ZTEST(tk_panel, test_a_question_renders)
 
 ZTEST(tk_panel, test_the_first_refresh_after_boot_is_full)
 {
-    /*
-     * After deep sleep the panel holds an image this firmware did not draw and
-     * has no record of, so the first refresh cannot be a partial one.
-     */
     zassert_ok(tk_panel_init());
     zassert_true(tk_panel_next_is_full(), "a cold boot must refresh fully");
 
@@ -63,8 +49,6 @@ ZTEST(tk_panel, test_full_refreshes_come_round_on_the_interval)
     zassert_ok(tk_panel_init());
     zassert_ok(tk_panel_render("first", 5));
 
-    // The interval counts partial refreshes *between* full ones, so a full
-    // refresh followed by that many partials brings the next full one round.
     for (int i = 1; i <= CONFIG_TK_FULL_REFRESH_INTERVAL; i++) {
         zassert_false(tk_panel_next_is_full(), "refresh %d should still be partial", i);
         zassert_ok(tk_panel_render("again", 5));
@@ -79,7 +63,6 @@ ZTEST(tk_panel, test_full_refreshes_come_round_on_the_interval)
 
 ZTEST(tk_panel, test_accented_text_renders)
 {
-    // Every mark the decomposition table produces, in one string:
     // á à â ä ã ç é ñ ü ß
     const char *text = "\xC3\xA1 \xC3\xA0 \xC3\xA2 \xC3\xA4 \xC3\xA3 "
                        "\xC3\xA7 \xC3\xA9 \xC3\xB1 \xC3\xBC \xC3\x9F";
@@ -89,7 +72,6 @@ ZTEST(tk_panel, test_accented_text_renders)
 
 ZTEST(tk_panel, test_capitals_with_marks_render)
 {
-    // À Á Ä Ç É Ñ Ö Ü — three rows of headroom rather than five.
     const char *text = "\xC3\x80\xC3\x81\xC3\x84\xC3\x87\xC3\x89\xC3\x91\xC3\x96\xC3\x9C";
 
     zassert_ok(tk_panel_render(text, 16));
@@ -102,14 +84,6 @@ ZTEST(tk_panel, test_malformed_text_is_refused)
 
 ZTEST(tk_panel, test_a_question_larger_than_the_buffer_is_refused)
 {
-    /*
-     * Not the same as "too many lines". The glyph buffer is
-     * CONFIG_TK_MAX_QUESTION_BYTES wide, which is exactly enough for any valid
-     * question — one input byte can produce at most one glyph, ligatures
-     * included, since ß is two bytes and becomes two. Text past that limit is
-     * not a question the corpus could contain, and is refused rather than
-     * silently clipped.
-     */
     static char text[512];
 
     for (int i = 0; i < 400; i++) {
@@ -121,8 +95,6 @@ ZTEST(tk_panel, test_a_question_larger_than_the_buffer_is_refused)
 
 ZTEST(tk_panel, test_a_question_at_the_buffer_limit_still_renders)
 {
-    // The longest thing that is still a legal question, all of it two-byte
-    // characters that each expand to two glyphs.
     static char text[CONFIG_TK_MAX_QUESTION_BYTES];
 
     for (int i = 0; i < CONFIG_TK_MAX_QUESTION_BYTES; i += 2) {
@@ -136,17 +108,12 @@ ZTEST(tk_panel, test_a_question_at_the_buffer_limit_still_renders)
 
 ZTEST(tk_panel, test_a_short_question_gets_bigger_type)
 {
-    /*
-     * The point of choosing a font per question: a short one should fill the
-     * panel rather than sit in the middle of a band of white.
-     */
     zassert_ok(tk_panel_render("Why?", 4));
 
     const uint8_t big = tk_panel_last_font_height();
 
     zassert_true(big > 16, "a four-character question should not be set at 10x16, got %u", big);
 
-    // Something that cannot possibly fit at any larger size.
     const char *lengthy = "Which object within sight would be hardest to explain "
                           "to someone from the past?";
 
@@ -156,12 +123,6 @@ ZTEST(tk_panel, test_a_short_question_gets_bigger_type)
 
 ZTEST(tk_panel, test_font_choice_never_overflows_the_panel)
 {
-    /*
-     * Walk lengths from very short to the buffer limit. Whatever font each one
-     * picks, the laid-out block has to fit the glass — that is the invariant
-     * the chooser exists to keep, and the one a wrong lines-per-font number
-     * would break.
-     */
     static char text[CONFIG_TK_MAX_QUESTION_BYTES];
 
     for (uint16_t len = 1; len < CONFIG_TK_MAX_QUESTION_BYTES; len++) {
@@ -178,13 +139,6 @@ ZTEST(tk_panel, test_font_choice_never_overflows_the_panel)
 
 ZTEST(tk_panel, test_leading_never_pushes_text_off_the_panel)
 {
-    /*
-     * Leading shares a question's unused vertical space between its lines, so
-     * a three-line question in a four-line font fills the glass rather than
-     * floating in the middle of it. The block it produces still has to fit,
-     * and this walks enough line counts to catch a cap that stopped being
-     * true.
-     */
     static char text[CONFIG_TK_MAX_QUESTION_BYTES];
 
     for (uint16_t words = 1; words < 20; words++) {

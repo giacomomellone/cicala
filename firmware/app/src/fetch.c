@@ -1,12 +1,4 @@
-/*
- * The HTTP GET both downloaders use. See fetch.h for the shape and the reason.
- *
- * This was the private half of src/sync.cpp until firmware updates needed the
- * same request with a different destination. Nothing about it changed in the
- * move except that the destination became a parameter: a bundle still lands in
- * a buffer, and an image now lands in a flash slot, through the same socket
- * code and the same one-request-per-connection rule.
- */
+/* The HTTP GET both downloaders use. */
 
 #include "fetch.h"
 
@@ -22,13 +14,7 @@
 
 LOG_MODULE_REGISTER(tk_fetch, LOG_LEVEL_INF);
 
-/*
- * Where the current transfer is going.
- *
- * File-scope because Zephyr's HTTP client hands its response callback a
- * `void *user_data` that it takes at request time, and there is exactly one
- * fetch in flight at a time — both callers run on the `net` thread.
- */
+/* Where the current transfer is going. */
 static const struct tk_fetch_sink *active_sink;
 static size_t active_len;
 static int active_err;
@@ -38,8 +24,7 @@ int tk_fetch_mem_write(void *ctx, const uint8_t *data, size_t len)
     struct tk_fetch_mem *mem = ctx;
 
     if (mem->len + len > mem->capacity) {
-        /* Refused rather than truncated. A server that sends more than the
-         * manifest promised is not one to take a prefix from. */
+        /* Header values must fit in full. */
         mem->overflowed = true;
 
         return -EFBIG;
@@ -61,8 +46,7 @@ static int on_body(struct http_response *rsp, enum http_final_call final, void *
     }
 
     if (active_err != 0) {
-        /* Already given up. Keep draining rather than acting, because the HTTP
-         * client has no way to be told to stop mid-response. */
+        /* Already given up. */
         return 0;
     }
 
@@ -79,7 +63,7 @@ static int on_body(struct http_response *rsp, enum http_final_call final, void *
     return 0;
 }
 
-/** Open a socket to the configured host, with TLS unless told otherwise. */
+/* Open a socket to the configured host, with TLS unless told otherwise. */
 static int connect_to_host(void)
 {
     struct zsock_addrinfo hints = {0};
@@ -114,19 +98,7 @@ static int connect_to_host(void)
     }
 
 #ifndef CONFIG_TK_SYNC_INSECURE
-    /*
-     * TLS without peer verification, deliberately and documented.
-     *
-     * Validating a certificate needs a trusted clock and this device has none:
-     * no RTC source, no SNTP, and a wake is a fresh boot with no idea when it
-     * is. Verifying with expiry checks disabled would accept a revoked or
-     * expired certificate, which is most of what a certificate is for.
-     *
-     * So TLS here is the transport hosts will accept, plus confidentiality from
-     * a passive observer. It authenticates nobody, and nothing downstream may
-     * treat it as if it did — the Ed25519 signature is the whole of the
-     * protection, for a bundle and for an image alike. See docs/decisions.md.
-     */
+    /* TLS is transport encryption; signatures authenticate artifacts. */
     const int verify = TLS_PEER_VERIFY_NONE;
 
     if (zsock_setsockopt(sock, SOL_TLS, TLS_PEER_VERIFY, &verify, sizeof(verify)) < 0) {
@@ -137,8 +109,7 @@ static int connect_to_host(void)
         return -EIO;
     }
 
-    /* Sent anyway: shared hosts route on it, so without it the request reaches
-     * the wrong site rather than failing honestly. */
+    /* Shared hosts require the Host header for routing. */
     if (zsock_setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_TK_SYNC_HOST,
                          sizeof(CONFIG_TK_SYNC_HOST)) < 0) {
         LOG_WRN("could not set the TLS hostname: %d", errno);

@@ -1,12 +1,4 @@
-/*
- * Host build. GPIO is emulated so the two buttons can be driven without
- * hardware; the display is a dummy that accepts writes and discards them.
- *
- * Two buttons, as on the target: Category advances the deck, Next asks a
- * question. The six-input selector this used to describe is gone, and so is
- * the pin numbering that went with it — nothing on this platform cares which
- * emulated pin a contact sits on, only that the aliases exist.
- */
+/* Host build. */
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
@@ -43,12 +35,7 @@
     };
 };
 
-/*
- * native_sim's own devicetree enables an SDL display and chooses it. Choosing
- * the dummy above is not enough on its own: the SDL node stays `okay`, so its
- * driver is still built and CMake still looks for a host library this
- * application has no use for.
- */
+/* native_sim's own devicetree enables an SDL display and chooses it. */
 &sdl_dc {
     status = "disabled";
 };

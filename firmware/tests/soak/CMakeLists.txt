@@ -11,8 +11,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 
-# The soak image, minus app/src/main.c: the whole application plus the driver
-# under test, which is the combination `just fw-soak` flashes.
 target_sources(app PRIVATE
     src/main.c
     ${TK_APP}/src/app.c
@@ -30,13 +28,11 @@ target_sources(app PRIVATE
 target_include_directories(app PRIVATE ${TK_APP}/include)
 target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained)
 
-# Both shipped corpora, because app/src/corpus.c carries every language the
-# image offers and the suite builds the same file the application does.
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 
 foreach(lang en de)
   if(NOT EXISTS ${fixtures}/${lang}.qdb)
-    message(FATAL_ERROR "missing ${fixtures}/${lang}.qdb — run `just fw-fixtures`")
+    message(FATAL_ERROR "missing ${fixtures}/${lang}.qdb — run `just fw-test`")
   endif()
 
   generate_inc_file_for_target(app

@@ -5,15 +5,8 @@ import schema from "../../questions/schema.json";
 const cfg = schema["x-tischkarte"];
 
 describe("decks", () => {
-  it("keeps the absolute-selector order from questions/schema.json", () => {
-    expect(DECKS).toEqual([
-      "new_people",
-      "close",
-      "family",
-      "work",
-      "here",
-      "wild",
-    ]);
+  it("keeps the category order from questions/schema.json", () => {
+    expect(DECKS).toEqual(["new_people", "close", "family", "work", "here", "wild"]);
   });
 
   it("keeps depth 3 outside initial playback", () => {
@@ -21,8 +14,7 @@ describe("decks", () => {
   });
 });
 
-// The website restates the vocabulary so that no page has to parse the schema
-// at runtime. These pin the copy to the original.
+// The website embeds schema vocabulary instead of parsing it at runtime.
 describe("the schema is the source of truth", () => {
   it("agrees on the deck order", () => {
     expect([...DECKS]).toEqual(cfg.decks);

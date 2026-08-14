@@ -1,11 +1,11 @@
 # Case — prototype direction
 
-STEP/3MF exports plus FreeCAD source will live here (phase D). Licensed [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+This directory will contain FreeCAD source and STEP/3MF exports. Hardware files
+use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-The current form proposal, concept renders, mechanical stack, and validation
-gates live in [docs/device_prototype.md](../../docs/device_prototype.md). The
-rough 84 × 56 × 16 mm envelope is a prototype target, not a frozen
-manufacturing dimension.
+The form proposal, mechanical stack, and validation checks are in
+[docs/device_prototype.md](../../docs/device_prototype.md). The 84 × 56 × 16 mm
+envelope is a prototype target.
 
 Envelope requirements from the product design ([docs/design.md](../../docs/design.md)):
 

@@ -70,7 +70,7 @@ class TestIdAssignment(TmpDb):
         code, _, _ = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 0)
         content = (self.tmp / "questions/en/questions.yaml").read_text()
-        # id must equal the documented hash construction
+        # IDs use the documented hash construction.
         expected = validate.compute_id(
             "en", "When did you last change your mind about something important?"
         )
@@ -87,7 +87,7 @@ class TestIdAssignment(TmpDb):
         self.assertIn("--fix", err)
 
     def test_existing_id_is_preserved_after_text_edit(self):
-        # ids are stable forever: a typo fix must not change or invalidate the id
+        # Text edits preserve assigned IDs.
         self.write(
             "questions/en/questions.yaml",
             "- id: q-00000000\n"
@@ -149,7 +149,7 @@ class TestDenylist(TmpDb):
         self.assertIn("review", err)
 
     def test_denylist_matches_whole_words_only(self):
-        # "badwording" must NOT match the term "badword" (no Scunthorpe failures)
+        # Denylist terms match whole words.
         self.write(
             "questions/en/questions.yaml",
             self.question("What does badwording mean to you?"),
@@ -235,7 +235,7 @@ class TestSiteData(TmpDb):
         self.assertTrue((out / "questions.en.json").exists())
         self.assertFalse((out / "questions.fr.json").exists())
         langs = json.loads((out / "languages.json").read_text())
-        self.assertEqual([l["code"] for l in langs], ["en"])
+        self.assertEqual([language["code"] for language in langs], ["en"])
         payload = json.loads((out / "questions.en.json").read_text())
         entry = payload["questions"][0]
         self.assertEqual(
@@ -250,7 +250,7 @@ class TestSiteData(TmpDb):
 
 class TestBundle(unittest.TestCase):
     def test_round_trip_against_real_database(self):
-        # phase C acceptance: bundle round-trip for en and de
+        # Round-trip both shipped languages.
         with tempfile.TemporaryDirectory() as tmp:
             code, _, _ = run_quiet(
                 build_bundle.main, ["--root", str(REPO), "--out", tmp, "--version", "test.1"]
@@ -412,7 +412,7 @@ class TestIssueFormVocabulary(unittest.TestCase):
         self.options = issue_form_options()
         self.cfg = schema_config()
 
-    def test_deck_options_are_the_schema_decks_in_selector_order(self):
+    def test_deck_options_follow_the_schema_order(self):
         self.assertEqual(self.options["decks"], self.cfg["decks"])
 
     def test_tag_options_are_the_schema_tags(self):

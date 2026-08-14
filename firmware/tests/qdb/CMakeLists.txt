@@ -8,16 +8,12 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
 target_sources(app PRIVATE src/main.cpp)
 target_link_libraries(app PRIVATE tk_qdb)
 
-# Real bundles, not hand-written bytes. There is no filesystem under qemu, so
-# each fixture is turned into a byte array the suite includes. They are built
-# from the question database by `just fw-fixtures`, which `just fw-test` runs
-# first, and are gitignored — a corpus change is picked up by the next run.
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 
 foreach(lang en de)
   if(NOT EXISTS ${fixtures}/${lang}.qdb)
     message(FATAL_ERROR
-      "missing ${fixtures}/${lang}.qdb — run `just fw-fixtures` (or `just fw-test`, which does)")
+      "missing ${fixtures}/${lang}.qdb — run `just fw-test`")
   endif()
 
   generate_inc_file_for_target(app

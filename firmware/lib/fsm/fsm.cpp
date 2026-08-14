@@ -12,10 +12,7 @@ Fsm::Fsm(const StateTransition *transitions, size_t count, int initial_state)
 {
     __ASSERT_NO_MSG(transitions != nullptr);
     __ASSERT_NO_MSG(count > 0);
-    // now_ms() and on_enter_state() are virtual and the vtable is not ready
-    // during construction, so entering the initial state is deferred to the
-    // first tick. A flag rather than a zero timestamp, because uptime really
-    // can be 0 on the first tick.
+    // Defer virtual callbacks until the first tick. Uptime may be zero.
 }
 
 int64_t Fsm::now_ms() const
@@ -35,14 +32,11 @@ void Fsm::run()
     const StateTransition *tr = find_transition(transition);
 
     if (tr == nullptr) {
-        // No row for this (state, transition) pair — a table bug, not a
-        // runtime condition. Fail rather than silently staying put.
         perform_transition(get_fail_state());
         return;
     }
 
-    // A transition that leaves the state wins even on the tick its timeout
-    // expires. Only a self-loop can time out.
+    // Only self-loops can time out.
     if (tr->next_state == _current_state && has_current_state_exceeded_timeout()) {
         perform_transition(get_fail_state());
         return;
@@ -99,8 +93,7 @@ bool Fsm::has_current_state_exceeded_timeout() const
 void Fsm::perform_transition(int next_state)
 {
     if (_current_state == next_state) {
-        // Staying put must not restart the clock, or a state with a timeout
-        // that repeats every tick would never reach it.
+        // Self-loops do not restart their timeout.
         return;
     }
 

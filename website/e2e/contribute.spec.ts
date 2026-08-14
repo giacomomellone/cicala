@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { captureWindowOpen, openedUrls, payload, schema } from "./fixtures";
 
-// Deliberately not in questions/en/questions.yaml — the form refuses a text
-// the database already holds, and these tests are about the other rules.
+// Keep this text outside the corpus so unrelated validation cases can submit it.
 const GOOD = "Which unremarkable Tuesday would you happily live again?";
 
 /** Fill the form to a submittable state, then apply the overrides. */
@@ -102,8 +101,7 @@ test.describe("contribute handoff to GitHub", () => {
     expect(params.get("question-text")).toBe(GOOD);
     expect(params.get("credit")).toBe("Ada");
 
-    // GitHub silently drops a dropdown prefill whose value is not one of the
-    // declared options, leaving a required field blank.
+    // GitHub drops invalid dropdown values and leaves the required field blank.
     const languages = Object.entries(schema.languages).map(
       ([code, { name }]) => `${name} (${code})`,
     );
@@ -162,7 +160,7 @@ test.describe("contribute duplicate guard", () => {
     await expect(page.locator("#c-rule")).toHaveText(/already/i);
     await expect(page.locator("#c-submit")).toBeDisabled();
 
-    // and it says which question it already has
+    // Link to the matching question.
     await expect(page.locator("#c-dupe-link")).toHaveAttribute("href", `/q/${existing.id}`);
   });
 

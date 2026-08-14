@@ -1,10 +1,4 @@
-/*
- * C face of the LED arbiter.
- *
- * `status_logic.cpp` holds the StatusLed from lib/status; `status.c` owns the
- * two pins, the work item and the zbus listener, because the observer macros do
- * not compile as C++. The seam, the same way net_logic.h and power_logic.h are.
- */
+/** C face of the LED arbiter. */
 
 #pragma once
 
@@ -15,15 +9,12 @@
 extern "C" {
 #endif
 
-/**
- * What the two pins should be doing. Same order as `tk::Colour`, and
- * status_logic.cpp asserts it.
- */
+/** What the two pins should be doing. */
 enum tk_status_colour {
     TK_STATUS_OFF = 0,
     TK_STATUS_RED,
     TK_STATUS_GREEN,
-    /** Both lit. One package on the target board, two on the bench. */
+    /** Both lit. */
     TK_STATUS_AMBER,
 };
 

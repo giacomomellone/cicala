@@ -32,7 +32,10 @@ def git_version(root: Path) -> str:
     try:
         out = subprocess.run(
             ["git", "describe", "--tags", "--always", "--dirty"],
-            cwd=root, capture_output=True, text=True, timeout=10,
+            cwd=root,
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if out.returncode == 0 and out.stdout.strip():
             return out.stdout.strip()
@@ -47,10 +50,10 @@ def dump(obj) -> str:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--root", type=Path,
-                        default=Path(__file__).resolve().parent.parent)
-    parser.add_argument("--out", type=Path, default=None,
-                        help="output directory (default: <root>/website/src/data)")
+    parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument(
+        "--out", type=Path, default=None, help="output directory (default: <root>/website/src/data)"
+    )
     args = parser.parse_args(argv)
     out_dir = args.out or args.root / "website" / "src" / "data"
 
@@ -62,7 +65,7 @@ def main(argv=None) -> int:
     lang_names = {code: c.get("name", code) for code, c in cfg.get("languages", {}).items()}
 
     version = git_version(args.root)
-    generated = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
+    generated = dt.datetime.now(dt.UTC).isoformat(timespec="seconds")
 
     out_dir.mkdir(parents=True, exist_ok=True)
     languages = []
@@ -82,8 +85,9 @@ def main(argv=None) -> int:
         for pos, entry in enumerate(entries):
             entry.pop("__line__", None)
             if "id" not in entry:
-                print(f"{path}: entry without id — run tools/validate.py --fix first",
-                      file=sys.stderr)
+                print(
+                    f"{path}: entry without id — run tools/validate.py --fix first", file=sys.stderr
+                )
                 return 1
             question = {
                 "id": entry["id"],
@@ -94,17 +98,21 @@ def main(argv=None) -> int:
             }
             payload["questions"].append(question)
             index[entry["id"]] = lang
-            recent.append({
-                **question,
-                "added": entry.get("added", ""),
-                "_pos": pos,
-            })
+            recent.append(
+                {
+                    **question,
+                    "added": entry.get("added", ""),
+                    "_pos": pos,
+                }
+            )
         count = len(entries)
 
         blob = dump(payload)
         if len(blob.encode("utf-8")) > MAX_PAYLOAD_BYTES:
-            print(f"questions.{lang}.json exceeds 2 MB — split or prune before shipping",
-                  file=sys.stderr)
+            print(
+                f"questions.{lang}.json exceeds 2 MB — split or prune before shipping",
+                file=sys.stderr,
+            )
             return 1
         (out_dir / f"questions.{lang}.json").write_text(blob, encoding="utf-8")
 
@@ -118,7 +126,10 @@ def main(argv=None) -> int:
 
     (out_dir / "languages.json").write_text(dump(languages), encoding="utf-8")
     (out_dir / "index.json").write_text(dump(index), encoding="utf-8")
-    print(f"languages.json: {[l['code'] for l in languages]} · index.json: {len(index)} ids")
+    print(
+        f"languages.json: {[language['code'] for language in languages]}"
+        f" · index.json: {len(index)} ids"
+    )
     return 1 if failed else 0
 
 

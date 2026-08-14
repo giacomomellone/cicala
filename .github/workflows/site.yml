@@ -13,9 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  # The unit suites cover each island on its own; this drives the built site in
-  # a real browser, which is where the seams between the HTML, the data
-  # payloads and the island scripts show up.
+  # Exercise the built HTML, data payloads, and island scripts together.
   e2e:
     runs-on: ubuntu-latest
     steps:
@@ -53,8 +51,7 @@ jobs:
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-      # The device endpoint is a different host from the website, because it
-      # has to answer plain HTTP without upgrading. See docs/hosting.md.
+      # Devices use a separate plain-HTTP endpoint. See docs/hosting.md.
       DEVICE_BUCKET: ${{ secrets.DEVICE_BUCKET }}
       AWS_ACCESS_KEY_ID: ${{ secrets.DEVICE_BUCKET_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.DEVICE_BUCKET_SECRET }}
@@ -82,13 +79,7 @@ jobs:
           npm ci
           npm test
           npm run build
-      # Deploy is intentionally the only host-specific step; the build above
-      # works on any static host (spec §7.1). Runs only when CF secrets exist.
-      # The device fetches from the site, so the release has to be on it. The
-      # manifest names /device/<bundle>.qdb and nothing else serves that path —
-      # GitHub Releases is where bundles are published, but every asset URL
-      # there redirects to another host and Zephyr's HTTP client does not
-      # follow redirects. See docs/decisions.md.
+      # Copy release assets into the paths named by the device manifest.
       - name: Put the latest question bundles under /device/
         if: github.event_name == 'push'
         env:
@@ -108,14 +99,7 @@ jobs:
           echo "published $tag:"
           ls -l website/dist/device
 
-      # The firmware half of the same idea, and the same reasoning: a device
-      # fetches /device/firmware.json and the image that manifest names, and
-      # nothing else serves those paths.
-      #
-      # The bootloader is deliberately NOT published. It is not something a
-      # device fetches — it is what a wired first flash needs — and serving it
-      # beside the image would invite installing one without the other, which
-      # is how a board ends up trusting a key its images are not signed with.
+      # MCUboot remains a wired-flash release asset.
       - name: Put the latest firmware release under /device/
         if: github.event_name == 'push'
         env:
@@ -135,21 +119,13 @@ jobs:
           echo "published $tag:"
           ls -l website/dist/device
 
-      # After /device/ is populated, so the artifact carries what the deploy
-      # carries rather than the site alone.
+      # Capture the same directory that is deployed.
       - uses: actions/upload-artifact@v4
         with:
           name: site-dist
           path: website/dist
 
-      # Devices fetch from here, not from the Pages deploy above: Pages upgrades
-      # every request to HTTPS, and Zephyr's HTTP client does not follow a
-      # redirect. The same files go to both — one host for people, one for
-      # devices — and this step no-ops until the bucket exists.
-      #
-      # Cache lifetimes are the point of the two syncs. A manifest cached for
-      # an hour is an hour a release does not reach anybody; an image is named
-      # after its version and never changes, so it can be cached forever.
+      # Artifacts are immutable; manifests use a short cache lifetime.
       - name: Publish /device/ to the bucket devices fetch from
         if: github.event_name == 'push' && env.DEVICE_BUCKET != ''
         run: |

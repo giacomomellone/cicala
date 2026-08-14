@@ -9,27 +9,16 @@ namespace tk
 namespace
 {
 
-/*
- * "TKR1" read as little-endian bytes. Any constant would do; a printable one
- * makes the block findable in a memory dump, which is the only way anyone will
- * ever look at it.
- */
+// "TKR1" as a little-endian integer.
 constexpr uint32_t kMagic = 0x3152'4B54u;
 
-/*
- * Bump whenever the layout of anything below the header changes. `size` catches
- * most of that on its own, but not a field that changed meaning while keeping
- * its width, which is exactly the change that would otherwise be read as valid.
- */
+// Bump when the payload layout or field meaning changes.
 constexpr uint16_t kVersion = 1;
 
-/* Same hash the bundle fingerprint uses, for the same reason: short, no table,
- * and strong enough for a corruption check that is not defending against an
- * attacker with write access to RTC memory. */
+// FNV-1a detects accidental RTC-memory corruption.
 constexpr uint32_t kFnvOffset = 2166136261u;
 constexpr uint32_t kFnvPrime = 16777619u;
 
-/** Everything after the header, which is what the header describes. */
 constexpr size_t kPayloadOffset = offsetof(Retained, bag);
 
 uint32_t payload_hash(const Retained &block)

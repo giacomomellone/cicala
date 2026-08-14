@@ -1,6 +1,4 @@
 // All UI strings, one object per shipped language (spec §7.3).
-// Sentence case everywhere. Question text itself never passes through here;
-// it lives in the per-language payloads.
 
 export type Lang = "en" | "de";
 
@@ -11,7 +9,7 @@ const en = {
   "nav.device": "device",
   "nav.skip": "skip to content",
 
-  // decks (English labels are deliberate for the first physical prototype)
+  // Physical category labels remain English in every UI language.
   "deck.all": "all",
   "deck.new_people": "new people",
   "deck.close": "close",
@@ -60,7 +58,7 @@ const en = {
   "contribute.lang": "language",
   "contribute.lang.other": "another language…",
   "contribute.decks": "decks",
-  "contribute.decks.hint": "Choose every selector position where the question fits.",
+  "contribute.decks.hint": "Choose every category where the question fits.",
   "contribute.decks.required": "Choose at least one deck.",
   "contribute.decks.wild": "Dark and spicy questions belong only in Wild.",
   "contribute.depth": "depth",
@@ -84,8 +82,7 @@ const en = {
   "contribute.submit": "open the submission on GitHub →",
   "contribute.fineprint":
     "Submitting opens GitHub (free account required). A maintainer who speaks your language reviews every question.",
-  "contribute.newlang":
-    "New languages start in the incubator. Read how to launch one:",
+  "contribute.newlang": "New languages start in the incubator. Read how to launch one:",
   "contribute.recent": "recently added",
   "contribute.recent.empty": "nothing merged yet; yours could be first.",
 
@@ -105,34 +102,34 @@ const en = {
   // device page
   "device.title": "the device",
   "device.p1":
-    "A pocket-sized object for the middle of the table: one e-paper display, a six-position absolute selector, and a separate Next button. The display shows one conversation question and nothing else.",
+    "A pocket-sized object for the middle of the table: one e-paper display, a small Category button, and a larger Next button. The display shows the active category and one conversation question.",
   "device.p2":
-    "The question stays on e-paper at zero power. The selector's detent and printed English legend show the active deck while the device sleeps. There are no menus, modes, notifications, or hidden session state.",
+    "The category and question remain on e-paper while the device sleeps. There are no menus, modes, notifications, or hidden session state.",
   "device.p3":
     "The six decks are new people, close, family, work, here, and wild. Ordinary questions may belong to several decks. Wild is a tone choice for dark, spicy, or absurd prompts; it is not a depth level.",
   "device.how": "how it works",
   "device.t.input": "input",
   "device.t.action": "action",
   "device.t.feedback": "feedback",
-  "device.t.r1a": "rotate to a detent",
-  "device.t.r1b": "select one of six decks",
-  "device.t.r1c": "after the selector rests for about 0.6 s, e-paper shows a question from that deck",
+  "device.t.r1a": "press Category",
+  "device.t.r1b": "advance to the next category",
+  "device.t.r1c": "e-paper shows the category name; the sixth press wraps to the first",
   "device.t.r2a": "press Next",
   "device.t.r2b": "draw another question",
   "device.t.r2c": "one e-paper refresh; a long press does exactly the same thing",
-  "device.t.r3a": "connect USB while holding Next",
+  "device.t.r3a": "hold Category and Next during startup",
   "device.t.r3b": "open service setup",
   "device.t.r3c": "Wi-Fi and language setup move to a phone; no table-facing menu",
   "device.t.r4a": "hands off",
   "device.t.r4b": "sleep",
-  "device.t.r4c": "the question and selector position remain readable at zero display power",
-  "device.photo": "warm ivory Tischkarte prototype with e-paper, six-position selector, and Next button",
+  "device.t.r4c": "the category and question remain readable at zero display power",
+  "device.photo": "warm ivory Tischkarte prototype with e-paper, Category, and Next buttons",
   "device.build": "build one",
   "device.build.text":
-    "Hardware (CERN-OHL-S) and firmware (MIT) live in this repository. It's early: the PCB is at the block-diagram stage.",
+    "Hardware (CERN-OHL-S) and firmware (MIT) live in this repository. The breadboard firmware works; the PCB and enclosure files are design contracts, not production files.",
   "device.link.firmware": "firmware sources",
   "device.link.hardware": "hardware / PCB",
-  "device.link.guide": "build guide (soon)",
+  "device.link.guide": "build guide",
   "device.link.releases": "releases",
   "device.sync": "sync",
   "device.sync.text":
@@ -200,7 +197,7 @@ const de: Record<StringKey, string> = {
   "contribute.lang": "sprache",
   "contribute.lang.other": "eine andere sprache…",
   "contribute.decks": "decks",
-  "contribute.decks.hint": "Wähle jede Reglerposition, zu der die Frage passt.",
+  "contribute.decks.hint": "Wähle jede Kategorie, zu der die Frage passt.",
   "contribute.decks.required": "Wähle mindestens ein Deck.",
   "contribute.decks.wild": "Düstere und gewagte Fragen gehören nur in Wild.",
   "contribute.depth": "tiefe",
@@ -224,8 +221,7 @@ const de: Record<StringKey, string> = {
   "contribute.submit": "einreichung auf GitHub öffnen →",
   "contribute.fineprint":
     "Beim Absenden öffnet sich GitHub (kostenloses Konto nötig). Eine betreuende Person, die deine Sprache spricht, prüft jede Frage.",
-  "contribute.newlang":
-    "Neue Sprachen starten im Inkubator. So bringst du eine an den Start:",
+  "contribute.newlang": "Neue Sprachen starten im Inkubator. So bringst du eine an den Start:",
   "contribute.recent": "zuletzt aufgenommen",
   "contribute.recent.empty": "noch nichts aufgenommen. Deine Frage könnte die erste sein.",
 
@@ -243,34 +239,34 @@ const de: Record<StringKey, string> = {
 
   "device.title": "das gerät",
   "device.p1":
-    "Ein kleines Objekt für die Tischmitte: ein E-Papier-Bildschirm, ein absoluter Wahlschalter mit sechs Positionen und eine separate Weiter-Taste. Der Bildschirm zeigt nur eine Gesprächsfrage.",
+    "Ein kleines Objekt für die Tischmitte: ein E-Papier-Bildschirm, eine kleine Kategorie-Taste und eine größere Weiter-Taste. Der Bildschirm zeigt die aktive Kategorie und eine Gesprächsfrage.",
   "device.p2":
-    "Die Frage bleibt ohne Strom auf dem E-Papier stehen. Die Rastposition und die englische Beschriftung zeigen auch im Schlaf das aktive Deck. Es gibt keine Menüs, Modi, Benachrichtigungen oder verborgenen Sitzungszustände.",
+    "Kategorie und Frage bleiben im Schlaf auf dem E-Papier stehen. Es gibt keine Menüs, Modi, Benachrichtigungen oder verborgenen Sitzungszustände.",
   "device.p3":
     "Die sechs Decks heißen new people, close, family, work, here und wild. Gewöhnliche Fragen können zu mehreren Decks gehören. Wild bezeichnet düstere, gewagte oder absurde Töne und keine Tiefe.",
   "device.how": "so funktioniert es",
   "device.t.input": "eingabe",
   "device.t.action": "aktion",
   "device.t.feedback": "rückmeldung",
-  "device.t.r1a": "bis zur Rastung drehen",
-  "device.t.r1b": "eines von sechs Decks wählen",
-  "device.t.r1c": "nach etwa 0,6 s Ruhe zeigt das E-Papier eine Frage aus diesem Deck",
+  "device.t.r1a": "Kategorie drücken",
+  "device.t.r1b": "zur nächsten Kategorie wechseln",
+  "device.t.r1c": "das E-Papier zeigt den Kategorienamen; der sechste Druck springt zur ersten",
   "device.t.r2a": "Weiter drücken",
   "device.t.r2b": "eine andere Frage ziehen",
   "device.t.r2c": "eine E-Papier-Aktualisierung; langes Drücken verhält sich genauso",
-  "device.t.r3a": "USB anschließen und Weiter halten",
+  "device.t.r3a": "Kategorie und Weiter beim Start gedrückt halten",
   "device.t.r3b": "Service-Einrichtung öffnen",
   "device.t.r3c": "WLAN und Sprache werden am Telefon eingerichtet; kein Tischmenü",
   "device.t.r4a": "Hände weg",
   "device.t.r4b": "schlafen",
-  "device.t.r4c": "Frage und Reglerposition bleiben ohne Displaystrom lesbar",
-  "device.photo": "warmer Tischkarte-Prototyp mit E-Papier, Sechsfach-Wahlschalter und Weiter-Taste",
+  "device.t.r4c": "Kategorie und Frage bleiben ohne Displaystrom lesbar",
+  "device.photo": "warmer Tischkarte-Prototyp mit E-Papier, Kategorie- und Weiter-Taste",
   "device.build": "selbst bauen",
   "device.build.text":
-    "Hardware (CERN-OHL-S) und Firmware (MIT) liegen in diesem Repository. Es ist früh: die Platine ist im Blockdiagramm-Stadium.",
+    "Hardware (CERN-OHL-S) und Firmware (MIT) liegen in diesem Repository. Die Breadboard-Firmware funktioniert; Platine und Gehäuse sind Entwurfsverträge, keine Produktionsdateien.",
   "device.link.firmware": "firmware-quellen",
   "device.link.hardware": "hardware / platine",
-  "device.link.guide": "bauanleitung (bald)",
+  "device.link.guide": "bauanleitung",
   "device.link.releases": "veröffentlichungen",
   "device.sync": "synchronisierung",
   "device.sync.text":

@@ -1,14 +1,4 @@
-/*
- * The power state machine, and what it does to the rest of the firmware.
- *
- * Split from power.c for the reason net_logic.cpp is split from net.c: the
- * machine is C++ and the zbus macros around it are not.
- *
- * Nothing here reads an ADC or a pin. A reading arrives through
- * tk_power_post_sample() and leaves as a state on chan_power, a yes-or-no
- * answer to the three questions in power.h, and — once per plug-in — a window
- * `net` is allowed to sync in.
- */
+/* The power state machine, and what it does to the rest of the firmware. */
 
 #include "power_logic.h"
 
@@ -24,11 +14,7 @@ LOG_MODULE_REGISTER(tk_power, LOG_LEVEL_INF);
 namespace
 {
 
-/*
- * The C enum and the C++ one are the same list in the same order, which is
- * what makes the cast below a cast rather than a table. Kept honest here so a
- * value added to one and not the other fails the build.
- */
+/* The C and C++ power enums must keep the same order. */
 static_assert((int) tk::PowerState::UNKNOWN == TK_POWER_UNKNOWN, "power state order");
 static_assert((int) tk::PowerState::NORMAL == TK_POWER_NORMAL, "power state order");
 static_assert((int) tk::PowerState::LOW == TK_POWER_LOW, "power state order");
@@ -49,12 +35,7 @@ public:
 
         LOG_INF("%u mV, %s%s", mv, tk_power_name(msg.state), usb ? ", USB in" : "");
 
-        /*
-         * A short timeout rather than K_NO_WAIT. This runs on the system
-         * workqueue, so blocking here would stall every other work item — but
-         * dropping the very first reading would leave `net` deciding whether
-         * to sync against a channel that still says UNKNOWN.
-         */
+        /* Allow the worker to publish an immediate follow-up transition. */
         const int err = zbus_chan_pub(&chan_power, &msg, K_MSEC(50));
 
         if (err != 0) {
@@ -70,12 +51,7 @@ public:
 
     void close_charge_window() override
     {
-        /*
-         * Nothing to tear down. `net` reads tk_power_charge_window_open()
-         * when it is deciding whether to start something, and a transfer
-         * already running is left to finish — stopping one part-way costs the
-         * whole download and gains a few seconds of radio.
-         */
+        /* Nothing to tear down. */
         LOG_INF("charge window closed");
     }
 };
@@ -83,20 +59,10 @@ public:
 Io io;
 tk::PowerFsm fsm(io);
 
-/**
- * Tick until the state stops moving.
- *
- * Both entry points below end here rather than exposing it, because a caller
- * that ticked without posting anything would be asking the machine to re-read a
- * clock nobody wound: the charge window is the only thing time alone moves, and
- * every tick that can move it arrives with a VBUS bit attached.
- */
+/* Tick until the state stops moving. */
 void settle()
 {
-    /* Bounded rather than while(changed), for the reason tk_net_run() is: a
-     * table bug that made two states point at each other would otherwise spin
-     * here forever instead of being noticed. Four rungs is the longest honest
-     * walk — UNKNOWN to CRITICAL — so sixteen is room to spare. */
+    /* Bound one sample to the number of power states. */
     for (int i = 0; i < 16; i++) {
         const int before = fsm.get_current_state();
 

@@ -10,8 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  # On open: add the lang:{code} label (issue forms can't set dynamic labels),
-  # or reply with the incubator explainer for "other / new language".
+  # Issue forms cannot assign the dynamic lang:{code} label.
   label-language:
     if: >
       github.event.action == 'opened' &&
@@ -43,10 +42,7 @@ jobs:
           gh issue comment "${{ github.event.issue.number }}" --body \
             "Thanks! New languages start in the incubator rather than as direct submissions — see [docs/languages.md](../blob/main/docs/languages.md) for how a language graduates (≥150 native questions, a fluent maintainer, a style guide and a denylist). Open an issue titled \`lang: <code>\` if you want to start one — we'd love that."
 
-  # On open and on every edit: run the submission through the same validator
-  # that decides at merge time, and say so on the issue. Without this the
-  # submitter learns about a duplicate or a denylisted word only when a
-  # maintainer approves it and the promotion fails, hours or days later.
+  # Report validator results after opening or editing a submission.
   check:
     if: >
       (github.event.action == 'opened' || github.event.action == 'edited') &&
@@ -169,20 +165,14 @@ jobs:
           git add questions/
           git commit -m "$PR_TITLE"
           git push -u origin "$branch" --force
-          # printf rather than a multi-line string: every line of a `run: |`
-          # block has to stay indented under it, and a body written across raw
-          # newlines here would either carry that indentation into the PR or
-          # end the block early.
+          # printf keeps YAML indentation out of the PR body.
           body=$(printf '%s\n\nCloses #%s\n' \
             "Automated promotion of an approved question submission. Review per questions/${PR_LANG}/STYLE.md, then merge." \
             "$ISSUE_NUMBER")
           gh pr create --title "$PR_TITLE" --body "$body" \
             --label "question-submission"
 
-      # A promotion that dies leaves the issue looking approved and nothing
-      # else, so the next person to notice is whoever eventually checks the
-      # Actions tab. Put the reason on the issue and take the label back off,
-      # which is also what makes a second attempt possible.
+      # Removing approved allows a corrected submission to be retried.
       - name: Report a failed promotion on the issue
         if: failure()
         uses: actions/github-script@v7

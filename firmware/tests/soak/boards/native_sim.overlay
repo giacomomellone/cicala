@@ -1,8 +1,3 @@
-/*
- * Same nodes as the qemu overlay beside this one, minus the emulated GPIO
- * controller: native_sim's own devicetree already provides gpio0, which is why
- * this only references it.
- */
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 
@@ -19,11 +14,6 @@
         tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
     };
 
-    /*
-     * A dummy panel the size of the real one. Without a display chosen here,
-     * Zephyr falls back to the SDL driver on this platform, which needs a host
-     * library and shows nothing useful anyway.
-     */
     tk_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
@@ -37,13 +27,6 @@
 
 };
 
-/*
- * native_sim's own devicetree enables an SDL display and chooses it. Adding a
- * dummy is not enough: the SDL node stays `okay`, so its driver is still built
- * and CMake still looks for the host library. Disabling it is what makes the
- * dummy the only display, and what lets these suites run on a machine with no
- * SDL at all.
- */
 &sdl_dc {
     status = "disabled";
 };

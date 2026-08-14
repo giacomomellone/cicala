@@ -1,6 +1,5 @@
 ---
-// Device page (spec §7.8): what it is, the interaction table, links into the
-// repo, sync explainer, and the v2 deck-codes stub.
+// Device interaction and sync information.
 import { REPO_URL } from "../config";
 import { t } from "../i18n";
 import Base from "../layouts/Base.astro";
@@ -29,8 +28,8 @@ import Base from "../layouts/Base.astro";
     </thead>
     <tbody>
       <tr>
-        <td data-i18n="device.t.r1a">rotate to a detent</td>
-        <td data-i18n="device.t.r1b">select one of six decks</td>
+        <td data-i18n="device.t.r1a">press Category</td>
+        <td data-i18n="device.t.r1b">advance to the next category</td>
         <td data-i18n="device.t.r1c">{t("en", "device.t.r1c")}</td>
       </tr>
       <tr>
@@ -39,7 +38,7 @@ import Base from "../layouts/Base.astro";
         <td data-i18n="device.t.r2c">{t("en", "device.t.r2c")}</td>
       </tr>
       <tr>
-        <td data-i18n="device.t.r3a">connect USB while holding Next</td>
+        <td data-i18n="device.t.r3a">hold Category and Next during startup</td>
         <td data-i18n="device.t.r3b">open service setup</td>
         <td data-i18n="device.t.r3c">{t("en", "device.t.r3c")}</td>
       </tr>
@@ -55,11 +54,19 @@ import Base from "../layouts/Base.astro";
   <div class="prose">
     <p data-i18n="device.build.text">{t("en", "device.build.text")}</p>
     <p>
-      <a href={`${REPO_URL}/tree/main/firmware`} rel="external" data-i18n="device.link.firmware">firmware sources</a>
+      <a href={`${REPO_URL}/tree/main/firmware`} rel="external" data-i18n="device.link.firmware"
+        >firmware sources</a
+      >
       <span aria-hidden="true"> · </span>
-      <a href={`${REPO_URL}/tree/main/hardware`} rel="external" data-i18n="device.link.hardware">hardware / PCB</a>
+      <a href={`${REPO_URL}/tree/main/hardware`} rel="external" data-i18n="device.link.hardware"
+        >hardware / PCB</a
+      >
       <span aria-hidden="true"> · </span>
-      <span class="hint" data-i18n="device.link.guide">build guide (soon)</span>
+      <a
+        href={`${REPO_URL}/blob/main/docs/hardware_wiring.md`}
+        rel="external"
+        data-i18n="device.link.guide">build guide</a
+      >
       <span aria-hidden="true"> · </span>
       <a href={`${REPO_URL}/releases`} rel="external" data-i18n="device.link.releases">releases</a>
     </p>
@@ -69,8 +76,11 @@ import Base from "../layouts/Base.astro";
   <div class="prose">
     <p data-i18n="device.sync.text">{t("en", "device.sync.text")}</p>
     <p>
-      <a href={`${REPO_URL}/blob/main/docs/sync_protocol.md`} rel="external" data-i18n="device.sync.link">how sync works</a>
+      <a
+        href={`${REPO_URL}/blob/main/docs/sync_protocol.md`}
+        rel="external"
+        data-i18n="device.sync.link">how sync works</a
+      >
     </p>
   </div>
-
 </Base>

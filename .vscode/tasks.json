@@ -34,9 +34,7 @@
       "problemMatcher": ["$gcc"]
     },
     {
-      // Backgrounded so the debugger can connect while it keeps running. The
-      // problemMatcher pattern below is what tells VSCode the server is up;
-      // without it the launch hangs waiting for the task to "finish".
+      // Mark the background task ready when qemu starts its gdb server.
       "label": "fw: sim debugserver",
       "type": "shell",
       "command": "just fw-sim-debug",
@@ -51,32 +49,21 @@
       }
     },
     {
-      "label": "fw: flash (debug -O0)",
+      "label": "fw: flash (debug -Og)",
       "type": "shell",
-      "command": "just fw-flash-debug",
+      "command": "just fw-flash debug",
       "problemMatcher": ["$gcc"]
     },
     {
-      // The one to open during a debug session. Reads the CDC-ACM on the USB
-      // jack, where debug.overlay puts the console; "fw: monitor" would open
-      // the UART jack and reset the chip out from under gdb.
+      // The debug console uses CDC-ACM on the native USB jack.
       "label": "fw: monitor (debug, USB jack)",
       "type": "shell",
-      "command": "just fw-monitor-debug",
+      "command": "just fw-monitor debug",
       "presentation": { "panel": "dedicated" },
       "problemMatcher": []
     },
     {
-      // Via just, not west directly: the justfile is what exports
-      // ZEPHYR_SDK_INSTALL_DIR and puts .venv/bin on PATH, and west needs both.
-      //
-      // fw-debug flashes then serves, so the image on the chip is the same
-      // -O0 build as the elf gdb reads symbols from. Skip that and breakpoints
-      // land on the wrong lines with no visible complaint from either side.
-      //
-      // One task rather than dependsOn: each VSCode task is its own `just`
-      // process, and just only dedupes dependencies within one invocation, so
-      // chaining them built twice.
+      // Build, flash, and serve the same -Og image in one just invocation.
       "label": "fw: openocd server",
       "type": "shell",
       "command": "just fw-debug",

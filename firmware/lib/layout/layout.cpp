@@ -6,7 +6,7 @@ namespace tk
 namespace
 {
 
-/** Everything cfb_font_1016 can actually draw. */
+/** Return whether cfb_font_1016 contains the codepoint. */
 bool has_glyph(uint32_t cp)
 {
     return cp >= 32 && cp <= 126;
@@ -23,15 +23,7 @@ struct Decomposition {
     Mark mark;
 };
 
-/*
- * Latin-1 letters that are a base letter plus a mark, covering German,
- * French, Spanish and Italian. Ordered by codepoint only so it is easy to
- * check against a Unicode chart; the lookup is a linear scan over ~60 entries
- * once per character, which is nothing next to a panel refresh.
- *
- * Missing on purpose: ø/Ø and å/Å are Nordic and not on the language list,
- * and neither decomposes into a mark this renderer draws.
- */
+// Latin-1 letters supported as a base glyph plus a mark.
 constexpr Decomposition kDecompositions[] = {
     {0x00C0, 'A', Mark::GRAVE},      // À
     {0x00C1, 'A', Mark::ACUTE},      // Á
@@ -92,12 +84,7 @@ struct Ligature {
     char second;
 };
 
-/*
- * Characters with no base letter to sit a mark on. Each spelling is the one
- * the language itself uses when the character is unavailable: ß → ss is the
- * Swiss standard and the official uppercase rule, and œ → oe is ordinary
- * French practice.
- */
+// Ligatures rendered as two available glyphs.
 constexpr Ligature kLigatures[] = {
     {0x00C6, 'A', 'e'}, // Æ
     {0x00DF, 's', 's'}, // ß
@@ -106,12 +93,7 @@ constexpr Ligature kLigatures[] = {
     {0x0153, 'o', 'e'}, // œ
 };
 
-/*
- * Punctuation Spanish opens sentences with. Neither decomposes and neither is
- * in the font, so they fall back to their upright partners: legible, and
- * wrong only typographically. Drawing them properly needs two hand-made
- * bitmaps, which is worth doing when Spanish actually ships.
- */
+// Unsupported inverted punctuation uses its upright glyph.
 struct Substitute {
     uint16_t cp;
     char base;
@@ -155,7 +137,6 @@ uint8_t utf8_decode(const char *s, uint16_t len, uint32_t &cp)
         extra = 3;
         value = b0 & 0x07;
     } else {
-        // A continuation byte or an invalid lead: not the start of anything.
         return 0;
     }
 
@@ -173,8 +154,7 @@ uint8_t utf8_decode(const char *s, uint16_t len, uint32_t &cp)
         value = (value << 6) | (b & 0x3F);
     }
 
-    // Reject overlong encodings: they are the classic way to smuggle an ASCII
-    // byte past a check that only looks at the decoded value.
+    // Reject overlong UTF-8 encodings.
     static const uint32_t min_value[4] = {0, 0x80, 0x800, 0x10000};
 
     if (value < min_value[extra]) {
@@ -250,9 +230,7 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
         return false;
     }
 
-    // Decompose first, wrap second. Wrapping the original UTF-8 would have to
-    // measure widths that decomposition then changes — ß becoming two cells is
-    // exactly the case that would break a line already deemed to fit.
+    // Decomposition can change width, so it must happen before wrapping.
     uint16_t glyphs = 0;
     uint16_t pos = 0;
 
@@ -270,8 +248,7 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
         uint8_t n = decompose(cp, decomposed);
 
         if (n == 0) {
-            // Nothing sensible to draw. Show that something is missing rather
-            // than dropping it silently, and say so in the result.
+            // Keep unsupported input visible in the rendered text.
             decomposed[0] = {'?', Mark::NONE};
             n = 1;
             result.substituted = true;
@@ -308,7 +285,6 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
         line.cells = 0;
 
         while (at < glyphs) {
-            // Measure the next word without committing to it.
             uint16_t word_end = at;
 
             while (word_end < glyphs && !is_space(out[word_end].base)) {
@@ -330,8 +306,7 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
             }
 
             if (line.cells == 0) {
-                // A single word wider than the panel. Break it rather than let
-                // it run off the edge; no shipped question needs this.
+                // Break a word that is wider than the panel.
                 line.cells = columns;
                 at = static_cast<uint16_t>(line.offset + columns);
             }

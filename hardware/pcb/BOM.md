@@ -25,9 +25,6 @@ BOM. For development-board and physical-model purchases, use
 | MECH1 | Small round Category cap with overload stop | custom | open | 1 | TBD |
 | MECH2 | Larger rounded-pill Next cap with shallow concave top and overload stop | custom | open | 1 | TBD |
 
-The OLED, OLED rail, OLED load switch, EC11 encoder, encoder push switch, rotary
-selector, pointer knob, and printed selector bezel are deleted.
-
 The roughly 20 EUR Waveshare HAT is a reusable development module, not the
 production display cost. The target board uses the bare GDEY0213B74 panel,
 listed at 5.36 USD by Good Display in July 2026, plus the FPC connector and

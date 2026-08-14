@@ -1,12 +1,3 @@
-/*
- * The tabletop state machine. No board, no display, no channels: the fake Io
- * below counts what was asked for and the clock is injected, so the refresh
- * timeout is tested without waiting for it.
- *
- * The shape to keep in mind: turning the selector announces the deck's name
- * and leaves it up, and Next is what asks for a question. So a deck change and
- * a press do different things, and the machine has a state for each.
- */
 
 #include <zephyr/ztest.h>
 
@@ -18,7 +9,6 @@ using State = AppFsm::State;
 namespace
 {
 
-/** Records what the state machine asked for, and answers how the test says to. */
 class FakeIo : public AppIo
 {
 public:
@@ -59,7 +49,6 @@ public:
     }
 };
 
-/** Same machine, with a clock the test winds forward by hand. */
 class TestAppFsm : public AppFsm
 {
 public:
@@ -73,13 +62,6 @@ protected:
     int64_t now_ms() const override { return clock; }
 };
 
-/**
- * Tick until the state stops moving.
- *
- * The real loop does the same between zbus messages: one event can walk the
- * machine through several states — a press is SHOWING, DRAWING, REFRESHING —
- * and it must not stop halfway.
- */
 void settle(TestAppFsm &fsm)
 {
     for (int i = 0; i < 16; i++) {
@@ -95,7 +77,6 @@ void settle(TestAppFsm &fsm)
     zassert_unreachable("state machine did not settle");
 }
 
-/** Boot with `deck` selected, through the deck name, to the steady state. */
 void boot_to_showing(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
 {
     fsm.post_selector(deck, true);
@@ -109,7 +90,6 @@ void boot_to_showing(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
     zassert_equal(io.draws, 0, "and does not ask a question yet");
 }
 
-/** Boot, then press Next so a question is what is on the panel. */
 void boot_to_question(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
 {
     boot_to_showing(fsm, io, deck);
@@ -128,7 +108,7 @@ void boot_to_question(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
 
 ZTEST_SUITE(tk_app_fsm, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(tk_app_fsm, test_boot_waits_for_a_valid_selector)
+ZTEST(tk_app_fsm, test_boot_waits_for_a_valid_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -137,8 +117,8 @@ ZTEST(tk_app_fsm, test_boot_waits_for_a_valid_selector)
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(BOOT));
-    zassert_equal(io.draws, 0, "a mid-travel selector must not pick a deck");
-    zassert_equal(io.labels, 0, "nor name one");
+    zassert_equal(io.draws, 0, "an invalid deck must not draw");
+    zassert_equal(io.labels, 0, "an invalid deck must not be named");
 }
 
 ZTEST(tk_app_fsm, test_boot_announces_the_deck)
@@ -171,11 +151,6 @@ ZTEST(tk_app_fsm, test_boot_with_a_retained_question_draws_nothing)
     zassert_equal(io.labels, 0);
 }
 
-/*
- * Waking by Next. The press that ended the sleep is spent on the wake itself,
- * so app_logic replays it into the machine before BOOT runs; from here that is
- * indistinguishable from a press that was already pending.
- */
 ZTEST(tk_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
 {
     FakeIo io;
@@ -194,12 +169,6 @@ ZTEST(tk_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
     zassert_equal(io.last_deck, 2);
 }
 
-/*
- * The same, with nothing retained: a Next wake onto a panel showing a deck
- * name. Announcing first would cost a refresh, and REFRESHING drops presses
- * made during one — so the press would be swallowed and the table would see a
- * button that does nothing.
- */
 ZTEST(tk_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
 {
     FakeIo io;
@@ -214,7 +183,6 @@ ZTEST(tk_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
     zassert_equal(io.labels, 0);
 }
 
-/** And having answered it, the machine settles rather than relabelling. */
 ZTEST(tk_app_fsm, test_a_next_wake_settles_without_announcing_the_deck)
 {
     FakeIo io;
@@ -266,7 +234,7 @@ ZTEST(tk_app_fsm, test_next_keeps_asking_from_the_same_deck)
     zassert_equal(io.labels, 1, "the name is announced once, when the deck changes");
 }
 
-ZTEST(tk_app_fsm, test_turning_the_selector_announces_the_new_deck)
+ZTEST(tk_app_fsm, test_changing_the_active_deck_announces_it)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -279,7 +247,7 @@ ZTEST(tk_app_fsm, test_turning_the_selector_announces_the_new_deck)
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
     zassert_equal(io.labels, 2);
     zassert_equal(io.last_labelled_deck, 3);
-    zassert_equal(io.draws, 1, "turning the knob is not a request for a question");
+    zassert_equal(io.draws, 1, "changing category does not request a question");
 }
 
 ZTEST(tk_app_fsm, test_the_deck_name_stays_until_next)
@@ -294,7 +262,6 @@ ZTEST(tk_app_fsm, test_the_deck_name_stays_until_next)
     fsm.post_render(true);
     settle(fsm);
 
-    // Sitting there does not turn the name into a question.
     for (int i = 0; i < 5; i++) {
         settle(fsm);
     }
@@ -309,7 +276,7 @@ ZTEST(tk_app_fsm, test_the_deck_name_stays_until_next)
     zassert_equal(io.last_deck, 5, "and the question comes from the deck just named");
 }
 
-ZTEST(tk_app_fsm, test_an_invalid_selector_keeps_what_is_on_the_panel)
+ZTEST(tk_app_fsm, test_an_invalid_deck_keeps_what_is_on_the_panel)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -320,7 +287,7 @@ ZTEST(tk_app_fsm, test_an_invalid_selector_keeps_what_is_on_the_panel)
     settle(fsm);
 
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
-    zassert_equal(io.draws, 1, "an invalid selector is not a deck change");
+    zassert_equal(io.draws, 1, "an invalid value is not a deck change");
     zassert_equal(io.labels, 1);
 }
 
@@ -336,7 +303,6 @@ ZTEST(tk_app_fsm, test_a_press_during_a_refresh_is_dropped)
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
     zassert_equal(io.draws, 2);
 
-    /* Impatient second press, while the panel is still working. */
     fsm.post_next();
     settle(fsm);
 
@@ -356,7 +322,6 @@ ZTEST(tk_app_fsm, test_a_panel_that_never_answers_times_out)
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
-    /* Just short of the timeout, nothing happens. */
     fsm.advance(CONFIG_TK_REFRESH_TIMEOUT_MS - 1);
     fsm.run();
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
@@ -371,15 +336,6 @@ ZTEST(tk_app_fsm, test_a_panel_that_never_answers_times_out)
 
 ZTEST(tk_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
 {
-    /*
-     * The bug this pins down, seen on hardware: a slow panel outran the
-     * refresh timeout, the machine gave up and went to SHOWING, and the render
-     * result landed there with nothing to consume it. The next press then
-     * entered REFRESHING and found that stale result waiting, so it left again
-     * immediately — the panel was told to draw and the machine called it done
-     * in the same breath. One press appeared to do nothing and the next showed
-     * two questions in quick succession.
-     */
     FakeIo io;
     TestAppFsm fsm(io);
 
@@ -387,17 +343,14 @@ ZTEST(tk_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
-    /* The panel takes longer than the machine is willing to wait. */
     fsm.advance(CONFIG_TK_REFRESH_TIMEOUT_MS);
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
 
-    /* It finishes anyway, far too late to matter. */
     fsm.post_render(true);
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(SHOWING), "a late render must not move anything");
 
-    /* The next press has to wait for its own render, not inherit that one. */
     fsm.post_next();
     settle(fsm);
 
@@ -509,9 +462,6 @@ ZTEST(tk_app_fsm, test_the_portal_gets_a_card_and_the_table_gets_it_back)
     fsm.post_service();
     settle(fsm);
 
-    /* The card goes through the same refresh accounting every other card gets,
-     * which is the whole point of it being a state rather than a publish from
-     * the net thread. */
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
     zassert_equal(io.services, 1);
     zassert_equal(io.draws, 0, "a service card is not a question");
@@ -537,8 +487,6 @@ ZTEST(tk_app_fsm, test_a_press_during_setup_still_asks_a_question)
     fsm.post_render(true);
     settle(fsm);
 
-    /* The tabletop face is not taken over by the portal. Somebody who presses
-     * Next while the setup card is up gets a question, as always. */
     fsm.post_next();
     settle(fsm);
 
@@ -561,8 +509,6 @@ ZTEST(tk_app_fsm, test_a_card_the_panel_refuses_does_not_wedge_the_table)
     fsm.post_service();
     settle(fsm);
 
-    /* Through FAIL and back to SHOWING, so the previous question stays up and
-     * the next press still works. */
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
     zassert_equal(io.services, 1);
 
@@ -580,8 +526,6 @@ ZTEST(tk_app_fsm, test_a_card_arriving_mid_refresh_waits_rather_than_being_dropp
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
-    /* Unlike a press. Somebody is standing there waiting to be told which
-     * network to join, and the panel is busy for at most a couple of seconds. */
     fsm.post_service();
     settle(fsm);
     zassert_equal(io.services, 0, "not while the panel is busy");

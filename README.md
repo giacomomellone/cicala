@@ -4,19 +4,19 @@ An open-source system for conversation questions, in three parts sharing one dat
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo. The product's core asset. Licensed [CC0](LICENSE-QUESTIONS): every question is dedicated to the public domain.
 2. **[Website](website/)**: a free, static front-end to the database. No accounts. Anyone can play, save favorites, and contribute questions.
-3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Category and Next buttons. The current [firmware](firmware/) breadboard still uses a six-way DIP switch for category selection.
+3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Category and Next buttons.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 
 ## Parts
 
-| Part | Directory | Status | License |
-|---|---|---|---|
-| Question database | [`questions/`](questions/) | shipped: English (240), German (99) | [CC0-1.0](LICENSE-QUESTIONS) |
-| Website | [`website/`](website/) | v1 | [MIT](LICENSE-CODE) |
-| Tools & CI | [`tools/`](tools/) | v1 | [MIT](LICENSE-CODE) |
-| Firmware | [`firmware/`](firmware/) | structure only | [MIT](LICENSE-CODE) |
-| Hardware | [`hardware/`](hardware/) | placeholders | [CERN-OHL-S-2.0](LICENSE-HARDWARE) |
+| Part              | Directory                  | Status                                  | License                            |
+| ----------------- | -------------------------- | --------------------------------------- | ---------------------------------- |
+| Question database | [`questions/`](questions/) | shipped: English (240), German (99)     | [CC0-1.0](LICENSE-QUESTIONS)       |
+| Website           | [`website/`](website/)     | v1                                      | [MIT](LICENSE-CODE)                |
+| Tools & CI        | [`tools/`](tools/)         | v1                                      | [MIT](LICENSE-CODE)                |
+| Firmware          | [`firmware/`](firmware/)   | working breadboard implementation       | [MIT](LICENSE-CODE)                |
+| Hardware          | [`hardware/`](hardware/)   | rev A contracts and enclosure direction | [CERN-OHL-S-2.0](LICENSE-HARDWARE) |
 
 ## Contributing a question
 
@@ -42,9 +42,7 @@ Requires `just`, Python 3.11+ and Node 20+. `just setup` creates the venv (`.ven
 
 - [docs/design.md](docs/design.md): product and UX rationale
 - [docs/device_prototype.md](docs/device_prototype.md): device feasibility review, concept renders, and prototype plan
-- [docs/prototype_bom.md](docs/prototype_bom.md): bench-prototype shopping list with order links (DE/EU)
+- [docs/prototype_bom.md](docs/prototype_bom.md): breadboard and rev A parts list
 - [docs/decisions.md](docs/decisions.md): decision log
 - [docs/languages.md](docs/languages.md): multilingual policy and maintainers
 - [docs/sync_protocol.md](docs/sync_protocol.md): device sync and bundle format
-
-<!-- screenshots: add website + device photos here once available -->

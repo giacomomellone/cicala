@@ -1,9 +1,5 @@
-# Language maintainers. A PR touching questions/<lang>/ automatically requests
-# review from that language's maintainer(s) — this is the per-language
-# moderation routing described in docs/LANGUAGES.md.
-#
-# TODO: replace the placeholder handle with real maintainer usernames and keep
-# this file in sync with the maintainer table in docs/LANGUAGES.md.
+# Route each question corpus to its language maintainers. Keep these owners in
+# sync with docs/languages.md; the current handle is a placeholder.
 
 /questions/en/ @tischkarte-maintainer
 /questions/de/ @tischkarte-maintainer

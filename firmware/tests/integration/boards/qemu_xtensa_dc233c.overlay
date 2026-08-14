@@ -1,7 +1,3 @@
-/*
- * The real board description, minus the board: emulated GPIO for the two
- * buttons, and a dummy panel the size of the real one.
- */
 
 #include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/gpio/gpio.h>
@@ -15,24 +11,6 @@
         tk-led-green = &led_green;
     };
 
-    /*
-     * The battery reading, faked in software.
-     *
-     * adc_emul is a real Zephyr driver with its own acquisition thread and no
-     * host dependency, so unlike the SDL display it runs on either platform
-     * unchanged. The suite sets a voltage with adc_emul_const_value_set() and
-     * app/src/power.c reads it through exactly the code the board uses.
-     *
-     * The channel node is not optional. ADC_DT_SPEC_GET() takes its gain,
-     * reference and acquisition time from a channel@N child of the controller,
-     * and without one adc_channel_setup_dt() fails, power.c gives up, and the
-     * device sits in UNKNOWN happily refreshing whatever it is asked to.
-     *
-     * Gain 1 against a 3300 mV reference, so the emulated value is millivolts
-     * at the pin — which is the divider *tap*, not the pack. The suite halves
-     * the pack voltage on the way in and CONFIG_TK_POWER_DIVIDER_NUM doubles it
-     * on the way out, so the conversion is exercised rather than bypassed.
-     */
     adc0: adc {
         compatible = "zephyr,adc-emul";
         nchannels = <1>;
@@ -56,12 +34,6 @@
         tk-vbus-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
     };
 
-    /*
-     * The status LEDs, on the same emulated controller as the buttons — which
-     * is what lets the suite read them back with gpio_emul_output_get() rather
-     * than by eye. The real board has them on GPIO15 and GPIO16; these are
-     * emulator indices and mean nothing beyond being free.
-     */
     tk_leds: tk-leds {
         compatible = "gpio-leds";
         led_red: red { gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>; label = "status red"; };

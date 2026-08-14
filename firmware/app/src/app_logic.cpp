@@ -1,11 +1,4 @@
-/*
- * The decision maker, wired to the question store and the display channel.
- *
- * The corpus is compiled into the image. That is the factory-preloaded set
- * docs/design.md promises: a device whose Wi-Fi is never configured still
- * works. When `sync` lands it will mount a downloaded bundle from LittleFS
- * instead, and the only thing that changes here is where `open()` points.
- */
+/* The decision maker, wired to the question store and the display channel. */
 
 #include "app_logic.h"
 
@@ -29,20 +22,7 @@ LOG_MODULE_REGISTER(tk_app, LOG_LEVEL_INF);
 namespace
 {
 
-/**
- * Open the corpus the chosen language names.
- *
- * Falls back to the first one the image carries rather than failing: a device
- * that cannot find its language should still ask questions in some language,
- * and language.c has already refused to store a code with no corpus behind it.
- */
 #ifdef CONFIG_TK_DEBUG_CORPUS_STORE
-/**
- * Put the compiled-in corpus on the filesystem, so the next boot reads it.
- *
- * Everything sync does after it has verified a bundle, minus the verifying:
- * write a staging file, rename it over whatever was there, and read it back.
- */
 void store_compiled_in_corpus()
 {
     const int index = tk_corpus_find(tk_language());
@@ -65,11 +45,7 @@ bool open_corpus(tk::Qdb &qdb)
 {
     size_t size = 0;
 
-    /*
-     * A synced corpus wins over the compiled-in one, and a compiled-in one is
-     * always there to fall back to — which is what makes a device whose Wi-Fi
-     * is never configured work, and what makes a corrupt download survivable.
-     */
+    /* Prefer a valid stored corpus, with the compiled corpus as fallback. */
     const uint8_t *const stored = tk_corpus_stored(tk_language(), &size);
 
     if (stored != nullptr && qdb.open(stored, size)) {
@@ -92,13 +68,7 @@ bool open_corpus(tk::Qdb &qdb)
     return qdb.open(data, size);
 }
 
-/*
- * Bag state lives in RTC slow memory, so the no-repeat cycle survives the
- * reboot that deep sleep really is. CONFIG_PM is still off for the breadboard
- * stage, so nothing sleeps yet — but a reset button and a deep-sleep wake are
- * the same event as far as this is concerned, which is what makes it testable
- * before the sleep path exists.
- */
+/* Keep the no-repeat cycle across deep-sleep restarts. */
 tk::Bag::State &bag_state = tk_retained().bag;
 
 uint32_t random_u32(void *ctx)
@@ -109,16 +79,6 @@ uint32_t random_u32(void *ctx)
 }
 
 #ifdef CONFIG_TK_DEBUG_CHARSET
-/*
- * Character-set test pages, shown instead of questions when
- * CONFIG_TK_DEBUG_CHARSET is on. Next steps through them and wraps around.
- *
- * The point is to put every glyph the renderer can produce in front of a
- * camera: the ASCII the font actually contains, then each shipped or planned
- * language in its own idiom, then the diacritics on their own so a misplaced
- * mark is obvious rather than buried in a word. Each page is logged as it is
- * drawn, so the console says what the panel should be showing.
- */
 const char *const debug_pages[] = {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "abcdefghijklmnopqrstuvwxyz",
@@ -134,7 +94,6 @@ const char *const debug_pages[] = {
 };
 #endif
 
-/** Draws from the bag and hands the result to the display. */
 class Io : public tk::AppIo
 {
 public:
@@ -143,9 +102,7 @@ public:
 
     bool draw(uint8_t deck) override
     {
-        // Before bag.draw(), which mutates the retained shuffle state: gating
-        // after it would burn a question from the no-repeat cycle on every
-        // press the cell was too flat to answer.
+        // Check power before draw() mutates retained bag state.
         if (!refresh_allowed()) {
             return false;
         }
@@ -176,8 +133,7 @@ public:
         msg.len = question.len;
 
         if (msg.len > sizeof(msg.text)) {
-            // qdb enforces this at open() and the layout suite checks every
-            // shipped question, so reaching here means a bundle got past both.
+            // Keep an invalid stored bundle from reaching the panel.
             LOG_ERR("question %u is %u bytes", index, question.len);
             return false;
         }
@@ -196,9 +152,7 @@ public:
 
     bool show_category(uint8_t deck) override
     {
-        // Before ++_seq, for the same reason draw() gates before the bag: a
-        // sequence number handed out and never used makes the guard that drops
-        // a late render match against something that never happened.
+        // Allocate a sequence number only for a queued card.
         if (!refresh_allowed()) {
             return false;
         }
@@ -226,16 +180,6 @@ public:
 
     bool retained_matches(uint8_t deck) const override
     {
-        /*
-         * Only a question counts. Waking to a deck name means Category was
-         * pressed and Next never was, so the panel is mid-conversation with
-         * someone and the name has to stay up — but it is not an answer, and
-         * the state machine would be wrong to treat it as one.
-         *
-         * Consulted only from BOOT, which is entered once and never returned
-         * to, so this always describes the previous session rather than
-         * something this boot drew.
-         */
         const tk::Retained &block = tk_retained();
 
         return tk_retained_survived() && block.showing_question && block.deck == deck;
@@ -260,13 +204,13 @@ public:
 
         LOG_INF("service card: %.*s", (int) msg.len, msg.text);
 
-        // Not a question, so a wake must not treat the panel as holding one.
+        // Service cards never satisfy retained_matches().
         _last_was_question = false;
 
         return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
     }
 
-    /** Hold the portal's text until the machine reaches SERVICE. */
+    /* Hold the portal's text until the machine reaches SERVICE. */
     void set_service(const char *text, uint16_t len)
     {
         _service_len = len > sizeof(_service_text) ? sizeof(_service_text) : len;
@@ -276,19 +220,10 @@ public:
         }
     }
 
-    /** The seq of the question most recently published. */
     uint32_t last_seq() const { return _seq; }
 
-    /** Continue the sequence across a wake rather than restarting it at 1. */
     void adopt_seq(uint32_t seq) { _seq = seq; }
 
-    /**
-     * Record what is now on the glass, and stamp it for the next boot.
-     *
-     * Called after a render succeeds rather than after a publish: what the
-     * next boot needs to know is what the panel is actually showing, and a
-     * question that failed to render is not it.
-     */
     void remember()
     {
         tk::Retained &block = tk_retained();
@@ -301,23 +236,6 @@ public:
     }
 
 private:
-    /**
-     * Whether the cell can carry a refresh, and the whole answer to a press
-     * that cannot.
-     *
-     * A partial refresh attempted near brownout can leave the panel in a
-     * corrupted state, so under CONFIG_TK_REFRESH_MIN_MV the previous question
-     * stays on the glass. Returning false sends the state machine to FAIL,
-     * which claims the deck and parks in SHOWING — one press, one round trip,
-     * nothing drawn, and the device still sleeps afterwards.
-     *
-     * The log line is not decoration. FAIL says nothing of its own and draw()'s
-     * other failure says "deck yielded nothing", so without the millivolts here
-     * a flat cell and an empty deck read identically on the console.
-     *
-     * The LEDs are told separately because the panel cannot be: saying "the
-     * battery is flat" on the glass is itself the refresh being refused.
-     */
     bool refresh_allowed()
     {
         if (tk_power_refresh_allowed()) {
@@ -358,11 +276,7 @@ int tk_app_init(void)
         return -EINVAL;
     }
 
-    /*
-     * bind() wipes the bag when the bundle it describes is not the one in
-     * flash, which on a cold boot is every time: retained_load() has already
-     * zeroed the block, so the fingerprint is 0 and matches nothing.
-     */
+    /* bind() resets bag state when the corpus fingerprint changes. */
     const bool kept = io.bag.bind(io.qdb);
 
     if (tk_retained_survived()) {
@@ -375,14 +289,7 @@ int tk_app_init(void)
                                   : kept                  ? "kept across the reboot"
                                                           : "discarded, the bundle changed");
 
-    /*
-     * The press that ended the sleep, replayed here rather than arriving as an
-     * event: EXT1 consumed it before the kernel existed. See app/include/sleep.h.
-     *
-     * Category is applied to the retained deck before it is announced, so the
-     * wake advances the deck exactly as a press on a waking device would. Next
-     * is handed to the machine, which answers it from BOOT.
-     */
+    /* Replay the wake press captured before the input driver started. */
     const enum tk_wake_source woke_by = tk_wake_button();
 
     if (woke_by == TK_WAKE_CATEGORY) {
@@ -398,13 +305,6 @@ int tk_app_init(void)
         fsm.post_next();
     }
 
-    /*
-     * Announce the deck the device is on before anything else runs. With a
-     * rotary selector this came from reading the pins; with a button it comes
-     * from RTC memory, and on a cold boot the zeroed block makes it New
-     * People. Either way the machine has a valid deck on its first pass, which
-     * is what lets BOOT leave.
-     */
     const uint8_t deck = tk_retained().active_deck < TK_DECK_COUNT ? tk_retained().active_deck : 0;
 
     LOG_INF("active deck: %u %s", deck, tk_deck_name(deck));
@@ -418,11 +318,6 @@ void tk_app_post_category(void)
 {
     tk::Retained &block = tk_retained();
 
-    /*
-     * Advance and wrap. The deck lives here rather than in the state machine
-     * because it has to survive a wake, and a wake is a fresh boot: the FSM is
-     * told the answer, it does not keep it.
-     */
     block.active_deck = (uint8_t) ((block.active_deck + 1) % TK_DECK_COUNT);
     tk_retained_seal();
 
@@ -465,12 +360,7 @@ void tk_app_reload_corpus(void)
         return;
     }
 
-    /*
-     * bind() wipes the bag when the fingerprint no longer matches, which a
-     * different language always does. That is the behaviour wanted: a shuffle
-     * bag holding indices into the English corpus means nothing once the
-     * German one is open.
-     */
+    /* A language change resets bag state through the corpus fingerprint. */
     (void) io.bag.bind(io.qdb);
 
     LOG_INF("corpus is now %s, %u questions", tk_language(), io.qdb.count());
@@ -490,8 +380,7 @@ void tk_app_post_render(bool ok, uint32_t seq)
     }
 
     if (ok) {
-        // The panel's refresh counter has settled by now — the render is what
-        // moved it — so this stamp covers that as well as the question.
+        // Seal after the render updates both card and refresh state.
         io.remember();
     }
 
@@ -500,9 +389,7 @@ void tk_app_post_render(bool ok, uint32_t seq)
 
 void tk_app_run(void)
 {
-    // Bounded rather than while(changed): a table bug that made two states
-    // point at each other would otherwise spin here forever instead of being
-    // noticed.
+    // Bound one event to the number of application states.
     for (int i = 0; i < 16; i++) {
         const int before = fsm.get_current_state();
 

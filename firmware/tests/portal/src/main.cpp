@@ -1,11 +1,3 @@
-/*
- * The parsing and rendering half of the setup portal.
- *
- * Everything here reads something written by somebody else — a DNS query from a
- * phone, a form body from a browser, a network name from the air — so most of
- * these cases are about what happens when that input is wrong. The device is
- * the side reading packets off a network anyone within range can join.
- */
 
 #include <string.h>
 
@@ -21,27 +13,19 @@ using namespace tk;
 namespace
 {
 
-/** 192.168.4.1, the address the portal answers with. */
-constexpr uint32_t kApAddr = 0xC0A80401;
+constexpr uint32_t kApAddr = 0xC0A80401; // 192.168.4.1
 
-/*
- * A real query for `connectivitycheck.gstatic.com`, which is the name Android
- * asks for when it is deciding whether it is behind a captive portal.
- *
- * Header: id 0x1234, flags RD, one question. Then the labels, then A / IN.
- */
+/* Android captive-portal A query for connectivitycheck.gstatic.com. */
 const uint8_t kQueryA[] = {
     0x12, 0x34, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x11, 'c',  'o',  'n',
     'n',  'e',  'c',  't',  'i',  'v',  'i',  't',  'y',  'c',  'h',  'e',  'c',  'k',  0x07, 'g',
     's',  't',  'a',  't',  'i',  'c',  0x03, 'c',  'o',  'm',  0x00, 0x00, 0x01, 0x00, 0x01,
 };
 
-/** The same name, asked as AAAA — which every phone sends alongside the A. */
 uint8_t query_aaaa[sizeof(kQueryA)];
 
 uint8_t reply[kDnsMaxMessage];
 
-/** Pages are built here rather than on the stack; the status page is smallest. */
 char page[4096];
 
 bool contains(const char *haystack, const char *needle)
@@ -53,7 +37,7 @@ bool contains(const char *haystack, const char *needle)
 
 ZTEST_SUITE(tk_portal, NULL, NULL, NULL, NULL, NULL);
 
-/* ------------------------------------------------------------------- DNS */
+/* DNS */
 
 ZTEST(tk_portal, test_dns_parses_a_real_query)
 {
@@ -74,17 +58,17 @@ ZTEST(tk_portal, test_dns_answers_with_the_portal_address)
 
     zassert_equal(n, sizeof(kQueryA) + kDnsAnswerBytes);
 
-    /* The id comes back so the resolver can match it. */
+    // Echo the transaction ID.
     zassert_equal(reply[0], 0x12);
     zassert_equal(reply[1], 0x34);
 
-    /* QR and AA set, RD echoed. */
+    // Mark a successful authoritative response and echo recursion desired.
     zassert_equal(reply[2] & 0x80, 0x80, "the reply must say it is a response");
     zassert_equal(reply[2] & 0x04, 0x04, "and that it is authoritative");
     zassert_equal(reply[2] & 0x01, 0x01, "RD is echoed back");
     zassert_equal(reply[3], 0x00, "no recursion available, and NOERROR");
 
-    /* One question, one answer, nothing else. */
+    // One question and one answer.
     zassert_equal(reply[5], 1);
     zassert_equal(reply[7], 1);
     zassert_equal(reply[9], 0);
@@ -92,13 +76,12 @@ ZTEST(tk_portal, test_dns_answers_with_the_portal_address)
 
     const uint8_t *answer = &reply[sizeof(kQueryA)];
 
-    /* The name is a pointer back to the question rather than a copy. */
+    // Point the answer name at the query name and prevent caching.
     zassert_equal(answer[0], 0xC0);
     zassert_equal(answer[1], 12);
     zassert_equal(answer[3], kDnsTypeA);
     zassert_equal(answer[5], kDnsClassIn);
 
-    /* TTL zero: the answer is only true on this network. */
     zassert_equal(answer[6], 0);
     zassert_equal(answer[7], 0);
     zassert_equal(answer[8], 0);
@@ -131,33 +114,31 @@ ZTEST(tk_portal, test_dns_rejects_what_it_should_not_answer)
     zassert_false(dns_parse_query(kQueryA, 11, q), "shorter than a header");
     zassert_false(dns_parse_query(nullptr, sizeof(kQueryA), q));
 
-    /* A response, not a query. */
+    // A response.
     memcpy(bad, kQueryA, sizeof(bad));
     bad[2] |= 0x80;
     zassert_false(dns_parse_query(bad, sizeof(bad), q));
 
-    /* An opcode other than QUERY. */
+    // A nonzero opcode.
     memcpy(bad, kQueryA, sizeof(bad));
     bad[2] |= 0x08;
     zassert_false(dns_parse_query(bad, sizeof(bad), q));
 
-    /* Two questions, which one answer would not cover. */
+    // More than one question.
     memcpy(bad, kQueryA, sizeof(bad));
     bad[5] = 2;
     zassert_false(dns_parse_query(bad, sizeof(bad), q));
 
-    /* A compression pointer, which has nothing to point at in a query. */
+    // A compressed query name.
     memcpy(bad, kQueryA, sizeof(bad));
     bad[12] = 0xC0;
     zassert_false(dns_parse_query(bad, sizeof(bad), q));
 
-    /* A label running past the end of the buffer — the case that would read
-     * off the end of the packet if the length were trusted. */
+    // A label extending past the packet.
     memcpy(bad, kQueryA, sizeof(bad));
     bad[12] = 0x3F;
     zassert_false(dns_parse_query(bad, sizeof(bad), q));
 
-    /* Truncated before QTYPE and QCLASS. */
     zassert_false(dns_parse_query(kQueryA, sizeof(kQueryA) - 2, q));
 }
 
@@ -167,14 +148,13 @@ ZTEST(tk_portal, test_dns_will_not_overrun_the_reply_buffer)
 
     zassert_true(dns_parse_query(kQueryA, sizeof(kQueryA), q));
 
-    /* Exactly one byte short of what the answer needs. */
     const uint16_t n = dns_build_reply(kQueryA, sizeof(kQueryA), q, kApAddr, reply,
                                        sizeof(kQueryA) + kDnsAnswerBytes - 1);
 
     zassert_equal(n, 0);
 }
 
-/* ------------------------------------------------------------------ form */
+/* Form decoding */
 
 ZTEST(tk_portal, test_form_reads_the_fields_a_browser_posts)
 {
@@ -193,7 +173,6 @@ ZTEST(tk_portal, test_form_reads_the_fields_a_browser_posts)
 
 ZTEST(tk_portal, test_form_decodes_a_password_worth_escaping)
 {
-    /* Every character a form encodes, in one passphrase. */
     const char body[] = "psk=a%26b%3Dc%25d+e%2Bf";
     char value[kPskBufSize];
 
@@ -214,19 +193,14 @@ ZTEST(tk_portal, test_form_rejects_rather_than_guesses)
 {
     char value[kPskBufSize];
 
-    /* A truncated escape. Passing the `%` through as a literal would save a
-     * password that differs from the one somebody typed. */
     zassert_equal(form_field("psk=ab%", 7, "psk", value, sizeof(value)), -1);
     zassert_equal(form_field("psk=ab%4", 8, "psk", value, sizeof(value)), -1);
 
-    /* A non-hex escape. */
     zassert_equal(form_field("psk=ab%zz", 9, "psk", value, sizeof(value)), -1);
 
-    /* A key that is not there, and a field with no value at all. */
     zassert_equal(form_field("ssid=x", 6, "psk", value, sizeof(value)), -1);
     zassert_equal(form_field("psk", 3, "psk", value, sizeof(value)), -1);
 
-    /* A value longer than the buffer, which is what a hostile body looks like. */
     char small[4];
     zassert_equal(form_field("psk=abcdef", 10, "psk", small, sizeof(small)), -1);
 }
@@ -235,19 +209,16 @@ ZTEST(tk_portal, test_form_accepts_an_empty_value)
 {
     char value[kPskBufSize];
 
-    /* An open network has no password, and the field posts empty. */
     zassert_equal(form_field("ssid=x&psk=&lang=en", 19, "psk", value, sizeof(value)), 0);
     zassert_str_equal(value, "");
 }
 
-/* ------------------------------------------------------------------ page */
+/* Page rendering */
 
 ZTEST(tk_portal, test_page_escapes_a_network_name_from_the_air)
 {
     ScanEntry nets[1] = {};
 
-    /* An SSID is 32 arbitrary bytes chosen by whoever runs that access point.
-     * Printed raw into the page, this one would run. */
     strcpy(nets[0].ssid, "<script>alert(1)</script>");
     nets[0].secure = true;
 
@@ -262,7 +233,6 @@ ZTEST(tk_portal, test_page_escapes_a_name_that_would_break_out_of_an_attribute)
 {
     ScanEntry nets[1] = {};
 
-    /* The SSID is also written into value="…", so a quote is the other way out. */
     strcpy(nets[0].ssid, "a\" onfocus=\"x");
     nets[0].secure = true;
 
@@ -293,7 +263,6 @@ ZTEST(tk_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothing)
 {
     zassert_true(page_setup(page, sizeof(page), nullptr, 0, "en") > 0);
 
-    /* A hidden network has to be typeable, so the field is there either way. */
     zassert_true(contains(page, "name=\"ssid\""));
     zassert_true(contains(page, "No networks in range"));
 }
@@ -373,15 +342,13 @@ ZTEST(tk_portal, test_html_escape_reports_a_buffer_too_small)
     zassert_equal(html_escape("&&&&", 4, out, sizeof(out)), -1);
 }
 
-/* ------------------------------------------------------------------- FSM */
+/* State machine */
 
 namespace
 {
 
-/* STATE() casts through this name, so the macro needs it in scope. */
 using State = PortalFsm::State;
 
-/** Records what the state machine asked for, and answers how the test says to. */
 class FakeIo : public PortalIo
 {
 public:
@@ -431,7 +398,6 @@ public:
     }
 };
 
-/** Same machine, with a clock the test winds forward by hand. */
 class TestPortalFsm : public PortalFsm
 {
 public:
@@ -445,7 +411,6 @@ protected:
     int64_t now_ms() const override { return clock; }
 };
 
-/** Tick until the state stops moving, as the net thread's loop does. */
 void settle(TestPortalFsm &fsm)
 {
     for (int i = 0; i < 16; i++) {
@@ -459,7 +424,6 @@ void settle(TestPortalFsm &fsm)
     }
 }
 
-/** Drive a fresh machine as far as SERVING, which most cases start from. */
 void reach_serving(TestPortalFsm &fsm, FakeIo &io)
 {
     fsm.post_start();
@@ -498,7 +462,6 @@ ZTEST(tk_portal, test_fsm_scans_before_it_raises_the_access_point)
     fsm.post_start();
     settle(fsm);
 
-    /* One radio: the scan has to finish before the AP takes it. */
     zassert_equal(fsm.get_current_state(), STATE(SCANNING));
     zassert_equal(io.scans, 1);
     zassert_equal(io.ap_starts, 0, "the access point must not be up during a scan");
@@ -534,8 +497,6 @@ ZTEST(tk_portal, test_fsm_gives_up_on_a_scan_that_never_reports)
     fsm.advance(1);
     settle(fsm);
 
-    /* Onward, not away: the page still takes a typed name, which a hidden
-     * network needs anyway. */
     zassert_equal(fsm.get_current_state(), STATE(AP_STARTING));
 }
 
@@ -586,8 +547,6 @@ ZTEST(tk_portal, test_fsm_ends_when_nothing_can_be_served)
     fsm.post_ap_ready(true);
     settle(fsm);
 
-    /* An access point that answers no request is worse than none: it would sit
-     * there for the whole window looking like it worked. */
     zassert_equal(fsm.get_current_state(), STATE(OFF));
     zassert_equal(io.teardowns, 1);
 }
@@ -629,14 +588,11 @@ ZTEST(tk_portal, test_fsm_puts_a_refused_password_back_on_the_form)
     fsm.post_connected(false);
     settle(fsm);
 
-    /* The likely cause is a mistyped password, and the fix is to type it again
-     * rather than to start the whole gesture over. */
     zassert_equal(fsm.get_current_state(), STATE(SERVING));
     zassert_equal(io.last_card, PortalCard::REFUSED);
     zassert_equal(io.serve_starts, 1, "the access point never went down, so nothing restarts");
     zassert_equal(io.ap_starts, 1);
 
-    /* And a second attempt still works. */
     fsm.post_credentials();
     settle(fsm);
 
@@ -680,7 +636,6 @@ ZTEST(tk_portal, test_fsm_closes_the_window_on_its_own)
     fsm.advance(1);
     settle(fsm);
 
-    /* An open access point nobody is using should not stay on a table. */
     zassert_equal(fsm.get_current_state(), STATE(OFF));
     zassert_equal(io.teardowns, 1);
     zassert_false(fsm.is_active());
@@ -693,7 +648,6 @@ ZTEST(tk_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
 
     reach_serving(fsm, io);
 
-    /* Spend most of the first window on the form, then join. */
     fsm.advance(kPortalWindowMs - 10);
     settle(fsm);
 
@@ -704,7 +658,6 @@ ZTEST(tk_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
 
     zassert_equal(fsm.get_current_state(), STATE(CONNECTED));
 
-    /* The clock started again on the way in, so the page is readable. */
     fsm.advance(kPortalWindowMs - 1);
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(CONNECTED));
@@ -759,7 +712,6 @@ ZTEST(tk_portal, test_fsm_ignores_a_stop_that_arrives_with_nothing_running)
     zassert_equal(fsm.get_current_state(), STATE(OFF));
     zassert_equal(io.teardowns, 0);
 
-    /* And it must not be left queued to end the next session immediately. */
     fsm.post_start();
     settle(fsm);
 

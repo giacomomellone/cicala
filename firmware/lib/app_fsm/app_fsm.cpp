@@ -16,14 +16,9 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
 //   Current State        Transition              Next State           Timeout
     {STATE(BOOT),        TRANSITION(REPEAT),     STATE(BOOT),         0       },
     {STATE(BOOT),        TRANSITION(RETAINED),   STATE(SHOWING),      0       },
-    // A wake by Next: the press that ended the sleep was asking for a
-    // question, so answer it. Without this the machine would announce the deck
-    // first and reach the question only on a second press — and REFRESHING
-    // drops presses made during the announcement, so that second press would
-    // be swallowed too.
+    // Consume the Next press that woke the device.
     {STATE(BOOT),        TRANSITION(REDRAW),     STATE(DRAWING),      0       },
-    // Boot announces the deck rather than answering with a question nobody
-    // asked for. Press Next and the questions start.
+    // A cold boot shows the active deck first.
     {STATE(BOOT),        TRANSITION(CONTINUE),   STATE(CATEGORY),     0       },
 
     {STATE(CATEGORY),    TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
@@ -37,10 +32,7 @@ const Fsm::StateTransition AppFsm::_transitions[] = {
     {STATE(DRAWING),     TRANSITION(CONTINUE),   STATE(REFRESHING),   0       },
     {STATE(DRAWING),     TRANSITION(FAILED),     STATE(FAIL),         0       },
 
-    // A dead panel must not wedge the device, so this one has a timeout. It
-    // has to clear the slowest real refresh by a wide margin: a full update on
-    // the GDEY0213B74 takes seconds, and a timeout that fires during an
-    // ordinary refresh is far worse than one that fires late.
+    // Bound a stalled display refresh.
     {STATE(REFRESHING),  TRANSITION(REPEAT),     STATE(REFRESHING),   kRefreshTimeoutMs},
     {STATE(REFRESHING),  TRANSITION(CONTINUE),   STATE(SHOWING),      0       },
     {STATE(REFRESHING),  TRANSITION(FAILED),     STATE(FAIL),         0       },
@@ -62,17 +54,9 @@ int AppFsm::get_fail_state() const
 
 void AppFsm::on_enter_state(int state)
 {
+    // A new card invalidates results from the previous refresh.
     switch (state) {
     case STATE(DRAWING):
-        /*
-         * Forget any render result still sitting here. It can only belong to
-         * an earlier question — the one whose refresh timed out, arriving
-         * after the machine had already given up on it. Left in place it
-         * satisfies the *next* refresh the instant that one starts, so the
-         * panel is told to draw and the machine calls it done in the same
-         * breath. On the bench that looks like one press doing nothing and
-         * the next showing two questions in quick succession.
-         */
         _render_pending = false;
         _draw_ok = _io.draw(_selector_deck);
 
@@ -83,28 +67,20 @@ void AppFsm::on_enter_state(int state)
         break;
 
     case STATE(CATEGORY):
-        // Same stale-render reasoning as DRAWING; both start a refresh.
         _render_pending = false;
         _label_ok = _io.show_category(_selector_deck);
 
-        // Claim the deck either way. A failed announcement should not leave
-        // SHOWING convinced the selector has moved and ask again forever.
+        // Prevent a retry loop after a failed announcement.
         _shown_deck = _selector_deck;
         break;
 
     case STATE(SERVICE):
-        // Same stale-render reasoning as DRAWING and CATEGORY; this starts a
-        // refresh too.
         _render_pending = false;
         _service_ok = _io.show_service();
         break;
 
     case STATE(FAIL):
-        // Claim the deck even though nothing was drawn. Without this, SHOWING
-        // sees a deck it has not shown, asks for a draw, fails again, and the
-        // device spins between three states forever. A deck that yields nothing
-        // should sit quietly on the previous question until the user does
-        // something — a press, or a turn of the selector.
+        // Keep an empty deck from retrying until another input arrives.
         _shown_deck = _selector_deck;
         break;
 
@@ -142,30 +118,20 @@ int AppFsm::handle_current_state()
 
 int AppFsm::on_boot()
 {
-    // A broken or mid-travel selector waits here indefinitely, with the panel
-    // left readable. There is nothing better to do than keep the last question.
+    // Keep the panel unchanged until one deck is selected.
     if (!_selector_valid) {
         return TRANSITION(REPEAT);
     }
 
-    /*
-     * Before the retained check, not after: waking by Next onto a panel that
-     * already holds a question is the ordinary case, and taking RETAINED there
-     * would decide the panel is right and draw nothing — which is precisely
-     * the press the user just made.
-     */
+    // A wake press takes precedence over the retained panel.
     if (_next_pending) {
         _next_pending = false;
-        // Claim the deck, or SHOWING will see one it has not announced and
-        // relabel over the question that is about to be drawn.
         _shown_deck = _selector_deck;
 
         return TRANSITION(REDRAW);
     }
 
     if (_io.retained_matches(_selector_deck)) {
-        // Nothing to draw and nothing to refresh: the panel is already right.
-        // Adopt what it shows so SHOWING does not think otherwise.
         _shown_deck = _selector_deck;
 
         return TRANSITION(RETAINED);
@@ -176,36 +142,23 @@ int AppFsm::on_boot()
 
 int AppFsm::on_category()
 {
-    // The announcement itself happened in on_enter_state().
     return _label_ok ? TRANSITION(CONTINUE) : TRANSITION(FAILED);
 }
 
 int AppFsm::on_showing()
 {
-    // Zero or several contacts is not a deck. Keep whatever is on the panel.
     if (!_selector_valid) {
         return TRANSITION(REPEAT);
     }
 
-    /*
-     * The portal first. It only ever speaks because somebody performed the
-     * service gesture and is standing there waiting to be told which network
-     * to join, and it speaks a handful of times in a session. A press still
-     * replaces the card with a question afterwards — the tabletop face stays a
-     * question display, and this does not take it over.
-     */
+    // Service status takes priority over pending tabletop input.
     if (_service_pending) {
         _service_pending = false;
 
         return TRANSITION(SERVICE);
     }
 
-    /*
-     * Next before the selector, so a press made while the deck's name is up
-     * gets a question rather than the name again. The two cannot both be
-     * pending in practice — the selector needs 600 ms to settle — but the
-     * order is the rule: Next always means "ask me something".
-     */
+    // Next always requests a question from the current deck.
     if (_next_pending) {
         _next_pending = false;
 
@@ -221,16 +174,12 @@ int AppFsm::on_showing()
 
 int AppFsm::on_drawing()
 {
-    // The draw itself happened in on_enter_state(); this only reports how it
-    // went, which keeps the one action out of a function called every tick.
     return _draw_ok ? TRANSITION(CONTINUE) : TRANSITION(FAILED);
 }
 
 int AppFsm::on_refreshing()
 {
-    // The press that arrives mid-refresh is dropped rather than queued. A panel
-    // takes up to two seconds; honouring presses made during it would spend that
-    // time drawing questions nobody has read yet.
+    // Presses during a refresh are dropped.
     _next_pending = false;
 
     if (_render_pending) {
@@ -244,8 +193,6 @@ int AppFsm::on_refreshing()
 
 int AppFsm::on_service()
 {
-    // The card itself was sent in on_enter_state(); this only reports how it
-    // went, as DRAWING and CATEGORY do.
     return _service_ok ? TRANSITION(CONTINUE) : TRANSITION(FAILED);
 }
 
@@ -253,8 +200,6 @@ int AppFsm::on_fail()
 {
     return TRANSITION(CONTINUE);
 }
-
-////////////////////// Input //////////////////////
 
 void AppFsm::post_selector(uint8_t deck, bool valid)
 {

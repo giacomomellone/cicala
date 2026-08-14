@@ -1,15 +1,9 @@
-// Play controller (spec §7.4): shuffle-bag randomness with no repeats,
-// session history (in-memory, max 50), keyboard map, favorites, share.
+// Play controller: no-repeat draws, session history, favorites, and sharing.
 
 import { DECKS, PLAYBACK_DEPTH_MAX } from "../config";
 import { tr } from "./apply-i18n";
 import { drawFromBag } from "./bag";
-import {
-  detectLang,
-  loadPayload,
-  type Payload,
-  type Question,
-} from "./data";
+import { detectLang, loadPayload, type Payload, type Question } from "./data";
 import { getBag, getDeck, isFav, setBag, setDeck, toggleFav } from "./store";
 
 interface Shown {
@@ -32,9 +26,7 @@ export async function initPlay(): Promise<void> {
   const shareBtn = document.getElementById("q-share") as HTMLButtonElement;
   const shareLabel = document.getElementById("q-share-label")!;
   const nextBtn = document.getElementById("q-next") as HTMLButtonElement;
-  const selectors = Array.from(
-    root.querySelectorAll<HTMLButtonElement>("[data-deck]"),
-  );
+  const selectors = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-deck]"));
 
   const lang = detectLang();
   const isPermalink = root.dataset.permalink === "1";
@@ -53,13 +45,8 @@ export async function initPlay(): Promise<void> {
 
   const idsFor = (selectedDeck: string): string[] =>
     payload.questions
-      .filter(
-        (q) =>
-          q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(selectedDeck),
-      )
+      .filter((q) => q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(selectedDeck))
       .map((q) => q.id);
-
-  // --------------------------------------------------------- shuffle bag
 
   function drawNext(selectedDeck: string): Shown | null {
     const bag = getBag(lang, selectedDeck);
@@ -70,8 +57,6 @@ export async function initPlay(): Promise<void> {
     return q ? { q, deck: selectedDeck } : null;
   }
 
-  // ------------------------------------------------------------- history
-
   let history: Shown[] = [];
   let cursor = -1;
 
@@ -81,8 +66,6 @@ export async function initPlay(): Promise<void> {
     if (history.length > HISTORY_MAX) history.shift();
     cursor = history.length - 1;
   }
-
-  // ------------------------------------------------------------ rendering
 
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -113,18 +96,12 @@ export async function initPlay(): Promise<void> {
 
   function setActiveDeck(selectedDeck: string): void {
     for (const selector of selectors)
-      selector.setAttribute(
-        "aria-checked",
-        String(selector.dataset.deck === selectedDeck),
-      );
+      selector.setAttribute("aria-checked", String(selector.dataset.deck === selectedDeck));
   }
 
-  // --------------------------------------------------------------- moves
-
-  // "next" from a permalink transitions into normal play without history spam
+  // Replace the permalink entry when normal play begins.
   function leavePermalink(): void {
-    if (location.pathname.startsWith("/q/"))
-      window.history.replaceState({}, "", "/");
+    if (location.pathname.startsWith("/q/")) window.history.replaceState({}, "", "/");
   }
 
   async function next(): Promise<void> {
@@ -164,17 +141,13 @@ export async function initPlay(): Promise<void> {
     await show(entry);
   }
 
-  // ---------------------------------------------------------------- init
-
   const seedQuestion = seedId ? (byId.get(seedId) ?? null) : null;
   const seed = seedQuestion ? { q: seedQuestion, deck } : null;
   if (seed && isPermalink) {
-    // permalink: the SSR question is already on screen — adopt it
     record(seed);
     renderMeta(seed);
     setActiveDeck(deck);
   } else {
-    // normal play: draw from the bag (replaces the build-time SSR question)
     setActiveDeck(deck);
     const entry = drawNext(deck);
     if (entry) {
@@ -182,8 +155,6 @@ export async function initPlay(): Promise<void> {
       await show(entry, false);
     }
   }
-
-  // --------------------------------------------------------------- events
 
   nextBtn.addEventListener("click", () => void next());
 
@@ -214,20 +185,14 @@ export async function initPlay(): Promise<void> {
         shareLabel.textContent = tr(lang, "play.share");
       }, 1500);
     } catch {
-      /* clipboard unavailable (http, permissions) — leave the label alone */
+      /* Leave the label unchanged when clipboard access fails. */
     }
   });
 
-  // Keyboard map (spec §7.4). Never hijack keys when a form element or any
-  // interactive element is focused.
   document.addEventListener("keydown", (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const target = e.target as HTMLElement | null;
-    if (
-      target &&
-      target.closest("input, textarea, select, button, a, [contenteditable]")
-    )
-      return;
+    if (target && target.closest("input, textarea, select, button, a, [contenteditable]")) return;
     if (e.key === " " || e.key === "ArrowRight") {
       e.preventDefault();
       void next();

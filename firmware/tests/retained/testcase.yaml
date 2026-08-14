@@ -1,6 +1,5 @@
 tests:
   tischkarte.retained:
-    # Pure logic over a struct: no board, no RTC domain, no sleep.
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim

@@ -1,7 +1,5 @@
 ---
 // Contribute (spec §7.7): a styled thin client of the GitHub issue form.
-// Client-side pre-validation mirrors tools/validate.py; submit opens the
-// prefilled issue in a new tab. "Recently added" is the social-proof loop.
 import { DECKS, REPO_URL, TAGS } from "../config";
 import { t, type StringKey } from "../i18n";
 import Base from "../layouts/Base.astro";
@@ -29,7 +27,10 @@ import recent from "../data/recent.en.json";
     </div>
 
     <div class="field">
-      <span data-i18n="contribute.decks" style="display:block; font-size:0.8125rem; margin-bottom:0.45rem">decks</span>
+      <span
+        data-i18n="contribute.decks"
+        style="display:block; font-size:0.8125rem; margin-bottom:0.45rem">decks</span
+      >
       <div class="checks">
         {
           DECKS.map((deck) => (
@@ -49,7 +50,9 @@ import recent from "../data/recent.en.json";
       <label for="c-depth" data-i18n="contribute.depth">depth</label>
       <select id="c-depth">
         <option value="1" data-i18n="contribute.depth.1">{t("en", "contribute.depth.1")}</option>
-        <option value="2" data-i18n="contribute.depth.2" selected>{t("en", "contribute.depth.2")}</option>
+        <option value="2" data-i18n="contribute.depth.2" selected
+          >{t("en", "contribute.depth.2")}</option
+        >
         <option value="3" data-i18n="contribute.depth.3">{t("en", "contribute.depth.3")}</option>
       </select>
     </div>
@@ -58,7 +61,9 @@ import recent from "../data/recent.en.json";
       <label for="c-text" data-i18n="contribute.question">your question</label>
       <textarea id="c-text" rows="3" maxlength="200"></textarea>
       <span class="sub">
-        <span class="rule-hint" id="c-rule" data-i18n="contribute.question.hint">{t("en", "contribute.question.hint")}</span>
+        <span class="rule-hint" id="c-rule" data-i18n="contribute.question.hint"
+          >{t("en", "contribute.question.hint")}</span
+        >
         · <span class="counter" id="c-counter">0/140</span>
       </span>
       <span class="sub" id="c-dupe" hidden>
@@ -69,7 +74,11 @@ import recent from "../data/recent.en.json";
     </div>
 
     <div class="field">
-      <span data-i18n="contribute.tags" style="display:block; font-size:0.8125rem; margin-bottom:0.45rem">{t("en", "contribute.tags")}</span>
+      <span
+        data-i18n="contribute.tags"
+        style="display:block; font-size:0.8125rem; margin-bottom:0.45rem"
+        >{t("en", "contribute.tags")}</span
+      >
       <div class="checks">
         {
           TAGS.map((tag) => (
@@ -92,7 +101,11 @@ import recent from "../data/recent.en.json";
         <input type="checkbox" id="c-cc0" style="margin-top:0.2rem" />
         <span>
           <span data-i18n="contribute.cc0">{t("en", "contribute.cc0")}</span>
-          <a href={`${REPO_URL}/blob/main/LICENSE-QUESTIONS`} rel="external" data-i18n="contribute.cc0.link">{t("en", "contribute.cc0.link")}</a>
+          <a
+            href={`${REPO_URL}/blob/main/LICENSE-QUESTIONS`}
+            rel="external"
+            data-i18n="contribute.cc0.link">{t("en", "contribute.cc0.link")}</a
+          >
         </span>
       </label>
     </div>
@@ -112,12 +125,16 @@ import recent from "../data/recent.en.json";
         recent.map((r) => (
           <li class="row">
             <div class="row-main">
-              <a class="row-q" href={`/q/${r.id}`}>{r.text}</a>
+              <a class="row-q" href={`/q/${r.id}`}>
+                {r.text}
+              </a>
               <div class="row-meta">
                 {r.decks.map((deck) => (
                   <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
                 ))}
-                <span data-i18n={`depth.${r.depth}`}>{t("en", `depth.${r.depth}` as StringKey)}</span>
+                <span data-i18n={`depth.${r.depth}`}>
+                  {t("en", `depth.${r.depth}` as StringKey)}
+                </span>
                 <span>{r.added}</span>
               </div>
             </div>
@@ -125,7 +142,12 @@ import recent from "../data/recent.en.json";
         ))
       }
     </ul>
-    <p class="hint" id="c-recent-empty" hidden={recent.length > 0} data-i18n="contribute.recent.empty">
+    <p
+      class="hint"
+      id="c-recent-empty"
+      hidden={recent.length > 0}
+      data-i18n="contribute.recent.empty"
+    >
       {t("en", "contribute.recent.empty")}
     </p>
   </section>

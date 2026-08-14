@@ -13,8 +13,6 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/power tk_power)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/status tk_status)
 
-# Every application source except main.c, whose only job is starting the input
-# layer — which this suite does itself, after arranging the pins.
 target_sources(app PRIVATE
     src/main.c
     ${TK_APP}/src/app.c
@@ -36,13 +34,11 @@ target_include_directories(app PRIVATE ${TK_APP}/include)
 target_link_libraries(app PRIVATE tk_fsm tk_app_fsm tk_qdb tk_layout tk_retained tk_power
     tk_status)
 
-# Both shipped corpora, because app/src/corpus.c carries every language the
-# image offers and the suite builds the same file the application does.
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 
 foreach(lang en de)
   if(NOT EXISTS ${fixtures}/${lang}.qdb)
-    message(FATAL_ERROR "missing ${fixtures}/${lang}.qdb — run `just fw-fixtures`")
+    message(FATAL_ERROR "missing ${fixtures}/${lang}.qdb — run `just fw-test`")
   endif()
 
   generate_inc_file_for_target(app

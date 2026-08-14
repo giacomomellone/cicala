@@ -1,7 +1,4 @@
-// Runtime data access. The Base layout embeds a JSON config (#tk-config) with
-// the content-hashed URLs of every per-language payload; the client fetches
-// ONLY the active language's payload (spec §7.1) and caches it here. Switching
-// language fetches the other payload on demand.
+// Runtime data access.
 
 import { getStoredLang, setStoredLang } from "./store";
 
@@ -46,19 +43,19 @@ let config: SiteConfig | null = null;
 export function siteConfig(): SiteConfig {
   if (!config) {
     const el = document.getElementById("tk-config");
-    config = el ? (JSON.parse(el.textContent || "{}") as SiteConfig) : {
-      langs: [],
-      payloads: {},
-      recents: {},
-      index: "",
-    };
+    config = el
+      ? (JSON.parse(el.textContent || "{}") as SiteConfig)
+      : {
+          langs: [],
+          payloads: {},
+          recents: {},
+          index: "",
+        };
   }
   return config;
 }
 
-/** Active language: permalink seed (persisted — docs/decisions.md), else
- * stored preference, else navigator.language, else en. Seed handling lives
- * here because island scripts can execute before the layout's script. */
+/* Resolve language from the permalink, stored preference, browser, then English. */
 export function detectLang(): string {
   const cfg = siteConfig();
   const shipped = cfg.langs.map((l) => l.code);
@@ -92,12 +89,10 @@ export function loadPayload(lang: string): Promise<Payload> {
 
 let indexCache: Promise<Record<string, string>> | null = null;
 
-/** id → lang map, fetched on demand (deck links across languages). */
+/* id → lang map, fetched on demand (deck links across languages). */
 export function loadIndex(): Promise<Record<string, string>> {
   if (!indexCache) {
-    indexCache = fetch(siteConfig().index).then(
-      (r) => r.json() as Promise<Record<string, string>>,
-    );
+    indexCache = fetch(siteConfig().index).then((r) => r.json() as Promise<Record<string, string>>);
   }
   return indexCache;
 }
@@ -112,9 +107,6 @@ export function allQuestions(payload: Payload): Question[] {
   return payload.questions;
 }
 
-export function findQuestion(
-  payload: Payload,
-  id: string,
-): Question | null {
+export function findQuestion(payload: Payload, id: string): Question | null {
   return payload.questions.find((question) => question.id === id) ?? null;
 }

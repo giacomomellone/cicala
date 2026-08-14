@@ -1,16 +1,4 @@
-/*
- * The `net` thread: the portal's clock, and the only place radio events turn
- * into decisions.
- *
- * It is a coordinator rather than the thread that does the networking. The HTTP
- * server has its own thread, the DHCP server runs on the socket-service thread,
- * the DNS responder has one in portal.c, and the Wi-Fi driver spawns its own.
- * What is left here is holding the state machine, translating management events
- * into its post_*() calls, and ticking it so its deadlines land.
- *
- * C rather than C++ for the one reason the rest of the glue is: the zbus
- * observer macros expand to out-of-order designated initializers.
- */
+/* Network thread for portal, sync, and OTA events. */
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/kernel.h>
@@ -41,21 +29,11 @@ LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 
 #define NET_STACK_SIZE 6144
 
-/*
- * Below `app` and `display`, and below the HTTP server's own thread. Nothing
- * here is on the path between a press and the panel, and a portal that answers
- * a phone a tick late costs nobody anything.
- */
+/* Below `app` and `display`, and below the HTTP server's own thread. */
 #define NET_PRIORITY 8
 
-/* While the portal runs, the machine has deadlines to notice: the scan budget
- * and the connect timeout are checked in its handlers rather than driven by an
- * event. Idle, the thread blocks until something happens. */
 #define TICK_MS 250
 
-/* Bits set by the management callback and by the HTTP handlers, drained by the
- * thread. Separate from the state machine's own flags, because these are
- * written from other threads and the machine is only ever touched by this one. */
 #define EV_SCAN_DONE BIT(0)
 #define EV_AP_OK BIT(1)
 #define EV_AP_FAILED BIT(2)
@@ -64,11 +42,7 @@ LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 #define EV_CREDENTIALS BIT(5)
 #define EV_SYNC BIT(6)
 
-/*
- * This Zephyr has no all-events mask for Wi-Fi, so the mask is the events this
- * file actually handles. Listing them is better than a catch-all anyway: an
- * event added upstream cannot start arriving here unannounced.
- */
+/* Wi-Fi management events handled by this module. */
 #define WIFI_EVENTS                                                                                \
     (NET_EVENT_WIFI_SCAN_RESULT | NET_EVENT_WIFI_SCAN_DONE | NET_EVENT_WIFI_CONNECT_RESULT |       \
      NET_EVENT_WIFI_DISCONNECT_RESULT | NET_EVENT_WIFI_AP_ENABLE_RESULT |                          \
@@ -77,19 +51,7 @@ LOG_MODULE_REGISTER(tk_net, LOG_LEVEL_INF);
 static atomic_t events;
 static K_SEM_DEFINE(wake, 0, 1);
 
-/*
- * Set while the entry gesture is being confirmed, which is a window sleep must
- * not land in.
- *
- * The idle timer starts at the first render and runs for
- * CONFIG_TK_SLEEP_IDLE_MS; the gesture is confirmed over
- * CONFIG_TK_PORTAL_ENTRY_HOLD_MS. Both default to two seconds, so the timer
- * expires while somebody still has both buttons down. sleep_now() refuses when
- * both read closed, which covers that exact instant and nothing either side of
- * it: press the two buttons a moment apart and only one is down when the timer
- * fires, so the device sleeps armed on the other and the gesture is spent on a
- * wake instead.
- */
+/* Sleep is inhibited while the entry gesture is confirmed. */
 static atomic_t confirming_gesture;
 
 static struct net_mgmt_event_callback wifi_cb;
@@ -97,38 +59,15 @@ static struct net_mgmt_event_callback wifi_cb;
 static void run_sync(bool asked_for);
 static void run_ota(void);
 
-/*
- * Set on a cold boot, acted on when the station reports an address.
- *
- * tk_portal_connect_stored() returns as soon as the *request* is accepted, so
- * there is no network yet when it does — the first run on hardware joined and
- * then never synced, because the check for a connection ran seconds early.
- */
+/* Set on a cold boot, acted on when the station reports an address. */
 static bool sync_when_connected;
 
-/*
- * Held from the moment the station is asked to join until the sync that
- * follows has finished, or until waiting for it stops being reasonable.
- *
- * Without it the device sleeps straight through its own cold-boot sync. The
- * idle timer starts at the first render and fires after
- * CONFIG_TK_SLEEP_IDLE_MS — two seconds — while an association plus a fetch
- * takes rather longer than that. The first run on hardware joined a network
- * and was asleep before it had an address.
- */
+/* Covers station connection and the sync that follows it. */
 static atomic_t sync_busy;
 
-/** When waiting for that address stops being worth staying awake for. */
+/* Deadline for acquiring a station address. */
 static int64_t sync_deadline;
 
-/**
- * Put the outcome of a sync on the panel.
- *
- * Through chan_service, not chan_question: `app` owns the sequence number every
- * card carries. The card stays up until the next press, which is what every
- * service card does and what makes this readable by somebody who was not
- * watching at the moment it arrived.
- */
 static void tk_net_show_sync_result(enum tk_sync_result result, uint16_t count, const char *version)
 {
     struct tk_service_msg msg = {};
@@ -179,12 +118,6 @@ void tk_net_notify_credentials(void)
     raise(EV_CREDENTIALS);
 }
 
-/**
- * Management events, on the net_mgmt work queue.
- *
- * This runs on somebody else's thread and must not block, so it does the least
- * it can: copy a scan result, or set a bit and wake `net`.
- */
 static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, struct net_if *iface)
 {
     ARG_UNUSED(iface);
@@ -236,21 +169,6 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
     }
 }
 
-/**
- * Were both buttons held through the boot?
- *
- * Read from the pins rather than from the input layer, which cannot answer
- * this: input.c publishes a press on release and deliberately ignores a release
- * with no press behind it, so a button already down when the device started
- * produces no event at all.
- *
- * gpio_pin_get_dt() reports the logical level, so an active-low contact reads 1
- * when it is closed — the same convention sleep.c's wake mask relies on.
- *
- * Confirmed rather than sampled once. Somebody picking the device up with two
- * fingers should not land in a service mode, and holding for two seconds is
- * hard to do by accident.
- */
 static bool service_gesture_held(void)
 {
     static const struct gpio_dt_spec buttons[] = {
@@ -297,18 +215,12 @@ static void drain_events(void)
         if (sync_when_connected) {
             sync_when_connected = false;
 
-            /* Alongside sync_busy rather than inside run_sync(): the LEDs and
-             * the sleep inhibitor are answering the same question, and one
-             * bracket for both keeps them from disagreeing. */
+            /* Activity and sleep inhibition use the same sync lifetime. */
             tk_status_set_activity(true);
 
             run_sync(false);
 
-            /* Questions first, firmware second. The corpus download is seconds
-             * and the image is minutes, so a device that loses the network
-             * partway through has at least got the cheap thing done — and an
-             * update that succeeds reboots, which would abandon a sync that
-             * had not run yet. */
+            /* Questions first, firmware second. */
             if (IS_ENABLED(CONFIG_TK_OTA_ON_COLD_BOOT)) {
                 run_ota();
             }
@@ -332,14 +244,6 @@ static void drain_events(void)
     }
 }
 
-/**
- * Check for a newer corpus, and say so if one arrived.
- *
- * `asked_for` decides whether the panel hears about it. A sync that fires by
- * itself is housekeeping and stays silent; one somebody pressed a button for
- * reports, because otherwise the device looks like it ignored them. See the
- * decision log.
- */
 static void run_sync(bool asked_for)
 {
     if (!tk_portal_station_connected()) {
@@ -360,11 +264,7 @@ static void run_sync(bool asked_for)
         return;
     }
 
-    /*
-     * The corpus on disk has changed, so `app` reopens it. The rule is that
-     * this must not redraw: the new questions apply to the next one somebody
-     * asks for, not to the one on the glass now.
-     */
+    /* The corpus on disk has changed, so `app` reopens it. */
     struct tk_corpus_msg msg = {};
 
     (void) strncpy(msg.language, tk_language(), sizeof(msg.language) - 1);
@@ -375,22 +275,6 @@ static void run_sync(bool asked_for)
 
 #ifdef CONFIG_TK_OTA
 
-/**
- * Check for new firmware, and restart into it if there is some.
- *
- * Deliberately silent about what it is *about* to do. The device says what
- * happened after the fact instead, on the next boot, through
- * tk_update_notice_check() — a card announcing an imminent reboot would be
- * replaced by that reboot a second later, and a card that survived it would be
- * claiming something that had not happened yet.
- *
- * The restart is immediate rather than deferred to the next wake. Deep sleep
- * makes every press a fresh boot, so deferring would put MCUboot's copy — 4.5
- * seconds, measured on this board — in front of somebody who has just pressed
- * a button and is waiting for a question. Here, nobody is waiting: this runs
- * after a cold boot or from the setup portal, and the device is on power in
- * both cases.
- */
 static void run_ota(void)
 {
     if (!tk_portal_station_connected()) {
@@ -405,9 +289,7 @@ static void run_ota(void)
 
     LOG_INF("restarting to install firmware %s", version);
 
-    /* The log is deferred, so give it a moment to drain: without this the line
-     * above is lost and an update that worked looks like a spontaneous
-     * reboot. */
+    /* Give deferred logs time to flush before reboot. */
     k_sleep(K_MSEC(200));
 
     sys_reboot(SYS_REBOOT_WARM);
@@ -433,8 +315,7 @@ static void net_thread(void *p1, void *p2, void *p3)
         return;
     }
 
-    /* Held across the gesture rather than set inside it, so the answer is
-     * already true by the time the idle timer can first fire. */
+    /* Inhibit sleep for the full service-entry gesture. */
     atomic_set(&confirming_gesture, 1);
 
     const bool gesture = !IS_ENABLED(CONFIG_TK_DEBUG_PORTAL) && service_gesture_held();
@@ -447,45 +328,19 @@ static void net_thread(void *p1, void *p2, void *p3)
     } else if (gesture) {
         LOG_INF("both buttons held through boot — entering setup");
         tk_net_post_start();
-        /* Nothing else to do until somebody asks. */
     } else if (tk_wake_button() != TK_WAKE_NONE && !tk_power_charge_window_open()) {
-        /*
-         * A deep-sleep wake on battery, which is to say somebody pressed a
-         * button and is waiting for a question. Deep sleep makes every press a
-         * fresh boot, so joining here would put a radio association in front of
-         * every question the device ever answers.
-         */
+        /* Battery wakes serve the button without joining Wi-Fi. */
         LOG_INF("woken by a button; not joining a network");
     } else {
         if (tk_wake_button() != TK_WAKE_NONE) {
-            /*
-             * The charging window: a press, on external power, with the window
-             * still open. This is the trigger the design has always specified —
-             * "USB power plus a known network" — and it is reachable now that
-             * VBUS is wired and read at boot.
-             *
-             * One window per plug-in, not one per press: the device does not
-             * sleep while external power is in, so this is reached once — on
-             * the press that ended the last battery sleep.
-             */
+            /* A button wake during the external-power window may sync. */
             LOG_INF("woken on external power; joining to sync");
         } else {
-            /*
-             * A cold boot: power-on, the reset pin, or a cell that went flat.
-             * Rare once the device sleeps, which is the right frequency for
-             * something nobody is waiting on — and the moment somebody is most
-             * likely to be holding the device and able to read a card.
-             */
+            /* Cold boots may sync with stored credentials. */
             LOG_INF("cold boot; joining to sync");
         }
 
-        /*
-         * The association takes up to CONFIG_TK_NET_CONNECT_TIMEOUT_MS and it
-         * happens in front of whatever started this boot. That is safe rather
-         * than merely tolerable: `net`, `app` and `display` are separate
-         * threads, so the question is drawn and refreshed while the radio is
-         * still associating. Do not "fix" this by moving it after the draw.
-         */
+        /* Wait for the station result within the configured timeout. */
         if (tk_portal_connect_stored()) {
             sync_when_connected = true;
             sync_deadline = k_uptime_get() + CONFIG_TK_NET_CONNECT_TIMEOUT_MS;
@@ -494,23 +349,10 @@ static void net_thread(void *p1, void *p2, void *p3)
     }
 
     while (true) {
-        /*
-         * Run before waiting, as app.c does. The start posted above is a flag
-         * on the machine rather than an event on the semaphore, so a loop that
-         * blocked first would sit in K_FOREVER holding an unstarted portal —
-         * which is exactly what the first run on hardware did.
-         */
         drain_events();
         tk_net_run();
 
-        /*
-         * Blocking with no timeout when the portal is off is the same property
-         * `app` has, and for the same reason: it is what lets the device reach
-         * deep sleep. While the portal runs, sleep is inhibited anyway, so
-         * ticking four times a second costs nothing.
-         */
-        /* A network that never arrives must not keep the device awake for
-         * good. Giving up here is what lets the idle timer run again. */
+        /* A missing address must not keep the device awake indefinitely. */
         if (sync_when_connected && k_uptime_get() > sync_deadline) {
             LOG_INF("no address after %d ms; not syncing this boot",
                     CONFIG_TK_NET_CONNECT_TIMEOUT_MS);
@@ -518,19 +360,6 @@ static void net_thread(void *p1, void *p2, void *p3)
             atomic_set(&sync_busy, 0);
         }
 
-        /*
-         * Where the LEDs learn the portal is on air. Pushed from here rather
-         * than read off chan_power, because that channel publishes only on a
-         * state change or a reading that has moved past the deadband, and on a
-         * resting cell it can carry nothing for minutes. This loop ticks while
-         * the portal is up and runs once more on the way to blocking when it
-         * comes down, so both edges arrive.
-         *
-         * tk_net_portal_active() rather than tk_net_is_active(): the wider
-         * question also counts a sync and the boot gesture, which are reasons
-         * to stay awake. Amber is the portal alone, and a transfer has its own
-         * colour through tk_status_set_activity() above.
-         */
         tk_status_set_portal(tk_net_portal_active());
 
         (void) k_sem_take(&wake, tk_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);

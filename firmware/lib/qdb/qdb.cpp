@@ -6,10 +6,7 @@ namespace tk
 namespace
 {
 
-/*
- * FNV-1a. Not a checksum of the corpus — just enough to notice that the
- * bundle is a different one, which is all the retained bag state cares about.
- */
+// FNV-1a identifies corpus changes in retained bag state.
 constexpr uint32_t kFnvOffset = 2166136261u;
 constexpr uint32_t kFnvPrime = 16777619u;
 
@@ -46,7 +43,7 @@ bool Qdb::open(const uint8_t *data, size_t size)
 
     size_t pos = 4;
 
-    // Two u8-length-prefixed strings: release version, then language code.
+    // The version and language are u8-length-prefixed strings.
     const char *strings[2] = {nullptr, nullptr};
     uint8_t lengths[2] = {0, 0};
 
@@ -74,13 +71,11 @@ bool Qdb::open(const uint8_t *data, size_t size)
     pos += 2;
 
     if (count > kMaxQuestions) {
-        // The bag keeps one bit per question per deck in RTC memory, so a
-        // corpus it cannot track is refused rather than half-tracked.
+        // Bag state has one bit per question and deck.
         return false;
     }
 
-    // Walk every record now: a bundle that runs off the end is worth finding
-    // here, once, rather than on whichever draw first reaches the bad offset.
+    // Validate all record bounds while opening the bundle.
     size_t walk = pos;
 
     for (uint16_t i = 0; i < count; i++) {
@@ -127,9 +122,7 @@ bool Qdb::at(uint16_t index, Question &out) const
         return false;
     }
 
-    // Sequential walk rather than an offset table. With 240 questions this is
-    // microseconds once per draw, and it costs no RAM on a device whose whole
-    // budget is the reason the corpus lives in flash to begin with.
+    // A sequential walk avoids a RAM index.
     size_t pos = _first;
 
     for (uint16_t i = 0; i < index; i++) {
@@ -183,8 +176,6 @@ uint16_t Qdb::eligible_count(uint8_t deck, uint8_t max_depth) const
 
     return total;
 }
-
-// ------------------------------------------------------------------------ bag
 
 bool Bag::bind(const Qdb &qdb)
 {
@@ -273,9 +264,7 @@ uint16_t Bag::drawn_count(uint8_t deck) const
 bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_recent,
                uint16_t &index) const
 {
-    // Two passes rather than a candidate list: counting first means no buffer
-    // proportional to the corpus, which matters more here than the second walk
-    // costs.
+    // Count first to avoid a candidate buffer.
     uint16_t candidates = 0;
 
     for (uint16_t i = 0; i < qdb.count(); i++) {
@@ -325,15 +314,12 @@ bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index,
     bool found = pick(qdb, deck, max_depth, true, index);
 
     if (!found) {
-        // The ring is wider than what this deck has left. Dropping it beats
-        // refusing to answer a press.
+        // Ignore recent history when it excludes every remaining question.
         found = pick(qdb, deck, max_depth, false, index);
     }
 
     if (!found) {
-        // Every eligible question has been seen: that is a full cycle, and a
-        // new one starts. The ring still applies, so the first question of the
-        // new cycle is not one of the last few of the old.
+        // Start a new cycle while keeping the recent-question filter.
         clear_deck(deck);
         found = pick(qdb, deck, max_depth, true, index);
 

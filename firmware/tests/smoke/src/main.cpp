@@ -1,7 +1,3 @@
-/*
- * Baseline: proves twister, ztest, native_sim and the C++17 toolchain are
- * wired together. Real suites are listed in ../README.md.
- */
 
 #include <zephyr/ztest.h>
 
@@ -14,7 +10,6 @@ ZTEST(tk_smoke, test_harness_runs)
 
 ZTEST(tk_smoke, test_cpp17_available)
 {
-    // Structured bindings are C++17; a C++11 toolchain fails to compile this.
     constexpr struct {
         int deck;
         int depth;

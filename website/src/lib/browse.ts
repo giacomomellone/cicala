@@ -1,6 +1,4 @@
-// Browse controller (spec §7.5): client-side search (case- and diacritic-
-// insensitive substring), deck chips, tag filter, newest/random sort,
-// 100-row pagination via "show more" — all on the active language only.
+// Browse controller for search, filters, sorting, and pagination.
 
 import { tr } from "./apply-i18n";
 import { shuffle } from "./bag";
@@ -24,9 +22,7 @@ export async function initBrowse(): Promise<void> {
   const sortEl = document.getElementById("b-sort") as HTMLSelectElement;
   const moreBtn = document.getElementById("b-more") as HTMLButtonElement;
   const emptyEl = document.getElementById("b-empty")!;
-  const chips = Array.from(
-    document.querySelectorAll<HTMLButtonElement>("#browse-chips .chip"),
-  );
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#browse-chips .chip"));
 
   const lang = detectLang();
   let payload: Payload;
@@ -36,8 +32,7 @@ export async function initBrowse(): Promise<void> {
     return; // SSR list stays usable
   }
 
-  // newest = reverse file order; files are append-only so file order is
-  // chronological (docs/decisions.md)
+  // Question files are append-only, so reverse file order is newest first.
   const newestFirst: RowItem[] = payload.questions.map((q) => ({ q })).reverse();
 
   let deck = "all";
@@ -48,8 +43,7 @@ export async function initBrowse(): Promise<void> {
   let randomOrder: RowItem[] = [];
 
   const setActiveChip = () => {
-    for (const chip of chips)
-      chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
+    for (const chip of chips) chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
   };
 
   function filtered(): RowItem[] {
@@ -109,8 +103,5 @@ export async function initBrowse(): Promise<void> {
     render();
   });
 
-  // rows link to /q/<id>; make the whole row clickable is handled by the
-  // stretched ::after on .row-q in CSS — nothing to do here. Keep the label
-  // of the more button translated:
   moreBtn.textContent = tr(lang, "browse.more");
 }

@@ -1,20 +1,4 @@
-/*
- * The synced corpus on the filesystem.
- *
- * Compiled only when there is a filesystem to read, which on this board is the
- * LittleFS partition above the 4 MB line — see the board overlay. Without one
- * the compiled-in corpora are all there is, and corpus.h says so inline.
- *
- * ## Why the whole file is read into RAM
- *
- * `qdb` is a zero-copy reader: `Question::text` points into the bundle and
- * stays valid for as long as the store is open, which is what keeps a draw
- * free of allocation. A file's bytes are not contiguous in flash, so there is
- * nothing to point at until they are somewhere that is.
- *
- * One buffer, reused. Only one language is ever open, so a second read
- * replaces the first rather than needing room for both.
- */
+/* The synced corpus on the filesystem. */
 
 #include <errno.h>
 #include <stdio.h>
@@ -28,16 +12,11 @@
 
 LOG_MODULE_REGISTER(tk_corpus, LOG_LEVEL_INF);
 
-/*
- * Sized against CONFIG_TK_MAX_QUESTIONS rather than against what ships today:
- * the largest corpus qdb will accept is 512 questions, and the longest
- * question it will render is CONFIG_TK_MAX_QUESTION_BYTES. English is 15 KB at
- * 240 questions, so this has room for a corpus twice that size.
- */
+/* Buffer the largest corpus accepted by QDB and panel limits. */
 static uint8_t corpus_buf[CONFIG_TK_MAX_CORPUS_BYTES];
 static size_t corpus_len;
 
-/** `/corpus/en.qdb`, and the staging name beside it. */
+/* `/corpus/en.qdb`, and the staging name beside it. */
 static void corpus_path(const char *code, const char *suffix, char *out, size_t out_size)
 {
     (void) snprintf(out, out_size, TK_CORPUS_DIR "/%s.qdb%s", code, suffix);
@@ -65,8 +44,7 @@ const uint8_t *tk_corpus_stored(const char *code, size_t *size)
     corpus_path(code, "", path, sizeof(path));
 
     if (fs_stat(path, &info) != 0) {
-        /* No synced corpus for this language. The ordinary case on a device
-         * that has never reached a network, and not worth a log line. */
+        /* No synced corpus for this language. */
         return NULL;
     }
 
@@ -113,9 +91,7 @@ int tk_corpus_store(const char *code, const uint8_t *data, size_t size)
     }
 
     if (size > sizeof(corpus_buf)) {
-        /* Refused here rather than after it is on disk: a corpus this device
-         * cannot read back is worse stored than not stored, because it would
-         * replace one that works. */
+        /* Validate a corpus before it can replace the stored copy. */
         LOG_ERR("a %zu-byte corpus will not fit the %zu-byte buffer", size, sizeof(corpus_buf));
         return -EFBIG;
     }
@@ -150,11 +126,7 @@ int tk_corpus_store(const char *code, const uint8_t *data, size_t size)
         return err;
     }
 
-    /*
-     * The swap. fs_rename replaces the destination, so there is no window in
-     * which neither file exists — a power cut either side of this leaves a
-     * whole corpus on disk, the old one or the new one.
-     */
+    /* The swap. */
     err = fs_rename(staging, path);
 
     if (err != 0) {

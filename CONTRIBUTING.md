@@ -39,7 +39,7 @@ question once and list every deck where it is eligible. Append the entry
   decks: [new_people, close]
   depth: 2
   tags: [reflective]
-  author: "your name"   # optional
+  author: "your name" # optional
 ```
 
 Then run the validator before pushing (`just setup` once, if you haven't):

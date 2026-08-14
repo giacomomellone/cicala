@@ -1,8 +1,7 @@
 # Device sync protocol and bundle format
 
-This is the data contract for later firmware. The website hosts one signed
-bundle per shipped language. A device downloads only its installed languages,
-at most two.
+The website hosts one signed bundle per shipped language. A device downloads
+only its installed languages, at most two.
 
 ## Manifest
 
@@ -30,50 +29,40 @@ eligibilities. `sig` is an Ed25519 signature over the 32 raw bytes of the
 bundle's SHA-256 digest. An unsigned development bundle uses `"sig": null`;
 release firmware rejects it.
 
-Two things here are deliberate and are explained in the decision log.
+`url` points to the raw `.qdb`. `size`, `sha256`, and `sig` all describe those
+bytes. A gzipped copy is also published for browsers and manual downloads.
 
-**`url` points at the raw `.qdb`, not the gzipped `.qdb.gz`.** Zephyr carries no
-inflate, and the saving does not justify vendoring one: about 9 KB per language
-per release, on a device that is plugged in when it syncs. `size`, `sha256` and
-`sig` all describe the raw bytes. `.qdb.gz` is still published, for the website and
-for people.
-
-**`http`, not `https`.** The device has no clock, and certificate validation
-without one is not validation. The signature is what protects the corpus, and it
-is verified against a key compiled into the image. Because an unauthenticated
-transport allows an old but validly signed manifest to be replayed, the device
-**must reject a manifest whose `version` is not newer than the installed one**.
+Device endpoints use HTTP because the device has no trusted clock for TLS
+certificate validation. Each bundle is protected by an Ed25519 signature and a
+public key compiled into the firmware. The device rejects manifests whose
+version is not newer than the installed version, which limits replay of an old
+signed release.
 
 ## QDB2 bundle
 
-**QDB** is the Tischkarte Bundle: the device's copy of the question database,
-in the only shape a microcontroller wants to read it. **2** is the format
-version, carried in the magic bytes — version 1 existed briefly and stored one
-record per question per deck, which duplicated the text.
+**QDB2** is the flat binary form of the question database used by the device.
+The format version is part of the magic bytes.
 
-Two file extensions appear, and they are the same data in different states:
+Two file extensions contain the same data:
 
-| | What | Where |
-|---|---|---|
-| `.qdb.gz` | gzip around the binary below | `dist/bundles/`, the website |
-| `.qdb` | The binary itself | what a device downloads and stores, and what the firmware suites embed |
-
-The gzip was once the device's transport too, and `SWAP` inflated it. It no
-longer is: devices fetch the `.qdb` directly. See the decision log.
+|           | What                         | Where                                            |
+| --------- | ---------------------------- | ------------------------------------------------ |
+| `.qdb.gz` | gzip around the binary below | `dist/bundles/`, the website                     |
+| `.qdb`    | the binary itself            | device downloads, storage, and firmware fixtures |
 
 A `.qdb.gz` file is a deterministic gzip stream (`mtime=0`) around this flat
 binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
-| Field | Size | Meaning |
-|---|---:|---|
-| magic | 4 | ASCII `QDB2` |
-| version | 1 + n | u8 length, then release version |
-| language | 1 + n | u8 length, then language code |
-| count | 2 | u16 number of unique questions |
-| then, per question | | |
-| deck mask | 1 | bits 0–5 are `new_people`, `close`, `family`, `work`, `here`, `wild`; bits 6–7 are zero |
-| metadata | 1 | bits 0–1 are `depth - 1`; bit 2 is `spicy`; bit 3 is `dark`; bits 4–7 are zero |
-| text | 2 + n | u16 byte length, then question text |
+| Field              |  Size | Meaning                                                                                 |
+| ------------------ | ----: | --------------------------------------------------------------------------------------- |
+| magic              |     4 | ASCII `QDB2`                                                                            |
+| version            | 1 + n | u8 length, then release version                                                         |
+| language           | 1 + n | u8 length, then language code                                                           |
+| count              |     2 | u16 number of unique questions                                                          |
+| then, per question |       |                                                                                         |
+| deck mask          |     1 | bits 0–5 are `new_people`, `close`, `family`, `work`, `here`, `wild`; bits 6–7 are zero |
+| metadata           |     1 | bits 0–1 are `depth - 1`; bit 2 is `spicy`; bit 3 is `dark`; bits 4–7 are zero          |
+| text               | 2 + n | u16 byte length, then question text                                                     |
 
 The bundle omits IDs because the physical device has no favorites, permalinks,
 or human-visible question numbers. IDs remain in the repository and website.
@@ -109,45 +98,35 @@ decoder. The tools unit suite round-trips both shipped languages.
 
 ### Two decoders
 
-There are now two implementations of this format, and a change to it has to
-land in both:
+The writer and device reader implement the same format:
 
-| | Where | Used by |
-|---|---|---|
+|                            | Where                   | Used by                           |
+| -------------------------- | ----------------------- | --------------------------------- |
 | Writer + reference decoder | `tools/build_bundle.py` | the bundle build, the tools suite |
-| Device reader | `firmware/lib/qdb/` | the firmware |
+| Device reader              | `firmware/lib/qdb/`     | the firmware                      |
 
-They are checked against each other rather than against the spec alone: the
-firmware suites run the real bundles that `build_bundle.py` emits, and
-`firmware/tests/qdb` additionally decodes the worked example above byte for
-byte. A format change that updates only one side fails there.
+The firmware suites read real bundles emitted by `build_bundle.py`.
+`firmware/tests/qdb` also decodes the worked example above byte for byte.
 
-The device reader is stricter than the writer needs to be — it validates every
-declared length against the buffer at `open()` and rejects a bundle with
-trailing bytes — because it is the side that reads files arriving over the
-network. How it works is described under "qdb — the question store" in
+The device reader checks every declared length at `open()` and rejects trailing
+bytes. Its implementation is described under "qdb — the question store" in
 [firmware_architecture.md](firmware_architecture.md).
 
-## Later device flow
+## Device flow
 
-Normal trigger: USB power plus known Wi-Fi. Setup trigger: connect USB while
-holding Next, then use the captive portal on a phone. There is no tabletop menu
-or manual-sync gesture.
-
-The portal is built and the setup trigger is not that one yet: it is both
-buttons held through a boot, because VBUS detect is reserved on GPIO21 and
-unwired. The sync trigger is unavailable for the same reason, so until VBUS is
-wired the device syncs on a cold boot once the station has an address, and on
-request from the portal's status page.
+Holding Category and Next through boot opens the setup portal. Otherwise the
+device joins a stored network after a cold boot, or after a button wakes it
+during the external-power sync window. The portal status page can also request
+a sync.
 
 1. Fetch the manifest and check `schema`, `min_fw`, and that `version` is newer
    than the installed one.
 2. Compare the release with each installed language.
 3. Download a changed bundle and verify size, SHA-256, then signature.
 4. Write a staging file and atomically rename it over the prior bundle.
-5. Use the new bundle on the next requested draw. A sync nobody asked for shows
-   nothing; a sync somebody asked for puts a card on the panel that stays until
-   the next press. See the decision log.
+5. Use the new bundle on the next requested draw. Automatic sync does not
+   change the panel. A sync requested from the portal shows its result until the
+   next press.
 
 Any failure leaves the old bundle intact and retries during a later charging
 window. A sync that fires by itself does not refresh the e-paper or take
@@ -156,20 +135,18 @@ attention from the current question.
 ## Keys
 
 `tools/keygen.py` generates the Ed25519 pair through the system `openssl`.
-The private key is a GitHub Actions secret. The public key remains part of a
-future firmware build. Key rotation requires a firmware release; devices
-without a valid new bundle continue with their preloaded corpus.
+The private key is a GitHub Actions secret. The public key is compiled into the
+firmware. Key rotation requires a firmware release; devices without a valid new
+bundle continue with their preloaded corpus.
 
 The same key signs the OTA manifest, because it makes the same statement about
-the same kind of artifact. It is *not* the key that signs firmware images —
+the same kind of artifact. It is _not_ the key that signs firmware images —
 that one lives in the bootloader and is described in
 [firmware_update.md](firmware_update.md).
 
 ## Firmware, which is the same shape
 
-Firmware updates use a second manifest, `/device/firmware.json`, with the same
-fields and the same check order. It is a separate document rather than a key in
-this one because the two are published by different tags and each carries the
-version its own anti-rollback rule compares against — sharing a file would make
-a question-database release gate a firmware check, and the reverse. See
+Firmware updates use `/device/firmware.json`, with the same fields and check
+order. Corpus and firmware releases have separate manifests and version
+comparisons. See
 [firmware_update.md](firmware_update.md).

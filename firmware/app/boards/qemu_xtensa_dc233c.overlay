@@ -1,13 +1,4 @@
-/*
- * qemu build. The dc233c board has no GPIO controller of its own, so the pins
- * come from Zephyr's emulated controller — enough for the same source to build
- * and for gdb to step through the state machine on an Xtensa core.
- *
- * Two buttons, as on the target: Category advances the deck, Next asks a
- * question. The six-input selector this used to describe is gone, and so is
- * the pin numbering that went with it — only the aliases have to match, since
- * nothing under qemu cares which emulated pin a contact sits on.
- */
+/* qemu build. */
 
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
@@ -44,11 +35,7 @@
         };
     };
 
-    /*
-     * A dummy panel the size of the real one. It discards what it is given, so
-     * `just fw-sim` proves the render path runs end to end without showing
-     * anything — the image itself needs the panel on a bench.
-     */
+    /* A dummy panel the size of the real one. */
     tk_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;

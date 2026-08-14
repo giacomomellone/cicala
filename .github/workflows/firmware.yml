@@ -1,10 +1,6 @@
 name: firmware
 
-# Also on questions/ and tools/: the corpus is compiled into the image and the
-# suites fold every shipped question at the real panel geometry, so a question
-# too long for the screen, or one with a character the renderer cannot draw,
-# fails here rather than on a table. A question change really can break the
-# firmware.
+# The image embeds the corpus, and layout tests cover every shipped question.
 on:
   pull_request:
     paths:
@@ -27,22 +23,14 @@ concurrency:
   group: firmware-${{ github.ref }}
   cancel-in-progress: true
 
-# Not the ghcr.io/zephyrproject-rtos/ci image the justfile uses locally: it is
-# about 20 GB and a standard runner has ~14 GB free, so every job died in
-# `Initialize containers` with "no space left on device". The setup action
-# installs west and only the toolchains named below, and caches both.
 jobs:
-  # The suites, on the platform the tree already calls the CI one. No espressif
-  # blobs and no cross toolchain: native_sim builds with the host compiler.
   suites:
     name: suites (native_sim)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      # app-path is the manifest repo, so `west init -l firmware` makes the
-      # checkout the west topdir and deps/ lands inside it — the same shape
-      # `just fw-init` produces locally, and the one .gitignore expects.
+      # Keep deps/ inside the checkout, as used by local builds.
       - name: Set up Zephyr and west
         uses: zephyrproject-rtos/action-zephyr-setup@v1
         with:
@@ -63,11 +51,7 @@ jobs:
       - name: Run the suites
         run: west twister -T firmware/tests -p native_sim --inline-logs -O build/twister
 
-      # The suites build app/src/ but never the application itself, so nothing
-      # was checking app/boards/native_sim.overlay. It had been stale since the
-      # Category button replaced the selector, and `just fw-sim` on a Linux host
-      # was broken the whole time. The POSIX architecture is Linux-only, so this
-      # cannot be caught on a macOS bench either.
+      # The library suites do not validate the complete native_sim overlay.
       - name: Build the application itself for native_sim
         run: west build -b native_sim firmware/app -d build/native_sim
 
@@ -79,9 +63,6 @@ jobs:
           path: build/twister/twister.xml
           if-no-files-found: ignore
 
-  # What native_sim cannot answer: whether the real image links, and whether it
-  # still fits. The second matters more than it looks — sync will add a
-  # filesystem and a signature verifier on top of what is already there.
   image:
     name: image (esp32s3)
     runs-on: ubuntu-latest
@@ -97,9 +78,7 @@ jobs:
       - name: Fetch the espressif Wi-Fi blobs
         run: west blobs fetch hal_espressif
 
-      # `west patch apply` fails on an already-patched tree, which is what a
-      # restored cache is. The symbol the patch adds is the honest test of
-      # whether the work is done, so ask that rather than trusting an exit code.
+      # Restored caches may already contain the patch.
       - name: Apply the local Zephyr patches
         run: |
           if grep -q SSD16XX_PRESERVE_IMAGE_ON_INIT \
@@ -111,9 +90,7 @@ jobs:
 
       - name: Build the question bundles compiled into the image
         run: |
-          # imgtool: the sysbuild build signs the application with it, and its
-          # absence surfaces as a build failure inside mcuboot.cmake rather
-          # than as a missing package.
+          # Sysbuild uses imgtool to sign the application.
           pip install --quiet pyyaml jsonschema imgtool
           python3 tools/build_bundle.py
           mkdir -p firmware/tests/fixtures
@@ -122,20 +99,13 @@ jobs:
             cp "$f" "firmware/tests/fixtures/$lang.qdb"
           done
 
-      # --sysbuild: the bootloader is part of the product now, and a build
-      # without it would not catch a change that breaks MCUboot's own build or
-      # pushes it past its 64 KB partition. Signed with the committed
-      # development key here; a release re-signs with the secret. See
-      # firmware/keys/README.md.
+      # Sysbuild checks the bootloader and application together.
       - name: Build for the ESP32-S3 devkit (bootloader + application)
         run: |
           west build -b esp32s3_devkitc/esp32s3/procpu firmware/app \
             -d build/esp32s3 --sysbuild
 
-      # slot0 is 1344 KB and boot_partition is 64 KB
-      # (dts/vendor/espressif/partitions_0x0_amp_4M.dtsi). Both reported every
-      # run, not only when they fail, so the numbers move visibly rather than
-      # being noticed at a flash — and the bootloader is the tighter of the two.
+      # slot0 is 1344 KB; boot_partition is 64 KB.
       - name: Check both images still fit their partitions
         run: |
           app_limit=$((1344 * 1024))

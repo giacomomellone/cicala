@@ -1,6 +1,5 @@
 tests:
   tischkarte.qdb:
-    # Pure C++17 over a byte array: no board features, no filesystem.
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim

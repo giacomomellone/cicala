@@ -44,15 +44,15 @@ A contributor can hit the same rule at three distances, and the cost of being
 told rises with each one. The design goal is to move every rejection as far
 left as it will go.
 
-| Rule | Website form | Issue check | Merge |
-| --- | --- | --- | --- |
-| 10–140 characters, ends with `?`, one line | yes | yes | yes |
-| At least one deck; dark/spicy only in `wild` | yes | yes | yes |
-| Already in this language's corpus | yes | yes | yes |
-| Per-language denylist | no | yes | yes |
-| Shipped language (not the incubator) | yes | yes | yes |
-| CC0 box ticked | yes | yes | — |
-| Style guide, tone, whether it is a *good* question | no | no | maintainer |
+| Rule                                               | Website form | Issue check | Merge      |
+| -------------------------------------------------- | ------------ | ----------- | ---------- |
+| 10–140 characters, ends with `?`, one line         | yes          | yes         | yes        |
+| At least one deck; dark/spicy only in `wild`       | yes          | yes         | yes        |
+| Already in this language's corpus                  | yes          | yes         | yes        |
+| Per-language denylist                              | no           | yes         | yes        |
+| Shipped language (not the incubator)               | yes          | yes         | yes        |
+| CC0 box ticked                                     | yes          | yes         | —          |
+| Style guide, tone, whether it is a _good_ question | no           | no          | maintainer |
 
 The website form cannot check the denylist: shipping the list to the browser
 would publish exactly the list of words the project would rather not
@@ -72,8 +72,7 @@ GitHub silently drops a value that is not one of the declared options, leaving
 a required field blank. So the strings have to agree character for character,
 and two tests hold them together: `TestIssueFormVocabulary` in
 `tools/tests/test_tools.py` for the issue template, and `config.test.ts` for
-the website constants. See
-[decisions](decisions.md) for what drifted before they existed.
+the website constants.
 
 ## Text normalization
 

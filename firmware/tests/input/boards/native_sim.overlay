@@ -1,7 +1,3 @@
-/*
- * Same nodes as firmware/app/boards/native_sim.overlay.
- *
- */
 
 #include <zephyr/dt-bindings/input/input-event-codes.h>
 

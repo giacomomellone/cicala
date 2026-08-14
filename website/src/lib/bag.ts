@@ -1,7 +1,4 @@
-// The shuffle bag (spec §7.4): per lang+category, every question is shown
-// once before any repeats; on refill, the last 5 shown are excluded so a
-// fresh cycle never opens with something just seen. Pure logic — persistence
-// lives in store.ts, DOM wiring in play.ts.
+// Draw each eligible question once per cycle and avoid the five most recent.
 
 import type { Bag } from "./store";
 
@@ -13,9 +10,7 @@ export function shuffle<T>(arr: T[], rand: () => number = Math.random): T[] {
   return arr;
 }
 
-/** Draw the next id. Mutates and returns the bag (caller persists it).
- * Ids no longer present in `aliveIds` (removed upstream) are dropped.
- * Returns null only when `aliveIds` is empty. */
+/* Draw the next id. */
 export function drawFromBag(
   bag: Bag,
   aliveIds: string[],

@@ -1,14 +1,4 @@
 # West manifest (T2 topology: this repo is the manifest repo).
-#
-#   `west init -l firmware` from the repo root makes the repo root the west
-#   topdir, so .west/ and deps/ land inside the monorepo and stay gitignored.
-#   Zephyr and its modules are never committed here.
-#
-#   just fw-init     # west init + update + blobs
-#
-# Bump `revision` deliberately and record it in docs/decisions.md. The pin
-# below is Zephyr's latest stable as of 2026-08-02, and it requires Zephyr SDK
-# 1.0.1 exactly (see deps/zephyr/SDK_VERSION after the first update).
 
 manifest:
   self:
@@ -22,16 +12,12 @@ manifest:
     - name: zephyr
       remote: upstream
       revision: v4.4.1
-      # No `deps/` here: path-prefix below applies to this project as well as
-      # to everything its manifest imports. Writing `path: deps/zephyr` too
-      # gets the prefix applied twice and clones into deps/deps/zephyr.
+      # path-prefix applies to this project and its imported modules.
       path: zephyr
       import:
-        # Puts zephyr and every module it pulls under deps/, instead of
-        # scattering modules/ across the repo root.
+        # Keep the west workspace under deps/.
         path-prefix: deps
-        # Only what an ESP32-S3 build of this application needs. Widen if a
-        # build fails on a missing module rather than importing all ~60.
+        # Only what an ESP32-S3 build of this application needs.
         name-allowlist:
           - cmsis
           - hal_espressif   # SoC HAL + Wi-Fi blobs; carries its own xtensa core config

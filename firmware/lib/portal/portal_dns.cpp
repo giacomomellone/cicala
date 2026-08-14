@@ -6,26 +6,20 @@ namespace tk
 namespace
 {
 
-/** Fixed part of every DNS message: id, flags, and the four section counts. */
+/** DNS header size: id, flags, and four section counts. */
 constexpr uint16_t kHeaderBytes = 12;
 
-/** A label's length octet may not exceed this; 0xC0 and above is a pointer. */
+/** Maximum DNS label length. */
 constexpr uint8_t kMaxLabel = 63;
 constexpr uint8_t kPointerMask = 0xC0;
 
-/* Flag bits in the second and third header bytes. */
+// DNS header flags.
 constexpr uint8_t kFlagQuery = 0x80; ///< high byte: QR, set on a response
 constexpr uint8_t kFlagAuthoritative = 0x04;
 constexpr uint8_t kFlagRecursionDesired = 0x01;
 constexpr uint8_t kOpcodeMask = 0x78; ///< high byte: OPCODE, zero for a query
 
-/**
- * Time to live, in seconds.
- *
- * Zero, and deliberately. The answer is a lie that is only true on this
- * network, so a phone that caches it would keep resolving the whole internet to
- * 192.168.4.1 after it walks away from the table.
- */
+/** Zero prevents clients from caching the captive DNS answer. */
 constexpr uint32_t kAnswerTtl = 0;
 
 uint16_t read_u16(const uint8_t *p)
@@ -47,20 +41,16 @@ bool dns_parse_query(const uint8_t *msg, uint16_t len, DnsQuery &out)
         return false;
     }
 
-    /* A response arriving on the server port is somebody else's business. */
     if ((msg[2] & kFlagQuery) != 0) {
         return false;
     }
 
-    /* Only a standard query. Inverse queries and status requests are not what
-     * a phone probing for a portal sends, and answering them as if they were
-     * A lookups would be worse than staying quiet. */
+    // Accept standard queries only.
     if ((msg[2] & kOpcodeMask) != 0) {
         return false;
     }
 
-    /* Exactly one question. Multi-question queries are legal on paper and
-     * unheard of in practice, and one answer would not cover them. */
+    // One answer covers one question.
     if (read_u16(&msg[4]) != 1) {
         return false;
     }
@@ -68,7 +58,6 @@ bool dns_parse_query(const uint8_t *msg, uint16_t len, DnsQuery &out)
     const uint16_t name_offset = kHeaderBytes;
     uint16_t at = name_offset;
 
-    /* Walk the labels. The name ends at a zero-length one. */
     while (true) {
         if (at >= len) {
             return false;
@@ -76,8 +65,7 @@ bool dns_parse_query(const uint8_t *msg, uint16_t len, DnsQuery &out)
 
         const uint8_t label = msg[at];
 
-        /* A compression pointer needs a prior name to point at, and this is the
-         * first name in the message. Nothing legal can appear here. */
+        // The first name cannot use a compression pointer.
         if ((label & kPointerMask) != 0) {
             return false;
         }
@@ -103,7 +91,6 @@ bool dns_parse_query(const uint8_t *msg, uint16_t len, DnsQuery &out)
         }
     }
 
-    /* QTYPE and QCLASS follow the name. */
     if ((uint32_t) at + 4 > len) {
         return false;
     }
@@ -126,8 +113,7 @@ uint16_t dns_build_reply(const uint8_t *msg, uint16_t len, const DnsQuery &query
         return 0;
     }
 
-    /* Only an A record in class IN gets an address. Everything else is
-     * answered empty, which is what stops a phone waiting on its AAAA. */
+    // Return an address only for an IN-class A query.
     const bool answered = query.qtype == kDnsTypeA && query.qclass == kDnsClassIn;
     const uint16_t needed = (uint16_t) (query.question_end + (answered ? kDnsAnswerBytes : 0));
 
@@ -135,7 +121,6 @@ uint16_t dns_build_reply(const uint8_t *msg, uint16_t len, const DnsQuery &query
         return 0;
     }
 
-    /* Header and question come back unchanged apart from the flags. */
     for (uint16_t i = 0; i < query.question_end; i++) {
         out[i] = msg[i];
     }
@@ -146,8 +131,7 @@ uint16_t dns_build_reply(const uint8_t *msg, uint16_t len, const DnsQuery &query
         out[2] |= kFlagRecursionDesired;
     }
 
-    /* Recursion is not available and the response code is NOERROR, which is
-     * the whole of the low flag byte. */
+    // Recursion is unavailable; response code is NOERROR.
     out[3] = 0;
 
     write_u16(&out[6], answered ? 1 : 0); /* ANCOUNT */
@@ -160,7 +144,7 @@ uint16_t dns_build_reply(const uint8_t *msg, uint16_t len, const DnsQuery &query
 
     uint8_t *ans = &out[query.question_end];
 
-    /* Point at the name already in the question rather than repeating it. */
+    // Reuse the question name through DNS compression.
     write_u16(&ans[0], (uint16_t) (kPointerMask << 8 | query.name_offset));
     write_u16(&ans[2], kDnsTypeA);
     write_u16(&ans[4], kDnsClassIn);

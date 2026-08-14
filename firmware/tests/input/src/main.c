@@ -1,12 +1,3 @@
-/*
- * Category and Next, driven through emulated GPIO.
- *
- * This is the real src/input.c against the real gpio-keys driver: the suite
- * moves pins and waits out the debounce, so what it checks is the timing rule
- * itself rather than a mock of it.
- *
- * Buttons are active low, so a pressed button is a physical 0.
- */
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/gpio/gpio_emul.h>
@@ -19,8 +10,6 @@
 static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios);
 static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios);
 
-/* Long enough for the driver to debounce and report, with margin for a slow
- * host. */
 #define PRESS_WAIT K_MSEC(CONFIG_TK_BUTTON_DEBOUNCE_MS + 150)
 
 static int category_publishes;
@@ -58,8 +47,6 @@ static void tap(const struct gpio_dt_spec *button, int hold_ms)
 
 static void *suite_setup(void)
 {
-    /* Emulated pins read low by default, which for an active-low button means
-     * held down from the start. Release both before the input layer looks. */
     press(&category, false);
     press(&next_button, false);
     k_sleep(PRESS_WAIT);
@@ -97,11 +84,6 @@ ZTEST(tk_input, test_one_next_press_is_one_event)
 
 ZTEST(tk_input, test_a_press_is_reported_on_release)
 {
-    /*
-     * Publishing on release rather than on press is what makes the duration
-     * honest. No policy reads it — a long press means the same as a short one
-     * — but a table study asks whether anyone tried to hold.
-     */
     press(&next_button, true);
     k_sleep(PRESS_WAIT);
 
@@ -124,10 +106,6 @@ ZTEST(tk_input, test_a_long_press_is_still_one_event)
 
 ZTEST(tk_input, test_the_buttons_are_independent)
 {
-    /*
-     * Category cannot disturb Next and vice versa. That independence is the
-     * reason there are two buttons rather than one with a press vocabulary.
-     */
     press(&category, true);
     k_sleep(PRESS_WAIT);
 

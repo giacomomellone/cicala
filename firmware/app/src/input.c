@@ -1,17 +1,4 @@
-/*
- * The two buttons.
- *
- * Zephyr's input subsystem does the work: the `gpio-keys` node in the board
- * overlay is driven by the in-tree driver, which owns the interrupt and the
- * per-contact debounce. What is left here is turning a debounced key event
- * into the channel the application speaks in, and measuring how long the
- * button was held so a table study can ask whether anyone tried.
- *
- * Category advances the deck; Next asks for a question. Neither has a press
- * duration that means anything.
- *
- * There is no input thread — see the CONFIG_INPUT_MODE_SYNCHRONOUS note below.
- */
+/* The two buttons. */
 
 #include "input.h"
 
@@ -28,21 +15,11 @@ LOG_MODULE_REGISTER(tk_input, LOG_LEVEL_INF);
 #define CATEGORY_CODE INPUT_KEY_MENU
 #define NEXT_CODE INPUT_KEY_ENTER
 
-/** Uptime when each button went down; negative while it is up. */
+/* Uptime when each button went down; negative while it is up. */
 static int64_t category_press_ms = -1;
 static int64_t next_press_ms = -1;
 
-/**
- * Turn a press-and-release into one event.
- *
- * Published on release rather than on press, which is what makes the duration
- * honest. No policy reads it: a long press means the same as a short one, for
- * both buttons.
- *
- * A release with no press behind it is a button that was already held when the
- * device booted — which, once deep sleep exists, is exactly how a wake looks if
- * someone leans on the button. Ignored rather than invented.
- */
+/* Turn a press-and-release into one event. */
 static bool press_completed(int32_t value, int64_t *down_at, uint32_t *duration_ms)
 {
     if (value != 0) {

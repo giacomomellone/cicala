@@ -1,4 +1,4 @@
-# The whole application, so it needs the whole application's policy.
+# Use the complete application policy.
 
 mainmenu "tischkarte integration tests"
 

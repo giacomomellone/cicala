@@ -1,23 +1,9 @@
 #!/usr/bin/env python3
-"""Turn a question-submission issue into a database entry.
+"""Parse, check, or apply a question-submission issue.
 
-Used by .github/workflows/promote-question.yml. Reads the GitHub issue-form
-body from the ISSUE_BODY environment variable (never from argv — issue text is
-untrusted), parses the structured sections, and emits `lang` and `pr_title` to
-$GITHUB_OUTPUT.
-
-Modes:
-  promote_issue.py parse   only parse and emit outputs (used on issue open
-                           to add the lang:{code} label)
-  promote_issue.py check   parse, then run the entry through the real
-                           validator against a copy of the database, and
-                           report every problem in prose. Writes nothing.
-  promote_issue.py apply   parse and append to questions/{lang}/questions.yaml
-                           (without id and added — validate.py --fix assigns
-                           those)
-
-Exit 0 on success; 1 on a problem with the submission; 78 for "new language"
-submissions (the workflow replies with the incubator explainer instead).
+The issue body comes from ISSUE_BODY. `parse` emits workflow fields, `check`
+validates against a temporary database, and `apply` appends an entry without
+its generated id and date. Exit 78 identifies a new-language request.
 """
 
 from __future__ import annotations
@@ -41,8 +27,6 @@ TAG_VOCAB = frozenset(
 )
 CREDIT_MAX = 40
 
-# Exit code the workflow reads as "this is a new-language request, reply with
-# the incubator explainer" rather than as a failure.
 NEW_LANGUAGE = 78
 
 
@@ -82,7 +66,7 @@ def parse_issue(body: str) -> dict:
     lang_raw = s.get("language", "")
     m = re.search(r"\(([a-z]{2,3})\)", lang_raw)
     if "other" in lang_raw.lower() or not m:
-        # not an error — the workflow posts the new-language explainer
+        # The workflow handles new-language requests separately.
         emit("new_language", "true")
         sys.exit(NEW_LANGUAGE)
     lang = m.group(1)
@@ -165,9 +149,7 @@ def append_entry(target: Path, entry: dict) -> None:
     target.write_text(existing + render_entry(entry), encoding="utf-8")
 
 
-# `--fix` assigns id and added, but only to a file that is otherwise clean. On
-# a file it refuses to rewrite it therefore also reports these two, which say
-# nothing about the submission.
+# `--fix` assigns id and added, but only to a file that is otherwise clean.
 ASSIGNED_BY_FIX_RE = re.compile(r"'(id|added)' is a required property")
 
 
@@ -194,8 +176,7 @@ def check_entry(entry: dict) -> list[str]:
     for line in err.getvalue().splitlines():
         if ": error: " not in line or ASSIGNED_BY_FIX_RE.search(line):
             continue
-        # the file:line prefix names a path inside the temp copy; the message
-        # body keeps any repo-relative reference, which is the useful part
+        # Remove the temporary file prefix from validator errors.
         problem = re.sub(r"^\S+: error: ", "", line)
         if problem not in problems:
             problems.append(problem)

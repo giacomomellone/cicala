@@ -1,28 +1,4 @@
-/*
- * The setup portal's state machine — the only thing in `net` that decides
- * anything. Everything else opens sockets or reports.
- *
- * The transition table in portal_fsm.cpp is the specification; the diagram in
- * docs/firmware_architecture.md is the same table drawn. This class holds no
- * Zephyr headers and no sockets: events are pushed in with post_*(), effects go
- * out through PortalIo. That is what lets the suite drive a five-minute portal
- * window in microseconds, with no radio and no phone.
- *
- * ## Why the scan happens before the access point comes up
- *
- * The ESP32-S3 has one radio. A scan hops every channel in the band for a few
- * seconds, and a SoftAP sits on one — so scanning with a phone already
- * associated stalls it, and can drop the association outright. Scanning first
- * and serving the cached list costs nothing: the list is a few seconds old by
- * the time anybody reads it, and the networks in a room do not move.
- *
- * ## Why joining a network is the last thing that happens
- *
- * In AP+STA mode the SoftAP is forced onto whatever channel the station lands
- * on. Joining therefore knocks the phone off the setup network, which means the
- * portal cannot report the result to the browser that asked for it. The panel
- * does that instead, which is what the service card is for.
- */
+/* Setup portal state machine. Inputs use post_*(); effects use PortalIo. */
 
 #pragma once
 
@@ -51,36 +27,27 @@ constexpr int64_t kConnectTimeoutMs = CONFIG_TK_NET_CONNECT_TIMEOUT_MS;
 constexpr int64_t kConnectTimeoutMs = 20000;
 #endif
 
-/** What the panel should be saying. The tabletop face has no other states. */
+/** Service card shown on the panel. */
 enum class PortalCard {
-    /** Join this network, open this address. */
     SETUP,
-    /** Credentials taken, trying them. */
     CONNECTING,
-    /** It worked. */
     CONNECTED,
-    /** It did not — wrong password, or the network was not there. */
     REFUSED,
 };
 
-/** Everything the portal can do to the world outside itself. */
+/** Effects performed by the portal state machine. */
 class PortalIo
 {
 public:
     virtual ~PortalIo() = default;
 
-    /** Begin a scan. Its results arrive later as post_scan_done(). */
+    /** Start a scan. Completion arrives through post_scan_done(). */
     virtual bool scan_start() = 0;
 
-    /** Bring the SoftAP up. The result arrives as post_ap_ready(). */
+    /** Start the access point. Completion arrives through post_ap_ready(). */
     virtual bool ap_start() = 0;
 
-    /**
-     * Give the access point an address, a DHCP server, DNS and HTTP.
-     *
-     * Separate from ap_start() because it can only run once the interface has
-     * an address, which is only true after the AP reports itself enabled.
-     */
+    /** Start DHCP, DNS, and HTTP after the access point has an address. */
     virtual bool serve_start() = 0;
 
     /** Try the credentials last submitted. Result arrives as post_connected(). */
@@ -106,11 +73,6 @@ public:
         SHUTDOWN,
     };
 
-    /*
-     * Named for what happened, not for where it goes — the table owns the
-     * destinations. SUBMITTED, JOINED and REFUSED exist because SERVING and
-     * CONNECTING each have more than one way out.
-     */
     enum class Transition {
         REPEAT = 0, ///< nothing to do; stay put
         CONTINUE,   ///< the ordinary way forward
@@ -129,7 +91,7 @@ public:
     /** Leave it, from wherever it is. */
     void post_stop();
 
-    /** The scan finished, with results or without. */
+    /** Post scan completion, including an empty result. */
     void post_scan_done();
 
     /** The access point reported itself up, or failed to. */
@@ -138,10 +100,10 @@ public:
     /** The form arrived and the credentials have been stored. */
     void post_credentials();
 
-    /** The station either joined or did not. */
+    /** Post the station connection result. */
     void post_connected(bool ok);
 
-    /** True while anything is on air. The sleep path reads this. */
+    /** Return whether the portal keeps the radio active. */
     bool is_active() const { return get_current_state() != STATE(OFF); }
 
     /** True once a network has been joined this session. */
@@ -172,10 +134,10 @@ private:
     bool _connect_pending = false;
     bool _connect_ok = false;
 
-    /** The last attempt was refused, so the card says so on the way back. */
+    /** Selects the refusal card when returning to the form. */
     bool _refused = false;
 
-    /** The access point is on air; re-entering SERVING must not restart it. */
+    /** Prevents SERVING re-entry from restarting the access point. */
     bool _ap_up = false;
 
     static const Fsm::StateTransition _transitions[];

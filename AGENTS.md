@@ -4,12 +4,12 @@ Working notes for coding agents in this repo. Human-facing docs are [README.md](
 
 ## What this repo is
 
-An open-source system for conversation questions, in three parts sharing one database:
+An open-source system for conversation questions. Its parts share one database:
 
 - `questions/` — the database: YAML, one file per category per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
-- `firmware/` — ESP32-S3 device, Zephyr. Every module is built and runs on the breadboard rig: the tabletop loop, deep sleep, the setup portal, bundle sync, signed OTA, and the power path with its two status LEDs. What is still unmeasured is current — the devkit's own indicators swamp a 30 µA budget, so the sleep figure waits for rev A. Hardware-free logic lives in `firmware/lib/`, Zephyr glue in `firmware/app/src/`. Start at `docs/firmware_primer.md` (hands-on), design in `docs/firmware_architecture.md`.
+- `firmware/` — Zephyr firmware for the ESP32-S3 device. The breadboard rig runs the tabletop loop, deep sleep, setup portal, bundle sync, signed OTA, and power-status path. Sleep current needs rev A hardware because the DevKitC indicators exceed the 30 µA budget. Hardware-free logic lives in `firmware/lib/`; Zephyr glue lives in `firmware/app/src/`. Start with `docs/firmware_primer.md`; the design is in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.
 - `docs/` — design rationale, decision log, language policy, sync protocol. Also an MkDocs site.
@@ -26,26 +26,36 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 ## Coding
 
-- Follow clean coding practices
-- Always update the docs when modifying the architecture, use mermaid diagrams to explain data flow and other useful diagrams
-- Make use of comments, be clear and use plain simple english
+- Follow clean coding practices.
+- Update the docs when the architecture changes. Use a Mermaid diagram when it
+  explains a flow or state transition more clearly than prose.
 
-**Comments describe the code, not its history.** Write for someone reading the
-file for the first time, who does not know what it used to say. A comment
-explains what a thing is and why it is that way. It is not a changelog, a bug
-report, or a note to whoever got it wrong.
+### Comments
 
-So: no "not X, but Y", no "this used to be", no "fixed", no symptom of a bug that
-no longer exists, and no naming of the mistake a value replaced. State the rule
-that is true — "pins above 31 live on gpio1, index is the pin minus 32" — rather
-than the error somebody made against it.
+Write a comment only when the code cannot state the rule clearly on its own.
+Useful comments explain a constraint, side effect, unit, ownership rule,
+hardware fact, protocol requirement, or non-obvious failure mode.
 
-Why a decision went one way belongs in the comment while it is still
-load-bearing: "470 kΩ rather than 100 kΩ, because this divider is across the cell
-forever" earns its place, because the next person will otherwise economise on the
-wrong axis. Why a *fix* went one way belongs in the commit message, and if it
-moved the design, in `docs/decisions.md`. The same rule holds for `docs/`: those
-pages say what is true now, and the decision log carries what was tried before.
+Keep comments short and local. Use plain English and describe the current
+behaviour directly. Prefer `// GPIO32 starts gpio1, so subtract 32.` to a
+paragraph about how the pin was once calculated incorrectly.
+
+Delete comments that:
+
+- repeat the code or nearby name;
+- narrate each step of a test;
+- preserve a bug report, review discussion, or sequence of past changes;
+- justify a choice only by contrasting it with an abandoned design;
+- address the reader or speculate about future work.
+
+API comments should state the contract: inputs, outputs, ownership, timing, and
+errors. Test comments should explain only setup or assertions that remain
+unclear after reading the test name. Configuration comments should say what a
+non-default value controls and, when useful, its measured basis.
+
+Put change history in the commit message. Record durable design decisions and
+rejected alternatives in `docs/decisions.md`. Other docs describe the system as
+it works now.
 
 ## Testing
 
@@ -61,7 +71,7 @@ Each part of the tree has a harness already, so a new test almost never needs ne
 
 `just test` runs everything that needs no hardware, and is what CI runs. Run it before proposing a change.
 
-Prefer unit tests against the smallest unit that holds the logic — `lib/fsm` is table-driven with an injected clock precisely so it can be tested without a board. Reach for an integration test when the risk lives in the seam between parts rather than inside one: a bundle written by `tools/` and read by the firmware, or a validator run over the real `questions/` database. For anything hardware-dependent, state plainly what was verified on the device and what was not; `docs/firmware_architecture.md` marks unverified items *verify*, and that convention holds elsewhere.
+Prefer unit tests against the smallest unit that holds the logic — `lib/fsm` is table-driven with an injected clock precisely so it can be tested without a board. Reach for an integration test when the risk lives in the seam between parts rather than inside one: a bundle written by `tools/` and read by the firmware, or a validator run over the real `questions/` database. For hardware-dependent work, state what was verified on the device and list any open measurements plainly.
 
 ## Writing Style Rules
 

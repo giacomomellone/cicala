@@ -1,5 +1,4 @@
-// The shuffle bag is the core play guarantee: no repeats within a cycle,
-// and a fresh cycle never opens with one of the last 5 shown.
+// A cycle has no repeats and avoids the five most recent questions when refilled.
 import { describe, expect, it } from "vitest";
 import { drawFromBag } from "../src/lib/bag";
 import type { Bag } from "../src/lib/store";
@@ -29,8 +28,7 @@ describe("drawFromBag", () => {
       lastFive.push(id);
     }
     const recent = new Set(lastFive.slice(-5));
-    // the whole refilled cycle (except its final r-appends) avoids the recent 5
-    // — at minimum, the first draw of the new cycle must not be one of them
+    // The first draw of a refilled cycle must avoid the recent ring.
     const next = drawFromBag(bag, all)!;
     expect(recent.has(next)).toBe(false);
   });

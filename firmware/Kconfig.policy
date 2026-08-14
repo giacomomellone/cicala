@@ -1,118 +1,82 @@
-# Policy the architecture leaves open on purpose — these come from bench
-# measurement, not from a number picked in advance. See
-# docs/firmware_architecture.md "Open items".
-#
-# Kept out of app/Kconfig so the test suites can source the same symbols the
-# application builds with: a suite that hardcoded 600 ms would keep passing
-# after someone changed the window.
+# Product policy shared by the application and firmware tests.
+# Measured settings cite their basis in the help text.
 
 config TK_BUTTON_DEBOUNCE_MS
     int "Category and Next debounce (ms)"
     default 30
     help
-      One physical press must produce exactly one event, on either button.
-      Press duration has no meaning: a long press means the same as a short
-      one. The debounce itself is done by the in-tree gpio-keys driver, so this
-      must match `debounce-interval-ms` in the board overlay — devicetree is
-      processed before Kconfig and cannot read it.
+      Debounce used by gpio-keys. Keep it equal to debounce-interval-ms in
+      every board overlay. One event is emitted when a button is released.
 
 config TK_CORPUS_LANGUAGE
     string "Language of the corpus compiled into the image"
     default "en"
     help
-      The factory-preloaded question set, so a device whose Wi-Fi is never
-      configured still works. Must match a bundle built by `just fw-fixtures`.
+      Factory corpus used before network setup. It must match a bundle built
+      by `just bundle`.
 
 config TK_PANEL_MARGIN_PX
     int "Blank border around the text (pixels)"
     default 10
     help
-      Without this the text runs to the physical edge of the glass, which reads
-      as a fault rather than as a margin. Ten pixels is one character cell.
+      Ten pixels equals one cfb_font_1016 character cell.
 
 config TK_PANEL_COLUMNS
     int "Characters per line the panel fits"
     default 23
     help
-      (250 - 2 * margin) / 10, the cell width of cfb_font_1016. At 23 columns
-      the longest shipped question needs five lines. panel.cpp BUILD_ASSERTs
-      that this agrees with the margin and the display width, so a wrong value
-      fails the build rather than the glass.
+      (250 - 2 * margin) / 10 for cfb_font_1016. A build assertion checks the
+      configured value against the panel width.
 
 config TK_PANEL_LINES
     int "Lines of text the panel fits"
     default 6
     help
-      (122 - 2 * margin) / 16, the cell height of cfb_font_1016. Six lines
-      against the five the corpus needs.
+      (122 - 2 * margin) / 16 for cfb_font_1016. The corpus layout test checks
+      every shipped question.
 
 config TK_PANEL_AUTOSIZE
     bool "Pick the largest font each question fits in"
     default y
     help
-      CFB ships three sizes — 10x16, 15x24 and 20x32. Choosing the biggest one
-      a question fits in uses the whole panel instead of leaving a band of
-      white under every short question. Against the shipped corpus that is
-      about a third of questions at 15x24 and a handful at 20x32; the rest fall
-      back to 10x16, the size the layout suite checks every question against.
-
-      Turn off to render everything at 10x16.
+      Choose among the 10x16, 15x24, and 20x32 CFB fonts. Disabled mode always
+      uses 10x16.
 
 config TK_PANEL_MAX_LEADING_PCT
     int "Most extra space between lines, as a percentage of the font height"
     default 50
     range 0 100
     help
-      A question rarely fills its font's last line, and stacking the lines
-      solid leaves that slack as a band of white above and below. Sharing it
-      between the lines instead uses the panel: across the shipped corpus that
-      lifts vertical fill from 66% to 82% on average.
-
-      Capped, because past a point the lines stop reading as one question and
-      start looking like separate sentences. Set to 0 to set the text solid,
-      which is worth comparing on real hardware — spreading lines apart is not
-      the same as setting them larger, and only a font between 15x24 and 20x32
-      would do that.
+      Cap the unused vertical space shared between lines. The default raises
+      average vertical fill from 66% to 82% on the shipped corpus.
 
 config TK_PANEL_BOLD
     bool "Thicken glyphs by overdrawing"
     default y
     help
-      cfb_font_1016 is a one-pixel-stroke terminal font, and on e-paper at
-      arm's length it reads thin. Drawing each glyph twice, one pixel apart,
-      doubles the stroke without a second font in flash. Turn off to compare.
+      Draw each glyph again one pixel to the right. Disable for hardware font
+      comparisons.
 
 config TK_DEBUG_CHARSET
     bool "Show character-set test pages instead of questions"
     default n
     help
-      Replaces the drawn question with a series of test pages — ASCII, then one
-      per language, then every diacritic the renderer composes. Next steps
-      through them and each page is also logged, so `just fw-monitor` says what
-      the panel should be showing. For checking glyphs and accents on real
-      hardware; never enabled in a shipped build.
+      Next advances through ASCII, language samples, and composed diacritics.
+      Used by the charset profile.
 
 config TK_DEBUG_SOAK
     bool "Press Next automatically, forever"
     default n
     help
-      Turns the device into its own operator: every completed refresh schedules
-      the next press, so the panel redraws unattended for as long as it is
-      powered. It exists to measure TK_FULL_REFRESH_INTERVAL, which needs a
-      long unbroken chain of partial refreshes to watch ghosting accumulate in.
-
-      Set by app/soak.conf, which also suppresses full refreshes for the length
-      of the run. Never enabled in a shipped build.
+      Schedule Next after each refresh. The soak profile suppresses periodic
+      full refreshes so panel ghosting accumulates.
 
 config TK_DEBUG_SOAK_INTERVAL_MS
     int "Wait between a finished refresh and the next automatic press (ms)"
     default 5000
     depends on TK_DEBUG_SOAK
     help
-      Long enough to read the question, short enough that forty refreshes take
-      four minutes. Measured from the end of one refresh rather than on a fixed
-      period, so a slow panel spaces the run out instead of having presses
-      dropped.
+      Delay from a completed refresh to the next automatic press.
 
 config TK_DEBUG_SOAK_REBOOT
     bool "Reboot part-way through a soak run"
@@ -120,21 +84,13 @@ config TK_DEBUG_SOAK_REBOOT
     depends on TK_DEBUG_SOAK
     select REBOOT
     help
-      Deep sleep is a reboot, so a warm reboot is the closest thing to a wake
-      that exists before CONFIG_PM does. Turning this on makes a soak run
-      exercise the retained block over and over unattended: the shuffle bag,
-      the refresh counter and the question on the glass either come back or
-      they do not, and the boot log says which.
-
-      Warm, not cold — a cold reset takes the RTC domain with it.
+      Warm-reboot during a soak run to test RTC-retained shuffle, refresh, and
+      panel state. A cold reset clears the RTC domain.
 
 config TK_DEBUG_SOAK_REBOOT_EVERY
     int "Presses between reboots"
     default 3
     depends on TK_DEBUG_SOAK_REBOOT
-    help
-      Small enough that a run produces reboots quickly, large enough that the
-      questions either side of one can be compared.
 
 config TK_SLEEP
     bool "Enter deep sleep when the table goes quiet"
@@ -143,19 +99,8 @@ config TK_SLEEP
     select POWEROFF
     select PM
     help
-      Below 30 uA means deep sleep, and on the ESP32-S3 deep sleep is a reboot:
-      SRAM and every thread stack are gone, and waking runs main() from the top.
-      Everything that has to outlive that is already in RTC memory, so this is
-      the switch that starts using it.
-
-      Off by default here and turned on by the devkit board conf, so the
-      ordinary image sleeps.
-
-      Structurally unavailable in the two debug images, because a wake is a
-      reboot and both keep state in ordinary memory across presses: a soak run
-      counts its own presses, and the charset image remembers which test page it
-      is on. Neither survives a wake, so rather than producing a confusing run,
-      sleeping is not offered.
+      Enter ESP32-S3 deep sleep after the idle window. RTC memory preserves
+      tabletop state across the restart. The release board enables this.
 
 config TK_PANEL_DEEP_SLEEP
     bool "Put the panel controller to sleep too"
@@ -163,214 +108,109 @@ config TK_PANEL_DEEP_SLEEP
     depends on TK_SLEEP
     select SSD16XX_PRESERVE_IMAGE_HW_RESET
     help
-      sys_poweroff() stops the SoC and nothing else. The SSD1680 is a separate
-      chip on its own rail, and Zephyr's ssd16xx driver never issues command
-      0x10 — SSD16XX_CMD_SLEEP_MODE is defined in ssd16xx_regs.h and used
-      nowhere — so through every deep sleep the controller sits in whatever
-      state the last refresh left it in. CONFIG_PM_DEVICE does not change
-      that: sys_poweroff() runs no device hooks, and the driver defines no PM
-      action for them to run.
-
-      Turning this on sends the controller into its deep sleep mode 1 (RAM
-      retained) on the way down, and takes the hardware reset pulse back at
-      init so it can be revived — which is what the select above is for, since
-      a sleeping controller ignores the bus.
-
-      Off by default, and a bench question rather than a settled one. The
-      saving has not been measured and neither has the cost: the reset that
-      wakes the controller may take the RAM with it, in which case every wake
-      falls back to a full refresh and this is not worth having. Measure both
-      before shipping it. See docs/hardware_wiring.md, "Bench measurements".
+      Put the SSD1680 into RAM-retaining deep sleep. Current saving and RAM
+      retention across the wake reset remain unmeasured.
 
 config TK_SLEEP_IDLE_MS
     int "Quiet time before sleeping (ms)"
     default 2000
     depends on TK_SLEEP
     help
-      Measured from the last press, deck change or refresh. A shipped device
-      wants this short, since the panel holds its image and waking is a whole
-      boot either way. Longer is easier to work with on a bench, where a device
-      that sleeps between two console lines is hard to talk to.
+      Measured from the latest input, category change, or refresh.
 
 config TK_REFRESH_TIMEOUT_MS
     int "How long to wait for the display before giving up (ms)"
     default 15000
     help
-      Only there so a dead panel cannot wedge the device, so it should sit well
-      clear of the slowest honest refresh — a full update on the GDEY0213B74 is
-      seconds. Too short is much worse than too long: the state machine gives
-      up, a late render then arrives for a question nobody is waiting for, and
-      presses get dropped.
-
-      Measured on the Waveshare 2.13-inch V4: a partial refresh takes 622 ms,
-      steady to within 2 ms across 193 of them, and the full refresh at boot
-      takes 2315 ms. The full one is the case this has to clear.
-
-      15 s is therefore about six and a half times the slowest honest refresh,
-      and it stays there rather than being tightened onto the measurement.
-      E-paper slows down markedly in the cold and this rig has only been run at
-      room temperature, so the margin covers a condition that has not been
-      tested. Nothing is paid for it: the timeout is reached only when a panel
-      has actually failed, and then it costs a few seconds once.
+      Bounds a stalled refresh. Bench measurements are 622 ms for a partial
+      refresh and about 2315 ms for a full refresh at room temperature.
 
 config TK_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
     default 16
     help
-      Set from the glass rather than from the soak run. A `just fw-soak` run on
-      the Waveshare 2.13-inch V4 reached 193 consecutive partial refreshes with
-      only minor artefacts, and 64 was picked as three times under that — but
-      ghosting showed in ordinary use well before 64. The run's "minor
-      artefacts" turned out to be a more forgiving standard than a question
-      somebody is reading at a table. 16 is where the panel still looks clean;
-      the 193 stands as a ceiling to stay under, not a target to approach.
-
-      A cold boot always uses a full refresh because the panel content is
-      unknown. A deep-sleep wake is also a fresh boot, but not an unknown
-      panel: the controller keeps power and keeps its RAM, so the counter
-      carries on across the wake from RTC memory rather than restarting. Both
-      halves of that are load-bearing — see docs/firmware_architecture.md,
-      "Where state lives", and CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT in
-      firmware/patches.yml.
+      Sixteen partial refreshes remain clean in normal use. A soak run reached
+      193 before artifacts became unacceptable.
 
 config TK_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"
     default 2
     range 1 3
     help
-      Depth 3 is never drawn automatically. Changing this away from 2 breaks
-      the consent model in docs/design.md.
+      Normal playback excludes depth 3. See docs/design.md.
 
 config TK_RECENT_RING
     int "Questions excluded from the start of a new bag cycle"
     default 20
     help
-      Shared across all decks, so turning the selector cannot immediately
-      return a question just seen under a different deck.
-
-      The smallest shipped deck is the same size as this ring (Here has 20
-      eligible questions in English and 12 in German), so the ring can exclude
-      an entire deck. The bag relaxes it rather than failing; see lib/qdb.
+      Shared across categories. When the ring excludes every remaining
+      question in a category, the bag relaxes the ring.
 
 config TK_MAX_QUESTIONS
     int "Largest corpus the bag can track"
     default 512
     help
-      Sets the width of the per-deck drawn bitmap kept in RTC memory: one bit
-      per question per deck, so 512 costs 384 bytes of the 8 KB available.
-      English ships 240. A bundle with more questions than this is rejected at
-      open() rather than silently half-tracked.
+      Sets the RTC bitmap width: one bit per question per category. A 512-item
+      limit uses 384 bytes. Larger bundles are rejected by Qdb::open().
 
 config TK_DEBUG_CORPUS_STORE
     bool "Write the compiled-in corpus to the filesystem at boot"
     default n
     depends on FILE_SYSTEM_LITTLEFS
     help
-      Stores the compiled-in corpus for the chosen language under /corpus at
-      boot, so the *next* boot opens it from the filesystem instead.
-
-      It exists because the store, the atomic rename and the read-back are the
-      whole of what sync does with a corpus once it has verified one, and none
-      of it needs a radio to be wrong. Without this there is no way to exercise
-      any of it until the download path exists, and then a failure could be in
-      either half.
-
-      The boot after this says `stored corpus <lang>` rather than falling back,
-      which is the difference to watch for. Never enabled in a shipped build.
+      Exercise the LittleFS read path used by synced corpora. Used by the
+      corpus profile.
 
 config TK_MAX_CORPUS_BYTES
     int "Largest synced corpus the device will read (bytes)"
     default 32768
     help
-      A corpus that arrives over the network is copied into RAM, because qdb
-      hands out pointers into the bundle and a file's bytes are not contiguous
-      in flash.
-
-      Sized against TK_MAX_QUESTIONS rather than against what ships today: 512
-      questions is the most qdb will accept, and English is 15 KB at 240. A
-      bundle larger than this is refused before it is written, since a corpus
-      the device cannot read back would be worse stored than not stored — it
-      would have replaced one that works.
-
-      Costs this many bytes of RAM whenever a filesystem is configured.
+      QDB keeps pointers into one RAM buffer. This limit covers 512 questions;
+      the 240-question English corpus is about 15 KB.
 
 config TK_MAX_QUESTION_BYTES
     int "Largest question the device will render (UTF-8 bytes)"
     default 128
     help
-      Bounds the copy that travels on chan_question. The longest shipped
-      question is 94 bytes (German); the qdb suite asserts the real bundles
-      fit, so a corpus change that breaks this fails a test rather than a
-      device.
+      Bounds messages on chan_question. The longest shipped question is 94
+      bytes, and the QDB suite checks every built bundle.
 
 config TK_NET
     bool "Wi-Fi, and the setup portal that configures it"
     default n
     help
-      Brings in the Wi-Fi driver, the networking stack, the HTTP server and
-      NVS. The device joins a stored network at boot, and holding both buttons
-      through a boot raises a SoftAP with a captive portal on it.
-
-      Off by default, for the reason TK_SLEEP is: this is a large subsystem
-      whose flash and RAM cost has not been measured on this board, and the
-      everyday `just fw-build` image should not change under it. Use
-      `just fw-net`, which merges app/net.conf and app/net.overlay.
-
-      The device works with its compiled-in corpus whether or not this is on.
-      Wi-Fi is optional by design; see docs/design.md.
+      Enable Wi-Fi, stored credentials, the setup access point, and HTTP
+      services. The release board enables this.
 
 config TK_DEBUG_PORTAL
     bool "Enter setup at every boot, without the gesture"
     default n
     depends on TK_NET
     help
-      Skips the both-buttons hold and starts the portal straight from boot.
-
-      The gesture needs two hands on the board at the moment it starts, which
-      makes every other part of the portal awkward to work on: raising the
-      access point, the DNS answers, the pages and the join all have to be
-      reached through it before they can be looked at.
-
-      Never enabled in a shipped build, and it says so in the boot log.
+      Used by the portal profile.
 
 config TK_SYNC
     bool "Fetch question bundles over the network"
     default n
     depends on TK_NET
     help
-      Checks a manifest, downloads a newer bundle, verifies it, and replaces
-      the stored corpus. The full flow is docs/sync_protocol.md.
-
-      Off unless the host below is a real one. A device that cannot reach its
-      manifest retries forever for nothing, and the placeholder domain is not
-      reachable — see docs/decisions.md.
+      Download, verify, and install newer question bundles. Enable this only
+      with a reachable TK_SYNC_BASE_URL. See docs/sync_protocol.md.
 
 config TK_SYNC_BASE_URL
     string "Where the manifest and bundles are served from"
     default "http://tischkarte.invalid/device"
     depends on TK_SYNC
     help
-      Everything under it: `<base>/manifest.json`, and the bundle URLs the
-      manifest names. An object store, a small static host, or a laptop during
-      development — anything that serves two files.
-
-      `http`, and the host must not upgrade it. A redirect to HTTPS is fatal
-      rather than slow: Zephyr's HTTP client does not follow redirects, so the
-      device sees a 301 it cannot act on. That rules out Cloudflare Pages and
-      GitHub Pages, and it is why this is not the same host as the website.
-      GitHub Releases is out for the same reason.
-
-      The default is deliberately unresolvable. A device pointed at a host that
-      does not exist retries a handful of seconds per cold boot and carries on;
-      one pointed at a host somebody else owns is a different matter.
+      Base URL for manifest.json and bundle URLs. Redirects are unsupported;
+      the default .invalid host cannot resolve.
 
 config TK_SYNC_HOST
     string "Host name to connect to and resolve"
     default "tischkarte.invalid"
     depends on TK_SYNC
     help
-      The host part of TK_SYNC_BASE_URL, separately, because the socket needs
-      it before there is a URL to parse and TLS wants it for SNI.
+      Host used for DNS and TLS SNI.
 
 config TK_SYNC_PORT
     int "Port"
@@ -382,19 +222,7 @@ config TK_SYNC_INSECURE
     default y
     depends on TK_SYNC
     help
-      Plain HTTP, and this is the shipped configuration rather than a
-      development shortcut. See the decision log.
-
-      The device has no clock, so it cannot validate a certificate under any
-      scheme — TLS here would authenticate nobody and buy only confidentiality,
-      on artifacts that are public in a public repository. What protects a
-      bundle and an image is the Ed25519 signature over each, verified against
-      keys that do not expire.
-
-      What it gives up: an observer learns that a Tischkarte fetched something.
-      What it does not give up: an attacker on the path still cannot make the
-      device install anything the keys did not sign, and cannot walk it
-      backwards, because a manifest older than what is installed is refused.
+      Use plain HTTP. Ed25519 authenticates artifacts; traffic remains visible.
 
 config TK_OTA
     bool "Install firmware updates over the network"
@@ -406,273 +234,145 @@ config TK_OTA
     select IMG_ERASE_PROGRESSIVELY
     select REBOOT
     help
-      Checks a firmware manifest, downloads a newer image into the spare
-      MCUboot slot, verifies it, and marks it for install on the next boot.
-      The full flow is docs/firmware_update.md.
+      Download a newer image into the spare MCUboot slot, verify it, and mark
+      it for installation. See docs/firmware_update.md.
 
-      Depends on TK_SYNC rather than standing alone: both speak to the same
-      host over the same socket code, and the signature this verifies is made
-      with the same key as a question bundle's.
-
-      Depends on BOOTLOADER_MCUBOOT because without a bootloader there is no
-      second slot to write to — which means this stays off in a build without
-      `--sysbuild`, and such a build produces a working device that cannot
-      update itself. `just fw-build` passes --sysbuild.
-
-      STREAM_FLASH is selected explicitly because IMG_MANAGER depends on it
-      rather than selecting it, and a `select` skips dependencies: without
-      this line the build fails inside Zephyr's own Kconfig with a warning
-      about STREAM_FLASH_ERASE.
-
-      MCUBOOT_IMG_MANAGER is not selected here, and cannot be: it is a choice
-      symbol, and Kconfig ignores select on those. It is the only member of
-      that choice and its default, so enabling IMG_MANAGER is what turns it
-      on.
-
-      IMG_ERASE_PROGRESSIVELY erases as the download arrives rather than
-      erasing 1344 KB up front. The device is awake and on the radio either
-      way; this spreads the cost instead of stalling before the first byte.
-
-      REBOOT because installing is a restart: MCUboot does the copy, and the
-      only way to reach it is to go through it.
+      TK_SYNC supplies the shared connection and signature code.
+      BOOTLOADER_MCUBOOT supplies the spare slot and installer. STREAM_FLASH is
+      selected explicitly because IMG_MANAGER depends on it without selecting
+      it. Progressive erase avoids one large erase before the download.
 
 config TK_OTA_BASE_URL
     string "Where the firmware manifest and images are served from"
     default "http://tischkarte.invalid/device"
     depends on TK_OTA
     help
-      `<base>/firmware.json`, and the image URL that manifest names.
-
-      Separate from TK_SYNC_BASE_URL so a development image can take firmware
-      from a laptop while still taking questions from the site, or the reverse.
-      Both still resolve TK_SYNC_HOST — one host per image, because the socket
-      needs a name before there is a URL to parse.
+      Base URL for firmware.json and image URLs. It may differ from the bundle
+      URL, but both endpoints must resolve through TK_SYNC_HOST.
 
 config TK_OTA_ON_COLD_BOOT
     bool "Check for firmware on a cold boot, after the corpus sync"
     default y
     depends on TK_OTA
     help
-      The same trigger the corpus sync uses, and for the same reasons: a cold
-      boot is rare once the device sleeps, nobody is waiting on it, and the
-      device is most likely to be plugged in. Turning this off leaves the
-      portal's sync button as the only way to update.
+      Disable this to allow updates only from the portal sync action.
 
 config TK_PORTAL_SSID_PREFIX
     string "Setup network name, before the per-device suffix"
     default "Tischkarte"
     depends on TK_NET
     help
-      The SoftAP announces itself as `<prefix>-XXXX`, where the suffix comes
-      from the chip's device id. Two devices being set up on the same table
-      would otherwise raise two networks with the same name.
+      The SoftAP name is <prefix>-XXXX, using a suffix derived from the device
+      id.
 
 config TK_PORTAL_ENTRY_HOLD_MS
     int "Both buttons held this long after boot to enter setup (ms)"
     default 2000
     depends on TK_NET
-    help
-      The documented gesture is USB-plus-Next, which needs VBUS detect on
-      GPIO21 — reserved, but not wired and not in the devicetree. Both buttons
-      at boot is what the current hardware can sense.
-
-      The hold is confirmed rather than sampled once, because somebody picking
-      the device up with two fingers should not find themselves in a service
-      mode. Two seconds is long enough to be deliberate and short enough that
-      nobody wonders whether it worked.
 
 config TK_PORTAL_WINDOW_MS
     int "How long the portal stays up (ms)"
     default 300000
     help
-      A hard window rather than an idle timer, and measured from the moment the
-      portal starts serving. An open access point that any passing phone can
-      keep alive by probing it is a worse thing to leave on a table than one
-      that closes on its own five minutes later.
-
-      The window restarts once, when a network is joined, so the status page
-      can be read afterwards. Re-entering setup is a reboot with both buttons.
+      Measured from HTTP startup. A successful network join restarts the window
+      once for the status page.
 
 config TK_PORTAL_SCAN_MS
     int "How long to wait for the scan before giving up on it (ms)"
     default 8000
     help
-      The scan runs before the access point, because the ESP32-S3 has one
-      radio: scanning with a phone already associated stalls it and can drop
-      the association.
-
-      Expiring is survivable. The setup page takes a typed network name — which
-      a hidden network needs anyway — so a missing list costs some typing
-      rather than the whole flow.
+      Scan before starting the access point because both share one radio. The
+      setup form accepts a typed SSID when scanning times out.
 
 config TK_NET_CONNECT_TIMEOUT_MS
     int "How long to wait for a network to accept us (ms)"
     default 20000
     help
-      Covers association, authentication and DHCP. Expiring puts the portal
-      back on the setup page with the panel saying so, because the likely cause
-      is a mistyped password and the fix is to type it again.
+      Covers association, authentication, and DHCP. A timeout returns the
+      portal to its setup page.
 
 config TK_NET_SCAN_MAX
     int "Networks kept from a scan"
     default 12
     depends on TK_NET
     help
-      Bounds the array the setup page renders from. A busy 2.4 GHz band has
-      more than this, and the rest are dropped: a list nobody can scroll is not
-      more useful than a short one, and each entry costs 34 bytes of RAM that
-      is live for the whole portal session.
+      Bounds the setup-page scan list. Each retained entry uses 34 bytes.
 
 config TK_POWER
     bool "Measure the cell, and decide what its voltage means"
     default n
     select ADC
     help
-      Samples the battery through a divider on ADC1 and VBUS through a divider
-      on a plain input, turns the pair into a state with lib/power, and
-      publishes it on chan_power. That state gates panel refreshes, holds the
-      device awake while it is charging, and drives the status LEDs.
-
-      Off by default here and turned on by the devkit board conf, for the
-      reason TK_SLEEP is: the everyday `just fw-build` image should not change
-      under a board that has no divider fitted. Without this the device works
-      exactly as it did — it simply never refuses a refresh and never knows it
-      is plugged in.
-
-      Wiring, and the reason each pin is that pin, is docs/hardware_wiring.md.
+      Sample battery voltage and VBUS. Power state gates panel refreshes,
+      controls wakefulness, and drives status LEDs. See docs/hardware_wiring.md.
 
 config TK_REFRESH_MIN_MV
     int "Minimum cell voltage for a panel refresh (mV)"
     default 3200
     help
-      A partial refresh attempted near brownout can leave the panel in a
-      corrupted state. Below this, the previous question stays on screen.
-
-      Also where LOW begins, so this is the number that decides when the device
-      stops answering presses. Read by lib/power; before the power module
-      existed it was declared here and nothing looked at it.
-
-      Not yet measured. The bench number to find is where a refresh actually
-      corrupts, which is not where the regulator gives up: the 3.3 V buck on
-      the charger board passes the cell straight through below about 3.45 V, so
-      the rail sags with the cell rather than cutting off, and the panel keeps
-      working for a while after that.
+      Below this value the panel remains unchanged and power state becomes LOW.
+      The panel failure threshold remains an open measurement.
 
 config TK_POWER_CRITICAL_MV
     int "Cell voltage below which the device says so loudly (mV)"
     default 3000
     depends on TK_POWER
     help
-      Both LOW and CRITICAL refuse a refresh; this is where the answer changes
-      from one amber blink to three red ones. Set at the knee of a lithium
-      discharge curve, where the remaining capacity is small and falling fast.
+      LOW gives one amber blink; CRITICAL gives three red blinks. Both refuse
+      panel refreshes.
 
 config TK_POWER_PLAUSIBLE_MV
     int "Lowest pack reading that could be a cell (mV)"
     default 2500
     depends on TK_POWER
     help
-      Under this, the reading is not a cell and the machine says UNKNOWN — which
-      permits refreshes — rather than walking down to CRITICAL and refusing
-      them.
-
-      A protected 18650 disconnects between 2.5 and 3.0 V, and the 3.3 V buck
-      stops before that, so an SoC still running cannot be reading 2.4 V from
-      its own pack. What it is reading is a divider that is not there: a
-      floating ADC pin, a broken solder joint, an unpopulated rig. All of those
-      arrive as some low number and none of them is a reason to stop drawing
-      questions.
-
-      2500 rather than something nearer zero because the failure to catch is a
-      floating pin picking up a volt or so of anything, not a pin reading
-      exactly nought.
+      Lower values indicate a missing or faulty divider and produce UNKNOWN,
+      which leaves refreshes enabled.
 
 config TK_POWER_FULL_MV
     int "Cell voltage that counts as charged (mV)"
     default 4050
     depends on TK_POWER
     help
-      An estimate, and it must not be read as anything else. The bq25185 on the
-      bench board exposes no charge-status pin, so termination cannot be
-      sensed; a cell under constant-voltage charge sits near 4.2 V for the last
-      hour, so this reports full early by an amount that depends on the load.
-
-      Acceptable for an LED somebody glances at. Not acceptable as an input to
-      anything that decides something, which is why nothing else reads it.
-
-      Keep it well under the charger's own regulation voltage. Two things eat
-      the gap from opposite ends: the divider reads about 40 mV low on the
-      bench, and constant-voltage charge approaches 4.2 V asymptotically while
-      the system draws its share of the current, so the last tens of millivolts
-      can take an hour or never arrive. A threshold set close to 4.2 V is one
-      the LED never reaches, which costs the whole green half of the palette to
-      buy precision in an estimate that is not precise.
-
-      4050 here is roughly 4090 mV at the cell, which is a full-enough LiPo for
-      something somebody glances at across a table.
+      Controls only the green LED. The divider reads about 40 mV low, so the
+      default represents about 4090 mV at the cell.
 
 config TK_POWER_HYSTERESIS_MV
     int "Millivolts a reading must clear a threshold by to cross back (mV)"
     default 120
     depends on TK_POWER
     help
-      Applied on the way up only. Getting worse is reported immediately,
-      because being slow in that direction costs something.
-
-      120 mV because a partial refresh sags the pack by more than that for two
-      seconds, so a cell that reads under a threshold during one is not
-      necessarily under it. The sampler skips readings taken during a refresh
-      for the same reason; this covers what the skip does not.
+      Applied during voltage recovery. Panel refreshes can sag the pack by more
+      than 120 mV for about two seconds.
 
 config TK_POWER_SAMPLE_MS
     int "Time between readings while awake (ms)"
     default 10000
     depends on TK_POWER
     help
-      Rarely reached on battery, where the device is awake for about
-      TK_SLEEP_IDLE_MS per press and the reading that matters is the one taken
-      at boot. This is for the two windows that last minutes or hours: a charge,
-      and a portal session.
+      Periodic interval for long awake periods such as charging and setup.
 
 config TK_POWER_CONFIRM_SAMPLES
     int "Readings averaged into the one taken at boot"
     default 4
     range 1 16
     depends on TK_POWER
-    help
-      The boot reading is the only one a battery-powered press will ever get,
-      so it is a burst averaged rather than a single conversion. Four is enough
-      to flatten ADC noise and costs well under a millisecond.
-
-      This is where all the smoothing lives. A "wait for N consecutive
-      readings" rule inside the state machine would be dead code on battery:
-      the machine is constructed, sees one or two samples, and is destroyed by
-      sys_poweroff() a couple of seconds later.
 
 config TK_POWER_CHARGE_WINDOW_MS
     int "How long a plug-in keeps the sync and update window open (ms)"
     default 300000
     depends on TK_POWER
     help
-      Bounds the window, not wakefulness. The device stays awake for as long as
-      external power is present — the status LED needs it running — but a
-      device left on the charger overnight should not retry a sync for eight
-      hours.
-
-      One window per plug-in. Reaching a full cell part-way through does not
-      buy a second one.
+      Limits network work for one continuous external-power connection. The
+      device remains awake while VBUS is present.
 
 config TK_POWER_DIVIDER_NUM
     int "Battery divider, numerator"
     default 2
     depends on TK_POWER
     help
-      Millivolts at the pack are the reading times NUM over DEN. The bench
-      divider is 470k over 470k, so the pack is twice the tap: 2 over 1.
-
-      Two integers rather than one ratio because a divider made of real
-      resistors is rarely a round number, and calibrating against a multimeter
-      is the last step of bringing the rig up.
+      Pack millivolts equal the ADC reading times NUM / DEN. The 470 kΩ /
+      470 kΩ bench divider uses 2 / 1.
 
 config TK_POWER_DIVIDER_DEN
     int "Battery divider, denominator"
@@ -684,68 +384,32 @@ config TK_POWER_WAKE_ON_USB
     default n
     depends on TK_POWER
     help
-      Off, and the default is the recommendation rather than an oversight.
-
-      The buttons wake through EXT1, which takes one trigger polarity for the
-      whole pin mask, and VBUS is high when it is interesting — so VBUS cannot
-      join that mask. It uses EXT0 instead, a separate single-pin trigger with
-      its own polarity, armed by src/sleep.c from the same tk-vbus-gpios
-      property src/power.c samples.
-
-      What turning this on costs is in Espressif's sleep_modes.c: arming EXT0
-      forces ESP_PD_DOMAIN_RTC_PERIPH to stay powered through every sleep, where
-      EXT1 alone leaves it off. That is a permanent standby cost against a 30 uA
-      budget, paid on every sleep for the life of the device, to save one button
-      press — plugging in and then pressing Next is the gesture the design
-      specified anyway.
-
-      How much it costs has not been measured, which is the reason the symbol
-      exists: turn it on, sleep the board, and put a meter on it.
-
-      An EXT0 wake reports no button, so the device replays no press and `net`
-      takes its cold-boot branch — plugging in wakes the device and syncs it.
+      VBUS uses EXT0 because the active-low buttons use EXT1. EXT0 keeps the RTC
+      peripheral domain powered, so enable this only after measuring its sleep
+      current.
 
 config TK_DEBUG_POWER
     bool "Log the cell voltage continuously"
     default n
     depends on TK_POWER
     help
-      Samples every second regardless of TK_POWER_SAMPLE_MS and logs the raw
-      conversion beside the converted millivolts, so a discharge can be
-      recorded unattended and the divider constants calibrated against a
-      multimeter.
-
-      Set by `just fw-power`. Never enabled in a shipped build.
+      Sample once per second and log raw and converted values. Used by the
+      power profile for calibration and discharge measurements.
 
 config TK_STATUS_LED
     bool "Show power, the portal and transfers on two LEDs"
     default n
     depends on TK_POWER
     help
-      A red LED and a green one, driven as plain GPIOs. Lighting both is amber,
-      which is the whole palette: the conditions that share a colour are told
-      apart by rhythm instead.
-
-      No driver to select. An addressable LED was rejected on current — the
-      controller inside a WS2812 idles at around 0.6 mA with the emitters dark,
-      which is twenty times the whole sleep budget, where two GPIOs held low
-      cost nothing at all.
-
-      Compiled out on a board with no tk_leds devicetree node, which is qemu,
-      native_sim, and any board that simply has no LEDs.
+      Drive active-high red and green GPIO LEDs. Boards without a tk_leds
+      devicetree node compile this feature out.
 
 config TK_STATUS_LED_BLINK_MS
     int "On, and off, time of one blink (ms)"
     default 200
     depends on TK_STATUS_LED
-    help
-      Fast enough that three of them read as one deliberate answer to a press
-      rather than as three separate events.
 
 config TK_STATUS_LED_PULSE_MS
     int "Full cycle of the transfer pulse (ms)"
     default 1500
     depends on TK_STATUS_LED
-    help
-      Slow, so it does not compete with a blink for attention. Long enough to
-      read as "something is running" rather than as a fault.

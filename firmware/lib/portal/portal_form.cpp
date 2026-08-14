@@ -6,7 +6,6 @@ namespace tk
 namespace
 {
 
-/** One hex digit's value, or -1. */
 int hex_value(char c)
 {
     if (c >= '0' && c <= '9') {
@@ -62,8 +61,6 @@ int form_decode(const char *value, uint16_t len, char *out, uint16_t out_size)
         if (c == '+') {
             c = ' ';
         } else if (c == '%') {
-            /* Both digits have to be there and both have to be hex. A short or
-             * bad escape is a corrupt body, not a literal percent sign. */
             if ((uint32_t) i + 2 >= (uint32_t) len) {
                 return -1;
             }
@@ -79,7 +76,7 @@ int form_decode(const char *value, uint16_t len, char *out, uint16_t out_size)
             i += 2;
         }
 
-        /* One byte of room is kept back for the terminator. */
+        // Reserve one byte for the terminator.
         if (written + 1 >= out_size) {
             return -1;
         }
@@ -108,15 +105,13 @@ int form_field(const char *body, uint16_t len, const char *key, char *out, uint1
     uint16_t at = 0;
 
     while (at < len) {
-        /* One field runs to the next `&` or to the end of the body. */
         uint16_t end = at;
 
         while (end < len && body[end] != '&') {
             end++;
         }
 
-        /* And splits at the first `=`. A field with no `=` has no value and is
-         * skipped rather than treated as an empty one. */
+        // A field without '=' has no value.
         uint16_t split = at;
 
         while (split < end && body[split] != '=') {

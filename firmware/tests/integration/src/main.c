@@ -1,12 +1,4 @@
-/*
- * The whole application, wired the way the device wires it: a real gpio-keys
- * driver on emulated pins, the real input component, the real state machine
- * and question store, and the real panel code against a dummy display.
- *
- * Everything else in firmware/tests checks one piece in isolation. This checks
- * the seams between them — that pressing Category names a deck, that Next then
- * draws from it, and that the deck advances and wraps.
- */
+/* Exercise the real input-to-panel seams with emulated GPIO, ADC, and display. */
 
 #include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/adc/adc_emul.h>
@@ -28,43 +20,15 @@ static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(tk_led_gr
 
 static const struct adc_dt_spec cell = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
 
-/*
- * The VBUS pin, on the same emulated controller as the buttons, so a charger
- * can be plugged and unplugged with gpio_emul_input_set(). On the board this is
- * the tap of a divider off the charger's VU pad; here it is whatever the last
- * test left it at, which is why every test that touches it puts it back.
- */
 static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios);
 
-/**
- * A comfortable cell, and one flat enough to reach CRITICAL.
- *
- * Clear of CONFIG_TK_POWER_CRITICAL_MV rather than equal to it. A value goes
- * through TAP_MV() and back through adc_emul, and that round trip moves a
- * millivolt or two, so a value sitting on the threshold decides between LOW and
- * CRITICAL on rounding this suite does not control — and the two states differ
- * in the LED they light. It also has to stay above
- * CONFIG_TK_POWER_PLAUSIBLE_MV, below which a reading stops being a cell at all.
- */
 #define HEALTHY_MV 3900
+/* Clear of the critical and plausible thresholds after ADC rounding. */
 #define FLAT_MV 2800
 
-/*
- * The emulated ADC reads the divider tap, not the pack, exactly as the board
- * does — so the suite divides on the way in and power.c multiplies on the way
- * out. Bypassing that would leave the one piece of arithmetic between a
- * voltage and a decision untested.
- */
+/* The emulator supplies divider-tap voltage; power.c scales it to pack voltage. */
 #define TAP_MV(pack) ((pack) * CONFIG_TK_POWER_DIVIDER_DEN / CONFIG_TK_POWER_DIVIDER_NUM)
 
-/**
- * Charge the emulated cell before the application starts.
- *
- * Priority 0 rather than CONFIG_APPLICATION_INIT_PRIORITY, so this runs ahead
- * of power.c's own hook at the same level. Without it the boot reading is the
- * emulated default of zero, the device decides the cell is flat, and every
- * other test in this file fails on a panel that correctly refused to refresh.
- */
 static int charge_the_cell(void)
 {
     (void) adc_emul_const_value_set(cell.dev, cell.channel_id, TAP_MV(HEALTHY_MV));
@@ -72,46 +36,32 @@ static int charge_the_cell(void)
     return 0;
 }
 
+/* Run before power.c samples the ADC at application priority. */
 SYS_INIT(charge_the_cell, APPLICATION, 0);
 
-/** Set the cell and wait for the sampler to notice. */
 static void set_cell_mv(uint16_t pack_mv)
 {
     zassert_ok(adc_emul_const_value_set(cell.dev, cell.channel_id, TAP_MV(pack_mv)));
     k_sleep(K_MSEC(CONFIG_TK_POWER_SAMPLE_MS * 3));
 }
 
-/** Plug the charger in, or pull it out, and wait for the same. */
 static void set_vbus(bool plugged)
 {
     zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, plugged ? 1 : 0));
     k_sleep(K_MSEC(CONFIG_TK_POWER_SAMPLE_MS * 3));
 }
 
-/*
- * Wait out any blink still running.
- *
- * A burst is at most three blinks, and ztest promises no order for the cases
- * below — so a test that reads the pins for a steady colour has to outlast
- * whatever the test before it armed, or it is asserting on where in somebody
- * else's blink it happened to land.
- */
 static void settle_leds(void)
 {
+    /* Cases are unordered, so outlast any burst armed by a previous case. */
     k_sleep(K_MSEC(CONFIG_TK_STATUS_LED_BLINK_MS * 8));
 }
 
-/* Debounce, the app thread, and the display thread finishing. The dummy panel
- * returns immediately, so this is mostly the debounce. */
+/* Includes gpio-keys debounce and both application threads. */
 #define PRESS_WAIT K_MSEC(CONFIG_TK_BUTTON_DEBOUNCE_MS + 300)
 
 static struct tk_question_msg last_question;
 
-/*
- * The first card of the run, kept separately. ztest does not promise an order
- * for the cases in a suite, so a test that asked about boot behaviour through
- * `last_question` would be asserting on whatever ran before it.
- */
 static struct tk_question_msg first_question;
 static bool have_first;
 
@@ -119,7 +69,6 @@ static int questions;
 static int renders;
 static int last_render_result;
 
-/** The last thing `power` said about itself, so the pin can be checked. */
 static struct tk_power_msg last_power;
 
 static void observe(const struct zbus_channel *chan)
@@ -157,15 +106,10 @@ static void press(const struct gpio_dt_spec *button)
 
 static void *suite_setup(void)
 {
-    /*
-     * Emulated pins read low by default, which for an active-low button means
-     * held down. Release both before the input layer looks at them.
-     */
+    /* Emulated active-low buttons start low. */
     zassert_ok(gpio_emul_input_set(category.port, category.pin, 1));
     zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, 1));
 
-    /* VBUS is active high, so low is already unplugged. Said out loud because
-     * the tests below leave it wherever they left it. */
     zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, 0));
 
     k_sleep(PRESS_WAIT);
@@ -180,11 +124,6 @@ ZTEST_SUITE(tk_integration, NULL, suite_setup, NULL, NULL, NULL);
 
 ZTEST(tk_integration, test_boot_names_the_remembered_deck)
 {
-    /*
-     * A button has no position, so the deck comes from RTC memory. On this
-     * platform the block is ordinary .bss and always reads as a cold boot,
-     * which is the documented New People default.
-     */
     zassert_true(have_first, "boot should have put something on the panel");
     zassert_equal(first_question.kind, TK_CARD_CATEGORY, "and on a cold boot that is a deck name");
     zassert_equal(first_question.deck, 0, "New People is the cold default");
@@ -205,7 +144,6 @@ ZTEST(tk_integration, test_category_advances_and_names_the_deck)
     zassert_equal(renders, 1, "the display should have been asked to draw it");
     zassert_equal(last_render_result, 0);
 
-    /* And it stays there: naming a deck is not asking a question. */
     k_sleep(PRESS_WAIT);
     zassert_equal(questions, 1, "the name waits for a press rather than timing out");
 }
@@ -253,10 +191,6 @@ ZTEST(tk_integration, test_next_draws_a_different_question)
 
 ZTEST(tk_integration, test_the_deck_wraps_from_wild_to_new_people)
 {
-    /*
-     * Six presses return to where they started, whatever that was. The wrap is
-     * what makes one button enough to reach every deck.
-     */
     press(&category);
 
     const uint8_t start = last_question.deck;
@@ -270,11 +204,6 @@ ZTEST(tk_integration, test_the_deck_wraps_from_wild_to_new_people)
 
 ZTEST(tk_integration, test_a_deck_returns_only_its_own_questions)
 {
-    /*
-     * Wild is the only deck carrying the tone-flagged questions, so drawing it
-     * repeatedly is the cheapest end-to-end check that the deck mask survives
-     * the whole path from bundle to panel.
-     */
     while (last_question.deck != 5 || last_question.kind != TK_CARD_CATEGORY) {
         press(&category);
     }
@@ -289,13 +218,6 @@ ZTEST(tk_integration, test_a_deck_returns_only_its_own_questions)
         zassert_equal(last_render_result, 0);
     }
 }
-
-/*
- * The refresh gate, which is the one piece of power policy with no host-only
- * home: it lives in app_logic.cpp's Io rather than in a library, because it has
- * to sit between the state machine and the bag. So it is checked here, against
- * the real ADC path and the real button.
- */
 
 ZTEST(tk_integration, test_a_flat_cell_leaves_the_question_on_the_panel)
 {
@@ -336,12 +258,6 @@ ZTEST(tk_integration, test_a_charged_cell_answers_again)
 
 ZTEST(tk_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
 {
-    /*
-     * The gate runs before bag.draw(), which mutates the retained shuffle
-     * state. Gating after it would spend a question from the no-repeat cycle
-     * on every press the device was too flat to answer — invisible on the
-     * glass, and the reason the order matters enough to test.
-     */
     set_cell_mv(FLAT_MV);
 
     for (int i = 0; i < 5; i++) {
@@ -356,13 +272,6 @@ ZTEST(tk_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
     zassert_equal(questions, 1, "the bag still had something to give");
     zassert_equal(last_question.kind, TK_CARD_QUESTION);
 }
-
-/*
- * VBUS, driven on the emulated pin. It is an independent GPIO rather than a
- * second ADC channel, which is what lets a device with a broken divider still
- * know it is plugged in — and knowing that is what keeps it from sleeping on a
- * charger and what opens the sync window.
- */
 
 ZTEST(tk_integration, test_the_usb_bit_follows_the_pin)
 {
@@ -400,8 +309,6 @@ ZTEST(tk_integration, test_external_power_answers_a_press_the_cell_would_not)
     zassert_equal(last_question.kind, TK_CARD_QUESTION);
     zassert_equal(last_render_result, 0);
 
-    /* The cell first, then the plug. Unplugging a flat cell walks the ladder
-     * back down to CRITICAL and arms a blink for the next test to trip over. */
     set_cell_mv(HEALTHY_MV);
     set_vbus(false);
 }
@@ -428,12 +335,6 @@ ZTEST(tk_integration, test_a_charge_is_red_until_the_cell_is_full)
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 }
 
-/*
- * The portal's amber, driven through the same call `net` makes. `net` itself is
- * not in this image — there is no radio on qemu — so what this covers is the
- * half that lives in status.c: a condition handed in from another thread
- * reaching the arbiter and then the pins.
- */
 ZTEST(tk_integration, test_the_portal_shows_amber)
 {
     set_cell_mv(HEALTHY_MV);
@@ -466,15 +367,10 @@ ZTEST(tk_integration, test_a_refused_press_is_answered_on_the_red_led)
 
     press(&next_button);
 
-    /*
-     * Three blinks, so within the burst the pin has to be seen both lit and
-     * dark. Polling rather than sampling once: press() already consumed part
-     * of the burst, and asserting on a single instant would be asserting on
-     * where in the blink the sleep happened to land.
-     */
     bool seen_lit = false;
     bool seen_dark = false;
 
+    /* press() has already consumed part of the blink burst. */
     for (int i = 0; i < 60 && !(seen_lit && seen_dark); i++) {
         if (gpio_emul_output_get(led_red.port, led_red.pin) > 0) {
             seen_lit = true;

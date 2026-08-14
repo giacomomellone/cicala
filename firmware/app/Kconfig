@@ -1,6 +1,4 @@
-# Application Kconfig. The policy symbols live one level up in
-# ../Kconfig.policy so the test suites build against the same values rather
-# than a copy that drifts.
+# Application and tests share ../Kconfig.policy.
 
 mainmenu "tischkarte"
 

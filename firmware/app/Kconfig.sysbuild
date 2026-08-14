@@ -1,14 +1,5 @@
-# Sysbuild Kconfig for the application.
-#
-# It exists for one symbol. The signing key has to be named by an absolute
-# path — the application resolves a relative one against the west topdir and
-# the MCUboot image resolves it against its own source directory under deps/,
-# so no single relative string reaches the same file from both. `$(APP_DIR)`
-# expands to this directory, but only inside a Kconfig file: a `.conf` fragment
-# is read literally, which is why this is not a line in sysbuild.conf.
-#
-# The default comes before the `source` below, because the first default the
-# parser sees is the one that wins.
+# APP_DIR gives the application and MCUboot one absolute signing-key path.
+# Define this before the upstream symbol because its first default wins.
 
 config BOOT_SIGNATURE_KEY_FILE
 	default "$(APP_DIR)/../keys/firmware-signing-dev.pem" if BOOT_SIGNATURE_TYPE_ED25519

@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
-// Everything persistent lives under the tk.* localStorage namespace (§7.9);
-// corrupted values must degrade to defaults, never throw.
+// Corrupt tk.* storage values fall back to defaults.
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   getBag,
@@ -45,7 +44,7 @@ describe("bags", () => {
     setBag("de", "wild", { b: ["q-00000001"], r: ["q-00000002"] });
     expect(localStorage.getItem("tk.bag.de.wild")).not.toBeNull();
     expect(getBag("de", "wild")).toEqual({ b: ["q-00000001"], r: ["q-00000002"] });
-    // other keys unaffected
+    // Preserve unrelated storage keys.
     expect(getBag("en", "wild")).toEqual({ b: [], r: [] });
   });
 

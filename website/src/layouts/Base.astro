@@ -1,7 +1,5 @@
 ---
 // Base layout: header, footer, i18n bootstrap, and the runtime data config.
-// Fonts are self-hosted via @fontsource, latin + latin-ext subsets only
-// (spec §7.1 — revisit when a non-Latin language graduates).
 import "@fontsource/literata/latin-400.css";
 import "@fontsource/literata/latin-ext-400.css";
 import "@fontsource/literata/latin-400-italic.css";
@@ -18,9 +16,9 @@ import languages from "../data/languages.json";
 interface Props {
   title: string;
   description?: string;
-  /** <html lang> for the statically rendered content. */
+  /* Language of the static HTML. */
   lang?: string;
-  /** Permalink pages pass the question's language: it becomes the active language on load. */
+  /* Permalink language adopted by the client on load. */
   seedLang?: string;
 }
 
@@ -31,8 +29,7 @@ const {
   seedLang,
 } = Astro.props;
 
-// Content-hashed asset URLs for every per-language payload. Only the active
-// language's payload is fetched at runtime (spec §7.1).
+// Content-hashed asset URLs for every per-language payload.
 const payloadFiles = import.meta.glob<string>("../data/questions.*.json", {
   query: "?url",
   import: "default",
@@ -65,8 +62,7 @@ const tkConfig = {
 };
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
-const current = (p: string) =>
-  path === p || path.startsWith(p + "/") ? "page" : undefined;
+const current = (p: string) => (path === p || path.startsWith(p + "/") ? "page" : undefined);
 const ogImage = new URL("/og.png", SITE_URL).href;
 ---
 
@@ -84,11 +80,7 @@ const ogImage = new URL("/og.png", SITE_URL).href;
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <script
-      type="application/json"
-      id="tk-config"
-      set:html={JSON.stringify(tkConfig)}
-    />
+    <script type="application/json" id="tk-config" set:html={JSON.stringify(tkConfig)} />
   </head>
   <body data-seed-lang={seedLang}>
     <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
@@ -97,7 +89,9 @@ const ogImage = new URL("/og.png", SITE_URL).href;
       <nav class="site-nav" aria-label="site">
         <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
         <span class="nav-dot" aria-hidden="true">·</span>
-        <a href="/contribute" aria-current={current("/contribute")} data-i18n="nav.contribute">contribute</a>
+        <a href="/contribute" aria-current={current("/contribute")} data-i18n="nav.contribute"
+          >contribute</a
+        >
         <span class="nav-dot" aria-hidden="true">·</span>
         <a href="/device" aria-current={current("/device")} data-i18n="nav.device">device</a>
       </nav>
@@ -139,8 +133,7 @@ const ogImage = new URL("/og.png", SITE_URL).href;
         btn.addEventListener("click", () => {
           if (code === lang) return;
           setStoredLang(code);
-          // Full reload keeps the no-framework islands simple; from a
-          // permalink go home, since /q/<id> would re-pin its own language.
+          // Leave a permalink because it pins the question language.
           if (location.pathname.startsWith("/q/")) location.href = "/";
           else location.reload();
         });

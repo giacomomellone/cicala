@@ -1,11 +1,3 @@
-/*
- * UTF-8 decoding, accent decomposition and word wrap.
- *
- * The case that matters most is the last one: every question in both shipped
- * corpora is folded through the real layout at the real panel geometry, so a
- * question too long for the screen, or one containing a character the panel
- * cannot draw, fails here rather than on a table.
- */
 
 #include <zephyr/ztest.h>
 
@@ -30,7 +22,6 @@ constexpr uint8_t kColumns = CONFIG_TK_PANEL_COLUMNS;
 Glyph glyphs[kMaxGlyphs];
 Layout layout;
 
-/** Compare a laid-out line against what it should read, ignoring marks. */
 bool line_reads(const Layout &l, uint8_t index, const char *expected)
 {
     if (index >= l.count) {
@@ -52,8 +43,6 @@ bool line_reads(const Layout &l, uint8_t index, const char *expected)
 } // namespace
 
 ZTEST_SUITE(tk_layout, NULL, NULL, NULL, NULL, NULL);
-
-// ---------------------------------------------------------------------- utf8
 
 ZTEST(tk_layout, test_utf8_decodes_one_and_two_byte_sequences)
 {
@@ -83,15 +72,12 @@ ZTEST(tk_layout, test_utf8_rejects_malformed_input)
 
 ZTEST(tk_layout, test_utf8_length_counts_characters_not_bytes)
 {
-    // "Grüße" is 5 characters in 7 bytes.
     zassert_equal(utf8_length("Gr\xC3\xBC\xC3\x9F"
                               "e",
                               7),
                   5);
     zassert_equal(utf8_length("\xC3", 1), 0, "malformed input has no length");
 }
-
-// ------------------------------------------------------------- decomposition
 
 ZTEST(tk_layout, test_accents_become_a_base_letter_and_a_mark)
 {
@@ -151,14 +137,11 @@ ZTEST(tk_layout, test_unrepresentable_characters_report_themselves)
 
     zassert_equal(decompose(0x4E2D, out), 0, "a CJK ideograph has no fallback here");
 
-    // Through wrap(), the same character is drawn as '?' and flagged.
     zassert_true(wrap("\xE4\xB8\xAD", 3, kColumns, glyphs, kMaxGlyphs, layout));
     zassert_true(layout.substituted, "the caller has to be able to tell");
     zassert_equal(layout.count, 1);
     zassert_equal(glyphs[layout.lines[0].offset].base, '?');
 }
-
-// -------------------------------------------------------------------- wrap
 
 ZTEST(tk_layout, test_a_short_question_is_one_line)
 {
@@ -174,7 +157,6 @@ ZTEST(tk_layout, test_a_short_question_is_one_line)
 
 ZTEST(tk_layout, test_wrapping_breaks_on_spaces_and_drops_them)
 {
-    // 10 columns: "one two" fits, "three" starts a new line.
     const char *text = "one two three four";
 
     zassert_true(wrap(text, 18, 10, glyphs, kMaxGlyphs, layout));
@@ -197,11 +179,6 @@ ZTEST(tk_layout, test_a_word_longer_than_the_line_is_broken)
 
 ZTEST(tk_layout, test_decomposition_happens_before_wrapping)
 {
-    /*
-     * "Straße" is 6 characters but 7 cells, because ß becomes ss. Wrapping the
-     * raw UTF-8 first would call this a 6-cell word and let it onto a line
-     * that cannot hold it.
-     */
     const char *text = "Stra\xC3\x9F"
                        "e";
 
@@ -213,7 +190,6 @@ ZTEST(tk_layout, test_decomposition_happens_before_wrapping)
 
 ZTEST(tk_layout, test_an_accent_costs_one_cell_not_two)
 {
-    // "Grüße" — 5 characters, 7 bytes, 6 cells once ß expands.
     const char *text = "Gr\xC3\xBC\xC3\x9F"
                        "e";
 
@@ -231,8 +207,6 @@ ZTEST(tk_layout, test_text_needing_too_many_lines_is_flagged)
     static char text[512];
     uint16_t len = 0;
 
-    // 24 words is 120 glyphs — inside the buffer, but 12 lines at 10 columns,
-    // which is well past the panel's seven.
     for (int word = 0; word < 24; word++) {
         text[len++] = 'w';
         text[len++] = 'o';
@@ -252,8 +226,6 @@ ZTEST(tk_layout, test_a_full_output_buffer_is_refused)
 
     zassert_false(wrap(text, 32, kColumns, glyphs, 8, layout));
 }
-
-// ------------------------------------------------------------- real corpus
 
 ZTEST(tk_layout, test_every_shipped_question_fits_the_panel)
 {

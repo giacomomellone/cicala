@@ -96,8 +96,7 @@ test.describe("language", () => {
 
     await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.lang"))).toBe("de");
 
-    // The English rows are statically rendered; the island swaps them once the
-    // German payload lands.
+    // The English rows are statically rendered; the island swaps them once the German payload lands.
     const german = new Set(payload("de").map((q) => q.text));
     await expect
       .poll(async () => {

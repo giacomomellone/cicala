@@ -1,15 +1,4 @@
-/*
- * The `tk` settings subtree: the chosen language, and the installed corpus
- * release.
- *
- * Both together because Zephyr registers one handler per subtree, and both are
- * slow-moving configuration that has to survive a flat cell — which is why
- * neither is in RTC memory. The release version in particular is what stops an
- * older but validly signed manifest being accepted as an update.
- *
- * C rather than C++ because SETTINGS_STATIC_HANDLER_DEFINE expands to a
- * designated initializer the same way the zbus macros do.
- */
+/* The `tk` settings subtree: the chosen language, and the installed corpus release. */
 
 #include "language.h"
 
@@ -57,7 +46,7 @@ const char *tk_corpus_version(void)
 #define LANGUAGE_KEY "tk/lang"
 #define VERSION_KEY "tk/corpus_ver"
 
-/** Called by the settings subsystem for each key under `tk`. */
+/* Called by the settings subsystem for each key under `tk`. */
 static int language_load(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
     if (strcmp(name, "corpus_ver") == 0) {
@@ -97,11 +86,7 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
 
     stored[n] = '\0';
 
-    /*
-     * A language the image no longer carries is dropped rather than obeyed.
-     * Firmware can ship with a different set than the one that stored this,
-     * and a device with no corpus to open would have nothing to draw at all.
-     */
+    /* Ignore stored languages without a compiled corpus. */
     if (!tk_language_available(stored)) {
         LOG_WRN("stored language %s is not in this image; keeping %s", stored, chosen);
         return 0;
@@ -171,7 +156,7 @@ int tk_language_set(const char *code)
 {
     ARG_UNUSED(code);
 
-    /* Nowhere to keep it, so nothing may claim it was kept. */
+    /* Report persistence as unsupported without settings. */
     return -ENOTSUP;
 }
 

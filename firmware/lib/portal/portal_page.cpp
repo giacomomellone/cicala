@@ -6,13 +6,7 @@ namespace tk
 namespace
 {
 
-/**
- * The languages the corpus ships in.
- *
- * Duplicated from `questions/` rather than read from anywhere, because the
- * device has one language compiled in and no list of the others until sync
- * exists. When it does, this comes from the manifest instead.
- */
+/** Languages available in the compiled corpus. */
 struct Language {
     const char *code;
     const char *name;
@@ -23,13 +17,7 @@ constexpr Language kLanguages[] = {
     {"de", "Deutsch"},
 };
 
-/**
- * Append-only writer over a fixed buffer.
- *
- * Every append checks the room left and sets `overflowed` instead of writing
- * past the end, so a page that does not fit is reported once at the end rather
- * than being caught at each of forty call sites.
- */
+/** Bounds-checked append-only writer over a fixed buffer. */
 class Writer
 {
 public:
@@ -43,7 +31,7 @@ public:
         }
     }
 
-    /** Append text that came from outside the firmware. */
+    /** Append HTML-escaped text. */
     void text(const char *s)
     {
         while (*s != '\0') {
@@ -89,7 +77,7 @@ public:
         }
     }
 
-    /** Bytes written, or -1 if anything did not fit. */
+    /** Return bytes written, or -1 after an overflow. */
     int finish()
     {
         if (_overflowed || _at >= _size) {
@@ -104,7 +92,7 @@ public:
 private:
     void put(char c)
     {
-        /* One byte kept back for the terminator finish() writes. */
+        // Reserve one byte for the terminator.
         if (_at + 1 >= _size) {
             _overflowed = true;
             return;
@@ -120,10 +108,7 @@ private:
     bool _overflowed = false;
 };
 
-/*
- * One stylesheet for the three pages, inline because nothing else can be
- * fetched: a captive sheet has no route to anywhere but this device.
- */
+// Captive clients cannot fetch an external stylesheet.
 const char *const kHead =
     "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
@@ -145,7 +130,6 @@ const char *const kHead =
 
 const char *const kFoot = "</main></body></html>";
 
-/** The one link at the foot of each page: whichever page this is not. */
 void nav(Writer &w, bool on_status)
 {
     w.raw("<p class=\"note\">");
@@ -194,15 +178,12 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
     w.raw("<label for=\"ssid\">Network</label>");
 
     if (count == 0 || nets == nullptr) {
-        /* No list, but still a field: a hidden network has to be typeable, and
-         * a scan finding nothing is a quiet room rather than a fault. */
+        // Keep hidden networks usable when the scan is empty.
         w.raw("<input id=\"ssid\" name=\"ssid\" placeholder=\"Network name\">");
         w.raw("<p class=\"note\">No networks in range. Type the name.</p>");
     } else {
         w.raw("<select id=\"ssid\" name=\"ssid\">");
 
-        /* Selected by default, so submitting the form untouched changes the
-         * language and leaves the stored network alone. */
         w.raw("<option value=\"\">Leave unchanged</option>");
 
         for (uint8_t i = 0; i < count; i++) {
@@ -267,8 +248,6 @@ int page_saved(char *out, uint16_t out_size, const char *ssid)
     w.raw("<h1>Saved</h1>");
 
     if (ssid == nullptr || ssid[0] == '\0') {
-        /* The form was posted for the language alone, which is a whole reason
-         * to be here: changing it must not cost a retyped Wi-Fi password. */
         w.raw("<p>The language is set. It applies to the next question.</p>");
         nav(w, false);
         w.raw(kFoot);
@@ -280,9 +259,7 @@ int page_saved(char *out, uint16_t out_size, const char *ssid)
     w.text(ssid);
     w.raw(".</p>");
 
-    /* No live result: reporting it would need the page to poll, and the phone
-     * loses this network the moment the device leaves the AP up. The status
-     * page is where the answer lands. */
+    // The panel reports the result after the phone leaves the access point.
     w.raw("<p class=\"note\">The setup network stays up for a few minutes. "
           "Check the status page to see whether it worked.</p>");
 
@@ -321,8 +298,7 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     w.text(status.corpus_version != nullptr ? status.corpus_version : "unknown");
     w.raw("</dd>");
 
-    /* The saved network is named but its password is never rendered back. The
-     * page is served over an open access point. */
+    // Never render the saved password on the open access point.
     w.raw("<dt>Saved network</dt><dd>");
 
     if (status.saved_ssid != nullptr && status.saved_ssid[0] != '\0') {
@@ -348,10 +324,7 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
 
     w.raw("</dd></dl>");
 
-    /*
-     * Asking for a sync is a POST, not a link: it changes the device, and a
-     * browser that prefetches links would otherwise start one by itself.
-     */
+    // POST prevents link prefetching from starting a sync.
     w.raw("<form method=\"post\" action=\"/sync\">");
     w.raw("<button type=\"submit\">Check for new questions</button>");
     w.raw("</form>");

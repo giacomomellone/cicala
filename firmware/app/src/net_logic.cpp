@@ -1,13 +1,4 @@
-/*
- * The portal's decisions, and the C++ that renders its pages, behind a C API.
- *
- * The state machine is lib/portal's and knows nothing about Zephyr; PortalIo
- * below is the whole of what it can do, and every one of those six calls lands
- * in portal.c. The one thing that does not is show(), which publishes on
- * chan_service rather than touching the panel — `app` owns the sequence number
- * every card carries, and a second publisher would break the guard that drops a
- * late render.
- */
+/* The portal's decisions, and the C++ that renders its pages, behind a C API. */
 
 #include "net_logic.h"
 
@@ -31,7 +22,7 @@ LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
 namespace
 {
 
-/** Publishes cards and forwards everything else to portal.c. */
+/* Publishes cards and forwards everything else to portal.c. */
 class Io : public tk::PortalIo
 {
 public:
@@ -53,12 +44,7 @@ public:
 
         switch (card) {
         case tk::PortalCard::SETUP:
-            /*
-             * The one card that has to carry information rather than a status:
-             * a phone cannot join a network nobody has named. The address is
-             * there for the case where the captive sheet does not open by
-             * itself, which happens often enough to be worth two lines.
-             */
+            /* The setup card includes the access-point name. */
             write_setup(msg);
             break;
 
@@ -97,9 +83,7 @@ private:
         const size_t n = strlen(prefix) + strlen(ssid) + strlen(middle);
 
         if (n >= sizeof(msg.text)) {
-            /* Cannot happen with any sane prefix — the SSID is bounded at 32
-             * bytes and the text buffer is 128 — but a truncated instruction is
-             * worse than a short one, so say the minimum instead. */
+            /* Fall back to the SSID if the full instruction does not fit. */
             const char *const fallback = "Setup mode. Open 192.168.4.1";
 
             msg.len = static_cast<uint16_t>(strlen(fallback));
@@ -164,9 +148,7 @@ void tk_net_post_connected(bool ok)
 
 void tk_net_run(void)
 {
-    /* Bounded rather than while(changed), for the reason tk_app_run() is: a
-     * table bug that made two states point at each other would otherwise spin
-     * here forever instead of being noticed. */
+    /* Bound one event to the number of portal states. */
     for (int i = 0; i < 16; i++) {
         const int before = fsm.get_current_state();
 
@@ -195,12 +177,7 @@ bool tk_net_portal_active(void)
 int tk_page_setup(char *out, size_t out_size, const struct tk_scan_entry *nets, uint8_t count,
                   const char *language)
 {
-    /*
-     * tk_scan_entry and tk::ScanEntry are the same three fields, but one is the
-     * C face and the other is the renderer's, and letting them alias would make
-     * a field reordering a silent corruption rather than a compile error. The
-     * copy is at most CONFIG_TK_NET_SCAN_MAX entries, once per page.
-     */
+    /* Copy across the C boundary so field layout is not an ABI contract. */
     tk::ScanEntry entries[CONFIG_TK_NET_SCAN_MAX];
 
     if (count > CONFIG_TK_NET_SCAN_MAX) {
@@ -234,9 +211,7 @@ int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *
     tk_app_corpus(corpus_version, sizeof(corpus_version), &corpus_count);
 
     status.ap_ssid = ap_ssid;
-    /* The board rather than a version string: nothing in this tree stamps a
-     * firmware version yet, and inventing one on a status page is worse than
-     * reporting the thing that is actually known. */
+    /* The status page currently identifies the board, not a firmware version. */
     status.board = CONFIG_BOARD_TARGET;
     status.corpus_language = CONFIG_TK_CORPUS_LANGUAGE;
     status.corpus_version = corpus_version;

@@ -34,10 +34,10 @@ Submissions (GitHub issue → `promote-question.yml` → PR) are routed to the l
 
 ## Shipped languages
 
-| Language | Code | Maintainer | Status |
-|---|---|---|---|
-| English | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped (240 seed questions) |
-| Deutsch | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped (99 seed questions; multilingual interaction test) |
+| Language | Code | Maintainer                                          | Status                                                     |
+| -------- | ---- | --------------------------------------------------- | ---------------------------------------------------------- |
+| English  | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped (240 seed questions)                               |
+| Deutsch  | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped (99 seed questions; multilingual interaction test) |
 
 ## Incubator
 

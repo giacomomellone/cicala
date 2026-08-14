@@ -41,15 +41,6 @@ PortalFsm::PortalFsm(PortalIo &io)
 {
 }
 
-/*
- * Everything that goes wrong ends with the radio off.
- *
- * A table bug and a blown timeout are the two ways to get here, and neither is
- * a state the device should sit in with an open access point on air. SHUTDOWN
- * tears down whatever is up and returns to OFF, which is also what the
- * session-window timeout on SERVING uses: the portal closing by itself after
- * five minutes is the ordinary ending, not an error.
- */
 int PortalFsm::get_fail_state() const
 {
     return STATE(SHUTDOWN);
@@ -61,10 +52,9 @@ void PortalFsm::on_enter_state(int state)
     case STATE(SCANNING):
         _scan_done = false;
 
-        /* One radio: this has to finish before the access point takes it. */
+        // Scanning and the access point share one radio.
         if (!_io.scan_start()) {
-            /* No scan is survivable — the setup page still takes a typed name,
-             * which a hidden network needs anyway. Carry on without one. */
+            // The form accepts a typed SSID when scanning fails.
             _scan_done = true;
         }
 
@@ -75,8 +65,6 @@ void PortalFsm::on_enter_state(int state)
         _ap_ok = false;
 
         if (!_io.ap_start()) {
-            /* Report it as the failed result the state is waiting for, rather
-             * than sitting here until the timeout. */
             _ap_pending = true;
             _ap_ok = false;
         }
@@ -86,8 +74,7 @@ void PortalFsm::on_enter_state(int state)
     case STATE(SERVING):
         _credentials_pending = false;
 
-        /* Only once. SERVING is re-entered after a refused password, and the
-         * access point has been on air the whole time. */
+        // A refused password returns to the existing access point.
         if (!_ap_up) {
             _ap_up = _io.serve_start();
         }
@@ -185,8 +172,6 @@ void PortalFsm::post_connected(bool ok)
 
 int PortalFsm::on_off()
 {
-    /* A stop that arrives with nothing running has nothing to do, and must not
-     * be left queued for the next session. */
     _stop_pending = false;
 
     if (!_start_pending) {
@@ -206,12 +191,7 @@ int PortalFsm::on_scanning()
         return TRANSITION(STOPPED);
     }
 
-    /*
-     * The deadline is here rather than in the table because a scan that never
-     * reports back should still get an access point up — the page takes a
-     * typed network name, so a missing list costs the user a little typing and
-     * not the whole setup flow. A table timeout would end the session instead.
-     */
+    // A scan timeout continues with an empty network list.
     if (_scan_done || get_elapsed_state_time() >= kPortalScanMs) {
         return TRANSITION(CONTINUE);
     }
@@ -245,9 +225,6 @@ int PortalFsm::on_serving()
     }
 
     if (!_ap_up) {
-        /* Nothing is listening, so nobody can ever submit anything. Sitting
-         * here for the whole window with an access point that answers no
-         * request is worse than ending. */
         return TRANSITION(FAILED);
     }
 
@@ -275,19 +252,13 @@ int PortalFsm::on_connecting()
             return TRANSITION(JOINED);
         }
 
-        /* Back to the page, with the panel saying why. A wrong password is the
-         * single most likely thing to happen here, and the fix is to type it
-         * again rather than to start the whole gesture over. */
+        // Keep the portal open so credentials can be corrected.
         _refused = true;
 
         return TRANSITION(REFUSED);
     }
 
-    /*
-     * The deadline is here for the same reason it is in SCANNING: the useful
-     * destination is not the fail state. A network that never answers should
-     * put the user back on the form, not take the portal away.
-     */
+    // A connection timeout returns to the form.
     if (get_elapsed_state_time() >= kConnectTimeoutMs) {
         _refused = true;
 
@@ -305,15 +276,12 @@ int PortalFsm::on_connected()
         return TRANSITION(STOPPED);
     }
 
-    /* The access point stays up for the rest of the window so the status page
-     * can be read, then the table's timeout ends the session. */
+    // Keep the status page available until the session ends.
     return TRANSITION(REPEAT);
 }
 
 int PortalFsm::on_shutdown()
 {
-    /* Teardown happened on the way in. Anything still queued belongs to a
-     * session that is over. */
     _stop_pending = false;
     _credentials_pending = false;
     _connect_pending = false;

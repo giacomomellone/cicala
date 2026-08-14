@@ -1,17 +1,4 @@
-/*
- * Fetching a bundle, and refusing every bundle that is not exactly right.
- *
- * The flow is docs/sync_protocol.md. The order of the checks is the part worth
- * reading twice, and it is in sync.h: size, then SHA-256, then signature.
- * Cheapest first, so a truncated download costs no curve arithmetic — and
- * nothing reaches the filesystem until all three have passed.
- *
- * C++ rather than C, unlike the rest of the glue: the manifest parser and the
- * verifier are both lib/ code in namespace tk, and a C shim around them would
- * be two struct definitions that have to be kept in step by hand. Nothing here
- * needs a macro that C++ rejects — the two designated initializers this started
- * with are plain assignments now.
- */
+/* Download and validate a question bundle. */
 
 #include <errno.h>
 #include <stdio.h>
@@ -34,25 +21,16 @@ extern "C" {
 
 LOG_MODULE_REGISTER(tk_sync, LOG_LEVEL_INF);
 
-/* A manifest is a few hundred bytes; this is room for every shipped language
- * several times over, and a bound on what a hostile server can make us hold. */
+/* Bound manifest memory independently of the server response. */
 #define MANIFEST_MAX 2048
 
-/*
- * The version min_fw is compared against.
- *
- * Not the image version, which lives in the VERSION file and is what OTA
- * compares — this is the version of the *sync contract* this image implements,
- * which is what min_fw is actually about. A release can require a newer
- * contract without every device that has an older image being locked out of
- * questions, and the two numbers move for different reasons.
- */
+/* The version min_fw is compared against. */
 #define TK_SYNC_CONTRACT_VERSION "0.1.0"
 
 static char manifest_buf[MANIFEST_MAX];
 static size_t manifest_len;
 
-/** GET into a caller's buffer: the manifest, and then the bundle. */
+/* GET into a caller's buffer: the manifest, and then the bundle. */
 static int fetch_into(const char *path, uint8_t *into, size_t capacity)
 {
     struct tk_fetch_mem mem = {};
@@ -101,8 +79,7 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
     }
 
     if (manifest.schema != tk::kManifestSchema) {
-        /* A schema this firmware does not know could mean anything, including
-         * that a field it relies on now means something else. */
+        /* Unknown schemas may change field meaning. */
         LOG_ERR("manifest schema %u, expected %u", manifest.schema, tk::kManifestSchema);
         return TK_SYNC_FAILED;
     }
@@ -113,11 +90,7 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
         return TK_SYNC_FAILED;
     }
 
-    /*
-     * The anti-rollback rule, and the reason the transport not being
-     * authenticated is survivable: an attacker can replay an older manifest,
-     * signature and all, but cannot make it look newer.
-     */
+    /* Reject signed manifests older than the installed corpus. */
     const char *installed = tk_corpus_version();
 
     if (installed[0] != '\0' && tk::version_compare(manifest.version, installed) <= 0) {
@@ -132,8 +105,7 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
     }
 
     if (!entry.signed_) {
-        /* tools/build_bundle.py writes "sig": null without a key. A device must
-         * never install one; see docs/sync_protocol.md. */
+        /* tools/build_bundle.py writes "sig": null without a key. */
         LOG_ERR("refusing an unsigned bundle");
         return TK_SYNC_FAILED;
     }
@@ -155,18 +127,11 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
         return TK_SYNC_FAILED;
     }
 
-    /* First check: the cheapest one. A truncated or padded download is caught
-     * before anything is hashed. */
     if ((uint32_t) n != entry.size) {
         LOG_ERR("the bundle is %d bytes; the manifest said %u", n, entry.size);
         return TK_SYNC_FAILED;
     }
 
-    /* Second: the digest, which is what the signature actually covers.
-     *
-     * PSA rather than mbedtls_sha256(): mbedtls 4 moved that behind
-     * mbedtls/private/, and PSA is the supported interface. It is already
-     * linked — the Wi-Fi driver pulls it in. */
     uint8_t digest[tk::kSha256Bytes];
     size_t digest_len = 0;
 
@@ -187,8 +152,6 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
         return TK_SYNC_FAILED;
     }
 
-    /* Third: the signature, and the only one that means anything about who
-     * produced the bundle. */
     if (!tk::ed25519_verify(entry.sig, digest, sizeof(digest), TISCHKARTE_TRUSTED_KEY)) {
         LOG_ERR("the bundle's signature is not valid — refusing it");
         return TK_SYNC_FAILED;
@@ -200,8 +163,7 @@ enum tk_sync_result tk_sync_run(const char *language, uint16_t *count, char *ver
         return TK_SYNC_FAILED;
     }
 
-    /* Recorded only now. A version written before the corpus was on disk would
-     * make the next boot refuse the update it never received. */
+    /* Persist the version after the corpus swap succeeds. */
     (void) tk_corpus_version_set(manifest.version);
 
     if (count != nullptr) {

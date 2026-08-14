@@ -1,7 +1,5 @@
 ---
-// The play surface, shared by / and /q/[id] (spec §7.4). Statically rendered
-// with a seed question so play works without JS up to the first question;
-// src/lib/play.ts takes over from there.
+// The play surface, shared by / and /q/[id] (spec §7.4).
 import DeckSelector from "./DeckSelector.astro";
 import type { Deck } from "../config";
 import { t } from "../i18n";
@@ -12,7 +10,7 @@ interface Props {
   question: Question;
   deck: Deck;
   lang: string;
-  /** true on /q/[id] pages — "next" transitions back to / via replaceState */
+  /* true on /q/[id] pages — "next" transitions back to / via replaceState */
   permalink?: boolean;
 }
 const { question, deck, lang, permalink = false } = Astro.props;
@@ -34,14 +32,16 @@ const { question, deck, lang, permalink = false } = Astro.props;
           class="iconbtn"
           id="q-fav"
           aria-pressed="false"
-          set:html={heartIcon + `<span id="q-fav-label" data-i18n="play.save">${t("en", "play.save")}</span>`}
+          set:html={heartIcon +
+            `<span id="q-fav-label" data-i18n="play.save">${t("en", "play.save")}</span>`}
         />
         <span aria-hidden="true">·</span>
         <button
           type="button"
           class="iconbtn"
           id="q-share"
-          set:html={shareIcon + `<span id="q-share-label" data-i18n="play.share">${t("en", "play.share")}</span>`}
+          set:html={shareIcon +
+            `<span id="q-share-label" data-i18n="play.share">${t("en", "play.share")}</span>`}
         />
         <span data-vote-slot hidden></span>
       </div>

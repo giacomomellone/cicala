@@ -43,12 +43,6 @@ PowerFsm::PowerFsm(PowerIo &io)
 {
 }
 
-/*
- * An undefined transition means "we do not know", which is the one answer that
- * is always safe here: UNKNOWN permits refreshes, so a table bug degrades to a
- * device that draws questions and says nothing about its cell. It also clears
- * itself, because the next tick walks the ladder again from the last reading.
- */
 int PowerFsm::get_fail_state() const
 {
     return STATE(UNKNOWN);
@@ -89,15 +83,6 @@ void PowerFsm::report(bool force)
     _published = true;
 }
 
-/*
- * The window belongs to a visit to external power, not to a state.
- *
- * CHARGING and CHARGED are two states describing one plug-in, and the cell
- * crossing the full threshold in either direction moves between them. Opening
- * the window per state entry would hand out a fresh five minutes every time the
- * voltage wandered across TK_POWER_FULL_MV, which during a constant-voltage
- * taper it does.
- */
 void PowerFsm::on_enter_state(int state)
 {
     const bool external = (state == STATE(CHARGING)) || (state == STATE(CHARGED));
@@ -152,11 +137,7 @@ int PowerFsm::handle_current_state()
         break;
     }
 
-    /*
-     * Only when nothing is moving. A transition publishes from
-     * on_enter_state() with the new state attached, and doing both would put
-     * the old state on the channel a moment before the new one.
-     */
+    // State changes publish from on_enter_state().
     if (transition == TRANSITION(REPEAT)) {
         report(false);
     }
@@ -166,32 +147,20 @@ int PowerFsm::handle_current_state()
 
 int PowerFsm::on_unknown()
 {
-    /*
-     * External power first, and before the "has anything been read" test.
-     * VBUS is a plain pin and arrives on its own through post_usb(), so a rig
-     * whose ADC never answers still knows it is plugged in — which is what
-     * `net` and the sleep inhibitor are actually asking about.
-     */
+    // VBUS remains useful when the ADC is unavailable.
     if (_usb) {
         return TRANSITION(PLUGGED);
     }
 
     if (!_measured) {
-        // Nothing has been read yet, and nothing says external power either.
         return TRANSITION(REPEAT);
     }
 
     if (!plausible()) {
-        // Not a cell. Staying here is the whole point of the floor: UNKNOWN
-        // permits refreshes, and walking the ladder from here would not.
         return TRANSITION(REPEAT);
     }
 
-    /*
-     * Always to NORMAL, even from a reading that is plainly flat. The ladder
-     * below walks the rest on the next tick or two, which keeps one description
-     * of where each threshold lives instead of two.
-     */
+    // Later states apply the voltage thresholds.
     return TRANSITION(MEASURED);
 }
 
@@ -222,8 +191,7 @@ int PowerFsm::on_low()
         return TRANSITION(IMPLAUSIBLE);
     }
 
-    // Downwards immediately, upwards only past the hysteresis. Getting worse is
-    // the direction where being slow costs something.
+    // Falling voltage applies immediately; recovery includes hysteresis.
     if (_mv < kCriticalMv) {
         return TRANSITION(SANK);
     }
@@ -241,12 +209,7 @@ int PowerFsm::on_critical()
         return TRANSITION(PLUGGED);
     }
 
-    /*
-     * Below CRITICAL there is one more rung, and it is not a worse cell: a
-     * reading that keeps falling past the floor stopped being a measurement of
-     * a pack somewhere on the way down. Refusing refreshes on the strength of
-     * it is refusing them on the strength of a floating pin.
-     */
+    // Values below the plausible floor are treated as a missing measurement.
     if (!plausible()) {
         return TRANSITION(IMPLAUSIBLE);
     }
@@ -261,8 +224,6 @@ int PowerFsm::on_critical()
 int PowerFsm::on_external()
 {
     if (!_usb) {
-        // Leaving wins over the window: on_enter_state() closes it on the way
-        // out, so there is no need to do it here as well.
         return TRANSITION(UNPLUGGED);
     }
 
@@ -297,8 +258,7 @@ int PowerFsm::on_charged()
         return transition;
     }
 
-    // Back to CHARGING only once the cell has fallen clear of the threshold.
-    // Under a live load the reading sits on it and would otherwise oscillate.
+    // Hysteresis prevents oscillation at the full threshold.
     if ((uint32_t) _mv + kHysteresisMv <= (uint32_t) kFullMv) {
         return TRANSITION(SANK);
     }

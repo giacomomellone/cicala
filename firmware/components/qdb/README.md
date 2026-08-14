@@ -1,15 +1,8 @@
 # qdb
 
-**Built.** `firmware/lib/qdb/`, tested by `firmware/tests/qdb` against the real
-shipped bundles. How it works is described under "qdb — the question store" in
-[docs/firmware_architecture.md](../../../docs/firmware_architecture.md); this
-file is the contract it was built to.
+`firmware/lib/qdb/` validates QDB2 bundles and draws eligible questions without
+repeats until a deck cycle is exhausted. Normal playback accepts depths 1 and
+2. Dark and spicy questions remain exclusive to Wild.
 
-Mount the question storage, parse the QDB2 bundle format described in
-[sync_protocol.md](../../../docs/sync_protocol.md), and provide the next
-eligible question for a selected deck without repeats until that deck's shuffle
-bag is exhausted.
-
-Normal playback excludes depth 3. Dark and spicy questions remain exclusive to
-the Wild deck. Host-side tests must round-trip real bundles produced by
-`tools/build_bundle.py`.
+Tests use bundles built from the real question database. The format is defined
+in the [sync protocol](../../../docs/sync_protocol.md).

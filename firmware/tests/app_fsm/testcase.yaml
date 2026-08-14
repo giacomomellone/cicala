@@ -1,7 +1,5 @@
 tests:
   tischkarte.app_fsm:
-    # Time is injected and there is no display, so this needs no board features
-    # beyond a kernel.
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim

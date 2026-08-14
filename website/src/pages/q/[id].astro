@@ -1,7 +1,5 @@
 ---
-// Permalinks (spec §7.4): one static page per question in every shipped
-// language, so /q/<id> works without JS, carries the question as <title>,
-// and sets <html lang> to the question's language.
+// Static question permalinks include the question title and language.
 import PlayShell from "../../components/PlayShell.astro";
 import type { Deck } from "../../config";
 import Base from "../../layouts/Base.astro";
@@ -12,10 +10,9 @@ interface Payload {
 }
 
 export function getStaticPaths() {
-  const files = import.meta.glob<{ default: Payload }>(
-    "../../data/questions.*.json",
-    { eager: true },
-  );
+  const files = import.meta.glob<{ default: Payload }>("../../data/questions.*.json", {
+    eager: true,
+  });
   const paths = [];
   for (const [path, mod] of Object.entries(files)) {
     const lang = path.match(/questions\.([a-z]{2,3})\.json$/)?.[1] ?? "en";
@@ -43,10 +40,5 @@ const { q, deck, lang } = Astro.props;
   lang={lang}
   seedLang={lang}
 >
-  <PlayShell
-    question={q}
-    deck={deck as Deck}
-    lang={lang}
-    permalink
-  />
+  <PlayShell question={q} deck={deck as Deck} lang={lang} permalink />
 </Base>

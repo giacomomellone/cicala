@@ -1,20 +1,4 @@
-/*
- * The pages the phone sees.
- *
- * No Zephyr headers, so the suite renders every page on the host and reads what
- * came out.
- *
- * HTML lives here rather than in the socket code for one reason that matters: a
- * network name is written by whoever owns the network, arrives over the air,
- * and is then printed into a page. Escaping it is the only thing standing
- * between a neighbour's access point named `<script>` and a setup page that
- * runs it. That is logic with branches over untrusted input, which belongs
- * where a test can drive it.
- *
- * The pages are plain HTML with a little inline CSS and no JavaScript. A phone
- * showing a captive sheet is a cut-down browser with no internet reachable
- * behind it, so anything fetched from elsewhere would simply not arrive.
- */
+/* HTML renderers for setup and status pages. */
 
 #pragma once
 
@@ -23,18 +7,17 @@
 namespace tk
 {
 
-/** One network seen by a scan, trimmed to what the page shows. */
+/** Network fields shown by the setup page. */
 struct ScanEntry {
-    /** NUL-terminated. Whatever the air said, so never trusted unescaped. */
+    /** NUL-terminated and untrusted. */
     char ssid[33];
     int8_t rssi;
     bool secure;
 };
 
-/** What the status page reports. Every string is NUL-terminated. */
+/** Status page data. Every string is NUL-terminated. */
 struct PortalStatus {
     const char *ap_ssid;
-    /** What this device is. Nothing stamps a firmware version yet. */
     const char *board;
     const char *corpus_language;
     const char *corpus_version;
@@ -46,24 +29,10 @@ struct PortalStatus {
     const char *station_ip;
 };
 
-/**
- * Escape text for HTML element content and double-quoted attributes.
- *
- * Covers `& < > " '`. The output is NUL-terminated on success.
- *
- * @return escaped length, or -1 when it would not fit.
- */
+/** Escape HTML text and attributes. Return length, or -1 if it does not fit. */
 int html_escape(const char *in, uint16_t len, char *out, uint16_t out_size);
 
-/**
- * The setup page: the networks in earshot, a password box, and the language.
- *
- * `count` may be zero, which renders the page with a note rather than an empty
- * list — a scan that found nothing is a normal outcome in a quiet room, and a
- * page with no explanation looks broken.
- *
- * @return bytes written, or -1 when `out` is too small.
- */
+/** Render the setup page. Return bytes written, or -1 if it does not fit. */
 int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t count,
                const char *current_language);
 

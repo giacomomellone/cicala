@@ -1,6 +1,4 @@
-// All persistent client state lives in localStorage under the `tk.` namespace
-// (spec §7.9): tk.lang, tk.deck, tk.favs, tk.bag.<lang>.<deck>. No cookies, no
-// accounts, nothing leaves the browser.
+// Persistent client state uses the `tk.` localStorage namespace.
 
 function read(key: string): string | null {
   try {
@@ -14,7 +12,7 @@ function write(key: string, value: string): void {
   try {
     localStorage.setItem(key, value);
   } catch {
-    /* private mode / quota — the site still works, state just won't persist */
+    /* Storage failures leave the UI usable without persistence. */
   }
 }
 
@@ -28,8 +26,6 @@ function readJson<T>(key: string, fallback: T): T {
   }
 }
 
-// ---------------------------------------------------------------- language
-
 export function getStoredLang(): string | null {
   return read("tk.lang");
 }
@@ -38,8 +34,6 @@ export function setStoredLang(lang: string): void {
   write("tk.lang", lang);
 }
 
-// -------------------------------------------------------------------- deck
-
 export function getDeck(): string {
   return read("tk.deck") ?? "new_people";
 }
@@ -47,8 +41,6 @@ export function getDeck(): string {
 export function setDeck(deck: string): void {
   write("tk.deck", deck);
 }
-
-// --------------------------------------------------------------- favorites
 
 export function getFavs(): string[] {
   const favs = readJson<string[]>("tk.favs", []);
@@ -63,7 +55,7 @@ export function isFav(id: string): boolean {
   return getFavs().includes(id);
 }
 
-/** Toggle; returns true if the id is now saved. */
+/* Toggle; returns true if the id is now saved. */
 export function toggleFav(id: string): boolean {
   const favs = getFavs();
   const i = favs.indexOf(id);
@@ -76,8 +68,6 @@ export function toggleFav(id: string): boolean {
   setFavs(favs);
   return false;
 }
-
-// ------------------------------------------------------------- shuffle bag
 
 export interface Bag {
   b: string[]; // remaining ids, popped from the end

@@ -1,7 +1,4 @@
-// Pages are statically rendered in English; when the active language differs,
-// this pass swaps every [data-i18n] element's text from src/i18n.ts. Both
-// language objects together are ~6 KB — far cheaper than per-language routes
-// (path-prefix i18n is explicitly out for v1, spec §7.3).
+// Replace statically rendered English strings for the active language.
 
 import { strings, t, type Lang, type StringKey } from "../i18n";
 
@@ -20,8 +17,7 @@ export function applyI18n(lang: string): void {
   document.querySelectorAll<HTMLElement>("[data-i18n-aria]").forEach((el) => {
     el.setAttribute("aria-label", t(lang, el.dataset.i18nAria as StringKey));
   });
-  // <html lang> reflects the displayed content's language (spec §7.10);
-  // on play the payload language and the UI language are always the same.
+  // Keep <html lang> aligned with the displayed content.
   document.documentElement.lang = lang;
 }
 

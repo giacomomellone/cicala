@@ -1,27 +1,4 @@
-/*
- * The ADC, the VBUS pin, and when to look at them.
- *
- * Compiled only when CONFIG_TK_POWER is on, which the devkit board conf sets.
- * What a reading *means* is lib/power's job, reached through power_logic.h;
- * this file only produces honest numbers and decides how often.
- *
- * ## Why the system workqueue, and not a thread or the app loop
- *
- * One conversion plus one pin read is microseconds and never blocks, so it does
- * not earn a thread and a stack. It cannot live on the `app` thread either:
- * that thread parks in K_FOREVER when there is nothing to do, and that is
- * exactly the property which lets the device reach deep sleep. Giving it a
- * periodic timeout so power could be sampled would trade the sleep budget for a
- * reading nobody is waiting for.
- *
- * ## Why the boot reading is synchronous
- *
- * `net` decides whether to join a network from whether VBUS is high, and it
- * decides it in the first moments of the thread starting. Static threads run
- * after every SYS_INIT level, so a reading taken here — in the same hook
- * sleep.c uses — is on the channel before anything can ask. Scheduling the work
- * item instead would race, and lose about half the time.
- */
+/* Battery ADC and VBUS sampling. */
 
 #include <zephyr/drivers/adc.h>
 #include <zephyr/drivers/gpio.h>
@@ -41,12 +18,7 @@ static const struct adc_dt_spec battery = ADC_DT_SPEC_GET(TK_USER_NODE);
 
 static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(TK_USER_NODE, tk_vbus_gpios);
 
-/*
- * A refresh sags the pack by hundreds of millivolts for two seconds, so a
- * reading taken during one is not a reading of the cell. Rescheduling short
- * rather than skipping the slot: the interesting moment is usually just after a
- * refresh, when the cell is recovering.
- */
+/* Suspend samples while panel load causes pack-voltage sag. */
 #define TK_POWER_BUSY_RETRY_MS 250
 
 #if IS_ENABLED(CONFIG_TK_DEBUG_POWER)
@@ -58,24 +30,11 @@ static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(TK_USER_NODE, tk_vbus_g
 static void power_sample(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(sample_work, power_sample);
 
-/*
- * What came up at boot, checked before each is used.
- *
- * The two are independent on purpose. VBUS is a plain GPIO on its own pin, so
- * an ADC that never came ready must not take the USB bit down with it — that
- * bit is what `net` joins a network on and what keeps the device from sleeping
- * on a charger, and freezing it is worse than not having it.
- */
+/* What came up at boot, checked before each is used. */
 static bool adc_ready;
 static bool vbus_ready;
 
-/**
- * One conversion, in millivolts at the pin.
- *
- * @return false when the ADC would not answer, which leaves the machine in
- *         UNKNOWN — a state that permits refreshes, so a broken divider costs
- *         the battery reading and nothing else.
- */
+/* One conversion, in millivolts at the pin. */
 static bool read_tap_mv(int32_t *mv)
 {
     uint16_t raw = 0;
@@ -117,20 +76,11 @@ static bool read_tap_mv(int32_t *mv)
     return true;
 }
 
-/**
- * The cell voltage, averaged over a burst and scaled back through the divider.
- *
- * All of the smoothing lives here rather than in the state machine, because
- * this is the only place that gets more than one reading. On battery the device
- * is awake for about two seconds per press, so the machine sees one sample in
- * its whole life; averaging by sample count inside it would never run.
- */
+/* The cell voltage, averaged over a burst and scaled back through the divider. */
 static bool read_pack_mv(uint16_t *mv)
 {
     if (!adc_ready) {
-        /* Silently: power_start() has already said why, and repeating it every
-         * CONFIG_TK_POWER_SAMPLE_MS would bury whatever else the console has
-         * to say. */
+        /* power_start() reports persistent ADC configuration failures once. */
         return false;
     }
 
@@ -160,7 +110,7 @@ static bool read_pack_mv(uint16_t *mv)
     return true;
 }
 
-/** True when VBUS is high. A pin that never came ready reads as unplugged. */
+/* True when VBUS is high. */
 static bool read_vbus(void)
 {
     if (!vbus_ready) {
@@ -186,12 +136,6 @@ static void power_sample(struct k_work *work)
         return;
     }
 
-    /*
-     * Read on every tick, in both branches. VBUS is its own pin and costs one
-     * register read, so the state of the ADC has no business deciding whether
-     * anybody hears about it: a bit that froze at "plugged in" would keep
-     * tk_power_external() true, and sleep.c refuses to sleep while that holds.
-     */
     const bool usb = read_vbus();
 
     uint16_t mv = 0;
@@ -199,11 +143,7 @@ static void power_sample(struct k_work *work)
     if (read_pack_mv(&mv)) {
         tk_power_post_sample(mv, usb);
     } else {
-        /*
-         * Still tick the machine. It owns the charge window, and a window that
-         * stopped closing because the ADC failed would hold the device awake
-         * on a charger indefinitely.
-         */
+        /* Preserve VBUS transitions when the ADC is unavailable. */
         tk_power_post_usb(usb);
     }
 
@@ -229,22 +169,11 @@ static int power_start(void)
         vbus_ready = true;
     }
 
-    /*
-     * Synchronous, and before any thread starts. Reached whether or not the
-     * ADC came up: see the header comment — `net` reads VBUS as it starts and
-     * `status` listens for the first publish on chan_power, and neither of
-     * those depends on there being a conversion. This call is also what
-     * schedules the work item, so everything after it hangs off reaching here.
-     */
+    /* Synchronous, and before any thread starts. */
     power_sample(NULL);
 
     if (tk_power_external() && tk_power_millivolts() < CONFIG_TK_POWER_PLAUSIBLE_MV) {
-        /*
-         * VBUS reads high and the pack reads like nothing at all, which on a
-         * bench rig usually means neither divider is fitted and both pins are
-         * floating. Worth saying, because the consequence is quiet: external
-         * power inhibits sleep, so the device simply never sleeps again.
-         */
+        /* This combination usually means both divider inputs are floating. */
         LOG_WRN("VBUS is high but the pack reads %u mV; check both dividers are fitted",
                 tk_power_millivolts());
     }
@@ -252,9 +181,5 @@ static int power_start(void)
     return 0;
 }
 
-/*
- * The same hook sleep_start() uses, and for the same reason: it is the last
- * init level, so every driver this touches is up, and it still runs before the
- * static threads.
- */
+/* Run after device initialization and before static threads. */
 SYS_INIT(power_start, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

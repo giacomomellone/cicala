@@ -1,5 +1,4 @@
-# The refresh timeout is a CONFIG_TK_* value and the suite asserts on both
-# sides of it, so it sources the same file the application builds with.
+# Use the application refresh timeout in boundary tests.
 
 mainmenu "tischkarte app_fsm tests"
 

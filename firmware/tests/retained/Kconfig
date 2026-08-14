@@ -1,6 +1,4 @@
-# The application's policy symbols: the block contains the shuffle bag, whose
-# size follows CONFIG_TK_MAX_QUESTIONS and CONFIG_TK_RECENT_RING. A suite that
-# built against different values would be checking a different struct.
+# Use the application retained-block layout.
 
 mainmenu "tischkarte retained tests"
 

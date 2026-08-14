@@ -1,15 +1,4 @@
-/*
- * A real signature, from the real release, over the real bundle.
- *
- * Taken from db-2026.08.1: the SHA-256 of bundle-en-2026.08.1.qdb, and the
- * ed25519 signature over those 32 bytes that .github/workflows/bundle.yml
- * produced with the BUNDLE_SIGNING_KEY secret. Verified independently with
- * `openssl pkeyutl -verify` before being written here.
- *
- * Hard-coded rather than generated, so the suite keeps checking the artifact
- * that actually shipped even after the questions are replaced. The public key
- * it verifies against is the committed one, included by the suite.
- */
+/* Fixed db-2026.08.1 fixture, independently verified with openssl. */
 
 #pragma once
 

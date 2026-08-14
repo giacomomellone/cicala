@@ -1,13 +1,3 @@
-/*
- * Boot.
- *
- * Everything that runs afterwards is a thread: `app` decides (src/app.c),
- * `display` renders (src/display.c), and the system workqueue debounces the
- * selector and Next (src/input.c). main() only starts the input layer and
- * reports what came up — the threads are already running by the time it does,
- * because K_THREAD_DEFINE starts them at boot.
- */
-
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/hwinfo.h>
 #include <zephyr/init.h>
@@ -25,21 +15,7 @@ LOG_MODULE_REGISTER(tk_main, LOG_LEVEL_INF);
 
 #include <zephyr/settings/settings.h>
 
-/**
- * Read the `tk` subtree back out of NVS.
- *
- * Nothing did this before, which meant the chosen language and the installed
- * corpus release were written on every change and read on no boot at all:
- * `settings_save_one()` initialises the subsystem by itself, so saving worked
- * and looked complete, while every registered load handler sat unused. A device
- * set to German came back in English, and the anti-rollback check in sync.cpp
- * compared against an empty string.
- *
- * At APPLICATION level rather than from main(), because this has to finish
- * before the threads that read what it loads. Zephyr runs this level in the
- * main thread before the static threads are started, so `app` cannot observe
- * a half-loaded configuration.
- */
+/* Read the `tk` subtree back out of NVS. */
 static int load_settings(void)
 {
     int err = settings_subsys_init();
@@ -56,9 +32,7 @@ static int load_settings(void)
         LOG_ERR("settings load failed: %d", err);
     }
 
-    /* Never fatal. A device that cannot read its settings still draws
-     * questions, in the compiled-in language, which is a better answer than
-     * refusing to boot. */
+    /* Missing settings leaves defaults intact. */
     return 0;
 }
 
@@ -66,26 +40,6 @@ SYS_INIT(load_settings, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
 
 #endif /* CONFIG_SETTINGS */
 
-/*
- * The bring-up LED that used to live here — a discrete LED on GPIO2, toggled
- * on every question that reached the panel — has been removed. The panel is
- * wired now, so a question arriving is visible on the glass, and the status
- * LEDs say the things the glass cannot. Its pin went back to the spare pool as
- * an ADC1 channel, which is what docs/hardware_wiring.md always said it was
- * being kept for.
- */
-
-/**
- * Say why the chip started.
- *
- * Retained state survives some of these and not others, and which is which is
- * a property of the silicon rather than of this firmware: a software restart
- * and a deep-sleep wake keep RTC memory, a power-on reset does not, and the
- * reset pin is the one nobody should have to guess about. Printing the cause
- * next to whether the block survived makes every reset an experiment that
- * reports its own result — including, later, the one that matters, when this
- * line reads `low-power wake`.
- */
 static void log_reset_cause(void)
 {
     uint32_t cause = 0;
@@ -95,8 +49,7 @@ static void log_reset_cause(void)
         return;
     }
 
-    /* Cleared so the next boot reports its own cause rather than the union of
-     * every cause since power-on. */
+    /* Clear accumulated reset causes after reading them. */
     (void) hwinfo_clear_reset_cause();
 
     if (cause == 0) {
@@ -118,22 +71,10 @@ static void log_reset_cause(void)
     }
 }
 
-/**
- * Hold the DevKitC's onboard WS2812 data line low.
- *
- * GPIO48 drives an addressable LED this firmware never uses. Left as a
- * floating input it picks up enough noise to clock a colour into the LED's
- * shift register, which then latches: the light stays on through resets,
- * because the LED holds its own state rather than the pin holding it.
- *
- * Driving the line low stops anything further being clocked in. It cannot turn
- * off a colour already latched — that needs a zero pixel over RMT, and the
- * target PCB has no such LED to justify the driver. Power-cycle to clear one.
- */
+/* Hold the DevKitC's onboard WS2812 data line low. */
 static void hold_onboard_led_quiet(void)
 {
-    /* _OR: only the devkit overlay has this LED. qemu and native_sim do not,
-     * and neither will the target PCB. */
+    /* _OR: only the devkit overlay has this LED. */
     static const struct gpio_dt_spec ws2812 =
         GPIO_DT_SPEC_GET_OR(DT_PATH(zephyr_user), ws2812_gpios, {0});
 
@@ -156,12 +97,7 @@ int main(void)
         return ret;
     }
 
-    /*
-     * Last, and after the threads are running: this may publish a card, and a
-     * card published before `app` exists would be a card nobody renders. An
-     * update installs during a boot with nobody watching, so this is the only
-     * thing that tells the table it happened.
-     */
+    /* Publishing a notice requires the app thread to be running. */
     tk_update_notice_check();
 
     return 0;

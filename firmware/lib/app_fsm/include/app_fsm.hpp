@@ -1,13 +1,4 @@
-/*
- * The tabletop state machine — the only thing in the firmware that decides
- * anything. Everything else reports or renders.
- *
- * The transition table in app_fsm.cpp is the specification; the diagram in
- * docs/firmware_architecture.md is the same table drawn. This class holds no
- * Zephyr headers and no channels: inputs are pushed in with post_*(), effects
- * go out through AppIo. That is what lets the suite drive a five-second
- * refresh timeout in microseconds, with no board and no display.
- */
+/* Tabletop state machine. Inputs arrive through post_*(); effects use AppIo. */
 
 #pragma once
 
@@ -19,49 +10,22 @@
 namespace tk
 {
 
-/** Everything the state machine can do to the world outside itself. */
+/** Effects performed by the tabletop state machine. */
 class AppIo
 {
 public:
     virtual ~AppIo() = default;
 
-    /**
-     * Draw a question from `deck` and hand it to the display.
-     *
-     * @return false when the deck yields nothing — an empty corpus, or a
-     *         filter that excludes everything in it.
-     */
+    /** Draw from `deck`; return false if no question is available. */
     virtual bool draw(uint8_t deck) = 0;
 
-    /**
-     * Put the deck's name on the panel.
-     *
-     * Turning the selector announces where it landed rather than answering
-     * with a question nobody asked for. The name stays until Next is pressed,
-     * which is what makes the deck legible without printing it on the case.
-     *
-     * @return false when the name could not be sent to the display.
-     */
+    /** Show the deck name; return false if it could not be queued. */
     virtual bool show_category(uint8_t deck) = 0;
 
-    /**
-     * Put the setup portal's current card on the panel.
-     *
-     * The text is the portal's to own — the state machine only decides when a
-     * card should be shown, never what it says. Joining a network knocks the
-     * phone off the setup access point, so this is the only place the result
-     * of a setup attempt can be reported.
-     *
-     * @return false when the card could not be sent to the display.
-     */
+    /** Show the current service card; return false if it could not be queued. */
     virtual bool show_service() = 0;
 
-    /**
-     * True when the panel already holds a question drawn from `deck`.
-     *
-     * E-paper keeps its image without power, so the common wake is one where
-     * there is nothing to do. This is what makes that case free.
-     */
+    /** Return whether the retained panel shows a question from `deck`. */
     virtual bool retained_matches(uint8_t deck) const = 0;
 };
 
@@ -70,16 +34,11 @@ class AppFsm : public Fsm
 public:
     enum class State { BOOT = 0, CATEGORY, SHOWING, DRAWING, REFRESHING, SERVICE, FAIL };
 
-    /*
-     * Named for what happened, not for where it goes — the table owns the
-     * destinations. REDRAW, RELABEL and RETAINED exist because SHOWING and
-     * BOOT have more than one way out and CONTINUE cannot mean all of them.
-     */
     enum class Transition {
         REPEAT = 0, ///< nothing to do; stay put
         CONTINUE,   ///< the ordinary way forward
         REDRAW,     ///< Next: the table wants a question
-        RELABEL,    ///< the selector moved: announce the new deck
+        RELABEL,    ///< the active category changed
         RETAINED,   ///< the panel already holds this deck's question
         SERVICE,    ///< the setup portal has something to say
         FAILED,     ///< the draw or the render did not work
@@ -87,23 +46,16 @@ public:
 
     explicit AppFsm(AppIo &io);
 
-    /** Latest selector reading. `valid` is false for zero or several contacts. */
+    /** Post the active deck and whether the value is usable. */
     void post_selector(uint8_t deck, bool valid);
 
-    /** One Next press happened. Dropped if it lands during a refresh. */
+    /** Post one Next press. Presses during a refresh are dropped. */
     void post_next();
 
-    /** The display finished, successfully or not. */
+    /** Post the result of a display refresh. */
     void post_render(bool ok);
 
-    /**
-     * The setup portal wants its card on the panel.
-     *
-     * Routed through here rather than published by `net` directly because
-     * app_logic owns the sequence number every card is stamped with, and the
-     * guard that drops a late render matches against it. A second publisher
-     * would break that guard rather than merely race it.
-     */
+    /** Request the setup portal's current service card. */
     void post_service();
 
     /** The deck the panel is currently showing. */

@@ -1,7 +1,3 @@
-/*
- * Fsm behaviour. Time is injected, so a 30-second timeout is tested in
- * microseconds and the suite never sleeps.
- */
 
 #include <zephyr/ztest.h>
 
@@ -15,11 +11,9 @@ namespace
 enum class State { IDLE = 0, WORKING, DONE, FAILED };
 enum class Transition { CONTINUE, FAIL, REPEAT };
 
-/** A machine whose tick result and clock the test drives directly. */
 class TestFsm : public Fsm
 {
 public:
-    // Defined below the table: ARRAY_SIZE needs a complete array type.
     TestFsm();
 
     int next_transition = TRANSITION(REPEAT);
@@ -57,7 +51,6 @@ private:
 
 // clang-format off
 const Fsm::StateTransition TestFsm::_transitions[] = {
-//   Current State      Transition             Next State        Timeout
     {STATE(IDLE),      TRANSITION(CONTINUE),  STATE(WORKING),   0       },
     {STATE(IDLE),      TRANSITION(REPEAT),    STATE(IDLE),      0       },
 
@@ -88,7 +81,6 @@ ZTEST(tk_fsm, test_enters_initial_state_on_first_tick)
 {
     TestFsm fsm;
 
-    // on_enter_state is virtual, so it cannot run from the constructor.
     zassert_equal(fsm.enter_count, 0, "entered before the first tick");
 
     fsm.run();
@@ -136,7 +128,6 @@ ZTEST(tk_fsm, test_repeat_does_not_restart_the_timeout_clock)
         fsm.run();
     }
 
-    // If a self-loop reset the entry time, elapsed would be 1 s, not 10.
     zassert_equal(fsm.get_elapsed_state_time(), 10_s);
     zassert_equal(fsm.get_current_state(), STATE(WORKING));
 }
@@ -160,9 +151,6 @@ ZTEST(tk_fsm, test_self_loop_times_out_to_fail_state)
 
 ZTEST(tk_fsm, test_leaving_transition_beats_an_expired_timeout)
 {
-    // Regression: the original checked the timeout before looking for a
-    // transition, so a state that legitimately succeeded on the same tick its
-    // timeout expired was sent to the fail state instead of its real target.
     TestFsm fsm;
 
     fsm.next_transition = TRANSITION(CONTINUE);
@@ -179,7 +167,6 @@ ZTEST(tk_fsm, test_undefined_transition_goes_to_fail_state)
 {
     TestFsm fsm;
 
-    // DONE has only a REPEAT row; CONTINUE from there is a table bug.
     fsm.next_transition = TRANSITION(CONTINUE);
     fsm.run(); // IDLE -> WORKING
     fsm.run(); // WORKING -> DONE
@@ -191,8 +178,6 @@ ZTEST(tk_fsm, test_undefined_transition_goes_to_fail_state)
 
 ZTEST(tk_fsm, test_fail_transition_uses_the_table_not_the_fail_state)
 {
-    // FAIL is an ordinary transition value. It only reaches the fail state if
-    // the table says so, or if no row matches at all.
     TestFsm fsm;
 
     fsm.next_transition = TRANSITION(FAIL);
@@ -205,7 +190,6 @@ ZTEST(tk_fsm, test_current_state_has_timeout)
 {
     TestFsm fsm;
 
-    // IDLE's rows all carry timeout 0, so an event loop may block forever.
     zassert_false(fsm.current_state_has_timeout());
 
     fsm.next_transition = TRANSITION(CONTINUE);

@@ -2,9 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      // Host debugging. `just fw-sim-debug` builds for qemu at -O0 and starts
-      // a gdb server on :1234 with the CPU halted, so breakpoints in main()
-      // hit and locals are readable rather than <optimized out>.
+      // qemu runs the -Og image and waits for gdb on port 1234.
       "name": "sim: debug (qemu)",
       "type": "cppdbg",
       "request": "launch",
@@ -19,14 +17,11 @@
         { "text": "set print pretty on" },
         { "text": "set confirm off" }
       ],
-      // A halted Xtensa core sits at its reset vector, so the first frame is
-      // always reset_vector.S and never main. This arms a one-shot breakpoint
-      // there instead, making the first continue land in application code.
+      // Stop in application code after the reset vector.
       "postRemoteConnectCommands": [{ "text": "tbreak main" }]
     },
     {
-      // On-target debugging over the DevKitC's built-in USB-JTAG. No external
-      // probe needed. `west debugserver` starts OpenOCD on :3333.
+      // The DevKitC's built-in USB-JTAG serves OpenOCD on port 3333.
       "name": "devkit: debug (OpenOCD)",
       "type": "cppdbg",
       "request": "launch",
@@ -36,32 +31,23 @@
       "miDebuggerPath": "${config:tischkarte.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "preLaunchTask": "fw: openocd server",
-      // Free-run after connecting. `monitor reset halt` below still resets the
-      // core cleanly, but cppdbg resumes it instead of leaving you parked in
-      // reset_vector.S — the session starts with the app actually running, and
-      // stops only where you put a breakpoint. Set true to park at reset.
+      // Resume after the reset command and stop at user breakpoints.
       "stopAtConnect": false,
-      // Anything needing the target must NOT go here: setupCommands run
-      // before cppdbg connects to the server, and gdb answers a `monitor`
-      // sent that early with "not supported by this target".
+      // setupCommands run before the remote target is attached.
       "setupCommands": [
         { "text": "set remote hardware-watchpoint-limit 2" },
         { "text": "set print pretty on" }
       ],
-      // Run once the remote is attached, which is what `monitor` needs.
+      // Target monitor commands require an attached remote.
       "postRemoteConnectCommands": [
         { "text": "monitor reset halt" },
-        // `flushregs` is a deprecated alias in the SDK's gdb 16.2 and warns
-        // on every launch; this is the name it forwards to. Needed because
-        // the reset above invalidates gdb's cached register values.
+        // Reset invalidates gdb's cached register values.
         { "text": "maintenance flush register-cache" }
       ],
       "logging": { "engineLogging": false }
     },
     {
-      // Attach to an already-running OpenOCD (started by `west debugserver`
-      // in a terminal). Use when reflashing repeatedly and you do not want
-      // the server restarted each time.
+      // Attach to an OpenOCD server already running on port 3333.
       "name": "devkit: attach (OpenOCD already running)",
       "type": "cppdbg",
       "request": "launch",
@@ -71,15 +57,14 @@
       "miDebuggerPath": "${config:tischkarte.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "stopAtConnect": true,
-      // Same split as above: `monitor` needs the remote to exist first.
+      // Halt after attaching to the remote target.
       "postRemoteConnectCommands": [
         { "text": "monitor halt" },
         { "text": "maintenance flush register-cache" }
       ]
     },
     {
-      // Linux hosts only — native_sim produces a plain host executable, so it
-      // debugs like any native binary and is much faster than qemu.
+      // native_sim is a Linux host executable.
       "name": "sim: debug (native_sim, Linux only)",
       "type": "cppdbg",
       "request": "launch",

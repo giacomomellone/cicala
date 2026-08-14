@@ -1,150 +1,111 @@
 # Firmware updates
 
-The device installs new firmware over the network, from a manifest it checks on
-a cold boot. This describes what is built, how to release a version, and how to
-try the whole loop on a bench with no website involved.
+The device checks for firmware after Wi-Fi connects on a cold boot. It downloads
+a newer signed image into the spare slot, verifies it, and asks MCUboot to
+install it on the next boot.
 
-The question-bundle equivalent is [sync_protocol.md](sync_protocol.md), and the
-two are deliberately alike: same manifest shape, same check order, same key for
-the manifest signature. What is different is written down below.
+Question bundles use the related process described in
+[sync protocol](sync_protocol.md).
 
-## What is on the flash
+## Flash layout
 
 ```text
-0x000000  mcuboot            64 KB    the bootloader, and the only thing that decides what runs
+0x000000  mcuboot            64 KB    bootloader
 0x010000  sys                64 KB
-0x020000  image-0 (slot0)  1344 KB    the running firmware
-0x170000  image-1 (slot1)  1344 KB    where a download goes
-0x3b0000  storage           192 KB    NVS: Wi-Fi credentials, language, versions
-0x400000  corpus            512 KB    LittleFS: synced question bundles
+0x020000  image-0 (slot0)  1344 KB    running firmware
+0x170000  image-1 (slot1)  1344 KB    downloaded update
+0x3b0000  storage           192 KB    NVS settings and versions
+0x400000  corpus            512 KB    LittleFS question bundles
 ```
 
-Only the bootloader is new; every partition above comes from Zephyr's
-`partitions_0x0_amp_4M.dtsi` and existed before any of this was built, which is
-why enabling MCUboot moved nothing and orphaned no device state.
+MCUboot runs in overwrite-only mode. A valid pending image is copied from slot1
+to slot0. There is no automatic rollback; recover a bad release with a wired
+flash.
 
-## The flow
+## Update flow
 
 ```mermaid
 flowchart TD
-    A["cold boot, station has an address"] --> B["fetch firmware.json"]
-    B --> C{"newer than<br/>APP_VERSION_STRING?"}
-    C -->|no| Z["nothing to do"]
-    C -->|yes| D["stream the image into slot1<br/>hashing as it arrives"]
-    D --> E{"size, then SHA-256,<br/>then signature"}
-    E -->|any fails| F["slot1 is left unmarked<br/>the running image is untouched"]
-    E -->|all pass| G["boot_request_upgrade()"]
+    A["cold boot with Wi-Fi"] --> B["fetch firmware.json"]
+    B --> C{"version is newer?"}
+    C -->|no| Z["keep the running image"]
+    C -->|yes| D["stream image to slot1<br/>and calculate SHA-256"]
+    D --> E{"size, digest, and<br/>signature are valid?"}
+    E -->|no| F["leave slot1 unmarked"]
+    E -->|yes| G["mark the image pending"]
     G --> H["restart"]
-    H --> I{"MCUboot verifies<br/>its own signature"}
-    I -->|bad| J["boots slot0, unchanged"]
-    I -->|good| K["copies slot1 over slot0, ~4.5 s"]
-    K --> L["the new image boots and<br/>puts 'Updated to X' on the panel"]
+    H --> I{"MCUboot signature is valid?"}
+    I -->|no| J["boot slot0"]
+    I -->|yes| K["copy slot1 to slot0"]
+    K --> L["show the installed version"]
 ```
 
-### Two signatures, two keys
+The application rejects manifests at or below `APP_VERSION_STRING`. It checks
+the slot capacity before downloading, then checks the received byte count,
+SHA-256 digest, and Ed25519 signature. Slot1 remains inactive until all checks
+pass and `boot_request_upgrade()` succeeds.
 
-An update is signed twice, and the signatures say different things.
+## Signing keys
 
-| | Key | Made by | Checked by | Answers |
-|---|---|---|---|---|
-| Image | `FIRMWARE_SIGNING_KEY` | `imgtool`, during the build | MCUboot, at boot | may this run? |
-| Manifest | `BUNDLE_SIGNING_KEY` | `tools/build_firmware_manifest.py` | the application, before rebooting | is this the current release? |
+Each update has two signatures:
 
-MCUboot's is the security boundary: it gates execution, and it is checked
-before a single byte of slot1 is copied over the running firmware. The
-manifest's exists so the device can refuse a bad image *before* spending a
-download and a restart on it, and it is the same statement a question bundle's
-signature makes — which is why it uses the same key.
+| Signature                       | Secret                 | Checked by  | Purpose                          |
+| ------------------------------- | ---------------------- | ----------- | -------------------------------- |
+| MCUboot image                   | `FIRMWARE_SIGNING_KEY` | MCUboot     | Authorizes code to run           |
+| Image digest in `firmware.json` | `BUNDLE_SIGNING_KEY`   | Application | Authorizes the published release |
 
-They are separate keys because they rotate differently. The bundle key is
-compiled into the application, so replacing it is an ordinary firmware release.
-The firmware key is compiled into the bootloader, which nothing but a wired
-reflash can replace: a device that will not accept your images is a device you
-must physically reach. `firmware/keys/README.md` covers what that means for
-manufacturing.
+The MCUboot public key is compiled into the bootloader. Changing it requires a
+wired reflash. The manifest public key is compiled into the application and can
+change in a firmware release. See `firmware/keys/README.md` for key handling.
 
-### The checks, in order
+## Release process
 
-`src/ota.cpp` checks size, then SHA-256, then signature — cheapest first, the
-same order `src/sync.cpp` uses. A bundle is checked before it touches storage
-and an image cannot be: 780 KB does not fit in RAM, so it is written to slot1 as
-it arrives and judged afterwards.
+1. Update `firmware/app/VERSION`.
+2. Commit the change and tag it `fw-<version>`, for example `fw-0.2.0`.
+3. Push the tag.
 
-That is safe because **slot1 is scratch**. Nothing boots from it, and the only
-thing that makes it live is `boot_request_upgrade()`, which runs after all three
-checks pass. An image that fails any of them sits in slot1 unreferenced until
-the next download overwrites it.
+`.github/workflows/ota.yml` checks that the tag and version file agree. It
+builds the application and matching bootloader, applies both signatures, and
+publishes these release assets:
 
-### Rollback, and what happens if a release is bad
+- `tischkarte-<version>.bin`
+- `firmware.json`
+- `mcuboot-<version>.bin`
 
-The manifest is refused unless its version is strictly newer than
-`APP_VERSION_STRING`. An attacker who can replay an old, validly signed manifest
-therefore cannot walk a device backwards — the same rule, for the same reason,
-that the corpus sync applies.
+Devices fetch `/device/firmware.json` and the image URL in that manifest. The
+host must serve plain HTTP without redirects because the firmware HTTP client
+does not follow redirects. [Hosting](hosting.md) describes the deployment.
 
-MCUboot runs in **overwrite-only** mode: there is no automatic revert. A signed
-image of ours that boots into a crash is recovered by a wired reflash, not by
-the bootloader. Swap-with-revert would change that, and the argument against it
-is in the decision log — briefly, every wake from deep sleep is a fresh boot on
-this device, so "did the new image boot successfully" is a question it would
-answer dozens of times a day rather than once.
+## Local OTA test
 
-## Releasing a version
+Use a laptop and device on the same network. Guest networks often isolate
+clients, so first confirm that the device can reach the laptop address.
 
-1. Bump `firmware/app/VERSION`. That one file feeds both
-   `APP_VERSION_STRING`, which the device compares, and the version in the
-   MCUboot image header.
-2. Commit it, and tag the commit `fw-<version>` — `fw-0.2.0` for `0.2.0`.
-   `.github/workflows/ota.yml` refuses a tag that disagrees with the file.
-3. Push the tag. CI builds, signs with both keys, and attaches
-   `tischkarte-<version>.bin`, `firmware.json` and the matching bootloader to a
-   GitHub Release.
-
-Devices do not fetch from GitHub Releases: every asset URL there redirects to
-another host and Zephyr's HTTP client does not follow redirects. `site.yml`
-copies the newest release under `/device/`, which is the step that closes this
-loop — and it is the same step the question bundles are waiting on.
-
-That host cannot be the website. A device fetches over plain HTTP and Zephyr
-will not follow a redirect, so anything that upgrades the request — Cloudflare
-Pages and GitHub Pages both do — is unusable. `/device/` needs a host that
-serves two files as asked; an object store's website endpoint is the least
-effort. The decision log has the reasoning, including why plain HTTP costs
-nothing that matters here.
-
-## Trying it on a bench
-
-No website, no release, one laptop and one device on the same network.
-
-**Check that first, because it is the step that fails silently.** A guest
-network usually isolates its clients, so a device on one cannot open a socket
-to a laptop on the main network — the console says `could not connect to
-<ip>: 116`, which is a timeout and looks like a server that is not running. Put
-both on the same network before anything else: hold Category and Next through a
-boot, join the `Tischkarte-XXXX` access point from a phone, and set the network
-the laptop is on. The device's lease is logged, so `just fw-monitor` tells you
-which subnet it landed in.
+Generate a temporary manifest key, build an OTA profile that points to the
+laptop, and serve the output:
 
 ```sh
-# A throwaway manifest key, because the real private half is a GitHub secret.
-# This rewrites the committed trusted_key.h, so put it back afterwards.
 just keygen
-
-just fw-ota 192.168.1.23          # build + flash, fetching from this laptop
-just fw-ota-publish               # sign the built image into dist/firmware
-just fw-ota-serve                 # serve it on :8000
-
-git checkout firmware/components/sync/trusted_key.h
+just fw-flash ota 192.168.1.23
+just fw-ota-publish
+just fw-ota-serve
 ```
 
-Then bump `firmware/app/VERSION`, run `just fw-ota-publish` again, and reset the
-device. It fetches, verifies, restarts, and comes back saying what it installed.
+`just keygen` replaces `firmware/components/sync/trusted_key.h`. Restore that
+tracked file after the test:
 
-## Trying it with the real keys
+```sh
+git restore firmware/components/sync/trusted_key.h
+```
 
-The bench recipe above signs with a throwaway key, because the real private
-halves are GitHub secrets. To test what devices will actually receive, have CI
-build it: `ota.yml` takes a `workflow_dispatch` with the address of your bench.
+Increase `firmware/app/VERSION`, run `just fw-ota-publish` again, and reset the
+device. The device should verify the new image, restart, and show the installed
+version.
+
+## Test with release keys
+
+The private release keys live in GitHub Actions. Dispatch the OTA workflow with
+the laptop address:
 
 ```sh
 gh workflow run ota.yml -f sync_host=192.168.1.23 -f sync_port=8000
@@ -152,32 +113,24 @@ gh run watch
 gh run download --name firmware-0.1.0-bench -D /tmp/bench
 ```
 
-That is the release path in every respect — the same two keys, the same
-signatures, the same size checks — except that the image fetches from your
-laptop instead of the site, and the result is an artifact rather than a
-Release. It has to be built this way rather than re-pointed afterwards: the
-host is compiled in, and only this workflow can sign an image the released
-bootloader will accept.
-
-Flash the pair over the wire, bootloader first. **Both**, together: a device
-running a bootloader built from a different key refuses every image here.
+Flash the bootloader and application from the same artifact. A bootloader only
+accepts images signed by its configured firmware key.
 
 ```sh
 .venv/bin/python -m esptool --port /dev/cu.usbserial-140 --chip esp32s3 \
-    write-flash 0x0 /tmp/bench/mcuboot-0.1.0.bin 0x20000 /tmp/bench/tischkarte-0.1.0.bin
+    write-flash 0x0 /tmp/bench/mcuboot-0.1.0.bin \
+    0x20000 /tmp/bench/tischkarte-0.1.0.bin
 ```
 
-Then bump `firmware/app/VERSION`, push, and dispatch again with the same host.
-Serve that second artifact's `firmware.json` and `.bin` on port 8000, reset the
-device, and it installs a genuinely production-signed update.
+Build a second artifact with a higher version and the same host, serve its
+manifest and image on port 8000, and reset the device.
 
-That board is now on release keys, so `just fw-ota` builds — signed with the
-development key — will no longer boot on it. `just fw-flash` puts it back.
+Use `just fw-flash` to return a bench board to the development bootloader and
+release image.
 
-## Trying the install path alone
+## Test the install path without a network
 
-To exercise the install path alone — no network needed — sign an image into the
-spare slot by hand and reboot:
+Sign an application into a slot1 image and write it directly:
 
 ```sh
 .venv/bin/python deps/bootloader/mcuboot/scripts/imgtool.py sign \
@@ -190,38 +143,21 @@ spare slot by hand and reboot:
     write-flash 0x170000 /tmp/slot1.bin
 ```
 
-`--pad --confirm` is what writes the trailer that marks the image pending;
-without it MCUboot sees an image and no instruction to install it.
+`--pad --confirm` writes the trailer that marks the image pending.
 
-## Saying so afterwards
+## Update notice
 
-An update installs during a boot, which is the one moment nobody is looking:
-MCUboot copies the image before any of this firmware runs, and the device comes
-up looking exactly as it did before.
+The first boot after an update shows `Updated to <version>. Press for a
+question.` The card remains until the next button press. `src/update_notice.c`
+compares `APP_VERSION_STRING` with the version stored in NVS. A device with no
+stored version records its first version without showing the card.
 
-So the first boot of a new version puts a service card on the panel —
-`Updated to 0.2.0. Press for a question.` — which holds until the next press,
-like every other service card. `src/update_notice.c` decides that by comparing
-`APP_VERSION_STRING` against a version in NVS, which is the only source that
-answers "is this different firmware than last time?" rather than "what will
-happen next boot", and the only one that survives a device that reboots on every
-wake. A device that has never recorded a version records it silently: nobody
-unboxing a device should be told it has just been updated.
-
-## First flash, and recovery
-
-A device is flashed over the wire once, with both images:
+## First flash and recovery
 
 ```sh
 just fw-flash
 ```
 
-Both come from the same build, so the bootloader and the image it will accept
-always match. A device flashed with a development-key bootloader cannot be
-upgraded into trusting the release key — the bootloader is what verifies, and
-replacing the bootloader is exactly what an update cannot do. That is the one
-mistake here with no over-the-air fix.
-
-Recovery from a bad image is the same command. It rewrites slot0 directly and
-does not touch `storage` or `corpus`, so Wi-Fi credentials, the chosen language
-and the synced questions survive.
+The release profile writes the matching MCUboot and application images. It
+preserves the NVS and corpus partitions, including Wi-Fi credentials, language,
+and synced questions.

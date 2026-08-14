@@ -1,7 +1,4 @@
-/* Global styles. Aesthetic rules (spec §7.2): no images off /device, no icons
-   except hand-rolled 16px inline SVG, no shadows except focus rings, 1px
-   --line borders, generous whitespace, sentence case everywhere. The site
-   should feel like the e-paper device: calm, typographic, slightly warm. */
+/* Global layout and typography for the paper-like visual system. */
 
 * {
   box-sizing: border-box;
@@ -9,10 +6,7 @@
   padding: 0;
 }
 
-/* The `hidden` attribute is how every island shows and hides things. The
-   browser implements it as `display: none` in its own stylesheet, which any
-   class here would outrank, so state the rule at author level and make it win
-   over whatever display the element's class sets. */
+/* Component display rules otherwise override the browser's hidden default. */
 [hidden] {
   display: none !important;
 }
@@ -135,18 +129,30 @@ main {
 
 /* ----------------------------------------------------------------- type */
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   font-family: var(--font-ui);
   font-weight: 500;
   line-height: 1.35;
 }
 
-h1 { font-size: 1.05rem; margin-bottom: 1rem; }
-h2 { font-size: 0.9375rem; margin: 2.25rem 0 0.75rem; }
+h1 {
+  font-size: 1.05rem;
+  margin-bottom: 1rem;
+}
+h2 {
+  font-size: 0.9375rem;
+  margin: 2.25rem 0 0.75rem;
+}
 
-p + p { margin-top: 0.75rem; }
+p + p {
+  margin-top: 0.75rem;
+}
 
-a { color: inherit; }
+a {
+  color: inherit;
+}
 
 .prose {
   max-width: 38rem;
@@ -156,7 +162,10 @@ a { color: inherit; }
   color: var(--ink-soft);
 }
 
-.prose strong { color: var(--ink); font-weight: 500; }
+.prose strong {
+  color: var(--ink);
+  font-weight: 500;
+}
 
 .hint {
   color: var(--ink-faint);
@@ -243,7 +252,9 @@ a { color: inherit; }
   gap: 0.35rem;
 }
 
-.btn-quiet:hover { color: var(--ink); }
+.btn-quiet:hover {
+  color: var(--ink);
+}
 
 /* icon buttons in meta lines and rows */
 .iconbtn {
@@ -260,7 +271,9 @@ a { color: inherit; }
   margin: -0.7rem 0;
 }
 
-.iconbtn:hover { color: var(--ink); }
+.iconbtn:hover {
+  color: var(--ink);
+}
 
 .iconbtn svg {
   width: 16px;
@@ -310,7 +323,9 @@ a { color: inherit; }
   transition: opacity 120ms ease;
 }
 
-.question.is-fading { opacity: 0; }
+.question.is-fading {
+  opacity: 0;
+}
 
 .meta {
   font-size: 0.75rem;
@@ -323,9 +338,15 @@ a { color: inherit; }
   min-height: 44px;
 }
 
-.meta .iconbtn { color: var(--ink-faint); }
-.meta .iconbtn:hover { color: var(--ink); }
-.meta .iconbtn[aria-pressed="true"] { color: var(--accent); }
+.meta .iconbtn {
+  color: var(--ink-faint);
+}
+.meta .iconbtn:hover {
+  color: var(--ink);
+}
+.meta .iconbtn[aria-pressed="true"] {
+  color: var(--accent);
+}
 
 .play-controls {
   display: flex;
@@ -349,7 +370,9 @@ a { color: inherit; }
   border-bottom: 1px solid var(--line);
 }
 
-.toolbar .chips { justify-content: flex-start; }
+.toolbar .chips {
+  justify-content: flex-start;
+}
 
 .toolbar-row {
   display: flex;
@@ -372,13 +395,23 @@ textarea {
   min-height: 44px;
 }
 
-input[type="search"] { flex: 1; min-width: 12rem; }
+input[type="search"] {
+  flex: 1;
+  min-width: 12rem;
+}
 
-textarea { width: 100%; resize: vertical; }
+textarea {
+  width: 100%;
+  resize: vertical;
+}
 
-select { cursor: pointer; }
+select {
+  cursor: pointer;
+}
 
-.rows { list-style: none; }
+.rows {
+  list-style: none;
+}
 
 .row {
   border-bottom: 1px solid var(--line);
@@ -390,9 +423,13 @@ select { cursor: pointer; }
   padding: 1rem 0.25rem;
 }
 
-.row:hover { background: var(--paper-raised); }
+.row:hover {
+  background: var(--paper-raised);
+}
 
-.row-main { min-width: 0; }
+.row-main {
+  min-width: 0;
+}
 
 .row-q {
   font-family: var(--font-question);
@@ -403,7 +440,7 @@ select { cursor: pointer; }
   display: block;
 }
 
-/* stretch the permalink over the whole row; heart stays clickable above it */
+/* Stretch the permalink over the row; the heart stays above it. */
 .row-q::after {
   content: "";
   position: absolute;
@@ -432,11 +469,15 @@ select { cursor: pointer; }
   color: var(--ink-soft);
 }
 
-.empty-state a { color: var(--accent); }
+.empty-state a {
+  color: var(--accent);
+}
 
 /* ---------------------------------------------------------------- forms */
 
-.field { margin-bottom: 1.4rem; }
+.field {
+  margin-bottom: 1.4rem;
+}
 
 .field > label {
   display: block;
@@ -475,9 +516,14 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-.counter { font-variant-numeric: tabular-nums; }
+.counter {
+  font-variant-numeric: tabular-nums;
+}
 
-.counter.is-bad, .rule-hint.is-bad { color: var(--accent); }
+.counter.is-bad,
+.rule-hint.is-bad {
+  color: var(--accent);
+}
 
 /* --------------------------------------------------------------- tables */
 
@@ -538,7 +584,9 @@ input[type="checkbox"] {
   z-index: 10;
 }
 
-.skip-link:focus { left: 0.5rem; }
+.skip-link:focus {
+  left: 0.5rem;
+}
 
 /* ------------------------------------------------------------ focus/a11y */
 
@@ -563,5 +611,7 @@ input[type="checkbox"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .question { transition: none; }
+  .question {
+    transition: none;
+  }
 }

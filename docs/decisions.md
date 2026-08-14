@@ -28,7 +28,7 @@ Terms (including multi-word phrases) match case-insensitively as whole words aga
 
 ## 2026-07-24: Browse "newest" sort uses reverse file order
 
-`added` is stripped from the main payloads (spec §5), so the browse page sorts "newest" by reverse position within each category file. Files are append-only, so file order *is* chronological order. `recent.{lang}.json` (which keeps `added`) stays the source for the contribute page's recent list.
+`added` is stripped from the main payloads (spec §5), so the browse page sorts "newest" by reverse position within each category file. Files are append-only, so file order _is_ chronological order. `recent.{lang}.json` (which keeps `added`) stays the source for the contribute page's recent list.
 
 ## 2026-07-24: Website shows the device's display id
 
@@ -262,7 +262,7 @@ Accepted cost: the sleep path, which is where the boot-latency budget and the
 30 µA target are decided, is the last thing to be exercised rather than the
 first.
 
-*Corrected 2026-08-05.* This entry originally claimed retained state had lived
+_Corrected 2026-08-05._ This entry originally claimed retained state had lived
 in its RTC sections since the first commit, so that enabling deep sleep would
 be a configuration change rather than a rewrite. That was not true: `Bag::State`
 was an ordinary `.bss` object, and `app_logic.cpp` said so. The claim made the
@@ -402,7 +402,7 @@ slack if battery sense turns out to need a companion.
 
 ## 2026-08-05: Deep sleep is spiked before storage, on a branch
 
-The 2026-08-02 entry above put `CONFIG_PM` behind input, display *and* storage
+The 2026-08-02 entry above put `CONFIG_PM` behind input, display _and_ storage
 being correct. Storage has not been started, so by that ordering the sleep path
 waits for LittleFS, NVS and sync. It is being spiked now instead, ahead of all
 three.
@@ -413,7 +413,7 @@ last. The first bench run turned two of those from theory into arithmetic. A
 partial refresh takes 622 ms of a 1 s budget, leaving roughly 380 ms for ROM
 boot, Zephyr init, selector read and draw. And the six selector contacts cannot
 be armed as EXT1 wake sources the way the architecture describes: a deck is
-selected by *holding* one contact closed, so that pin is low for as long as the
+selected by _holding_ one contact closed, so that pin is low for as long as the
 device sits on the table, and a device armed to wake on it never sleeps. The
 mask has to be computed at sleep time from the current selector position.
 
@@ -445,7 +445,7 @@ was dropped from the product; the six-input path was the bench rig catching up,
 and it was waiting on a second physical button. There now is one.
 
 What changes structurally is where the deck lives. A rotary selector holds its
-own state — the knob position *is* the deck, readable at zero power, which is
+own state — the knob position _is_ the deck, readable at zero power, which is
 why the deck had no storage anywhere. A button has no position, so the active
 deck moved into the retained block in RTC memory, and a cold boot starts on New
 People.
@@ -549,16 +549,16 @@ This is the widening the manifest comment anticipated — "widen if a build fail
 
 It first landed as a build variant, `just fw-net`, on the reasoning that `CONFIG_TK_SLEEP` is off by default. The measured cost then made that look like the wrong axis to split on:
 
-| | without | with | delta |
-|---|---|---|---|
-| flash image | 238 KB | 676 KB | +438 KB, against a 1344 KB slot |
-| dram0_0_seg | 21.1% | 60.6% | +154 KB |
-| iram0_0_seg | 13.8% | 18.4% | +18 KB |
-| threads | 6 | 14 | +8 |
+|             | without | with   | delta                           |
+| ----------- | ------- | ------ | ------------------------------- |
+| flash image | 238 KB  | 676 KB | +438 KB, against a 1344 KB slot |
+| dram0_0_seg | 21.1%   | 60.6%  | +154 KB                         |
+| iram0_0_seg | 13.8%   | 18.4%  | +18 KB                          |
+| threads     | 6       | 14     | +8                              |
 
 Both fit with room to spare, and a device whose Wi-Fi cannot be configured without a special build is not the device being built. So `just fw-build` carries the radio.
 
-What the original reasoning was actually protecting is narrower than "the everyday image": it is the images that *measure* something. `soak.conf` and `sleep.conf` therefore set `CONFIG_TK_NET=n`, `CONFIG_WIFI=n` and `CONFIG_NETWORKING=n`. A partial refresh has already been seen at 2769 ms during a portal session against the 622 ms this rig recorded without one, and until that is explained a ghosting run must not have a radio in it.
+What the original reasoning was actually protecting is narrower than "the everyday image": it is the images that _measure_ something. `soak.conf` and `sleep.conf` therefore set `CONFIG_TK_NET=n`, `CONFIG_WIFI=n` and `CONFIG_NETWORKING=n`. A partial refresh has already been seen at 2769 ms during a portal session against the 622 ms this rig recorded without one, and until that is explained a ghosting run must not have a radio in it.
 
 The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf` rather than `prj.conf`. `prj.conf` is shared with qemu and native_sim, `CONFIG_WIFI_ESP32` needs a devicetree node only this SoC has, and putting it there breaks `just fw-sim`. The second Wi-Fi node AP+STA needs is in the matching board overlay for the same reason.
 
@@ -600,7 +600,7 @@ Both bundles now ship. `app/CMakeLists.txt` embeds every language in `TK_CORPUS_
 
 The choice lives in the same NVS as the Wi-Fi credentials and falls back to `CONFIG_TK_CORPUS_LANGUAGE`, which is what a device that has never seen the portal is. A stored language the image no longer carries is dropped rather than obeyed: firmware can ship with a different set than the one that stored it, and a device with no corpus to open would have nothing to draw at all.
 
-Changing it publishes `chan_corpus` — the channel the architecture already specified for exactly this, and whose documented rule is that a new corpus applies on the next *requested* draw. So the question on the panel stays until somebody presses Next. Reopening the store rebinds the bag, whose fingerprint no longer matches, so the shuffle bag resets: indices into the English corpus mean nothing once the German one is open.
+Changing it publishes `chan_corpus` — the channel the architecture already specified for exactly this, and whose documented rule is that a new corpus applies on the next _requested_ draw. So the question on the panel stays until somebody presses Next. Reopening the store rebinds the bag, whose fingerprint no longer matches, so the shuffle bag resets: indices into the English corpus mean nothing once the German one is open.
 
 ## 2026-08-06: The setup form saves the language without the Wi-Fi password
 
@@ -722,13 +722,13 @@ MCUboot's alternative is swap-with-revert: boot the new image as "test", and rol
 
 Confirming means the device deciding "I booted successfully". This device deep-sleeps between presses and every wake is a fresh boot, so that is a judgement it would make dozens of times a day rather than once, and a confirm written at the wrong moment either defeats the revert or triggers it on a device that is working. The swap also costs a second copy pass in a window where power must hold — the measured single copy is already 4.5 seconds.
 
-So the bootloader overwrites, and what is given up is recovery from a signed image of ours that crashes on boot. That is a release-process failure, answered by testing before tagging, and it is recoverable over the wire because every device is reachable with a cable. What overwrite-only does *not* give up is protection from an image that is not ours: the signature is checked before the copy begins, which was verified on hardware by planting an image signed with the wrong key and watching the bootloader refuse it and boot slot0 unchanged.
+So the bootloader overwrites, and what is given up is recovery from a signed image of ours that crashes on boot. That is a release-process failure, answered by testing before tagging, and it is recoverable over the wire because every device is reachable with a cable. What overwrite-only does _not_ give up is protection from an image that is not ours: the signature is checked before the copy begins, which was verified on hardware by planting an image signed with the wrong key and watching the bootloader refuse it and boot slot0 unchanged.
 
 ## 2026-08-07: A device says it was updated by comparing versions in NVS, not by asking the bootloader
 
 An update installs during a boot, which is the one moment nobody is looking: MCUboot does the copy before any application code runs, and the device comes up looking exactly as it did before. Without something saying so, the only evidence is a console nobody has attached.
 
-Zephyr exposes `mcuboot_swap_type()`, and it is the wrong source twice over. It answers what will happen on the *next* boot, not what happened on this one, and in overwrite-only mode there is nothing left afterwards to distinguish an image installed a moment ago from one that has run for months.
+Zephyr exposes `mcuboot_swap_type()`, and it is the wrong source twice over. It answers what will happen on the _next_ boot, not what happened on this one, and in overwrite-only mode there is nothing left afterwards to distinguish an image installed a moment ago from one that has run for months.
 
 Comparing `APP_VERSION_STRING` against a version stored in NVS answers the question actually worth asking — is this different firmware than the one that ran here last — survives a flat cell, and clears itself, because writing the new value is what makes the next boot quiet. It is the mechanism `language.c` already uses for the corpus release, in the same settings subtree.
 
@@ -750,7 +750,7 @@ Demonstrated rather than assumed: with the device in its ordinary state, no gest
 
 The ESP32-S3 can fix this properly. It has AES-XTS flash encryption with the key in an eFuse that software cannot read, and MCUboot's Espressif port supports it — `boot/espressif/hal/src/flash_encrypt.c` is right there in the tree. Three things stand in the way, and together they make it the wrong change for now.
 
-It needs a different bootloader. `ESP_FLASH_ENCRYPTION` in Zephyr is `depends on !ESP_SIMPLE_BOOT && !MCUBOOT`, and its help says the bootloader must be MCUboot's *Espressif* port, built with IDF-style configuration. What this repository builds is the *Zephyr* port, as a sysbuild image — the integration the OTA work is built on. Switching ports means giving that up.
+It needs a different bootloader. `ESP_FLASH_ENCRYPTION` in Zephyr is `depends on !ESP_SIMPLE_BOOT && !MCUBOOT`, and its help says the bootloader must be MCUboot's _Espressif_ port, built with IDF-style configuration. What this repository builds is the _Zephyr_ port, as a sysbuild image — the integration the OTA work is built on. Switching ports means giving that up.
 
 It needs `write-block-size = 32` in the devicetree, against the 4 this board declares. That is not cosmetic: NVS, LittleFS and the OTA stream all align to it, so raising it re-lays-out the storage partition and orphans the credentials, the language and the corpus on every device already set up. That is the same hazard the 2026-08-06 partition decision was written to avoid, arriving from the other direction.
 
@@ -764,7 +764,7 @@ So it stays as it is, deliberately, and this entry is the record. What that buys
 
 ## 2026-08-07: The device gets its own host, over plain HTTP, and TLS stops being the plan
 
-The 2026-08-07 entry "TLS after all, as a transport rather than as the security boundary" chose TLS on one premise: that plain HTTP is not something you can simply have any more, because Cloudflare Pages force-redirects and GitHub Releases is HTTPS-only. The premise was true about *those two hosts* and was mistaken as a fact about the internet. Plenty of things serve plain HTTP without an argument — an S3 static-website endpoint does it by design, as does any small static host somebody runs.
+The 2026-08-07 entry "TLS after all, as a transport rather than as the security boundary" chose TLS on one premise: that plain HTTP is not something you can simply have any more, because Cloudflare Pages force-redirects and GitHub Releases is HTTPS-only. The premise was true about _those two hosts_ and was mistaken as a fact about the internet. Plenty of things serve plain HTTP without an argument — an S3 static-website endpoint does it by design, as does any small static host somebody runs.
 
 So the conclusion inverts. Rather than making the device speak a protocol it cannot use honestly, the device gets a host that speaks the protocol it can. `/device/` moves off the website, onto something that serves two files without upgrading the request. The website stays where it is, on HTTPS, for people.
 
@@ -838,7 +838,7 @@ So VBUS is polled — at boot, and every `CONFIG_TK_POWER_SAMPLE_MS` while awake
 
 The EXT0 path is written up as `CONFIG_TK_POWER_WAKE_ON_USB`, default off, so the cost can be measured rather than argued about.
 
-*2026-08-12: written up became built.* `sleep_now()` arms EXT0 on the same `tk-vbus-gpios` pin `power.c` samples, still behind that symbol and still off by default — a switch that changed nothing was a measurement nobody could take. An EXT0 wake reports no button, so no press is replayed and `net` takes its cold-boot branch, which is what waking on a plug-in is for. Neither half is verified: no board has slept yet.
+_2026-08-12: written up became built._ `sleep_now()` arms EXT0 on the same `tk-vbus-gpios` pin `power.c` samples, still behind that symbol and still off by default — a switch that changed nothing was a measurement nobody could take. An EXT0 wake reports no button, so no press is replayed and `net` takes its cold-boot branch, which is what waking on a plug-in is for. Neither half is verified: no board has slept yet.
 
 Accepted cost: a device plugged in and left alone does not sync until somebody touches it.
 
@@ -882,7 +882,7 @@ Not verified. Nothing in this repo has yet flashed over `/dev/cu.usbmodem*` — 
 
 ## 2026-08-12: A floor under the ladder, rather than an image that cannot draw a card
 
-`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. That is the exact case `app/CMakeLists.txt` says the symbol exists to avoid — "a board with no divider fitted would read a floating pin and refuse to refresh" — and it is what the bench would have hit on the next flash: a floating GPIO1 reads *something*, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
+`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. That is the exact case `app/CMakeLists.txt` says the symbol exists to avoid — "a board with no divider fitted would read a floating pin and refuse to refresh" — and it is what the bench would have hit on the next flash: a floating GPIO1 reads _something_, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
 
 The alternative was to hold the board-conf enable until the copper exists. Rejected: it would leave the power path in every image except the one anybody flashes, which is how a module rots.
 

@@ -1,15 +1,4 @@
-/*
- * The question store: a reader for the QDB2 bundle format, and the shuffle bag
- * that draws from it without repeats.
- *
- * The format is specified in docs/sync_protocol.md and its executable
- * reference decoder is `parse_bundle()` in tools/build_bundle.py. Nothing here
- * includes a Zephyr header, so the suite runs the real English and German
- * bundles through it on the host.
- *
- * Reading is zero-copy: a Question points into the bundle buffer rather than
- * carrying its text. The bundle outlives every Question taken from it.
- */
+/* QDB2 reader and no-repeat shuffle bag. */
 
 #pragma once
 
@@ -19,7 +8,7 @@
 namespace tk
 {
 
-/** Decks, in the order fixed by questions/schema.json x-tischkarte.decks. */
+/** Deck count from questions/schema.json. */
 constexpr uint8_t kDeckCount = 6;
 
 #ifdef CONFIG_TK_MAX_QUESTIONS
@@ -42,7 +31,7 @@ struct Question {
     uint16_t len;
     /** Bit n set means eligible for deck n. */
     uint8_t deck_mask;
-    /** 1..3. Normal playback excludes 3. */
+    /** Editorial depth, 1..3. */
     uint8_t depth;
     bool spicy;
     bool dark;
@@ -51,15 +40,7 @@ struct Question {
 class Qdb
 {
 public:
-    /**
-     * Point the reader at a decompressed QDB2 image.
-     *
-     * Every length in the bundle is checked against `size`, so a truncated or
-     * corrupt file is rejected here rather than read off the end later.
-     *
-     * @return false on bad magic, a short buffer, trailing bytes, or a corpus
-     *         larger than kMaxQuestions.
-     */
+    /** Open a decompressed QDB2 image after validating all bounds and records. */
     bool open(const uint8_t *data, size_t size);
 
     bool is_open() const { return _data != nullptr; }
@@ -72,13 +53,7 @@ public:
     const char *language() const { return _language; }
     uint8_t language_len() const { return _language_len; }
 
-    /**
-     * A cheap identity for this bundle.
-     *
-     * Bag state survives in RTC memory across deep sleep, but a sync can
-     * replace the corpus underneath it, at which point the stored bitmaps
-     * refer to questions that no longer exist. Comparing this catches that.
-     */
+    /** Identity used to invalidate retained bag state after a corpus change. */
     uint32_t fingerprint() const { return _fingerprint; }
 
     /** Question at `index`, in bundle order. */
@@ -106,17 +81,11 @@ private:
     uint32_t _fingerprint = 0;
 };
 
-/**
- * Draw without repeats until the deck is exhausted, then start a new cycle.
- *
- * State is a plain struct so it can live in RTC slow memory and survive the
- * reboot that deep sleep really is. Keeping it out of NVS means a Next press
- * costs no flash write.
- */
+/** Draw without repeats. State is plain data suitable for RTC memory. */
 class Bag
 {
 public:
-    /** Uniform random source. Injected so the suite can be deterministic. */
+    /** Injectable uniform random source. */
     using RandFn = uint32_t (*)(void *ctx);
 
     struct State {
@@ -131,22 +100,10 @@ public:
 
     Bag(State &state, RandFn rand, void *ctx) : _state(state), _rand(rand), _ctx(ctx) {}
 
-    /**
-     * Attach to a bundle, discarding retained state if it is not the same one.
-     *
-     * @return true when the previous state was kept.
-     */
+    /** Bind to a bundle. Return true when retained state was compatible. */
     bool bind(const Qdb &qdb);
 
-    /**
-     * Next question for `deck`, or false when the deck yields nothing at all.
-     *
-     * Exclusions are applied in order of how much they matter. The recent ring
-     * is a courtesy and is dropped first, because the smallest shipped deck is
-     * no larger than the ring and honouring it there would leave nothing to
-     * draw. The bag itself is only reset once every eligible question has been
-     * seen — that is the no-repeats guarantee.
-     */
+    /** Draw the next question, or return false when the deck has none. */
     bool draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index, Question &out);
 
     /** Forget every cycle and the ring. */

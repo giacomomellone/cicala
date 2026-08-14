@@ -1,17 +1,9 @@
-// Contribute controller (spec §7.7): live validation mirroring
-// tools/validate.py (10–140 chars, ends with "?", single line), then a
-// prefilled GitHub issue-form URL — the whole flow is zero-backend.
+// Validate submissions and open a prefilled GitHub issue form.
 
 import { DEPTH_OPTIONS, REPO_URL } from "../config";
 import { tr } from "./apply-i18n";
 import { detectLang, loadPayload, loadRecent, siteConfig } from "./data";
-import {
-  buildTextIndex,
-  collapse,
-  duplicateOf,
-  questionTextIssue,
-  TEXT_MAX,
-} from "./rules";
+import { buildTextIndex, collapse, duplicateOf, questionTextIssue, TEXT_MAX } from "./rules";
 
 export async function initContribute(): Promise<void> {
   const form = document.getElementById("c-form") as HTMLFormElement | null;
@@ -34,11 +26,6 @@ export async function initContribute(): Promise<void> {
   const lang = detectLang();
   const cfg = siteConfig();
 
-  // Normalized text -> id, per language. A submission that duplicates an
-  // existing question is rejected by the validator at the very end of the
-  // pipeline; catching it here saves the whole round trip. Languages are
-  // independent corpora, so each is indexed separately and only the selected
-  // one is consulted.
   const indexes = new Map<string, Map<string, string>>();
   const indexing = new Set<string>();
 
@@ -47,8 +34,7 @@ export async function initContribute(): Promise<void> {
     if (ready) return ready;
     if (!indexing.has(code)) {
       indexing.add(code);
-      // The corpus arrives after first paint; re-validate once it lands so a
-      // question typed in the meantime is still checked.
+      // Recheck the current text when the corpus finishes loading.
       loadPayload(code)
         .then((payload) => {
           indexes.set(code, buildTextIndex(payload.questions));
@@ -59,7 +45,6 @@ export async function initContribute(): Promise<void> {
     return null;
   }
 
-  // language select: shipped languages + "another language…"
   langSel.innerHTML = "";
   for (const l of cfg.langs) {
     const opt = document.createElement("option");
@@ -74,8 +59,7 @@ export async function initContribute(): Promise<void> {
   langSel.append(other);
 
   function validate(): boolean {
-    // The counter measures what would be stored, so it agrees with the rule
-    // beside it at the boundary.
+    // Count the normalized text stored by the submission pipeline.
     const n = collapse(textEl.value).length;
     const issue = questionTextIssue(textEl.value);
     counter.textContent = `${n}/${TEXT_MAX}`;
@@ -107,8 +91,7 @@ export async function initContribute(): Promise<void> {
     const toneTags = Array.from(
       form.querySelectorAll<HTMLInputElement>("input[name=tags]:checked"),
     ).some((input) => input.value === "dark" || input.value === "spicy");
-    const decksOk = decks.length > 0 &&
-      (!toneTags || (decks.length === 1 && decks[0] === "wild"));
+    const decksOk = decks.length > 0 && (!toneTags || (decks.length === 1 && decks[0] === "wild"));
     deckRule.textContent = tr(
       lang,
       decks.length === 0
@@ -141,8 +124,7 @@ export async function initContribute(): Promise<void> {
     const decks = Array.from(
       form.querySelectorAll<HTMLInputElement>("input[name=decks]:checked"),
     ).map((input) => input.value);
-    const depthOption =
-      DEPTH_OPTIONS[Number(depthSel.value) - 1] ?? DEPTH_OPTIONS[1];
+    const depthOption = DEPTH_OPTIONS[Number(depthSel.value) - 1] ?? DEPTH_OPTIONS[1];
     const params = new URLSearchParams({
       template: "new-question.yml",
       labels: "question-submission",
@@ -154,15 +136,10 @@ export async function initContribute(): Promise<void> {
     if (tags.length) params.set("tags", tags.join(","));
     const credit = nameEl.value.trim().slice(0, 40);
     if (credit) params.set("credit", credit);
-    window.open(
-      `${REPO_URL}/issues/new?${params.toString()}`,
-      "_blank",
-      "noopener",
-    );
+    window.open(`${REPO_URL}/issues/new?${params.toString()}`, "_blank", "noopener");
   });
 
-  // recently added — the social-proof loop. SSR shows the English list;
-  // re-render for the active language.
+  // Show the newest accepted questions below the form.
   try {
     const recent = await loadRecent(lang);
     if (recent.length === 0) {
@@ -185,6 +162,6 @@ export async function initContribute(): Promise<void> {
         .join("");
     }
   } catch {
-    /* recent list is decoration — never block the form on it */
+    /* Recent questions do not block the form. */
   }
 }

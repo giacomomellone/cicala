@@ -5,8 +5,6 @@ project(tischkarte_input LANGUAGES C CXX)
 
 set(TK_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
 
-# The same sources the application builds, not a copy — the point of the suite
-# is the real settle window and the real one-hot rule.
 target_sources(app PRIVATE
     src/main.c
     ${TK_APP}/src/channels.c

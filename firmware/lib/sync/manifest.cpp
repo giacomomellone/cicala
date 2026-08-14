@@ -22,14 +22,12 @@ size_t str_len(const char *s)
     return n;
 }
 
-/** One dotted component, and where the next one starts. */
 uint32_t take_component(const char *s, size_t len, size_t &at)
 {
     uint32_t value = 0;
 
     while (at < len && is_digit(s[at])) {
-        /* Saturate rather than wrap. A version field long enough to overflow is
-         * not a version, and wrapping could make an old release look new. */
+        // Saturate so an oversized component cannot wrap.
         if (value < 100000000u) {
             value = value * 10 + (uint32_t) (s[at] - '0');
         }
@@ -37,9 +35,7 @@ uint32_t take_component(const char *s, size_t len, size_t &at)
         at++;
     }
 
-    /* Skip whatever separated this component from the next — a dot normally,
-     * but anything non-numeric is treated the same rather than rejected, since
-     * this only has to order two strings the build produced. */
+    // Skip the separator before the next numeric component.
     while (at < len && !is_digit(s[at])) {
         at++;
     }
@@ -47,7 +43,6 @@ uint32_t take_component(const char *s, size_t len, size_t &at)
     return value;
 }
 
-/** Find `"key"` at the top level of `json`, returning the offset after the colon. */
 bool find_key(const char *json, size_t len, const char *key, size_t from, size_t &value_at)
 {
     const size_t key_len = str_len(key);
@@ -94,7 +89,6 @@ bool find_key(const char *json, size_t len, const char *key, size_t from, size_t
     return false;
 }
 
-/** Copy a JSON string value into `out`, refusing anything that will not fit. */
 bool take_string(const char *json, size_t len, size_t at, char *out, size_t out_size)
 {
     if (at >= len || json[at] != '"') {
@@ -106,9 +100,7 @@ bool take_string(const char *json, size_t len, size_t at, char *out, size_t out_
     size_t written = 0;
 
     while (at < len && json[at] != '"') {
-        /* No escape handling: nothing this reads — a URL, a version, a base64
-         * signature — contains one, and a manifest that needs escapes is not
-         * one this firmware should be acting on. */
+        // Manifest string values cannot contain escapes.
         if (json[at] == '\\') {
             return false;
         }
@@ -170,7 +162,6 @@ int hex_value(char c)
     return -1;
 }
 
-/** Exactly `bytes` worth of lower- or upper-case hex, and no more. */
 bool take_hex(const char *hex, uint8_t *out, size_t bytes)
 {
     for (size_t i = 0; i < bytes; i++) {
@@ -212,7 +203,6 @@ int base64_value(char c)
     return -1;
 }
 
-/** Decode exactly `bytes` from base64, padding included. */
 bool take_base64(const char *b64, uint8_t *out, size_t bytes)
 {
     size_t written = 0;
@@ -237,9 +227,6 @@ bool take_base64(const char *b64, uint8_t *out, size_t bytes)
             held -= 8;
 
             if (written >= bytes) {
-                /* More data than the caller has room for. Refused rather than
-                 * truncated: a 64-byte buffer holding the first 64 bytes of a
-                 * longer signature is not a signature. */
                 return false;
             }
 
@@ -265,9 +252,7 @@ int version_compare(const char *a, const char *b)
     size_t a_at = 0;
     size_t b_at = 0;
 
-    /* Component by component until one runs out, then the remaining components
-     * of the longer one decide — a missing component counting as zero, so
-     * 2026.08 is older than 2026.08.1 and equal to 2026.08.0. */
+    // Missing version components compare as zero.
     while (a_at < a_len || b_at < b_len) {
         const uint32_t a_part = a_at < a_len ? take_component(a, a_len, a_at) : 0;
         const uint32_t b_part = b_at < b_len ? take_component(b, b_len, b_at) : 0;
@@ -317,11 +302,7 @@ bool manifest_entry(const char *json, size_t len, const char *language, Manifest
         return false;
     }
 
-    /*
-     * The language key is data, so it is searched for rather than described.
-     * Searching from the `languages` object means a top-level key with the same
-     * name could not be mistaken for it.
-     */
+    // Search language entries only inside the languages object.
     size_t entry_at = 0;
 
     if (!find_key(json, len, language, languages_at, entry_at)) {
@@ -360,11 +341,7 @@ bool manifest_entry(const char *json, size_t len, const char *language, Manifest
 
     out.count = (uint16_t) count;
 
-    /*
-     * `"sig": null` is a development bundle. Recorded rather than rejected
-     * here, so the caller can refuse it with a message about what it is; a
-     * parse failure would read as a corrupt manifest instead.
-     */
+    // Callers decide whether an unsigned development bundle is allowed.
     out.signed_ = false;
 
     for (size_t i = 0; i < sizeof(out.sig); i++) {
@@ -437,8 +414,7 @@ bool firmware_parse(const char *json, size_t len, FirmwareRelease &out)
         return false;
     }
 
-    /* `"sig": null` — an image built without the manifest key. Parsed rather
-     * than rejected, so ota.cpp can say what is wrong with it. */
+    // Callers decide whether an unsigned development image is allowed.
     if (at < len && json[at] == 'n') {
         return true;
     }

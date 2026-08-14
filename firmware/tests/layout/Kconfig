@@ -1,6 +1,4 @@
-# The application's policy symbols: the panel geometry and the question buffer
-# size are CONFIG_TK_* values, and the point of this suite is that the shipped
-# corpus fits the values the device actually builds with.
+# Check the shipped corpus against the application panel and buffer limits.
 
 mainmenu "tischkarte layout tests"
 

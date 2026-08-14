@@ -1,7 +1,4 @@
-/*
- * The Category and Next buttons. Turns debounced key events into the two input
- * channels in channels.h and owns no policy of its own.
- */
+/** The Category and Next buttons. */
 
 #pragma once
 
@@ -9,11 +6,7 @@
 extern "C" {
 #endif
 
-/**
- * Check both buttons are present and start reporting.
- *
- * @return 0, or a negative errno if a button pin is not ready.
- */
+/** Check both buttons are present and start reporting. */
 int tk_input_init(void);
 
 #ifdef __cplusplus

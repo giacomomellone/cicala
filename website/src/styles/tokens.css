@@ -1,16 +1,15 @@
-/* Design tokens — DECIDED in spec §7.2. Dark mode is a v2 patch on this file
-   (swap the custom property values under a media query), never a rewrite. */
+/* Shared colour, type, radius, and measure values. */
 :root {
-  --paper: #FAF8F2;        /* page background — warm, not pure white */
-  --paper-raised: #FFFFFE; /* cards on browse */
-  --ink: #1F1F1D;          /* question text, primary */
-  --ink-soft: #5F5E5A;     /* secondary UI text */
-  --ink-faint: #B0AD9F;    /* hints, disabled */
-  --line: #E3E0D6;         /* hairline borders, 1px */
-  --accent: #C24A22;       /* hearts, active states — the ONLY color */
-  --font-question: 'Literata', Georgia, serif;
-  --font-ui: 'IBM Plex Mono', ui-monospace, monospace;
+  --paper: #faf8f2; /* warm page background */
+  --paper-raised: #fffffe; /* raised surfaces */
+  --ink: #1f1f1d; /* primary text */
+  --ink-soft: #5f5e5a; /* secondary text */
+  --ink-faint: #b0ad9f; /* hints and disabled text */
+  --line: #e3e0d6; /* 1 px borders */
+  --accent: #c24a22; /* hearts and active states */
+  --font-question: "Literata", Georgia, serif;
+  --font-ui: "IBM Plex Mono", ui-monospace, monospace;
   --radius-pill: 999px;
   --radius-card: 10px;
-  --measure: 22ch;         /* max question line length */
+  --measure: 22ch; /* question line length */
 }

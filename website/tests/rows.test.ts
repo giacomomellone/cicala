@@ -1,6 +1,5 @@
 // @vitest-environment happy-dom
-// Row rendering feeds innerHTML — escaping is load-bearing even though the
-// database is reviewed, and hearts must reflect + mutate favorites.
+// Rows escape HTML and keep favorite controls in sync with storage.
 import { beforeEach, describe, expect, it } from "vitest";
 import { bindHearts, rowHtml } from "../src/lib/rows";
 import { getFavs, setFavs } from "../src/lib/store";
@@ -40,9 +39,7 @@ describe("rowHtml", () => {
     setFavs(["q-8f3a2c1d"]);
     const container = document.createElement("ul");
     container.innerHTML = rowHtml(item, "en");
-    expect(
-      container.querySelector(".row-fav")!.getAttribute("aria-pressed"),
-    ).toBe("true");
+    expect(container.querySelector(".row-fav")!.getAttribute("aria-pressed")).toBe("true");
   });
 });
 

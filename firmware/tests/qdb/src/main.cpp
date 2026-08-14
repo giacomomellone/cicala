@@ -1,12 +1,3 @@
-/*
- * The QDB2 reader and the shuffle bag, run against the real shipped bundles.
- *
- * The fixtures are the actual English and German corpora, built from the
- * question database by `just fw-fixtures` and embedded as byte arrays because
- * there is no filesystem under qemu. That is deliberate: a hand-written
- * bundle would test the decoder against my reading of the spec rather than
- * against what tools/build_bundle.py actually emits.
- */
 
 #include <zephyr/ztest.h>
 
@@ -28,7 +19,6 @@ const uint8_t de_bundle[] = {
 constexpr uint8_t kWildDeck = 5;
 constexpr uint8_t kPlaybackDepth = CONFIG_TK_PLAYBACK_DEPTH_MAX;
 
-/** Deterministic LCG, so a failing draw sequence is reproducible. */
 struct Rng {
     uint32_t state;
 };
@@ -62,8 +52,6 @@ Rng rng;
 
 ZTEST_SUITE(tk_qdb, NULL, NULL, NULL, NULL, NULL);
 
-// ------------------------------------------------------------------- reading
-
 ZTEST(tk_qdb, test_the_shipped_bundles_open)
 {
     Qdb en;
@@ -88,8 +76,6 @@ ZTEST(tk_qdb, test_every_question_is_readable_and_within_the_buffer)
 {
     Qdb qdb;
 
-    // Explicit arrays rather than a braced list: the minimal libc++ this
-    // builds against has no <initializer_list>.
     const uint8_t *const bundles[] = {en_bundle, de_bundle};
     const size_t sizes[] = {sizeof(en_bundle), sizeof(de_bundle)};
 
@@ -136,7 +122,6 @@ ZTEST(tk_qdb, test_tone_flags_stay_in_the_wild_deck)
 
 ZTEST(tk_qdb, test_the_worked_example_from_the_spec_decodes)
 {
-    // docs/sync_protocol.md, byte for byte.
     static const uint8_t bundle[] = {
         'Q',  'D', 'B', '2',  0x09, '2',  '0',  '2',  '6',  '.', '0', '7', '.', '2',
         0x02, 'e', 'n', 0x01, 0x00, 0x03, 0x01, 0x20, 0x00, 'W', 'h', 'e', 'n', ' ',
@@ -227,8 +212,6 @@ ZTEST(tk_qdb, test_depth_three_is_out_of_normal_playback)
     }
 }
 
-// ----------------------------------------------------------------------- bag
-
 ZTEST(tk_qdb, test_a_cycle_never_repeats)
 {
     Qdb qdb;
@@ -303,11 +286,6 @@ ZTEST(tk_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
 
 ZTEST(tk_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
 {
-    /*
-     * Here has 20 eligible questions in English and 12 in German, and the
-     * recent ring is 20 — so honouring it can exclude the whole deck. The ring
-     * is a courtesy and gets dropped rather than refusing to answer a press.
-     */
     Qdb qdb;
 
     zassert_true(qdb.open(de_bundle, sizeof(de_bundle)));
@@ -346,11 +324,6 @@ ZTEST(tk_qdb, test_the_ring_is_shared_across_decks)
 
     bag.bind(qdb);
 
-    /*
-     * Close and New People overlap heavily. Turning between them must not
-     * hand back a question just seen under the other name, which is what a
-     * shared ring buys and a per-deck one would not.
-     */
     uint16_t recent[kRecentRing];
     uint8_t recent_len = 0;
 

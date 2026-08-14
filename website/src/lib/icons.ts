@@ -1,6 +1,4 @@
-// The only icons on the site (spec §7.2): hand-rolled 16px inline SVG,
-// stroke: currentColor via .iconbtn styles. Shared between SSR (set:html)
-// and client re-renders.
+// The site uses 16 px inline SVG icons coloured by currentColor.
 
 export const heartIcon = `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path class="heart-shape" d="M8 13.2C4.8 10.8 2.8 8.8 2.8 6.7c0-1.6 1.2-2.9 2.7-2.9 1 0 1.8.5 2.5 1.5.7-1 1.5-1.5 2.5-1.5 1.5 0 2.7 1.3 2.7 2.9 0 2.1-2 4.1-5.2 6.5z"/></svg>`;
 

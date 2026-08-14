@@ -1,10 +1,4 @@
-/*
- * manifest.json from db-2026.08.1, verbatim.
- *
- * The real thing that CI published, so the parser is checked against what it
- * will actually meet rather than against an example somebody typed. Its
- * signature and digest are exercised separately by firmware/tests/ed25519.
- */
+/* Verbatim manifest published for db-2026.08.1. */
 
 #pragma once
 

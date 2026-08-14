@@ -1,40 +1,4 @@
-/*
- * ESP32-S3-DevKitC-1 breadboard rig.
- *
- * Pin assignment, and why each one:
- *
- *   Category        GPIO 4
- *   Next            GPIO 17
- *   e-paper         GPIO 10 CS, 11 MOSI, 12 SCLK, 13 MISO (the board's own
- *                   spim2_default), 18 D/C, 8 RESET, 9 BUSY
- *   battery sense   GPIO 1 (ADC1_CH0), through a 470k/470k divider
- *   VBUS detect     GPIO 21, through a 100k/150k divider
- *   status LEDs     GPIO 15 red, GPIO 16 green
- *
- * The binding constraint is deep sleep: both buttons must be RTC-capable or
- * EXT1 wake is impossible. On the ESP32-S3 that means GPIO0..21, which every
- * input above satisfies. Avoided within that range: GPIO0 and GPIO3 are
- * strapping pins, and GPIO19/GPIO20 are the native USB D-/D+ pair — the same
- * peripheral app/debug.overlay puts the debug console on and OpenOCD debugs
- * through, so the panel's RESET and BUSY sit on 8 and 9 instead.
- *
- * Battery sense has to be ADC1 (GPIO1..10) because ADC2 is unusable while
- * Wi-Fi is up, and GPIO1 is the only channel of those ten free. VBUS detect is
- * digital, so it takes GPIO21 and leaves that channel alone. Neither is armed
- * as a wake source in the default image: EXT1 takes one trigger polarity for
- * the whole mask and the buttons have claimed active-low, so VBUS is polled
- * instead. CONFIG_TK_POWER_WAKE_ON_USB arms it through EXT0 at the price of a
- * powered RTC domain on every sleep. See docs/hardware_wiring.md for the
- * dividers.
- *
- * GPIO2 was the bring-up LED and is now unwired, which returns ADC1_CH2 to the
- * spare pool. Free and RTC-capable: GPIO2, 5, 6, 7 and 14.
- *
- * Two through-hole buttons are valid bring-up substitutes for the KSC321G.
- * Wire each one to GND: the pins are active low with internal pull-ups, so
- * closed reads as pressed.
- *
- */
+/* ESP32-S3-DevKitC-1 breadboard rig. */
 
 #include <zephyr/dt-bindings/adc/adc.h>
 #include <zephyr/dt-bindings/input/input-event-codes.h>
@@ -48,54 +12,17 @@
     };
 
     zephyr,user {
-        /*
-         * The onboard addressable LED, which this firmware never drives. Named
-         * here only so main.c can hold the line low: floating, it latches a
-         * colour from noise and keeps it across resets. Not on the target PCB,
-         * and not the status LED — a WS2812 idles at about 0.6 mA with the
-         * emitters dark, which is twenty times the whole sleep budget.
-         *
-         * This is GPIO48. Pins above 31 live on gpio1, whose index is the pin
-         * number minus 32.
-         */
+        /* The onboard addressable LED, which this firmware never drives. */
         ws2812-gpios = <&gpio1 16 GPIO_ACTIVE_HIGH>;
 
-        /*
-         * Battery sense: the tap of a 470k/470k divider off the charger's BAT
-         * pad, with 100 nF to ground. Half the pack voltage, so 1.85 to 2.10 V
-         * over the cell's useful range, read against the internal reference.
-         *
-         * The pack voltage rather than the 3.3 V rail, because the rail says
-         * nothing: the buck holds it flat above roughly 3.45 V and then passes
-         * the cell through at full duty.
-         */
+        /* Battery sense: the tap of a 470k/470k divider off the charger's BAT pad, with 100 nF to ground. */
         io-channels = <&adc0 0>;
 
-        /*
-         * VBUS detect: the tap of a 100k/150k divider off the charger's VU pad,
-         * which puts 3.0 V on the pin against a V_IH of about 2.48 V. Polled,
-         * and armed as an EXT0 wake source only when
-         * CONFIG_TK_POWER_WAKE_ON_USB is set, which by default it is not.
-         *
-         * Fit this divider, or tie the pin to ground, before flashing an image
-         * with CONFIG_TK_POWER on. Floating, it can read high, and a device
-         * that believes it is plugged in never sleeps.
-         *
-         * Only USB-C raises this. The charger's DC and solar input does not
-         * reach VU, so charging from either is invisible to the firmware.
-         */
+        /* A 100 kΩ/150 kΩ divider puts about 3.0 V on this VBUS input. */
         tk-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
     };
 
-    /*
-     * The status LEDs, each through its own resistor to ground.
-     *
-     * Two discrete packages on the bench and one bi-colour package on the
-     * target board, which is the same two pins either way — lighting both is
-     * amber. GPIO15 and GPIO16 rather than any of GPIO5 to GPIO7, because those
-     * three are the contiguous run of ADC1 channels being kept for rev A and an
-     * LED needs neither an ADC channel nor RTC capability.
-     */
+    /* The status LEDs, each through its own resistor to ground. */
     tk_leds: tk-leds {
         compatible = "gpio-leds";
         led_red: red {
@@ -108,14 +35,7 @@
         };
     };
 
-    /*
-     * The two buttons. Category advances the deck and shows its name; Next
-     * asks for a question. Nothing else is an input.
-     *
-     * Per-contact debounce is the in-tree driver's, and must match
-     * CONFIG_TK_BUTTON_DEBOUNCE_MS — devicetree is processed before Kconfig,
-     * so a policy value cannot be referenced from here.
-     */
+    /* The two buttons. */
     tk_buttons: tk-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
@@ -132,33 +52,7 @@
     };
 };
 
-/*
- * Waveshare 2.13 inch e-Paper HAT — 250 x 122, SSD1680 controller.
- *
- * The compatible below matches the V3 and V4 revisions, which are the ones
- * sold now. Older stock is not the same panel and will not init with this
- * profile; check the marking on the board and switch the compatible to match:
- *
- *   V3 / V4   gooddisplay,gdey0213b74 + solomon,ssd1680   250 x 122   (here)
- *   V2        gooddisplay,gdeh0213b72 + solomon,ssd1675a  250 x 120
- *   V1        gooddisplay,gdeh0213b1  + solomon,ssd1673   250 x 120
- *
- * The older two are 120 rows rather than 122, so CONFIG_TK_PANEL_LINES stays
- * at 7 either way but the height property has to change with the compatible.
- *
- * Zephyr ships the driver and a waveshare_epaper_gdey0213b74 shield. The
- * shield targets Arduino headers the DevKitC does not have, so the panel is
- * described here —
- * but the structure is copied from it, because in this Zephyr the driver sits
- * behind MIPI-DBI rather than on SPI directly. The display node is a child of
- * a `zephyr,mipi-dbi-spi` node that owns the SPI bus and the D/C and reset
- * pins; putting those properties on the display node itself is the older
- * binding and does not bind at all here.
- *
- * The `full` and `partial` children are not decoration: ssd16xx offers partial
- * refresh only when a partial profile exists, and then selects between them by
- * whether blanking is on. See app/src/panel.cpp.
- */
+/* Waveshare 2.13 inch e-Paper HAT — 250 x 122, SSD1680 controller. */
 &spi2 {
     status = "okay";
     pinctrl-0 = <&spim2_default>;
@@ -171,7 +65,7 @@
         compatible = "zephyr,mipi-dbi-spi";
         spi-dev = <&spi2>;
         dc-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
-        /* Not 19 and 20: those are native USB D-/D+. See the header. */
+        /* Not 19 and 20: those are native USB D-/D+. */
         reset-gpios = <&gpio0 8 GPIO_ACTIVE_LOW>;
         #address-cells = <1>;
         #size-cells = <0>;
@@ -202,53 +96,20 @@
     };
 };
 
-/*
- * The second Wi-Fi interface.
- *
- * The board's own devicetree enables `&wifi`, which is the station. AP+STA
- * needs a second network device: the driver defines the access point as
- * instance 1 of the same compatible, so without this node there is no AP
- * interface and net_if_get_wifi_sap() quietly hands back the station one
- * instead. Nothing warns — the DHCP server then binds to the wrong interface
- * and the portal is unreachable — which is why src/portal.c asserts that the
- * two differ.
- */
+/* The second Wi-Fi interface. */
 / {
     wifi_ap: wifi_ap {
         compatible = "espressif,esp32-wifi";
         status = "okay";
     };
 };
-/*
- * Zephyr's ESP32-S3 devicetree offers the CPU two power states: light sleep,
- * enabled, and deep sleep, disabled and documented as enterable only through
- * pm_state_force() or sys_poweroff(). With CONFIG_PM on, the idle thread takes
- * the one it is offered — and light sleep needs an RTC counter this
- * application has no other use for, so every attempt fails and logs
- * "Sleep skipped. Make sure RTC counter driver is enabled."
- *
- * Light sleep is not what a sub-30 uA budget needs anyway. Removing the state
- * leaves the idle thread nothing to enter, and src/sleep.c decides when the
- * device sleeps for real.
- */
+/* sys_poweroff() enters the disabled deep-sleep state directly. */
 
 &light_sleep {
     status = "disabled";
 };
 
-/*
- * Battery sense.
- *
- * `adc0` is the label Zephyr gives the peripheral whose `unit = <1>` — that is
- * hardware ADC1, the one that keeps working while the radio is up. `adc1` is
- * ADC2 and shares its hardware with Wi-Fi, so a reading taken during a sync can
- * simply fail. The naming is worth knowing before changing this line.
- *
- * ADC_GAIN_1_4 is the 12 dB attenuation, which reads to about 3.1 V. Halved by
- * the divider, a 4.2 V cell arrives as 2.1 V with room above it. The reference
- * is internal and supply-independent, so a sagging rail does not skew the
- * reading — which matters, because a sagging rail is exactly when it is read.
- */
+/* Battery sense. */
 &adc0 {
     status = "okay";
     #address-cells = <1>;
@@ -263,22 +124,7 @@
     };
 };
 
-/*
- * Where a synced corpus lives.
- *
- * The module carries 8 MB but the devicetree includes the 4 MB partition
- * table, whose last partition ends at 0x400000. Everything above that is
- * unclaimed, so the filesystem goes there and nothing existing moves — which
- * matters, because storage_partition holds the NVS with the Wi-Fi credentials
- * and the chosen language in it. Carving the filesystem out of that, or
- * widening slot0_partition, would shift it and orphan them on every device
- * that had already been set up.
- *
- * 512 KB is far more than the corpora need — two languages come to about
- * 22 KB, and a staging copy during a swap makes it 37 KB. The rest is slack
- * for LittleFS to wear-level in. The 3 MB above this stays unclaimed for
- * whatever wants it later; a pair of OTA image slots would.
- */
+/* Where a synced corpus lives. */
 &flash0 {
     partitions {
         tk_corpus_partition: partition@400000 {

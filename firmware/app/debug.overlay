@@ -1,21 +1,4 @@
-/*
- * Debug-session console, merged only by `just fw-build-debug` alongside
- * debug.conf. A plain fw-build keeps the board default, uart0 on the UART
- * jack.
- *
- * The problem this solves: the UART jack is a CP2102 whose DTR and RTS drive
- * EN and IO0 through the DevKitC's auto-reset circuit. Any terminal opening
- * that port resets the chip, which tears down a live gdb session. So the
- * console cannot live there while debugging.
- *
- * The USB jack has no such circuit. Its USB-Serial-JTAG peripheral presents
- * two USB interfaces at once — a vendor JTAG interface that OpenOCD claims,
- * and a CDC-ACM the host exposes as /dev/cu.usbmodem*. Putting the console on
- * the CDC side means one cable carries both, and opening the monitor cannot
- * disturb the debugger.
- *
- * Flashing still wants the UART jack, so keep both cables connected.
- */
+/* Debug-session console, merged only by `just fw-build debug` alongside debug.conf. */
 
 &usb_serial {
     status = "okay";

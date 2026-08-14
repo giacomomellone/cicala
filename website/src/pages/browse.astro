@@ -1,7 +1,5 @@
 ---
 // Browse (spec §7.5): sticky toolbar, flat rows, 100-row pagination.
-// The English list is statically rendered for no-JS visitors; the island
-// re-renders for the active language and live filters.
 import Chips from "../components/Chips.astro";
 import { TAGS } from "../config";
 import { t, type StringKey } from "../i18n";
@@ -37,8 +35,12 @@ const firstPage = newestFirst.slice(0, 100);
         }
       </select>
       <select id="b-sort" aria-label="sort">
-        <option value="newest" data-i18n="browse.sort.newest">{t("en", "browse.sort.newest")}</option>
-        <option value="random" data-i18n="browse.sort.random">{t("en", "browse.sort.random")}</option>
+        <option value="newest" data-i18n="browse.sort.newest"
+          >{t("en", "browse.sort.newest")}</option
+        >
+        <option value="random" data-i18n="browse.sort.random"
+          >{t("en", "browse.sort.random")}</option
+        >
       </select>
     </div>
     <Chips id="browse-chips" />
@@ -49,7 +51,9 @@ const firstPage = newestFirst.slice(0, 100);
       firstPage.map(({ q }) => (
         <li class="row" data-id={q.id}>
           <div class="row-main">
-            <a class="row-q" href={`/q/${q.id}`}>{q.text}</a>
+            <a class="row-q" href={`/q/${q.id}`}>
+              {q.text}
+            </a>
             <div class="row-meta">
               {q.decks.map((deck) => (
                 <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
@@ -67,7 +71,7 @@ const firstPage = newestFirst.slice(0, 100);
             aria-label={t("en", "play.save")}
             set:html={heartIcon}
           />
-          <span data-vote-slot hidden></span>
+          <span data-vote-slot hidden />
         </li>
       ))
     }
@@ -84,7 +88,8 @@ const firstPage = newestFirst.slice(0, 100);
       class="btn"
       id="b-more"
       hidden={newestFirst.length <= 100}
-      data-i18n="browse.more">{t("en", "browse.more")}</button>
+      data-i18n="browse.more">{t("en", "browse.more")}</button
+    >
   </p>
 
   <script>

@@ -1,11 +1,4 @@
-/*
- * The embedded corpora, as a table.
- *
- * The .inc files are generated per language by app/CMakeLists.txt, so adding a
- * language is a line in TK_CORPUS_LANGUAGES there and a line here — and the
- * build fails if the bundle is missing rather than shipping a portal that
- * offers a language the device cannot show.
- */
+/* The embedded corpora, as a table. */
 
 #include "corpus.h"
 

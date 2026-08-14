@@ -1,16 +1,8 @@
-// Deck controller (spec §7.9): favorites viewer + shared decks via #ids=
-// (fragment, not query — ids never hit server logs). Mixed-language decks
-// work because ids are language-scoped; missing languages resolve through
-// the id→lang index on demand.
+// Favorites and shared decks; shared IDs stay in the URL fragment.
 
 import { DECKS, MAX_SHARED_DECK } from "../config";
 import { tr } from "./apply-i18n";
-import {
-  detectLang,
-  findQuestion,
-  loadIndex,
-  loadPayload,
-} from "./data";
+import { detectLang, findQuestion, loadIndex, loadPayload } from "./data";
 import { bindHearts, rowHtml, type RowItem } from "./rows";
 import { getFavs, setFavs } from "./store";
 
@@ -27,8 +19,7 @@ function parseSharedIds(): string[] | null {
     .filter((s) => /^q-[0-9a-f]{8}$/.test(s));
 }
 
-/** Resolve ids (possibly across languages) to questions; unknown ids are
- * silently skipped (spec §7.9). */
+/* Resolve IDs across languages and skip unknown values. */
 async function resolve(ids: string[], activeLang: string): Promise<DeckItem[]> {
   const items = new Map<string, DeckItem>();
   const unresolved: string[] = [];
@@ -64,9 +55,7 @@ async function resolve(ids: string[], activeLang: string): Promise<DeckItem[]> {
     }
   }
 
-  return ids
-    .map((id) => items.get(id))
-    .filter((x): x is DeckItem => x !== undefined);
+  return ids.map((id) => items.get(id)).filter((x): x is DeckItem => x !== undefined);
 }
 
 export async function initDeck(): Promise<void> {
@@ -82,9 +71,7 @@ export async function initDeck(): Promise<void> {
   const importFile = document.getElementById("d-file") as HTMLInputElement;
   const saveAllBtn = document.getElementById("d-saveall") as HTMLButtonElement;
   const ownActions = document.getElementById("d-own-actions")!;
-  const chips = Array.from(
-    document.querySelectorAll<HTMLButtonElement>("#deck-chips .chip"),
-  );
+  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#deck-chips .chip"));
 
   const lang = detectLang();
   const sharedIds = parseSharedIds();
@@ -101,8 +88,7 @@ export async function initDeck(): Promise<void> {
   let deck = "all";
 
   function render(): void {
-    const visible =
-      deck === "all" ? items : items.filter((i) => i.q.decks.includes(deck));
+    const visible = deck === "all" ? items : items.filter((i) => i.q.decks.includes(deck));
     rowsEl!.innerHTML = visible.map((i) => rowHtml(i, lang)).join("");
     countEl.textContent = `${visible.length} ${tr(lang, "deck.count")}`;
     const empty = items.length === 0;
@@ -115,8 +101,7 @@ export async function initDeck(): Promise<void> {
   }
 
   const setActiveChip = () => {
-    for (const chip of chips)
-      chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
+    for (const chip of chips) chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
   };
 
   setActiveChip();
@@ -125,10 +110,12 @@ export async function initDeck(): Promise<void> {
 
   for (const chip of chips)
     chip.addEventListener("click", () => {
-      deck = chip.dataset.deck && chip.dataset.deck !== "all" &&
+      deck =
+        chip.dataset.deck &&
+        chip.dataset.deck !== "all" &&
         (DECKS as readonly string[]).includes(chip.dataset.deck)
-        ? chip.dataset.deck
-        : "all";
+          ? chip.dataset.deck
+          : "all";
       setActiveChip();
       render();
     });
@@ -173,9 +160,7 @@ export async function initDeck(): Promise<void> {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text()) as unknown;
-      const incoming = Array.isArray(parsed)
-        ? parsed
-        : ((parsed as { ids?: unknown }).ids ?? []);
+      const incoming = Array.isArray(parsed) ? parsed : ((parsed as { ids?: unknown }).ids ?? []);
       if (!Array.isArray(incoming)) return;
       const merged = getFavs();
       for (const id of incoming)

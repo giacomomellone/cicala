@@ -1,5 +1,4 @@
-// Shared flat-row rendering for browse and deck (spec §7.5): question in
-// Literata, meta line under it, heart toggles inline without navigating.
+// Shared question-row rendering for browse and deck pages.
 
 import { tr } from "./apply-i18n";
 import type { Question } from "./data";
@@ -39,7 +38,7 @@ export function rowHtml(item: RowItem, lang: string): string {
 </li>`;
 }
 
-/** One delegated listener per list container handles every heart. */
+/* One delegated listener per list container handles every heart. */
 export function bindHearts(container: HTMLElement): void {
   container.addEventListener("click", (e) => {
     const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".row-fav");

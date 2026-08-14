@@ -1,29 +1,4 @@
-/*
- * The radio, the sockets and the pages, behind PortalIo's six calls.
- *
- * C rather than C++ for the reason the rest of the glue is: HTTP_SERVICE_DEFINE
- * and HTTP_RESOURCE_DEFINE expand to out-of-order designated initializers,
- * which C allows and C++17 rejects.
- *
- * ## The order things come up in, and why it is not free to change
- *
- * The access point has to report itself enabled before the interface carries
- * 192.168.4.1, and a socket bound to an address the interface does not have
- * fails with -EADDRNOTAVAIL. So the address, the DHCP server, the DNS socket
- * and the HTTP server all wait for AP_ENABLE_RESULT, which is why raising the
- * access point and serving on it are two calls rather than one.
- *
- * The gateway is set before the address, because the DHCP server encodes the
- * interface's own gateway into option 3 and reads it at start.
- *
- * ## The captive sheet
- *
- * A phone decides it is behind a portal by fetching a known URL and not getting
- * what it expects. Both halves have to be wrong for it to notice: DNS has to
- * resolve that host to us, which the DHCP server's option 6 arranges and the
- * DNS responder answers, and the fetch has to come back as something other than
- * the expected 204 or body, which the fallback resource does.
- */
+/* The radio, the sockets and the pages, behind PortalIo's six calls. */
 
 #include "portal.h"
 
@@ -51,7 +26,7 @@
 
 LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
 
-/* The address the portal lives at. Also the DNS answer and the DHCP router. */
+/* The address the portal lives at. */
 #define AP_ADDR "192.168.4.1"
 #define AP_NETMASK "255.255.255.0"
 
@@ -64,8 +39,7 @@ LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
 #define DNS_PORT 53
 #define HTTP_PORT 80
 
-/* One page, built in full before any of it is sent. The setup page with a full
- * scan list is the biggest, at roughly 2 KB. */
+/* One page, built in full before any of it is sent. */
 #define PAGE_BUF_SIZE 4096
 
 #define DNS_STACK_SIZE 2048
@@ -76,13 +50,12 @@ static struct net_if *sta_iface;
 
 static char ap_ssid[TK_SSID_MAX];
 
-/* The scan list, written by the net_mgmt callback and read by the HTTP server
- * thread. Two threads, so a lock. */
+/* The scan list, written by the net_mgmt callback and read by the HTTP server thread. */
 static struct tk_scan_entry scan_results[CONFIG_TK_NET_SCAN_MAX];
 static uint8_t scan_count;
 static K_MUTEX_DEFINE(scan_lock);
 
-/* What the form last submitted. Written by the HTTP thread, read by `net`. */
+/* What the form last submitted. */
 static char pending_ssid[TK_SSID_MAX];
 static bool station_connected;
 static char station_ip[NET_IPV4_ADDR_LEN];
@@ -106,19 +79,13 @@ int tk_portal_init(void)
         return -ENODEV;
     }
 
-    /*
-     * Both getters fall back to the first Wi-Fi interface when no manager has
-     * registered one of that type, so a missing second devicetree node gives
-     * two pointers to the same interface and nothing says so. The DHCP server
-     * would then bind to the station and the portal would be unreachable.
-     */
+    /* AP and station modes require distinct interfaces. */
     if (ap_iface == sta_iface) {
         LOG_ERR("the AP and station interfaces are the same — is net.overlay merged?");
         return -ENODEV;
     }
 
-    /* A suffix so two devices being set up on one table do not both announce
-     * the same network. The low two bytes of the chip id are enough. */
+    /* A suffix so two devices being set up on one table do not both announce the same network. */
     const ssize_t n = hwinfo_get_device_id(id, sizeof(id));
 
     if (n >= 2) {
@@ -180,15 +147,13 @@ void tk_portal_scan_reset(void)
 void tk_portal_scan_add(const char *ssid, uint8_t len, int8_t rssi, bool secure)
 {
     if (len == 0 || len >= TK_SSID_MAX) {
-        /* A zero length is a hidden network, which cannot be offered as a
-         * choice — the page's typed field is what covers those. */
+        /* Hidden networks remain available through the typed SSID field. */
         return;
     }
 
     k_mutex_lock(&scan_lock, K_FOREVER);
 
-    /* Networks repeat across bands and across access points on one network, and
-     * a list with the same name four times is worse than a short one. */
+    /* Show each SSID once, using the strongest scan result. */
     for (uint8_t i = 0; i < scan_count; i++) {
         if (strncmp(scan_results[i].ssid, ssid, len) == 0 && scan_results[i].ssid[len] == '\0') {
             if (rssi > scan_results[i].rssi) {
@@ -225,10 +190,7 @@ bool tk_portal_scan_start(void)
         return false;
     }
 
-    /* On the station interface only. The driver keeps the scan callback in the
-     * station device's data and the completion handler reads it back from
-     * there unconditionally, so a scan issued on the access point interface
-     * ends in a null dereference inside the driver. */
+    /* On the station interface only. */
     const int err = net_mgmt(NET_REQUEST_WIFI_SCAN, sta_iface, &params, sizeof(params));
 
     if (err != 0) {
@@ -250,14 +212,7 @@ bool tk_portal_ap_start(void)
         .psk_length = 0,
         .channel = WIFI_CHANNEL_ANY,
         .band = WIFI_FREQ_BAND_2_4_GHZ,
-        /*
-         * Open, and that is a decision rather than an omission. A WPA2 setup
-         * network needs a passphrase the user has to be told, and the only
-         * place to tell them is the panel or the case. Open, plus a physical
-         * gesture to start it, plus a window that closes on its own, is the
-         * same posture as most consumer setup flows. Nothing secret is served:
-         * the status page names the saved network but never its password.
-         */
+        /* The setup access point is open. */
         .security = WIFI_SECURITY_TYPE_NONE,
     };
 
@@ -281,7 +236,7 @@ bool tk_portal_ap_start(void)
 
 /* --------------------------------------------------------------- serving */
 
-/** Answer every A query with our own address, for as long as the portal runs. */
+/* Answer every A query with our own address, for as long as the portal runs. */
 static void dns_thread(void *p1, void *p2, void *p3)
 {
     ARG_UNUSED(p1);
@@ -306,8 +261,7 @@ static void dns_thread(void *p1, void *p2, void *p3)
             zsock_recvfrom(sock, query, sizeof(query), 0, (struct sockaddr *) &from, &from_len);
 
         if (n <= 0) {
-            /* The socket was closed under us at teardown, or the receive timed
-             * out so the loop can notice that it was. */
+            /* Receive timeouts let the loop observe teardown. */
             continue;
         }
 
@@ -338,9 +292,7 @@ static int dns_start(void)
         return -errno;
     }
 
-    /* Bound to the wildcard rather than to the AP address: the station may not
-     * have an address yet, and a wildcard bind is what keeps the responder
-     * working across the moment the station joins and the interfaces change. */
+    /* A wildcard bind survives station address changes. */
     addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (zsock_bind(sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
@@ -382,8 +334,7 @@ bool tk_portal_serve_start(void)
     (void) net_addr_pton(NET_AF_INET, AP_ADDR, &addr);
     (void) net_addr_pton(NET_AF_INET, AP_NETMASK, &mask);
 
-    /* Gateway first: the DHCP server reads the interface's own gateway when it
-     * starts, and encodes it as the router option. */
+    /* DHCP reads the configured gateway when it starts. */
     net_if_ipv4_set_gw(ap_iface, &addr);
 
     if (net_if_ipv4_addr_add(ap_iface, &addr, NET_ADDR_MANUAL, 0) == NULL) {
@@ -456,7 +407,7 @@ void tk_portal_teardown(void)
 
 /* ------------------------------------------------------------- connecting */
 
-/** Join `ssid` using whatever the credential store holds for it. */
+/* Join `ssid` using whatever the credential store holds for it. */
 static bool connect_to(const char *ssid)
 {
     struct wifi_credentials_personal creds = {0};
@@ -491,12 +442,7 @@ static bool connect_to(const char *ssid)
         (void) net_if_up(sta_iface);
     }
 
-    /*
-     * The driver refuses with -EIO until its station task has reported itself
-     * started, which happens asynchronously after the interface comes up. A few
-     * attempts a quarter-second apart cover it; the alternative in the upstream
-     * sample is an unconditional five-second sleep.
-     */
+    /* Station startup completes asynchronously after interface enable. */
     for (int attempt = 0; attempt < 20; attempt++) {
         const int ret = net_mgmt(NET_REQUEST_WIFI_CONNECT, sta_iface, &params, sizeof(params));
 
@@ -522,7 +468,7 @@ bool tk_portal_connect_start(void)
     return connect_to(pending_ssid);
 }
 
-/** Collects the first stored SSID, for the connect-at-boot path. */
+/* Collects the first stored SSID, for the connect-at-boot path. */
 static void first_ssid(void *arg, const char *ssid, size_t len)
 {
     char *out = arg;
@@ -559,7 +505,7 @@ bool tk_portal_connect_stored(void)
 
 /* ------------------------------------------------------------------- HTTP */
 
-/** Send one rendered page, or a 500 if it would not fit the buffer. */
+/* Send one rendered page, or a 500 if it would not fit the buffer. */
 static int send_page(const char *what, int rendered, struct http_response_ctx *response)
 {
     LOG_INF("GET %s: %d bytes", what, rendered);
@@ -617,11 +563,7 @@ static int status_handler(struct http_client_ctx *client, enum http_transaction_
     return send_page("/status", n, response);
 }
 
-/*
- * A form body arrives as a slice of the server's client buffer: not
- * NUL-terminated, and split across calls when it does not fit. It is
- * accumulated here and parsed once, at DATA_FINAL.
- */
+/* Request bodies may be split across non-NUL-terminated slices. */
 static char form_body[512];
 static size_t form_len;
 
@@ -649,8 +591,7 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
     }
 
     if (status != HTTP_SERVER_REQUEST_DATA_FINAL) {
-        /* Nothing may be sent before the body is complete. An empty response
-         * context is how the server is told there is more to come. */
+        /* Nothing may be sent before the body is complete. */
         return 0;
     }
 
@@ -662,26 +603,17 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
 
     form_len = 0;
 
-    /*
-     * The language is applied on its own. Somebody who only wants German
-     * should not have to retype a Wi-Fi password to get it, and the form posts
-     * every field whether or not it was touched.
-     */
+    /* The language is applied on its own. */
     if (lang_len > 0 && strcmp(lang, tk_language()) != 0) {
         if (tk_language_set(lang) == 0) {
             const struct tk_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
 
-            /* `app` reopens the store. The new corpus applies on the next
-             * requested draw, so whatever is on the panel stays readable. */
+            /* `app` reopens the store. */
             (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
         }
     }
 
-    /*
-     * An empty network name means the form was submitted for the language
-     * alone, which is a whole reason to be here. Nothing is stored and no join
-     * is attempted; the saved network keeps whatever it had.
-     */
+    /* Allow language-only changes without network credentials. */
     if (ssid_len <= 0) {
         LOG_INF("no network name in the form; language only");
 
@@ -693,12 +625,7 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
     const enum wifi_security_type type =
         psk_len > 0 ? WIFI_SECURITY_TYPE_PSK : WIFI_SECURITY_TYPE_NONE;
 
-    /*
-     * Written before the station is asked to join, and deliberately not from
-     * inside the connect path: an NVS write disables the instruction cache on
-     * this SoC, which is a bad thing to do while the Wi-Fi task is running out
-     * of it.
-     */
+    /* Store credentials before Wi-Fi starts; NVS writes disable the instruction cache. */
     const int err = wifi_credentials_set_personal(ssid, (size_t) ssid_len, type, NULL, 0, psk,
                                                   (size_t) psk_len, 0, 0, 0);
 
@@ -713,26 +640,13 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
 
     const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), ssid);
 
-    /*
-     * The page goes out first and the join is left to `net`. Joining moves the
-     * access point onto the home network's channel, which drops the phone —
-     * responding afterwards would mean responding to a browser that is no
-     * longer there.
-     */
+    /* The page goes out first and the join is left to `net`. */
     tk_net_notify_credentials();
 
     return send_page("/save", n, response);
 }
 
-/**
- * "Check for new questions".
- *
- * Answers immediately and lets `net` do the work: a fetch, a hash and a
- * signature check take seconds, and holding an HTTP handler open for them would
- * block the server thread and time the browser out. The result reaches the
- * panel rather than this page, which is also where it has to go — joining a
- * network drops the phone off the setup access point.
- */
+/* "Check for new questions". */
 static int sync_handler(struct http_client_ctx *client, enum http_transaction_status status,
                         const struct http_request_ctx *request, struct http_response_ctx *response,
                         void *user_data)
@@ -752,13 +666,7 @@ static int sync_handler(struct http_client_ctx *client, enum http_transaction_st
     return send_page("/sync", n, response);
 }
 
-/**
- * Everything else.
- *
- * A phone probing for a portal asks for a URL on some other host and expects a
- * 204 or a particular body. A redirect here is what turns that into a sign-in
- * sheet.
- */
+/* Everything else. */
 static int catchall_handler(struct http_client_ctx *client, enum http_transaction_status status,
                             const struct http_request_ctx *request,
                             struct http_response_ctx *response, void *user_data)
@@ -785,9 +693,7 @@ static int catchall_handler(struct http_client_ctx *client, enum http_transactio
     return 0;
 }
 
-/* Each resource gets its own detail struct. They are not shared, because the
- * server rejects a second client with 409 while one holds a resource, and a
- * phone opening a captive sheet fires several requests at once. */
+/* Each resource gets its own detail struct. */
 static struct http_resource_detail_dynamic setup_detail = {
     .common = {.type = HTTP_RESOURCE_TYPE_DYNAMIC,
                .bitmask_of_supported_http_methods = BIT(HTTP_GET),
@@ -825,12 +731,7 @@ static struct http_resource_detail_dynamic catchall_detail = {
 
 static uint16_t http_port = HTTP_PORT;
 
-/*
- * Bound to every address rather than to 192.168.4.1, so the service survives
- * the station joining a network and the interfaces changing under it. The
- * fallback resource is what makes a phone's captive-detection probe — which
- * asks for a URL on somebody else's host — reach the redirect.
- */
+/* Wildcard binding keeps HTTP available across interface changes. */
 HTTP_SERVICE_DEFINE(tk_portal, NULL, &http_port, CONFIG_HTTP_SERVER_MAX_CLIENTS, 4, NULL,
                     &catchall_detail.common, NULL);
 
