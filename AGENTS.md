@@ -16,6 +16,30 @@ An open-source system for conversation questions. Its parts share one database:
 
 The governing product principle (docs/design.md): minimize time-to-question, maximize time-in-conversation. Features that increase engagement with the product rather than between people are rejected.
 
+## Repository boundary
+
+This is the public product and engineering repository. It owns the public website, firmware, hardware design sources, reproducible BOMs, protocols, technical documentation, build instructions, the public roadmap, contribution guidance, licenses, and public-facing project assets.
+
+It must not contain GTM plans, pricing strategy, margins, detailed internal COGS analysis, supplier quotes or contacts, cash planning, private brand research, unpublished product concepts, customer identities, raw research data, participant consent records, or private compliance and manufacturing operations. Content in those categories belongs in the sibling `../kveld-internal` repository.
+
+Component price indications in `hardware/pcb/BOM.md` and `docs/prototype_bom.md` are reproduction aids for makers and stay here. A price appearing in a document is not by itself a reason to move it.
+
+Never copy content from the private repository into this one without explicit publication approval.
+
+If `../kveld-internal` is unavailable, stop and ask rather than putting private material here.
+
+### Shared operating rules
+
+These apply in both repositories.
+
+- Before editing, resolve the current path and determine which repository owns the requested material.
+- Run `git status` separately in each repository. The two working trees are independent.
+- Never assume a branch, commit, or pull request spans both repositories.
+- Use separate branches, commits, validation runs, and pull requests for each repository.
+- To move material from public to private, copy it to the private destination and verify it there first, then remove the public copy.
+- Do not create submodules, symlinks, imports, or documentation links that make a clean public clone depend on the private repository.
+- Acknowledging that a private sibling repository exists is acceptable. Do not reveal its contents.
+
 ## Commands
 
 `just` is the single entry point; run `just` to list everything. Recipes call `.venv/bin/python` directly, so only `just`, `python3` and `npm` need to be on PATH.
