@@ -549,20 +549,6 @@ input[type="checkbox"] {
 
 /* ---------------------------------------------------------------- misc */
 
-.device-photo {
-  border: 1px solid var(--line);
-  border-radius: var(--radius-card);
-  background: var(--paper-raised);
-  margin: 1.25rem 0;
-  overflow: hidden;
-}
-
-.device-photo img {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-
 .soon-tag {
   font-size: 0.6875rem;
   color: var(--ink-faint);

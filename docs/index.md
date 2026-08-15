@@ -7,13 +7,14 @@ An open-source system for conversation questions: a community-maintained [questi
 ## Pages
 
 - **[design](design.md)**: product and UX rationale. Why a device, the interaction surface, website jobs, non-goals.
-- **[device prototype](device_prototype.md)**: honest feasibility review, proposed enclosure, concept renders, and a gated hardware-development plan.
+- **[device prototype](device_prototype.md)**: honest feasibility review, proposed enclosure, and a gated hardware-development plan.
 - **[prototype bom](prototype_bom.md)**: bench-prototype shopping list with checked order links for DE/EU.
 - **[hardware wiring](hardware_wiring.md)**: the breadboard rig — pin assignment and why each pin, how the buttons, the charger, the two dividers, the status LEDs and the e-paper HAT connect.
 - **[firmware primer](firmware_primer.md)**: introduction to the device firmware and to Zephyr as this project uses it — build inputs, devicetree, Kconfig, tests, debugging.
 - **[firmware architecture](firmware_architecture.md)**: threads, the messages between them, and which modules depend on Zephyr.
 - **[decisions](decisions.md)**: append-only decision log (ADR-lite), including every dependency justification.
 - **[contribution pipeline](contribution_pipeline.md)**: how a question gets from a form into the database, the site and a device — the labels, the automatic checks, and which rule is enforced where.
+- **[publication policy](publication_policy.md)**: what belongs in this public repository, what belongs in the private sibling, and how to route a change.
 - **[languages](languages.md)**: multilingual policy. Independent corpora, the incubator, maintainers.
 - **[sync protocol](sync_protocol.md)**: device sync flow and the `.qdb.gz` bundle format, byte by byte.
 - **[votes](votes.md)**: the agreed v2 voting design (not built; seams are in place).

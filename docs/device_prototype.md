@@ -3,12 +3,16 @@
 The breadboard firmware works. Rev A is a PCB and enclosure design; its
 mechanical files are concept inputs rather than manufacturing data.
 
-!!! warning "Concept renders, not manufacturing data"
+!!! warning "Design intent, not built hardware"
 
-    The renders communicate layout and use. They do not replace CAD, component
-    drawings, tolerance analysis, antenna work, or a verified PCB.
+    Rev A has not been built. Every dimension, mass, and finish below is a
+    study target for CAD, not a measurement of a physical device. Only the
+    bench results in the validation sequence come from working hardware, and
+    they were taken on the breadboard rig.
 
-![Warm-ivory device with one e-paper display and adjacent Category and Next buttons](assets/device-prototype/hero.webp)
+This page stays text-first. It carries no illustrations until photographs of
+real hardware exist, so nothing here can be mistaken for evidence that the
+enclosure has been made.
 
 ## Interaction
 
@@ -45,8 +49,6 @@ top and its label on the cap. Category names are printed by the display.
 
 The size is a planning envelope. Component drawings, button-label legibility,
 and the e-paper layout test may change it.
-
-![People using the two-button prototype at a table](assets/device-prototype/tabletop.webp)
 
 ## How category selection works
 
@@ -103,8 +105,6 @@ positioned to resist either button press.
 
 The category line needs tested fonts, right-to-left layout, and enough width
 for the longest released label.
-
-![Exploded concept with two tactile buttons](assets/device-prototype/exploded.webp)
 
 ## Electrical contract
 
@@ -224,6 +224,3 @@ small spills.
 - [Good Display GDEY0213B74](https://www.good-display.com/product/391.html)
 - [Espressif ESP32-S3-WROOM-1/1U data sheet](https://documentation.espressif.com/esp32-s3-wroom-1_wroom-1u_datasheet_en.pdf)
 - [Espressif module current measurement](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s3/api-guides/current-consumption-measurement-modules.html)
-
-Render prompts and provenance are in
-[`assets/device-prototype/prompts.txt`](assets/device-prototype/prompts.txt).

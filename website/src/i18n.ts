@@ -123,7 +123,6 @@ const en = {
   "device.t.r4a": "hands off",
   "device.t.r4b": "sleep",
   "device.t.r4c": "the category and question remain readable at zero display power",
-  "device.photo": "warm ivory Tischkarte prototype with e-paper, Category, and Next buttons",
   "device.build": "build one",
   "device.build.text":
     "Hardware (CERN-OHL-S) and firmware (MIT) live in this repository. The breadboard firmware works; the PCB and enclosure files are design contracts, not production files.",
@@ -260,7 +259,6 @@ const de: Record<StringKey, string> = {
   "device.t.r4a": "Hände weg",
   "device.t.r4b": "schlafen",
   "device.t.r4c": "Kategorie und Frage bleiben ohne Displaystrom lesbar",
-  "device.photo": "warmer Tischkarte-Prototyp mit E-Papier, Kategorie- und Weiter-Taste",
   "device.build": "selbst bauen",
   "device.build.text":
     "Hardware (CERN-OHL-S) und Firmware (MIT) liegen in diesem Repository. Die Breadboard-Firmware funktioniert; Platine und Gehäuse sind Entwurfsverträge, keine Produktionsdateien.",
