@@ -19,7 +19,7 @@
 #include "sleep.h"
 #include "status.h"
 
-LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_sleep, LOG_LEVEL_INF);
 
 /* Sleeping builds require the patched SSD16xx initialization policy. */
 #ifndef CONFIG_SSD16XX_PRESERVE_IMAGE_ON_INIT
@@ -27,48 +27,49 @@ LOG_MODULE_REGISTER(tk_sleep, LOG_LEVEL_INF);
 #endif
 
 static const struct gpio_dt_spec wake_pins[] = {
-    GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios),
-    GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios),
+    GPIO_DT_SPEC_GET(DT_ALIAS(kveld_category), gpios),
+    GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios),
 };
 
-#if IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)
+#if IS_ENABLED(CONFIG_KVELD_POWER_WAKE_ON_USB)
 
 /* Use the same VBUS devicetree property as power.c. */
-static const struct gpio_dt_spec vbus_pin = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), tk_vbus_gpios);
+static const struct gpio_dt_spec vbus_pin =
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), kveld_vbus_gpios);
 
 #endif
 
 static const struct gpio_dt_spec panel_pins[] = {
-    GPIO_DT_SPEC_GET(DT_NODELABEL(tk_mipi_dbi), reset_gpios),
-    GPIO_DT_SPEC_GET(DT_NODELABEL(tk_mipi_dbi), dc_gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(kveld_mipi_dbi), reset_gpios),
+    GPIO_DT_SPEC_GET(DT_NODELABEL(kveld_mipi_dbi), dc_gpios),
     GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi2), cs_gpios, 0),
 };
 
-#if IS_ENABLED(CONFIG_TK_PANEL_DEEP_SLEEP)
+#if IS_ENABLED(CONFIG_KVELD_PANEL_DEEP_SLEEP)
 
-#define TK_PANEL_NODE DT_CHOSEN(zephyr_display)
+#define KVELD_PANEL_NODE DT_CHOSEN(zephyr_display)
 
 /* From ssd16xx_regs.h, which is private to the driver and cannot be included from here. */
-#define TK_SSD16XX_CMD_SLEEP_MODE 0x10
-#define TK_SSD16XX_SLEEP_MODE_DSM1 0x01
+#define KVELD_SSD16XX_CMD_SLEEP_MODE 0x10
+#define KVELD_SSD16XX_SLEEP_MODE_DSM1 0x01
 
-static const struct device *const panel_bus = DEVICE_DT_GET(DT_PARENT(TK_PANEL_NODE));
+static const struct device *const panel_bus = DEVICE_DT_GET(DT_PARENT(KVELD_PANEL_NODE));
 
 /* The same bus configuration ssd16xx builds for itself, from the same node. */
 static const struct mipi_dbi_config panel_dbi = {
     .mode = MIPI_DBI_MODE_SPI_4WIRE,
     .config = MIPI_DBI_SPI_CONFIG_DT(
-        TK_PANEL_NODE, SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_HOLD_ON_CS | SPI_LOCK_ON, 0),
+        KVELD_PANEL_NODE, SPI_OP_MODE_MASTER | SPI_WORD_SET(8) | SPI_HOLD_ON_CS | SPI_LOCK_ON, 0),
 };
 
-static const struct gpio_dt_spec panel_busy = GPIO_DT_SPEC_GET(TK_PANEL_NODE, busy_gpios);
+static const struct gpio_dt_spec panel_busy = GPIO_DT_SPEC_GET(KVELD_PANEL_NODE, busy_gpios);
 
 static void panel_controller_sleep(void)
 {
-    const uint8_t mode = TK_SSD16XX_SLEEP_MODE_DSM1;
+    const uint8_t mode = KVELD_SSD16XX_SLEEP_MODE_DSM1;
 
     for (int waited = 0; gpio_pin_get_dt(&panel_busy) > 0; waited++) {
-        if (waited >= CONFIG_TK_REFRESH_TIMEOUT_MS) {
+        if (waited >= CONFIG_KVELD_REFRESH_TIMEOUT_MS) {
             LOG_ERR("panel still busy; leaving the controller awake");
             return;
         }
@@ -77,7 +78,7 @@ static void panel_controller_sleep(void)
     }
 
     const int err =
-        mipi_dbi_command_write(panel_bus, &panel_dbi, TK_SSD16XX_CMD_SLEEP_MODE, &mode, 1);
+        mipi_dbi_command_write(panel_bus, &panel_dbi, KVELD_SSD16XX_CMD_SLEEP_MODE, &mode, 1);
 
     (void) mipi_dbi_release(panel_bus, &panel_dbi);
 
@@ -93,15 +94,15 @@ static void panel_controller_sleep(void)
 
 static void panel_controller_sleep(void) {}
 
-#endif /* CONFIG_TK_PANEL_DEEP_SLEEP */
+#endif /* CONFIG_KVELD_PANEL_DEEP_SLEEP */
 
 static void sleep_now(struct k_work *work);
 static K_WORK_DELAYABLE_DEFINE(idle_work, sleep_now);
 
 /* Latched at PRE_KERNEL_1, read by the app thread. */
-static enum tk_wake_source wake_button = TK_WAKE_NONE;
+static enum kveld_wake_source wake_button = KVELD_WAKE_NONE;
 
-enum tk_wake_source tk_wake_button(void)
+enum kveld_wake_source kveld_wake_button(void)
 {
     return wake_button;
 }
@@ -117,9 +118,9 @@ static int latch_wake_button(void)
 
     /* Next takes priority when both wake bits are set. */
     if (mask & BIT64(wake_pins[1].pin)) {
-        wake_button = TK_WAKE_NEXT;
+        wake_button = KVELD_WAKE_NEXT;
     } else if (mask & BIT64(wake_pins[0].pin)) {
-        wake_button = TK_WAKE_CATEGORY;
+        wake_button = KVELD_WAKE_CATEGORY;
     } else {
         LOG_WRN("woken by EXT1 on an unexpected mask %llx", mask);
     }
@@ -177,18 +178,18 @@ static void sleep_now(struct k_work *work)
 {
     ARG_UNUSED(work);
 
-    if (!tk_app_is_settled()) {
-        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+    if (!kveld_app_is_settled()) {
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_KVELD_SLEEP_IDLE_MS));
         return;
     }
 
-    if (tk_net_is_active()) {
-        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+    if (kveld_net_is_active()) {
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_KVELD_SLEEP_IDLE_MS));
         return;
     }
 
-    if (tk_power_external()) {
-        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+    if (kveld_power_external()) {
+        (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_KVELD_SLEEP_IDLE_MS));
         return;
     }
 
@@ -207,7 +208,7 @@ static void sleep_now(struct k_work *work)
         return;
     }
 
-#if IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)
+#if IS_ENABLED(CONFIG_KVELD_POWER_WAKE_ON_USB)
     /* VBUS, on its own trigger and its own polarity. */
     const int vbus_err = esp_sleep_enable_ext0_wakeup((gpio_num_t) vbus_pin.pin, 1);
 
@@ -219,7 +220,7 @@ static void sleep_now(struct k_work *work)
 
     hold_wake_pins(mask);
 
-    tk_status_off();
+    kveld_status_off();
 
     panel_controller_sleep();
 
@@ -227,7 +228,7 @@ static void sleep_now(struct k_work *work)
 
     /* ESP32-S3 soft-off preserves RTC slow memory. */
 
-    if (IS_ENABLED(CONFIG_TK_POWER_WAKE_ON_USB)) {
+    if (IS_ENABLED(CONFIG_KVELD_POWER_WAKE_ON_USB)) {
         LOG_INF("sleeping, wake on any of GPIO mask %llx, or on VBUS", mask);
     } else {
         LOG_INF("sleeping, wake on any of GPIO mask %llx", mask);
@@ -242,13 +243,13 @@ static void on_activity(const struct zbus_channel *chan)
 {
     ARG_UNUSED(chan);
 
-    (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+    (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_KVELD_SLEEP_IDLE_MS));
 }
 
-ZBUS_LISTENER_DEFINE(tk_sleep_obs, on_activity);
-ZBUS_CHAN_ADD_OBS(chan_render, tk_sleep_obs, 6);
-ZBUS_CHAN_ADD_OBS(chan_next, tk_sleep_obs, 6);
-ZBUS_CHAN_ADD_OBS(chan_category, tk_sleep_obs, 6);
+ZBUS_LISTENER_DEFINE(kveld_sleep_obs, on_activity);
+ZBUS_CHAN_ADD_OBS(chan_render, kveld_sleep_obs, 6);
+ZBUS_CHAN_ADD_OBS(chan_next, kveld_sleep_obs, 6);
+ZBUS_CHAN_ADD_OBS(chan_category, kveld_sleep_obs, 6);
 
 /* Let go of the pads held through the last sleep. */
 static int sleep_release_holds(void)
@@ -270,13 +271,13 @@ SYS_INIT(sleep_release_holds, PRE_KERNEL_2, 0);
 static int sleep_start(void)
 {
     /* Log the configured panel sleep and wake policy once per boot. */
-    if (IS_ENABLED(CONFIG_TK_PANEL_DEEP_SLEEP)) {
+    if (IS_ENABLED(CONFIG_KVELD_PANEL_DEEP_SLEEP)) {
         LOG_INF("panel policy: controller sleeps, revived by the reset at init");
     } else {
         LOG_INF("panel policy: controller left awake through sleep");
     }
 
-    (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_TK_SLEEP_IDLE_MS));
+    (void) k_work_reschedule(&idle_work, K_MSEC(CONFIG_KVELD_SLEEP_IDLE_MS));
 
     return 0;
 }

@@ -1,6 +1,6 @@
 #include "manifest.hpp"
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -429,4 +429,4 @@ bool firmware_parse(const char *json, size_t len, FirmwareRelease &out)
     return true;
 }
 
-} // namespace tk
+} // namespace kveld

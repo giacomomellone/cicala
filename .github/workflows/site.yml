@@ -115,7 +115,7 @@ jobs:
           fi
 
           gh release download "$tag" -D website/dist/device \
-            -p 'firmware.json' -p 'tischkarte-*.bin'
+            -p 'firmware.json' -p 'kveld-*.bin'
           echo "published $tag:"
           ls -l website/dist/device
 
@@ -130,7 +130,7 @@ jobs:
         if: github.event_name == 'push' && env.DEVICE_BUCKET != ''
         run: |
           aws s3 sync website/dist/device "s3://$DEVICE_BUCKET/device/" \
-            --exclude '*' --include 'tischkarte-*.bin' --include '*.qdb' --include '*.qdb.gz' \
+            --exclude '*' --include 'kveld-*.bin' --include '*.qdb' --include '*.qdb.gz' \
             --cache-control 'public, max-age=31536000, immutable' \
             --no-progress
 
@@ -144,4 +144,4 @@ jobs:
       - name: Deploy to Cloudflare Pages
         if: github.event_name == 'push' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: website
-        run: npx wrangler pages deploy dist --project-name=tischkarte
+        run: npx wrangler pages deploy dist --project-name=kveld

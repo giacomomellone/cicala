@@ -24,7 +24,7 @@ interface Props {
 
 const {
   title,
-  description = "Conversation questions from the open Tischkarte database — free, no accounts, public domain.",
+  description = "Conversation questions from the open Kveld database — free, no accounts, public domain.",
   lang = "en",
   seedLang,
 } = Astro.props;
@@ -54,7 +54,7 @@ const byLang = (files: Record<string, string>) =>
     }),
   );
 
-const tkConfig = {
+const kveldConfig = {
   langs: languages,
   payloads: byLang(payloadFiles),
   recents: byLang(recentFiles),
@@ -80,12 +80,12 @@ const ogImage = new URL("/og.png", SITE_URL).href;
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <script type="application/json" id="tk-config" set:html={JSON.stringify(tkConfig)} />
+    <script type="application/json" id="kveld-config" set:html={JSON.stringify(kveldConfig)} />
   </head>
   <body data-seed-lang={seedLang}>
     <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
     <header class="site-header">
-      <a class="wordmark" href="/">tischkarte</a>
+      <a class="wordmark" href="/">kveld</a>
       <nav class="site-nav" aria-label="site">
         <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
         <span class="nav-dot" aria-hidden="true">·</span>

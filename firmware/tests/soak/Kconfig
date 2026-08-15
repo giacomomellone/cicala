@@ -1,6 +1,6 @@
 # Use the complete application policy.
 
-mainmenu "tischkarte soak tests"
+mainmenu "kveld soak tests"
 
 rsource "../../Kconfig.policy"
 

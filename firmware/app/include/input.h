@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 /** Check both buttons are present and start reporting. */
-int tk_input_init(void);
+int kveld_input_init(void);
 
 #ifdef __cplusplus
 }

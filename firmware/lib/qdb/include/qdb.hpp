@@ -5,20 +5,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace tk
+namespace kveld
 {
 
 /** Deck count from questions/schema.json. */
 constexpr uint8_t kDeckCount = 6;
 
-#ifdef CONFIG_TK_MAX_QUESTIONS
-constexpr uint16_t kMaxQuestions = CONFIG_TK_MAX_QUESTIONS;
+#ifdef CONFIG_KVELD_MAX_QUESTIONS
+constexpr uint16_t kMaxQuestions = CONFIG_KVELD_MAX_QUESTIONS;
 #else
 constexpr uint16_t kMaxQuestions = 512;
 #endif
 
-#ifdef CONFIG_TK_RECENT_RING
-constexpr uint8_t kRecentRing = CONFIG_TK_RECENT_RING;
+#ifdef CONFIG_KVELD_RECENT_RING
+constexpr uint8_t kRecentRing = CONFIG_KVELD_RECENT_RING;
 #else
 constexpr uint8_t kRecentRing = 20;
 #endif
@@ -126,4 +126,4 @@ private:
     void *_ctx;
 };
 
-} // namespace tk
+} // namespace kveld

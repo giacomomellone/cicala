@@ -1,6 +1,6 @@
 #include "portal_fsm.hpp"
 
-namespace tk
+namespace kveld
 {
 
 // clang-format off
@@ -291,4 +291,4 @@ int PortalFsm::on_shutdown()
     return TRANSITION(CONTINUE);
 }
 
-} // namespace tk
+} // namespace kveld

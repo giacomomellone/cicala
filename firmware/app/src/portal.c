@@ -25,7 +25,7 @@
 #include "net.h"
 #include "net_logic.h"
 
-LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
+LOG_MODULE_DECLARE(kveld_net, LOG_LEVEL_INF);
 
 /* The address the portal lives at. */
 #define AP_ADDR "192.168.4.1"
@@ -51,27 +51,27 @@ LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
 static struct net_if *ap_iface;
 static struct net_if *sta_iface;
 
-static char ap_ssid[TK_SSID_MAX];
+static char ap_ssid[KVELD_SSID_MAX];
 static char ap_password[AP_PASSWORD_MAX];
 
 static const char *const ap_password_words[] = {
-    "apple",  "beacon", "birch",  "blue",   "cabin",  "cactus", "cedar", "cloud",
-    "comet",  "copper", "dawn",   "delta",  "dove",   "ember",  "fern",   "flame",
-    "forest", "frost",  "glade",  "gold",   "harbor", "hazel",  "honey", "island",
-    "jade",   "juniper", "kite",  "lilac",  "maple",  "meadow", "mint",  "moon",
-    "moss",    "north",  "ocean",  "olive",  "orbit",  "pebble", "pine",  "plum",
-    "pond",    "quartz", "rain",   "raven",  "river",  "robin",  "rose",  "sage",
-    "sand",    "shore",  "silver", "sky",    "spruce", "stone",  "sun",   "swift",
-    "thistle", "tulip",  "valley", "violet", "wave",   "willow", "winter", "wren",
+    "apple",   "beacon",  "birch",  "blue",   "cabin",  "cactus", "cedar",  "cloud",
+    "comet",   "copper",  "dawn",   "delta",  "dove",   "ember",  "fern",   "flame",
+    "forest",  "frost",   "glade",  "gold",   "harbor", "hazel",  "honey",  "island",
+    "jade",    "juniper", "kite",   "lilac",  "maple",  "meadow", "mint",   "moon",
+    "moss",    "north",   "ocean",  "olive",  "orbit",  "pebble", "pine",   "plum",
+    "pond",    "quartz",  "rain",   "raven",  "river",  "robin",  "rose",   "sage",
+    "sand",    "shore",   "silver", "sky",    "spruce", "stone",  "sun",    "swift",
+    "thistle", "tulip",   "valley", "violet", "wave",   "willow", "winter", "wren",
 };
 
 /* The scan list, written by the net_mgmt callback and read by the HTTP server thread. */
-static struct tk_scan_entry scan_results[CONFIG_TK_NET_SCAN_MAX];
+static struct kveld_scan_entry scan_results[CONFIG_KVELD_NET_SCAN_MAX];
 static uint8_t scan_count;
 static K_MUTEX_DEFINE(scan_lock);
 
 /* What the form last submitted. */
-static char pending_ssid[TK_SSID_MAX];
+static char pending_ssid[KVELD_SSID_MAX];
 static bool station_connected;
 static char station_ip[NET_IPV4_ADDR_LEN];
 static char connection_error[48];
@@ -86,7 +86,7 @@ static uint8_t page_buf[PAGE_BUF_SIZE];
 
 /* ---------------------------------------------------------------- helpers */
 
-int tk_portal_init(void)
+int kveld_portal_init(void)
 {
     uint8_t id[8] = {0};
 
@@ -108,10 +108,10 @@ int tk_portal_init(void)
     const ssize_t n = hwinfo_get_device_id(id, sizeof(id));
 
     if (n >= 2) {
-        (void) snprintf(ap_ssid, sizeof(ap_ssid), "%s-%02X%02X", CONFIG_TK_PORTAL_SSID_PREFIX,
+        (void) snprintf(ap_ssid, sizeof(ap_ssid), "%s-%02X%02X", CONFIG_KVELD_PORTAL_SSID_PREFIX,
                         id[n - 2], id[n - 1]);
     } else {
-        (void) snprintf(ap_ssid, sizeof(ap_ssid), "%s", CONFIG_TK_PORTAL_SSID_PREFIX);
+        (void) snprintf(ap_ssid, sizeof(ap_ssid), "%s", CONFIG_KVELD_PORTAL_SSID_PREFIX);
     }
 
     LOG_INF("setup network will be %s", ap_ssid);
@@ -119,12 +119,12 @@ int tk_portal_init(void)
     return 0;
 }
 
-const char *tk_portal_ap_ssid(void)
+const char *kveld_portal_ap_ssid(void)
 {
     return ap_ssid;
 }
 
-const char *tk_portal_ap_password(void)
+const char *kveld_portal_ap_password(void)
 {
     return ap_password;
 }
@@ -153,12 +153,12 @@ static bool generate_ap_password(void)
     return true;
 }
 
-bool tk_portal_station_connected(void)
+bool kveld_portal_station_connected(void)
 {
     return station_connected;
 }
 
-void tk_portal_set_station_connected(bool connected)
+void kveld_portal_set_station_connected(bool connected)
 {
     station_connected = connected;
 
@@ -183,21 +183,21 @@ void tk_portal_set_station_connected(bool connected)
     }
 }
 
-void tk_portal_set_connection_error(int error)
+void kveld_portal_set_connection_error(int error)
 {
     k_mutex_lock(&portal_state_lock, K_FOREVER);
     (void) snprintf(connection_error, sizeof(connection_error), "Wi-Fi error %d", error);
     k_mutex_unlock(&portal_state_lock);
 }
 
-void tk_portal_clear_connection_error(void)
+void kveld_portal_clear_connection_error(void)
 {
     k_mutex_lock(&portal_state_lock, K_FOREVER);
     connection_error[0] = '\0';
     k_mutex_unlock(&portal_state_lock);
 }
 
-void tk_portal_copy_connection_error(char *out, size_t out_size)
+void kveld_portal_copy_connection_error(char *out, size_t out_size)
 {
     if (out == NULL || out_size == 0) {
         return;
@@ -209,7 +209,7 @@ void tk_portal_copy_connection_error(char *out, size_t out_size)
     k_mutex_unlock(&portal_state_lock);
 }
 
-void tk_portal_set_sync_result(const char *result)
+void kveld_portal_set_sync_result(const char *result)
 {
     k_mutex_lock(&portal_state_lock, K_FOREVER);
     (void) strncpy(sync_result, result != NULL ? result : "", sizeof(sync_result) - 1);
@@ -217,7 +217,7 @@ void tk_portal_set_sync_result(const char *result)
     k_mutex_unlock(&portal_state_lock);
 }
 
-void tk_portal_copy_sync_result(char *out, size_t out_size)
+void kveld_portal_copy_sync_result(char *out, size_t out_size)
 {
     if (out == NULL || out_size == 0) {
         return;
@@ -229,18 +229,18 @@ void tk_portal_copy_sync_result(char *out, size_t out_size)
     k_mutex_unlock(&portal_state_lock);
 }
 
-uint32_t tk_portal_window_remaining_s(void)
+uint32_t kveld_portal_window_remaining_s(void)
 {
     if (!serving || portal_started_ms == 0) {
         return 0;
     }
 
-    const int64_t remaining = CONFIG_TK_PORTAL_WINDOW_MS - (k_uptime_get() - portal_started_ms);
+    const int64_t remaining = CONFIG_KVELD_PORTAL_WINDOW_MS - (k_uptime_get() - portal_started_ms);
 
     return remaining > 0 ? (uint32_t) ((remaining + 999) / 1000) : 0;
 }
 
-int tk_portal_forget_credentials(void)
+int kveld_portal_forget_credentials(void)
 {
     const int err = wifi_credentials_delete_all();
 
@@ -253,24 +253,24 @@ int tk_portal_forget_credentials(void)
     }
 
     pending_ssid[0] = '\0';
-    tk_portal_set_station_connected(false);
-    tk_portal_clear_connection_error();
+    kveld_portal_set_station_connected(false);
+    kveld_portal_clear_connection_error();
 
     return 0;
 }
 
 /* ------------------------------------------------------------------- scan */
 
-void tk_portal_scan_reset(void)
+void kveld_portal_scan_reset(void)
 {
     k_mutex_lock(&scan_lock, K_FOREVER);
     scan_count = 0;
     k_mutex_unlock(&scan_lock);
 }
 
-void tk_portal_scan_add(const char *ssid, uint8_t len, int8_t rssi, bool secure)
+void kveld_portal_scan_add(const char *ssid, uint8_t len, int8_t rssi, bool secure)
 {
-    if (len == 0 || len >= TK_SSID_MAX) {
+    if (len == 0 || len >= KVELD_SSID_MAX) {
         /* Hidden networks remain available through the typed SSID field. */
         return;
     }
@@ -300,15 +300,15 @@ void tk_portal_scan_add(const char *ssid, uint8_t len, int8_t rssi, bool secure)
     k_mutex_unlock(&scan_lock);
 }
 
-bool tk_portal_scan_start(void)
+bool kveld_portal_scan_start(void)
 {
     struct wifi_scan_params params = {
         .scan_type = WIFI_SCAN_TYPE_ACTIVE,
         .bands = BIT(WIFI_FREQ_BAND_2_4_GHZ),
-        .max_bss_cnt = CONFIG_TK_NET_SCAN_MAX,
+        .max_bss_cnt = CONFIG_KVELD_NET_SCAN_MAX,
     };
 
-    tk_portal_scan_reset();
+    kveld_portal_scan_reset();
 
     if (sta_iface == NULL) {
         return false;
@@ -327,7 +327,7 @@ bool tk_portal_scan_start(void)
 
 /* --------------------------------------------------------- access point */
 
-bool tk_portal_ap_start(void)
+bool kveld_portal_ap_start(void)
 {
     if (!generate_ap_password()) {
         return false;
@@ -370,8 +370,8 @@ static void dns_thread(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
-    static uint8_t query[TK_DNS_BUF_SIZE];
-    static uint8_t reply[TK_DNS_BUF_SIZE];
+    static uint8_t query[KVELD_DNS_BUF_SIZE];
+    static uint8_t reply[KVELD_DNS_BUF_SIZE];
 
     while (true) {
         const int sock = dns_sock;
@@ -393,7 +393,7 @@ static void dns_thread(void *p1, void *p2, void *p3)
         }
 
         const uint16_t len =
-            tk_dns_hijack(query, (uint16_t) n, AP_ADDR_HOST_ORDER, reply, sizeof(reply));
+            kveld_dns_hijack(query, (uint16_t) n, AP_ADDR_HOST_ORDER, reply, sizeof(reply));
 
         if (len == 0) {
             continue;
@@ -403,7 +403,7 @@ static void dns_thread(void *p1, void *p2, void *p3)
     }
 }
 
-K_THREAD_DEFINE(tk_dns_thread, DNS_STACK_SIZE, dns_thread, NULL, NULL, NULL, DNS_PRIORITY, 0, 0);
+K_THREAD_DEFINE(kveld_dns_thread, DNS_STACK_SIZE, dns_thread, NULL, NULL, NULL, DNS_PRIORITY, 0, 0);
 
 static int dns_start(void)
 {
@@ -449,7 +449,7 @@ static void dns_stop(void)
     }
 }
 
-bool tk_portal_serve_start(void)
+bool kveld_portal_serve_start(void)
 {
     struct net_in_addr addr;
     struct net_in_addr mask;
@@ -504,7 +504,7 @@ bool tk_portal_serve_start(void)
     return true;
 }
 
-void tk_portal_teardown(void)
+void kveld_portal_teardown(void)
 {
     struct net_in_addr addr;
 
@@ -594,7 +594,7 @@ static bool connect_to(const char *ssid)
     return false;
 }
 
-bool tk_portal_connect_start(void)
+bool kveld_portal_connect_start(void)
 {
     return connect_to(pending_ssid);
 }
@@ -604,7 +604,7 @@ static void first_ssid(void *arg, const char *ssid, size_t len)
 {
     char *out = arg;
 
-    if (out[0] != '\0' || len == 0 || len >= TK_SSID_MAX) {
+    if (out[0] != '\0' || len == 0 || len >= KVELD_SSID_MAX) {
         return;
     }
 
@@ -612,9 +612,9 @@ static void first_ssid(void *arg, const char *ssid, size_t len)
     out[len] = '\0';
 }
 
-bool tk_portal_connect_stored(void)
+bool kveld_portal_connect_stored(void)
 {
-    char ssid[TK_SSID_MAX] = {0};
+    char ssid[KVELD_SSID_MAX] = {0};
 
     if (wifi_credentials_is_empty()) {
         LOG_INF("no stored network — the compiled-in corpus is all this device needs");
@@ -668,8 +668,8 @@ static int setup_handler(struct http_client_ctx *client, enum http_transaction_s
     }
 
     k_mutex_lock(&scan_lock, K_FOREVER);
-    const int n =
-        tk_page_setup((char *) page_buf, sizeof(page_buf), scan_results, scan_count, tk_language());
+    const int n = kveld_page_setup((char *) page_buf, sizeof(page_buf), scan_results, scan_count,
+                                   kveld_language());
     k_mutex_unlock(&scan_lock);
 
     return send_page("/", n, response);
@@ -687,8 +687,8 @@ static int rescan_handler(struct http_client_ctx *client, enum http_transaction_
         return 0;
     }
 
-    const bool started = tk_portal_scan_start();
-    const int n = tk_page_notice(
+    const bool started = kveld_portal_scan_start();
+    const int n = kveld_page_notice(
         (char *) page_buf, sizeof(page_buf), started ? "Scanning" : "Scan unavailable",
         started ? "The network list is refreshing. Return to setup in a few seconds."
                 : "The radio could not start a scan. You can still type a network name.");
@@ -711,13 +711,12 @@ static int status_handler(struct http_client_ctx *client, enum http_transaction_
     char last_error[48] = {};
     char last_sync[80] = {};
 
-    tk_portal_copy_connection_error(last_error, sizeof(last_error));
-    tk_portal_copy_sync_result(last_sync, sizeof(last_sync));
+    kveld_portal_copy_connection_error(last_error, sizeof(last_error));
+    kveld_portal_copy_sync_result(last_sync, sizeof(last_sync));
 
-    const int n = tk_page_status(
-        (char *) page_buf, sizeof(page_buf), ap_ssid,
-        pending_ssid[0] != '\0' ? pending_ssid : NULL, station_connected, station_ip, last_error,
-        last_sync, tk_portal_window_remaining_s());
+    const int n = kveld_page_status(
+        (char *) page_buf, sizeof(page_buf), ap_ssid, pending_ssid[0] != '\0' ? pending_ssid : NULL,
+        station_connected, station_ip, last_error, last_sync, kveld_portal_window_remaining_s());
 
     return send_page("/status", n, response);
 }
@@ -733,8 +732,8 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
     ARG_UNUSED(client);
     ARG_UNUSED(user_data);
 
-    char ssid[TK_SSID_MAX] = {0};
-    char psk[TK_PSK_MAX] = {0};
+    char ssid[KVELD_SSID_MAX] = {0};
+    char psk[KVELD_PSK_MAX] = {0};
 
     if (status == HTTP_SERVER_TRANSACTION_ABORTED || status == HTTP_SERVER_TRANSACTION_COMPLETE) {
         form_len = 0;
@@ -754,19 +753,20 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
         return 0;
     }
 
-    const int ssid_len = tk_form_field(form_body, (uint16_t) form_len, "ssid", ssid, sizeof(ssid));
-    const int psk_len = tk_form_field(form_body, (uint16_t) form_len, "psk", psk, sizeof(psk));
+    const int ssid_len =
+        kveld_form_field(form_body, (uint16_t) form_len, "ssid", ssid, sizeof(ssid));
+    const int psk_len = kveld_form_field(form_body, (uint16_t) form_len, "psk", psk, sizeof(psk));
 
     form_len = 0;
 
     if (ssid_len <= 0) {
-        const int n = tk_page_notice((char *) page_buf, sizeof(page_buf), "No network selected",
-                                     "Choose a network or type its name, then save it.");
+        const int n = kveld_page_notice((char *) page_buf, sizeof(page_buf), "No network selected",
+                                        "Choose a network or type its name, then save it.");
 
         return send_page("/save", n, response);
     }
 
-    tk_portal_clear_connection_error();
+    kveld_portal_clear_connection_error();
 
     const enum wifi_security_type type =
         psk_len > 0 ? WIFI_SECURITY_TYPE_PSK : WIFI_SECURITY_TYPE_NONE;
@@ -784,10 +784,10 @@ static int save_handler(struct http_client_ctx *client, enum http_transaction_st
 
     (void) strncpy(pending_ssid, ssid, sizeof(pending_ssid) - 1);
 
-    const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), ssid);
+    const int n = kveld_page_saved((char *) page_buf, sizeof(page_buf), ssid);
 
     /* The page goes out first and the join is left to `net`. */
-    tk_net_notify_credentials();
+    kveld_net_notify_credentials();
 
     return send_page("/save", n, response);
 }
@@ -816,24 +816,25 @@ static int language_handler(struct http_client_ctx *client, enum http_transactio
         return 0;
     }
 
-    char lang[TK_LANGUAGE_LEN] = {0};
-    const int lang_len = tk_form_field(form_body, (uint16_t) form_len, "lang", lang, sizeof(lang));
+    char lang[KVELD_LANGUAGE_LEN] = {0};
+    const int lang_len =
+        kveld_form_field(form_body, (uint16_t) form_len, "lang", lang, sizeof(lang));
 
     form_len = 0;
 
-    if (lang_len != 2 || tk_language_set(lang) != 0) {
-        const int n = tk_page_notice((char *) page_buf, sizeof(page_buf), "Language not saved",
-                                     "That language is not available in this device image.");
+    if (lang_len != 2 || kveld_language_set(lang) != 0) {
+        const int n = kveld_page_notice((char *) page_buf, sizeof(page_buf), "Language not saved",
+                                        "That language is not available in this device image.");
 
         return send_page("/language", n, response);
     }
 
-    const struct tk_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
+    const struct kveld_corpus_msg msg = {.language = {lang[0], lang[1], '\0', '\0'}};
 
     /* `app` reopens the store. */
     (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
 
-    const int n = tk_page_saved((char *) page_buf, sizeof(page_buf), NULL);
+    const int n = kveld_page_saved((char *) page_buf, sizeof(page_buf), NULL);
 
     return send_page("/language", n, response);
 }
@@ -865,20 +866,22 @@ static int forget_handler(struct http_client_ctx *client, enum http_transaction_
 
     char confirm[8] = {0};
     const int confirm_len =
-        tk_form_field(form_body, (uint16_t) form_len, "confirm", confirm, sizeof(confirm));
+        kveld_form_field(form_body, (uint16_t) form_len, "confirm", confirm, sizeof(confirm));
 
     form_len = 0;
 
     if (confirm_len != 6 || strcmp(confirm, "forget") != 0) {
-        const int n = tk_page_forget_confirm((char *) page_buf, sizeof(page_buf));
+        const int n = kveld_page_forget_confirm((char *) page_buf, sizeof(page_buf));
 
         return send_page("/forget", n, response);
     }
 
-    const int err = tk_portal_forget_credentials();
-    const int n = tk_page_notice(
-        (char *) page_buf, sizeof(page_buf), err == 0 ? "Wi-Fi forgotten" : "Could not forget Wi-Fi",
-        err == 0 ? "The saved network was removed. The device will stay offline until you set it up again."
+    const int err = kveld_portal_forget_credentials();
+    const int n = kveld_page_notice(
+        (char *) page_buf, sizeof(page_buf),
+        err == 0 ? "Wi-Fi forgotten" : "Could not forget Wi-Fi",
+        err == 0 ? "The saved network was removed. The device will stay offline until you set it "
+                   "up again."
                  : "The saved network could not be removed. Try again or restart the device.");
 
     return send_page("/forget", n, response);
@@ -897,11 +900,11 @@ static int sync_handler(struct http_client_ctx *client, enum http_transaction_st
         return 0;
     }
 
-    tk_net_notify_sync();
+    kveld_net_notify_sync();
 
-    const int n = tk_page_notice(
-        (char *) page_buf, sizeof(page_buf), "Update requested",
-        "The device is checking for new questions and firmware. The result will appear on the device.");
+    const int n = kveld_page_notice((char *) page_buf, sizeof(page_buf), "Update requested",
+                                    "The device is checking for new questions and firmware. The "
+                                    "result will appear on the device.");
 
     return send_page("/sync", n, response);
 }
@@ -993,13 +996,13 @@ static struct http_resource_detail_dynamic catchall_detail = {
 static uint16_t http_port = HTTP_PORT;
 
 /* Wildcard binding keeps HTTP available across interface changes. */
-HTTP_SERVICE_DEFINE(tk_portal, NULL, &http_port, CONFIG_HTTP_SERVER_MAX_CLIENTS, 4, NULL,
+HTTP_SERVICE_DEFINE(kveld_portal, NULL, &http_port, CONFIG_HTTP_SERVER_MAX_CLIENTS, 4, NULL,
                     &catchall_detail.common, NULL);
 
-HTTP_RESOURCE_DEFINE(setup_resource, tk_portal, "/", &setup_detail);
-HTTP_RESOURCE_DEFINE(status_resource, tk_portal, "/status", &status_detail);
-HTTP_RESOURCE_DEFINE(rescan_resource, tk_portal, "/scan", &rescan_detail);
-HTTP_RESOURCE_DEFINE(save_resource, tk_portal, "/save", &save_detail);
-HTTP_RESOURCE_DEFINE(language_resource, tk_portal, "/language", &language_detail);
-HTTP_RESOURCE_DEFINE(sync_resource, tk_portal, "/sync", &sync_detail);
-HTTP_RESOURCE_DEFINE(forget_resource, tk_portal, "/forget", &forget_detail);
+HTTP_RESOURCE_DEFINE(setup_resource, kveld_portal, "/", &setup_detail);
+HTTP_RESOURCE_DEFINE(status_resource, kveld_portal, "/status", &status_detail);
+HTTP_RESOURCE_DEFINE(rescan_resource, kveld_portal, "/scan", &rescan_detail);
+HTTP_RESOURCE_DEFINE(save_resource, kveld_portal, "/save", &save_detail);
+HTTP_RESOURCE_DEFINE(language_resource, kveld_portal, "/language", &language_detail);
+HTTP_RESOURCE_DEFINE(sync_resource, kveld_portal, "/sync", &sync_detail);
+HTTP_RESOURCE_DEFINE(forget_resource, kveld_portal, "/forget", &forget_detail);

@@ -9,31 +9,31 @@
 #include "power.h"
 #include "power_fsm.hpp"
 
-LOG_MODULE_REGISTER(tk_power, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_power, LOG_LEVEL_INF);
 
 namespace
 {
 
 /* The C and C++ power enums must keep the same order. */
-static_assert((int) tk::PowerState::UNKNOWN == TK_POWER_UNKNOWN, "power state order");
-static_assert((int) tk::PowerState::NORMAL == TK_POWER_NORMAL, "power state order");
-static_assert((int) tk::PowerState::LOW == TK_POWER_LOW, "power state order");
-static_assert((int) tk::PowerState::CRITICAL == TK_POWER_CRITICAL, "power state order");
-static_assert((int) tk::PowerState::CHARGING == TK_POWER_CHARGING, "power state order");
-static_assert((int) tk::PowerState::CHARGED == TK_POWER_CHARGED, "power state order");
+static_assert((int) kveld::PowerState::UNKNOWN == KVELD_POWER_UNKNOWN, "power state order");
+static_assert((int) kveld::PowerState::NORMAL == KVELD_POWER_NORMAL, "power state order");
+static_assert((int) kveld::PowerState::LOW == KVELD_POWER_LOW, "power state order");
+static_assert((int) kveld::PowerState::CRITICAL == KVELD_POWER_CRITICAL, "power state order");
+static_assert((int) kveld::PowerState::CHARGING == KVELD_POWER_CHARGING, "power state order");
+static_assert((int) kveld::PowerState::CHARGED == KVELD_POWER_CHARGED, "power state order");
 
-class Io : public tk::PowerIo
+class Io : public kveld::PowerIo
 {
 public:
-    void publish(tk::PowerState state, uint16_t mv, bool usb) override
+    void publish(kveld::PowerState state, uint16_t mv, bool usb) override
     {
-        struct tk_power_msg msg = {
+        struct kveld_power_msg msg = {
             .mv = mv,
             .state = (uint8_t) state,
             .usb = usb,
         };
 
-        LOG_INF("%u mV, %s%s", mv, tk_power_name(msg.state), usb ? ", USB in" : "");
+        LOG_INF("%u mV, %s%s", mv, kveld_power_name(msg.state), usb ? ", USB in" : "");
 
         /* Allow the worker to publish an immediate follow-up transition. */
         const int err = zbus_chan_pub(&chan_power, &msg, K_MSEC(50));
@@ -46,7 +46,7 @@ public:
     void open_charge_window() override
     {
         LOG_INF("external power in; sync and updates are allowed for the next %lld s",
-                (long long) (tk::kChargeWindowMs / 1000));
+                (long long) (kveld::kChargeWindowMs / 1000));
     }
 
     void close_charge_window() override
@@ -57,7 +57,7 @@ public:
 };
 
 Io io;
-tk::PowerFsm fsm(io);
+kveld::PowerFsm fsm(io);
 
 /* Tick until the state stops moving. */
 void settle()
@@ -78,39 +78,39 @@ void settle()
 
 } // namespace
 
-void tk_power_post_sample(uint16_t mv, bool usb)
+void kveld_power_post_sample(uint16_t mv, bool usb)
 {
     fsm.post_sample(mv, usb);
     settle();
 }
 
-void tk_power_post_usb(bool usb)
+void kveld_power_post_usb(bool usb)
 {
     fsm.post_usb(usb);
     settle();
 }
 
-uint8_t tk_power_state(void)
+uint8_t kveld_power_state(void)
 {
     return (uint8_t) fsm.state();
 }
 
-bool tk_power_refresh_allowed(void)
+bool kveld_power_refresh_allowed(void)
 {
     return fsm.refresh_allowed();
 }
 
-uint16_t tk_power_millivolts(void)
+uint16_t kveld_power_millivolts(void)
 {
     return fsm.millivolts();
 }
 
-bool tk_power_external(void)
+bool kveld_power_external(void)
 {
     return fsm.external();
 }
 
-bool tk_power_charge_window_open(void)
+bool kveld_power_charge_window_open(void)
 {
     return fsm.charge_window_open();
 }

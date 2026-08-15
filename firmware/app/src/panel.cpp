@@ -12,14 +12,14 @@
 #include "layout.hpp"
 #include "retained_block.hpp"
 
-LOG_MODULE_REGISTER(tk_panel, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_panel, LOG_LEVEL_INF);
 
 namespace
 {
 
 const struct device *const display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 
-constexpr uint8_t kMargin = CONFIG_TK_PANEL_MARGIN_PX;
+constexpr uint8_t kMargin = CONFIG_KVELD_PANEL_MARGIN_PX;
 
 constexpr uint16_t kPanelWidth = DT_PROP(DT_CHOSEN(zephyr_display), width);
 constexpr uint16_t kPanelHeight = DT_PROP(DT_CHOSEN(zephyr_display), height);
@@ -52,19 +52,19 @@ Font fonts[] = {
 };
 
 /* Panel column and line limits describe the smallest supported font. */
-constexpr uint8_t kColumns = CONFIG_TK_PANEL_COLUMNS;
-constexpr uint8_t kLines = CONFIG_TK_PANEL_LINES;
+constexpr uint8_t kColumns = CONFIG_KVELD_PANEL_COLUMNS;
+constexpr uint8_t kLines = CONFIG_KVELD_PANEL_LINES;
 
-BUILD_ASSERT(kColumns * 10 <= kUsableWidth, "TK_PANEL_COLUMNS overflows the panel width");
-BUILD_ASSERT(kLines * 16 <= kUsableHeight, "TK_PANEL_LINES overflows the panel height");
-BUILD_ASSERT((kColumns + 1) * 10 > kUsableWidth, "TK_PANEL_COLUMNS wastes a whole column");
-BUILD_ASSERT(kLines <= tk::kMaxLines, "layout cannot return that many lines");
+BUILD_ASSERT(kColumns * 10 <= kUsableWidth, "KVELD_PANEL_COLUMNS overflows the panel width");
+BUILD_ASSERT(kLines * 16 <= kUsableHeight, "KVELD_PANEL_LINES overflows the panel height");
+BUILD_ASSERT((kColumns + 1) * 10 > kUsableWidth, "KVELD_PANEL_COLUMNS wastes a whole column");
+BUILD_ASSERT(kLines <= kveld::kMaxLines, "layout cannot return that many lines");
 
-tk::Glyph glyphs[tk::kMaxGlyphs];
-tk::Layout layout;
+kveld::Glyph glyphs[kveld::kMaxGlyphs];
+kveld::Layout layout;
 
 /* The partial-refresh counter lives in RTC memory across deep sleep. */
-uint16_t &partial_since_full = tk_retained().partial_since_full;
+uint16_t &partial_since_full = kveld_retained().partial_since_full;
 
 uint8_t last_font_height;
 bool ready;
@@ -93,9 +93,9 @@ int draw_dot(int x, int y, int w, int h)
 }
 
 /* Draw the diacritic for one cell. */
-int draw_mark(const Font &font, tk::Mark mark, int16_t x, int16_t y, char base)
+int draw_mark(const Font &font, kveld::Mark mark, int16_t x, int16_t y, char base)
 {
-    if (mark == tk::Mark::NONE) {
+    if (mark == kveld::Mark::NONE) {
         return 0;
     }
 
@@ -114,49 +114,49 @@ int draw_mark(const Font &font, tk::Mark mark, int16_t x, int16_t y, char base)
 
     // The middle of the letter's ink, not of the cell.
     const int16_t mid =
-        x + font.mark_mid - (IS_ENABLED(CONFIG_TK_PANEL_BOLD) ? 0 : (font.bold_offset + 1) / 2);
+        x + font.mark_mid - (IS_ENABLED(CONFIG_KVELD_PANEL_BOLD) ? 0 : (font.bold_offset + 1) / 2);
     const int16_t baseline = y + font.baseline;
 
     switch (mark) {
-    case tk::Mark::ACUTE:
+    case kveld::Mark::ACUTE:
         // Rising to the right, spanning mid-2s ..
         (void) draw_dot(mid - 2 * sx, top + sy, 2 * sx, sy);
         return draw_dot(mid, top, 2 * sx, sy);
 
-    case tk::Mark::GRAVE:
+    case kveld::Mark::GRAVE:
         // Falling to the right, the same span mirrored.
         (void) draw_dot(mid - 2 * sx, top, 2 * sx, sy);
         return draw_dot(mid, top + sy, 2 * sx, sy);
 
-    case tk::Mark::CIRCUMFLEX:
+    case kveld::Mark::CIRCUMFLEX:
         // A caret: peak over the middle, wings a row below.
         (void) draw_dot(mid - sx, top, 2 * sx, sy);
         (void) draw_dot(mid - 2 * sx, top + sy, sx, sy);
         return draw_dot(mid + sx, top + sy, sx, sy);
 
-    case tk::Mark::DIAERESIS:
+    case kveld::Mark::DIAERESIS:
         // Two square dots either side of the middle, 2s clear pixels apart.
         (void) draw_dot(mid - 3 * sx, top, 2 * sx, 2 * sy);
         return draw_dot(mid + sx, top, 2 * sx, 2 * sy);
 
-    case tk::Mark::TILDE:
+    case kveld::Mark::TILDE:
         // Low, high, low, spanning mid-3s ..
         (void) draw_dot(mid - 3 * sx, top + sy, 2 * sx, sy);
         (void) draw_dot(mid - sx, top, 2 * sx, sy);
         return draw_dot(mid + sx, top + sy, 2 * sx, sy);
 
-    case tk::Mark::CEDILLA:
+    case kveld::Mark::CEDILLA:
         // Draw the cedilla below the baseline in the descender rows.
         (void) draw_dot(mid, baseline, sx, 2 * sy);
         return draw_dot(mid - sx, baseline + 2 * sy, 2 * sx, sy);
 
-    case tk::Mark::NONE:
+    case kveld::Mark::NONE:
     default:
         return 0;
     }
 }
 
-int draw_glyph(const Font &font, const tk::Glyph &glyph, int16_t x, int16_t y)
+int draw_glyph(const Font &font, const kveld::Glyph &glyph, int16_t x, int16_t y)
 {
     // Draw per cell so diacritics use the same position as their base glyph.
     const char text[2] = {glyph.base, '\0'};
@@ -167,7 +167,7 @@ int draw_glyph(const Font &font, const tk::Glyph &glyph, int16_t x, int16_t y)
         return err;
     }
 
-    if (IS_ENABLED(CONFIG_TK_PANEL_BOLD)) {
+    if (IS_ENABLED(CONFIG_KVELD_PANEL_BOLD)) {
         /* Faux bold: the same glyph again, shifted right. */
         err = cfb_draw_text(display, text, static_cast<int16_t>(x + font.bold_offset), y);
 
@@ -185,9 +185,10 @@ const Font *choose_font(const char *text, uint16_t len)
 {
     const Font *smallest = &fonts[ARRAY_SIZE(fonts) - 1];
 
-    if (!IS_ENABLED(CONFIG_TK_PANEL_AUTOSIZE)) {
-        return tk::wrap(text, len, smallest->columns, glyphs, tk::kMaxGlyphs, layout) ? smallest
-                                                                                      : nullptr;
+    if (!IS_ENABLED(CONFIG_KVELD_PANEL_AUTOSIZE)) {
+        return kveld::wrap(text, len, smallest->columns, glyphs, kveld::kMaxGlyphs, layout)
+                   ? smallest
+                   : nullptr;
     }
 
     for (size_t i = 0; i < ARRAY_SIZE(fonts); i++) {
@@ -197,7 +198,7 @@ const Font *choose_font(const char *text, uint16_t len)
             continue;
         }
 
-        if (!tk::wrap(text, len, font.columns, glyphs, tk::kMaxGlyphs, layout)) {
+        if (!kveld::wrap(text, len, font.columns, glyphs, kveld::kMaxGlyphs, layout)) {
             return nullptr;
         }
 
@@ -207,13 +208,13 @@ const Font *choose_font(const char *text, uint16_t len)
     }
 
     // Return the smallest layout so the caller can report overflow.
-    return tk::wrap(text, len, smallest->columns, glyphs, tk::kMaxGlyphs, layout) ? smallest
-                                                                                  : nullptr;
+    return kveld::wrap(text, len, smallest->columns, glyphs, kveld::kMaxGlyphs, layout) ? smallest
+                                                                                        : nullptr;
 }
 
 } // namespace
 
-int tk_panel_init(void)
+int kveld_panel_init(void)
 {
     // Reuse the framebuffer and reset the refresh policy.
     if (!ready) {
@@ -257,8 +258,8 @@ int tk_panel_init(void)
                     font.columns = static_cast<uint8_t>(kUsableWidth / w);
                     font.lines = static_cast<uint8_t>(kUsableHeight / h);
 
-                    if (font.lines > tk::kMaxLines) {
-                        font.lines = tk::kMaxLines;
+                    if (font.lines > kveld::kMaxLines) {
+                        font.lines = kveld::kMaxLines;
                     }
 
                     break;
@@ -278,29 +279,29 @@ int tk_panel_init(void)
     }
 
     /* A cold boot requires a full refresh because panel contents are unknown. */
-    if (!tk_retained_survived()) {
-        partial_since_full = CONFIG_TK_FULL_REFRESH_INTERVAL;
+    if (!kveld_retained_survived()) {
+        partial_since_full = CONFIG_KVELD_FULL_REFRESH_INTERVAL;
     }
 
     return 0;
 }
 
-uint16_t tk_panel_partial_count(void)
+uint16_t kveld_panel_partial_count(void)
 {
     return partial_since_full;
 }
 
-bool tk_panel_next_is_full(void)
+bool kveld_panel_next_is_full(void)
 {
-    return partial_since_full >= CONFIG_TK_FULL_REFRESH_INTERVAL;
+    return partial_since_full >= CONFIG_KVELD_FULL_REFRESH_INTERVAL;
 }
 
-uint8_t tk_panel_last_font_height(void)
+uint8_t kveld_panel_last_font_height(void)
 {
     return last_font_height;
 }
 
-int tk_panel_render(const char *text, uint16_t len)
+int kveld_panel_render(const char *text, uint16_t len)
 {
     if (!ready) {
         return -ENODEV;
@@ -327,7 +328,7 @@ int tk_panel_render(const char *text, uint16_t len)
         LOG_WRN("question needs more than %u lines", kLines);
     }
 
-    const bool full = tk_panel_next_is_full();
+    const bool full = kveld_panel_next_is_full();
 
     /* SSD16xx full refreshes bracket the RAM write with blanking mode. */
     err = full ? display_blanking_on(display) : display_blanking_off(display);
@@ -352,7 +353,7 @@ int tk_panel_render(const char *text, uint16_t len)
 
     if (gaps > 0 && kUsableHeight > solid) {
         const uint16_t cap =
-            static_cast<uint16_t>(font->height * CONFIG_TK_PANEL_MAX_LEADING_PCT / 100);
+            static_cast<uint16_t>(font->height * CONFIG_KVELD_PANEL_MAX_LEADING_PCT / 100);
 
         leading = static_cast<uint16_t>((kUsableHeight - solid) / gaps);
 
@@ -365,7 +366,7 @@ int tk_panel_render(const char *text, uint16_t len)
     const int16_t top = static_cast<int16_t>(kMargin + (kUsableHeight - block_height) / 2);
 
     for (uint8_t i = 0; i < layout.count; i++) {
-        const tk::Line &line = layout.lines[i];
+        const kveld::Line &line = layout.lines[i];
         const uint16_t line_width = static_cast<uint16_t>(line.cells * font->width);
         const int16_t left = static_cast<int16_t>(kMargin + (kUsableWidth - line_width) / 2);
         const int16_t y = static_cast<int16_t>(top + i * (font->height + leading));

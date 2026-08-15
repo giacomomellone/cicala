@@ -6,12 +6,12 @@ namespace
 {
 
 #ifdef CONFIG_SOC_SERIES_ESP32S3
-#define TK_RTC_NOINIT __attribute__((section(".rtc_noinit")))
+#define KVELD_RTC_NOINIT __attribute__((section(".rtc_noinit")))
 #else
-#define TK_RTC_NOINIT
+#define KVELD_RTC_NOINIT
 #endif
 
-TK_RTC_NOINIT tk::Retained block;
+KVELD_RTC_NOINIT kveld::Retained block;
 
 bool checked;
 bool survived;
@@ -23,29 +23,29 @@ void check_once()
     }
 
     checked = true;
-    survived = tk::retained_load(block);
+    survived = kveld::retained_load(block);
 }
 
 } // namespace
 
-tk::Retained &tk_retained()
+kveld::Retained &kveld_retained()
 {
     check_once();
 
     return block;
 }
 
-bool tk_retained_survived()
+bool kveld_retained_survived()
 {
     check_once();
 
     return survived;
 }
 
-void tk_retained_seal()
+void kveld_retained_seal()
 {
     /* Validate first even here. */
     check_once();
 
-    tk::retained_seal(block);
+    kveld::retained_seal(block);
 }

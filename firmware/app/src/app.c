@@ -7,14 +7,15 @@
 #include "app_logic.h"
 #include "channels.h"
 
-LOG_MODULE_DECLARE(tk_app, LOG_LEVEL_INF);
+LOG_MODULE_DECLARE(kveld_app, LOG_LEVEL_INF);
 
 /* 3072 against a high-water mark of 1728 measured on the board, so 44 % spare. */
 #define APP_STACK_SIZE 3072
 #define APP_PRIORITY 5
 
 /* Of the four channels this thread subscribes to, chan_service carries the most. */
-BUILD_ASSERT(sizeof(struct tk_service_msg) <= CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE,
+BUILD_ASSERT(sizeof(struct kveld_service_msg) <=
+                 CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE,
              "chan_service no longer fits the static subscriber buffer; "
              "raise CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE");
 
@@ -31,29 +32,29 @@ static void app_thread(void *p1, void *p2, void *p3)
     ARG_UNUSED(p2);
     ARG_UNUSED(p3);
 
-    if (tk_app_init() != 0) {
+    if (kveld_app_init() != 0) {
         return;
     }
 
     /* Process the category posted during initialization. */
-    tk_app_run();
+    kveld_app_run();
 
     while (true) {
         const struct zbus_channel *chan;
         union {
-            struct tk_category_msg category;
-            struct tk_next_msg next;
-            struct tk_service_msg service;
-            struct tk_corpus_msg corpus;
-            struct tk_render_msg render;
+            struct kveld_category_msg category;
+            struct kveld_next_msg next;
+            struct kveld_service_msg service;
+            struct kveld_corpus_msg corpus;
+            struct kveld_render_msg render;
         } msg;
 
         /* K_FOREVER lets Zephyr enter idle sleep. */
-        const k_timeout_t wait = tk_app_needs_timeout() ? K_MSEC(250) : K_FOREVER;
+        const k_timeout_t wait = kveld_app_needs_timeout() ? K_MSEC(250) : K_FOREVER;
         const int err = zbus_sub_wait_msg(&app_sub, &chan, &msg, wait);
 
         if (err == -ENOMSG) {
-            tk_app_run();
+            kveld_app_run();
             continue;
         }
 
@@ -64,26 +65,26 @@ static void app_thread(void *p1, void *p2, void *p3)
 
         if (chan == &chan_category) {
             /* Category changes remain available during a refresh. */
-            tk_app_post_category();
+            kveld_app_post_category();
         } else if (chan == &chan_next) {
-            if (tk_app_is_busy()) {
+            if (kveld_app_is_busy()) {
                 LOG_INF("press ignored: the panel is still refreshing");
             }
 
-            tk_app_post_next();
+            kveld_app_post_next();
         } else if (chan == &chan_service) {
             /* Service cards remain available during a refresh. */
-            tk_app_post_service(msg.service.text, msg.service.len);
+            kveld_app_post_service(msg.service.text, msg.service.len);
         } else if (chan == &chan_corpus) {
             /* No redraw: the new corpus applies on the next requested draw. */
             LOG_INF("corpus replaced: %s", msg.corpus.language);
-            tk_app_reload_corpus();
+            kveld_app_reload_corpus();
         } else if (chan == &chan_render) {
-            tk_app_post_render(msg.render.result == 0, msg.render.seq);
+            kveld_app_post_render(msg.render.result == 0, msg.render.seq);
         }
 
-        tk_app_run();
+        kveld_app_run();
     }
 }
 
-K_THREAD_DEFINE(tk_app_thread, APP_STACK_SIZE, app_thread, NULL, NULL, NULL, APP_PRIORITY, 0, 0);
+K_THREAD_DEFINE(kveld_app_thread, APP_STACK_SIZE, app_thread, NULL, NULL, NULL, APP_PRIORITY, 0, 0);

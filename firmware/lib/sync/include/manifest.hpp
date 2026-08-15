@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace tk
+namespace kveld
 {
 
 /** Supported question-bundle manifest schema. */
@@ -60,4 +60,4 @@ bool manifest_entry(const char *json, size_t len, const char *language, Manifest
 /** Parse a firmware manifest. `"sig": null` sets `signed_` to false. */
 bool firmware_parse(const char *json, size_t len, FirmwareRelease &out);
 
-} // namespace tk
+} // namespace kveld

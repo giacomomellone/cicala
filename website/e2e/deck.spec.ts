@@ -14,7 +14,7 @@ test.describe("your deck", () => {
     const work = questions.find((q) => q.decks.includes("work"))!;
     const notWork = questions.find((q) => !q.decks.includes("work"))!;
     await seedStorage(page, {
-      "tk.favs": JSON.stringify([work.id, notWork.id]),
+      "kveld.favs": JSON.stringify([work.id, notWork.id]),
     });
 
     await page.goto("/deck");
@@ -29,7 +29,7 @@ test.describe("your deck", () => {
     const ids = payload("en")
       .slice(0, 3)
       .map((q) => q.id);
-    await seedStorage(page, { "tk.favs": JSON.stringify(ids) });
+    await seedStorage(page, { "kveld.favs": JSON.stringify(ids) });
     await page.goto("/deck");
 
     await page.locator("#d-share").click();
@@ -52,11 +52,11 @@ test.describe("your deck", () => {
     await expect(page.locator("#d-rows .row")).toHaveCount(2);
 
     await page.locator("#d-rows .row-fav").first().click();
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.favs"))).toBe(null);
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.favs"))).toBe(null);
 
     await page.locator("#d-saveall").click();
     await expect
-      .poll(() => page.evaluate(() => localStorage.getItem("tk.favs")))
+      .poll(() => page.evaluate(() => localStorage.getItem("kveld.favs")))
       .toBe(JSON.stringify(ids));
   });
 
@@ -78,7 +78,7 @@ test.describe("your deck", () => {
     const ids = payload("en")
       .slice(0, 2)
       .map((q) => q.id);
-    await seedStorage(page, { "tk.favs": JSON.stringify(ids) });
+    await seedStorage(page, { "kveld.favs": JSON.stringify(ids) });
     await page.goto("/deck");
 
     const [download] = await Promise.all([
@@ -94,7 +94,7 @@ test.describe("language", () => {
     await page.goto("/browse");
     await page.locator('#lang-switch button[data-lang="de"]').click();
 
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.lang"))).toBe("de");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.lang"))).toBe("de");
 
     // The English rows are statically rendered; the island swaps them once the German payload lands.
     const german = new Set(payload("de").map((q) => q.text));

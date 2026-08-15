@@ -10,19 +10,19 @@ extern "C" {
 #endif
 
 /** Bind the display and reset the refresh policy. */
-int tk_panel_init(void);
+int kveld_panel_init(void);
 
 /** Draw `text`; return 0 or a negative errno after the panel finishes. */
-int tk_panel_render(const char *text, uint16_t len);
+int kveld_panel_render(const char *text, uint16_t len);
 
 /** Partial refreshes since the last full one. */
-uint16_t tk_panel_partial_count(void);
+uint16_t kveld_panel_partial_count(void);
 
 /** True when the next render will be a full refresh. */
-bool tk_panel_next_is_full(void);
+bool kveld_panel_next_is_full(void);
 
 /** Cell height of the font the last render chose, or 0 before the first one. */
-uint8_t tk_panel_last_font_height(void);
+uint8_t kveld_panel_last_font_height(void);
 
 #ifdef __cplusplus
 }

@@ -2,7 +2,7 @@
 
 #include <zephyr/sys/util.h>
 
-namespace tk
+namespace kveld
 {
 
 // clang-format off
@@ -266,4 +266,4 @@ int PowerFsm::on_charged()
     return TRANSITION(REPEAT);
 }
 
-} // namespace tk
+} // namespace kveld

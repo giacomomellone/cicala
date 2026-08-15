@@ -1,6 +1,6 @@
 # Use the complete application policy.
 
-mainmenu "tischkarte integration tests"
+mainmenu "kveld integration tests"
 
 rsource "../../Kconfig.policy"
 

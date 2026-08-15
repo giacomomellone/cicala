@@ -1,6 +1,6 @@
 # Use the application retained-block layout.
 
-mainmenu "tischkarte retained tests"
+mainmenu "kveld retained tests"
 
 rsource "../../Kconfig.policy"
 

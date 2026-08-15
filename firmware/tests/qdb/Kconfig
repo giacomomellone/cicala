@@ -1,6 +1,6 @@
 # Use the application bag capacity and recent-ring size.
 
-mainmenu "tischkarte qdb tests"
+mainmenu "kveld qdb tests"
 
 rsource "../../Kconfig.policy"
 

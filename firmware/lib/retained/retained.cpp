@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -64,4 +64,4 @@ void retained_seal(Retained &block)
     block.hash = payload_hash(block);
 }
 
-} // namespace tk
+} // namespace kveld

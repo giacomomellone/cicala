@@ -68,7 +68,7 @@ change in a firmware release. See `firmware/keys/README.md` for key handling.
 builds the application and matching bootloader, applies both signatures, and
 publishes these release assets:
 
-- `tischkarte-<version>.bin`
+- `kveld-<version>.bin`
 - `firmware.json`
 - `mcuboot-<version>.bin`
 
@@ -119,7 +119,7 @@ accepts images signed by its configured firmware key.
 ```sh
 .venv/bin/python -m esptool --port /dev/cu.usbserial-140 --chip esp32s3 \
     write-flash 0x0 /tmp/bench/mcuboot-0.1.0.bin \
-    0x20000 /tmp/bench/tischkarte-0.1.0.bin
+    0x20000 /tmp/bench/kveld-0.1.0.bin
 ```
 
 Build a second artifact with a higher version and the same host, serve its

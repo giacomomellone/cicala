@@ -1,8 +1,8 @@
 {
   // Paths for the SDK version pinned by deps/zephyr/SDK_VERSION.
-  "tischkarte.zephyrSdk": "${env:HOME}/Projects/zephyr-sdk-1.0.1",
-  "tischkarte.gdbTarget": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gdb",
-  "tischkarte.gdbSim": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-dc233c_zephyr-elf/bin/xtensa-dc233c_zephyr-elf-gdb",
+  "kveld.zephyrSdk": "${env:HOME}/Projects/zephyr-sdk-1.0.1",
+  "kveld.gdbTarget": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-espressif_esp32s3_zephyr-elf/bin/xtensa-espressif_esp32s3_zephyr-elf-gdb",
+  "kveld.gdbSim": "${env:HOME}/Projects/zephyr-sdk-1.0.1/gnu/xtensa-dc233c_zephyr-elf/bin/xtensa-dc233c_zephyr-elf-gdb",
   "editor.formatOnSave": true,
   "[c]": {
     "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd"

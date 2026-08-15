@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(tischkarte_layout LANGUAGES C CXX)
+project(kveld_layout LANGUAGES C CXX)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout kveld_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb kveld_qdb)
 
 target_sources(app PRIVATE src/main.cpp)
-target_link_libraries(app PRIVATE tk_layout tk_qdb)
+target_link_libraries(app PRIVATE kveld_layout kveld_qdb)
 
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 

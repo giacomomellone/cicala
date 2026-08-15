@@ -1,6 +1,6 @@
 #include "portal_page.hpp"
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -112,7 +112,7 @@ private:
 const char *const kHead =
     "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-    "<title>Tischkarte setup</title><style>"
+    "<title>Kveld setup</title><style>"
     "*{box-sizing:border-box}body{font:16px/1.5 system-ui,sans-serif;margin:0;"
     "padding:1.25rem;background:#eeeae2;color:#272522}main{max-width:34rem;margin:0 auto}"
     ".brand{display:flex;gap:.75rem;align-items:center;margin:.25rem 0 1.25rem}"
@@ -185,8 +185,8 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">tk</span><div>"
-          "<div class=\"eyebrow\">TISCHKARTE DEVICE</div><h1>Set up your table</h1>"
+    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
+          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Set up your table</h1>"
           "</div></header><p class=\"lede\">Give the device a network and choose the language "
           "for its questions.</p>");
     w.raw("<section class=\"panel\"><div class=\"panel-head\"><h2>Wi-Fi</h2>"
@@ -268,8 +268,8 @@ int page_saved(char *out, uint16_t out_size, const char *ssid)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">tk</span><div>"
-          "<div class=\"eyebrow\">TISCHKARTE DEVICE</div><h1>Saved</h1></div></header>");
+    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
+          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Saved</h1></div></header>");
 
     if (ssid == nullptr || ssid[0] == '\0') {
         w.raw("<p class=\"lede\">The language is set. It applies to the next question.</p>");
@@ -302,9 +302,9 @@ int page_notice(char *out, uint16_t out_size, const char *heading, const char *b
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">tk</span><div>"
-          "<div class=\"eyebrow\">TISCHKARTE DEVICE</div><h1>");
-    w.text(heading != nullptr ? heading : "Tischkarte");
+    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
+          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>");
+    w.text(heading != nullptr ? heading : "Kveld");
     w.raw("</h1></div></header><p class=\"lede\">");
     w.text(body != nullptr ? body : "Done.");
     w.raw("</p>");
@@ -323,12 +323,13 @@ int page_forget_confirm(char *out, uint16_t out_size)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">tk</span><div>"
-          "<div class=\"eyebrow\">TISCHKARTE DEVICE</div><h1>Forget saved Wi-Fi?</h1>"
+    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
+          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Forget saved Wi-Fi?</h1>"
           "</div></header><p class=\"lede\">This removes every saved network from the device. "
           "Your questions and language stay intact.</p>");
     w.raw("<form method=\"post\" action=\"/forget\"><input type=\"hidden\" name=\"confirm\" "
-          "value=\"forget\"><button class=\"danger\" type=\"submit\">Confirm and forget Wi-Fi</button></form>");
+          "value=\"forget\"><button class=\"danger\" type=\"submit\">Confirm and forget "
+          "Wi-Fi</button></form>");
     nav(w, false);
     w.raw(kFoot);
 
@@ -344,8 +345,8 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">tk</span><div>"
-          "<div class=\"eyebrow\">TISCHKARTE DEVICE</div><h1>Device status</h1>"
+    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
+          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Device status</h1>"
           "</div></header><section class=\"panel\"><div class=\"panel-head\"><h2>Connection</h2>");
 
     if (status.station_connected) {
@@ -402,7 +403,8 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
 
     w.raw("<section class=\"panel\"><h2>Maintenance</h2><div class=\"actions\">");
     // POST prevents link prefetching from starting a sync.
-    w.raw("<form method=\"post\" action=\"/sync\"><button type=\"submit\">Check for updates</button></form>");
+    w.raw("<form method=\"post\" action=\"/sync\"><button type=\"submit\">Check for "
+          "updates</button></form>");
     w.raw("<form method=\"post\" action=\"/forget\"><button class=\"danger\" type=\"submit\">"
           "Forget saved Wi-Fi</button></form></div><p class=\"note\">");
     if (status.sync_result != nullptr && status.sync_result[0] != '\0') {
@@ -418,4 +420,4 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     return w.finish();
 }
 
-} // namespace tk
+} // namespace kveld

@@ -1,4 +1,4 @@
-/* The `tk` settings subtree: the chosen language, and the installed corpus release. */
+/* The `kveld` settings subtree: the chosen language, and the installed corpus release. */
 
 #include "language.h"
 
@@ -9,19 +9,19 @@
 
 #include "corpus.h"
 
-LOG_MODULE_REGISTER(tk_language, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_language, LOG_LEVEL_INF);
 
-static char chosen[TK_LANGUAGE_LEN] = CONFIG_TK_CORPUS_LANGUAGE;
-static char installed[TK_CORPUS_VERSION_LEN];
+static char chosen[KVELD_LANGUAGE_LEN] = CONFIG_KVELD_CORPUS_LANGUAGE;
+static char installed[KVELD_CORPUS_VERSION_LEN];
 
-bool tk_language_available(const char *code)
+bool kveld_language_available(const char *code)
 {
     if (code == NULL) {
         return false;
     }
 
-    for (size_t i = 0; i < tk_corpus_count(); i++) {
-        if (strcmp(tk_corpus_language(i), code) == 0) {
+    for (size_t i = 0; i < kveld_corpus_count(); i++) {
+        if (strcmp(kveld_corpus_language(i), code) == 0) {
             return true;
         }
     }
@@ -29,12 +29,12 @@ bool tk_language_available(const char *code)
     return false;
 }
 
-const char *tk_language(void)
+const char *kveld_language(void)
 {
     return chosen;
 }
 
-const char *tk_corpus_version(void)
+const char *kveld_corpus_version(void)
 {
     return installed;
 }
@@ -43,10 +43,10 @@ const char *tk_corpus_version(void)
 
 #include <zephyr/settings/settings.h>
 
-#define LANGUAGE_KEY "tk/lang"
-#define VERSION_KEY "tk/corpus_ver"
+#define LANGUAGE_KEY "kveld/lang"
+#define VERSION_KEY "kveld/corpus_ver"
 
-/* Called by the settings subsystem for each key under `tk`. */
+/* Called by the settings subsystem for each key under `kveld`. */
 static int language_load(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
     if (strcmp(name, "corpus_ver") == 0) {
@@ -71,7 +71,7 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
         return -ENOENT;
     }
 
-    char stored[TK_LANGUAGE_LEN] = {0};
+    char stored[KVELD_LANGUAGE_LEN] = {0};
 
     if (len >= sizeof(stored)) {
         LOG_WRN("stored language is %u bytes; ignoring it", (unsigned int) len);
@@ -87,7 +87,7 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
     stored[n] = '\0';
 
     /* Ignore stored languages without a compiled corpus. */
-    if (!tk_language_available(stored)) {
+    if (!kveld_language_available(stored)) {
         LOG_WRN("stored language %s is not in this image; keeping %s", stored, chosen);
         return 0;
     }
@@ -98,11 +98,11 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
     return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE(tk_language, "tk", NULL, language_load, NULL, NULL);
+SETTINGS_STATIC_HANDLER_DEFINE(kveld_language, "kveld", NULL, language_load, NULL, NULL);
 
-int tk_language_set(const char *code)
+int kveld_language_set(const char *code)
 {
-    if (!tk_language_available(code)) {
+    if (!kveld_language_available(code)) {
         LOG_WRN("refusing a language this image does not carry: %s",
                 code != NULL ? code : "(null)");
         return -EINVAL;
@@ -125,7 +125,7 @@ int tk_language_set(const char *code)
     return 0;
 }
 
-int tk_corpus_version_set(const char *version)
+int kveld_corpus_version_set(const char *version)
 {
     if (version == NULL || strlen(version) >= sizeof(installed)) {
         return -EINVAL;
@@ -145,14 +145,14 @@ int tk_corpus_version_set(const char *version)
 
 #else
 
-int tk_corpus_version_set(const char *version)
+int kveld_corpus_version_set(const char *version)
 {
     ARG_UNUSED(version);
 
     return -ENOTSUP;
 }
 
-int tk_language_set(const char *code)
+int kveld_language_set(const char *code)
 {
     ARG_UNUSED(code);
 

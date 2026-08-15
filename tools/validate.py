@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the Tischkarte question database.
+"""Validate the Kveld question database.
 
 Checks every questions/{lang}/questions.yaml (shipped and incubator) against
 questions/schema.json plus the rules JSON Schema cannot express: id format and
@@ -74,9 +74,9 @@ def load_config(root: Path, rep: Reporter):
     except (OSError, ValueError) as exc:
         rep.error(schema_path, 0, f"cannot read schema: {exc}")
         return None, None
-    cfg = schema.get("x-tischkarte")
+    cfg = schema.get("x-kveld")
     if not cfg:
-        rep.error(schema_path, 0, "schema.json is missing the x-tischkarte config block")
+        rep.error(schema_path, 0, "schema.json is missing the x-kveld config block")
         return None, None
     return schema, cfg
 
@@ -181,7 +181,7 @@ def _render_scalar(value) -> str:
 
 def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
     lines = [
-        f"# questions/{lang}/questions.yaml — Tischkarte question database (CC0).",
+        f"# questions/{lang}/questions.yaml — Kveld question database (CC0).",
         "# Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;",
         "# CI assigns them. Never edit an existing id. See CONTRIBUTING.md.",
         "",

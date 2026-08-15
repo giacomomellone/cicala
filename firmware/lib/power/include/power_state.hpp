@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace tk
+namespace kveld
 {
 
 enum class PowerState {
@@ -20,4 +20,4 @@ enum class PowerState {
     CHARGED,
 };
 
-} // namespace tk
+} // namespace kveld

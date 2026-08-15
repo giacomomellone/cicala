@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://tischkarte.pages.dev/questions/schema.json",
-  "title": "Tischkarte question corpus",
+  "$id": "https://kveld.pages.dev/questions/schema.json",
+  "title": "Kveld question corpus",
   "description": "Each shipped language stores its independent corpus in questions/{lang}/questions.yaml. A question is stored once and may be eligible for more than one physical deck.",
   "type": "array",
   "items": {
@@ -61,7 +61,7 @@
       }
     }
   },
-  "x-tischkarte": {
+  "x-kveld": {
     "description": "Project config consumed by the validation and build tools, and by the two places a contributor meets this vocabulary: the website form and the GitHub issue form. `depthLabels` are the exact option strings of the issue form's depth dropdown, indexed by depth minus one — GitHub drops a prefilled dropdown value that is not one of the declared options, so the strings have to agree character for character. Not part of the JSON Schema vocabulary.",
     "questionFile": "questions.yaml",
     "decks": ["new_people", "close", "family", "work", "here", "wild"],

@@ -1,6 +1,6 @@
 # Use the application portal deadlines in boundary tests.
 
-mainmenu "tischkarte portal tests"
+mainmenu "kveld portal tests"
 
 rsource "../../Kconfig.policy"
 

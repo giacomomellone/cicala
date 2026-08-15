@@ -2,4 +2,4 @@
 
 #include <zephyr/linker/iterable_sections.h>
 
-ITERABLE_SECTION_ROM(http_resource_desc_tk_portal, Z_LINK_ITERABLE_SUBALIGN)
+ITERABLE_SECTION_ROM(http_resource_desc_kveld_portal, Z_LINK_ITERABLE_SUBALIGN)

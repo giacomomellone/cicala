@@ -8,7 +8,7 @@
 #include "release_fixture.h"
 #include "trusted_key.h"
 
-using namespace tk;
+using namespace kveld;
 
 namespace
 {
@@ -21,14 +21,14 @@ void reset()
 {
     memcpy(sig, kReleaseSig, sizeof(sig));
     memcpy(digest, kReleaseDigest, sizeof(digest));
-    memcpy(key, TISCHKARTE_TRUSTED_KEY, sizeof(key));
+    memcpy(key, KVELD_TRUSTED_KEY, sizeof(key));
 }
 
 } // namespace
 
-ZTEST_SUITE(tk_ed25519, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(kveld_ed25519, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(tk_ed25519, test_the_real_release_signature_verifies)
+ZTEST(kveld_ed25519, test_the_real_release_signature_verifies)
 {
     reset();
 
@@ -36,7 +36,7 @@ ZTEST(tk_ed25519, test_the_real_release_signature_verifies)
                  "the shipped db-2026.08.1 signature must verify against the committed key");
 }
 
-ZTEST(tk_ed25519, test_a_tampered_bundle_is_refused)
+ZTEST(kveld_ed25519, test_a_tampered_bundle_is_refused)
 {
     const size_t at[] = {0, 1, sizeof(digest) / 2, sizeof(digest) - 1};
 
@@ -49,7 +49,7 @@ ZTEST(tk_ed25519, test_a_tampered_bundle_is_refused)
     }
 }
 
-ZTEST(tk_ed25519, test_a_tampered_signature_is_refused)
+ZTEST(kveld_ed25519, test_a_tampered_signature_is_refused)
 {
     const size_t at[] = {0, 31, 32, sizeof(sig) - 1};
 
@@ -62,7 +62,7 @@ ZTEST(tk_ed25519, test_a_tampered_signature_is_refused)
     }
 }
 
-ZTEST(tk_ed25519, test_another_key_cannot_sign_for_this_one)
+ZTEST(kveld_ed25519, test_another_key_cannot_sign_for_this_one)
 {
     const size_t at[] = {0, sizeof(key) / 2, sizeof(key) - 1};
 
@@ -75,7 +75,7 @@ ZTEST(tk_ed25519, test_another_key_cannot_sign_for_this_one)
     }
 }
 
-ZTEST(tk_ed25519, test_an_all_zero_signature_is_refused)
+ZTEST(kveld_ed25519, test_an_all_zero_signature_is_refused)
 {
     reset();
     memset(sig, 0, sizeof(sig));
@@ -83,7 +83,7 @@ ZTEST(tk_ed25519, test_an_all_zero_signature_is_refused)
     zassert_false(ed25519_verify(sig, digest, sizeof(digest), key));
 }
 
-ZTEST(tk_ed25519, test_a_truncated_or_extended_message_is_refused)
+ZTEST(kveld_ed25519, test_a_truncated_or_extended_message_is_refused)
 {
     reset();
 
@@ -92,7 +92,7 @@ ZTEST(tk_ed25519, test_a_truncated_or_extended_message_is_refused)
     zassert_false(ed25519_verify(sig, digest, 0, key), "and an empty one is not a message");
 }
 
-ZTEST(tk_ed25519, test_it_refuses_rather_than_dereferences)
+ZTEST(kveld_ed25519, test_it_refuses_rather_than_dereferences)
 {
     reset();
 

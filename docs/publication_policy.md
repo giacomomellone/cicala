@@ -84,7 +84,7 @@ Treat the ignore list as ergonomics for build output and local state.
 The boundary is enforced by reading the change. Every pull request carries a
 checklist item confirming that the diff contains no credentials, supplier
 quotations, private commercial strategy, or participant personal data; see
-[`.github/pull_request_template.md`](https://github.com/tischkarte/tischkarte/blob/main/.github/pull_request_template.md).
+[`.github/pull_request_template.md`](https://github.com/giacomomellone/kveld/blob/main/.github/pull_request_template.md).
 Confirm it against the actual diff.
 
 ## If something private is already public

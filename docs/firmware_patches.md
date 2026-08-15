@@ -19,7 +19,7 @@ partial and keeps the RTC refresh counter aligned with the image on the glass.
 The driver clears rows 120 and 121 outside its reported 120-row geometry. The
 physical panel has 122 rows.
 
-`CONFIG_TK_PANEL_DEEP_SLEEP` selects the hardware-reset option because an
+`CONFIG_KVELD_PANEL_DEEP_SLEEP` selects the hardware-reset option because an
 SSD1680 in deep sleep ignores SPI until RESET. That combination is disabled
 until panel RAM retention across the reset has been measured.
 
@@ -38,7 +38,7 @@ just fw-unpatch    # restore the pinned Zephyr tree
 after later updates.
 
 `fw-unpatch` runs west's clean operation inside `deps/zephyr`. It discards every
-local change and untracked file in that checkout. Files in the Tischkarte repo
+local change and untracked file in that checkout. Files in the Kveld repo
 are unaffected.
 
 ## Add a patch

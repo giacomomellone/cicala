@@ -12,21 +12,21 @@
 
 #include "channels.h"
 
-LOG_MODULE_REGISTER(tk_update, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_update, LOG_LEVEL_INF);
 
 #ifdef CONFIG_SETTINGS
 
 #include <zephyr/settings/settings.h>
 
-/* `tk/fw/ver`, not `tk/fw_ver`. */
-#define FIRMWARE_KEY "tk/fw/ver"
+/* `kveld/fw/ver`, not `kveld/fw_ver`. */
+#define FIRMWARE_KEY "kveld/fw/ver"
 
 /* Last version recorded in NVS. */
 static char last_seen[32];
 
 static int firmware_load(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
-    /* The settings handler receives the suffix after `tk/fw`. */
+    /* The settings handler receives the suffix after `kveld/fw`. */
     if (strcmp(name, "ver") != 0) {
         return -ENOENT;
     }
@@ -49,9 +49,9 @@ static int firmware_load(const char *name, size_t len, settings_read_cb read_cb,
 }
 
 /* Firmware versions use their own settings subtree. */
-SETTINGS_STATIC_HANDLER_DEFINE(tk_update, "tk/fw", NULL, firmware_load, NULL, NULL);
+SETTINGS_STATIC_HANDLER_DEFINE(kveld_update, "kveld/fw", NULL, firmware_load, NULL, NULL);
 
-void tk_update_notice_check(void)
+void kveld_update_notice_check(void)
 {
     if (strcmp(last_seen, APP_VERSION_STRING) == 0) {
         return;
@@ -78,7 +78,7 @@ void tk_update_notice_check(void)
 
     LOG_INF("firmware updated: %s -> %s", last_seen, APP_VERSION_STRING);
 
-    struct tk_service_msg msg = {};
+    struct kveld_service_msg msg = {};
 
     msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text),
                                   "Updated to %s. Press for a question.", APP_VERSION_STRING);
@@ -95,7 +95,7 @@ void tk_update_notice_check(void)
 
 #else /* !CONFIG_SETTINGS */
 
-void tk_update_notice_check(void)
+void kveld_update_notice_check(void)
 {
     /* Update notices require a persisted previous version. */
 }

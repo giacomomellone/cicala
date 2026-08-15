@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-namespace tk
+namespace kveld
 {
 
 /** Network fields shown by the setup page. */
@@ -54,4 +54,4 @@ int page_forget_confirm(char *out, uint16_t out_size);
 /** The read-only page: what the device is, and what it knows. */
 int page_status(char *out, uint16_t out_size, const PortalStatus &status);
 
-} // namespace tk
+} // namespace kveld

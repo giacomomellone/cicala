@@ -81,7 +81,7 @@ def parse_bundle(blob: bytes):
     version, lang = take_str8(), take_str8()
     decks = json.loads(
         (Path(__file__).resolve().parent.parent / "questions" / "schema.json").read_text()
-    )["x-tischkarte"]["decks"]
+    )["x-kveld"]["decks"]
     (count,) = struct.unpack_from("<H", raw, pos)
     pos += 2
     items = []
@@ -132,7 +132,7 @@ def main(argv=None) -> int:
         help="ed25519 private key PEM; omit for an unsigned dev build",
     )
     # Artifact signatures authenticate downloads; the device has no trusted clock.
-    parser.add_argument("--base-url", default="http://tischkarte.invalid/device")
+    parser.add_argument("--base-url", default="http://kveld.invalid/device")
     args = parser.parse_args(argv)
 
     out_dir = args.out or args.root / "dist" / "bundles"

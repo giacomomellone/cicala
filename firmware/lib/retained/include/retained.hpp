@@ -7,7 +7,7 @@
 
 #include "qdb.hpp"
 
-namespace tk
+namespace kveld
 {
 
 /** State preserved across a deep-sleep wake. */
@@ -46,4 +46,4 @@ void retained_seal(Retained &block);
 /** True when `block` currently carries a valid stamp. Does not modify it. */
 bool retained_sealed(const Retained &block);
 
-} // namespace tk
+} // namespace kveld

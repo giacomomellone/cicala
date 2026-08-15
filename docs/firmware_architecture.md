@@ -130,7 +130,7 @@ outlive every returned view.
 that an offset table would cost more RAM than the scan saves.
 
 A question is eligible when its category bit is set and its depth does not
-exceed `CONFIG_TK_PLAYBACK_DEPTH_MAX`. Corpus validation restricts dark and
+exceed `CONFIG_KVELD_PLAYBACK_DEPTH_MAX`. Corpus validation restricts dark and
 spicy questions to Wild.
 
 ### Shuffle bag
@@ -190,14 +190,14 @@ The following rules sit at the state-machine boundary:
 - Each draw, category card, or service card clears stale render state before it
   queues a refresh.
 - A failed category or draw is considered settled until another input arrives.
-- `CONFIG_TK_REFRESH_TIMEOUT_MS` prevents a stalled panel from holding the
+- `CONFIG_KVELD_REFRESH_TIMEOUT_MS` prevents a stalled panel from holding the
   machine in `REFRESHING` forever.
 
 ## Display
 
 `panel.cpp` lays out UTF-8 text through `lib/layout`, draws through Zephyr CFB,
 and selects full or partial refresh. A full refresh is forced at boot and after
-`CONFIG_TK_FULL_REFRESH_INTERVAL` partial updates.
+`CONFIG_KVELD_FULL_REFRESH_INTERVAL` partial updates.
 
 The SSD16xx driver performs a full update when blanking changes from on to off.
 `panel.cpp` therefore uses `display_blanking_on()`, `display_write()`, then
@@ -243,7 +243,7 @@ the other button usable. The EXT1 wake status is latched at `PRE_KERNEL_1` so
 later driver initialization cannot erase it. Next wins if both bits are set.
 
 VBUS uses a separate active-high EXT0 trigger when
-`CONFIG_TK_POWER_WAKE_ON_USB` is enabled. It is disabled by default because it
+`CONFIG_KVELD_POWER_WAKE_ON_USB` is enabled. It is disabled by default because it
 keeps the RTC peripheral domain powered. With the default setting, plugging in
 does not wake the device; the next button press wakes it, VBUS is sampled during
 boot, and the network window opens.
@@ -277,7 +277,7 @@ stateDiagram-v2
 LOW and CRITICAL refuse panel refreshes. UNKNOWN permits them, so a missing or
 failed divider does not disable the tabletop interaction. Downward transitions
 are immediate. Recovery uses hysteresis. A reading below
-`CONFIG_TK_POWER_PLAUSIBLE_MV` is treated as an invalid divider reading.
+`CONFIG_KVELD_POWER_PLAUSIBLE_MV` is treated as an invalid divider reading.
 
 The CHARGED state is a voltage estimate; the breadboard charger has no
 termination-status output. External power keeps the device awake in both
@@ -300,7 +300,7 @@ the arbiter and GPIO writes, so blink state has a single writer.
 
 ## Setup, sync, and updates
 
-Holding Category and Next for `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` during boot opens
+Holding Category and Next for `CONFIG_KVELD_PORTAL_ENTRY_HOLD_MS` during boot opens
 the setup portal. The device scans first, starts a WPA2 access point with a
 fresh session password, serves DHCP/DNS/HTTP, stores submitted credentials, then
 joins the selected network. The password is generated from the device random
@@ -387,7 +387,7 @@ hardware.
 - Measure whole-device deep-sleep current on rev A without DevKitC indicator
   loads.
 - Measure the lowest reliable e-paper refresh voltage and set
-  `TK_REFRESH_MIN_MV` from that result.
+  `KVELD_REFRESH_MIN_MV` from that result.
 - Measure the current cost of enabling VBUS wake through EXT0.
 - Verify font coverage and layout for every released language.
 - Run multi-phone setup-portal and long-transfer stress tests.

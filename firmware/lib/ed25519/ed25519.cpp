@@ -6,7 +6,7 @@ extern "C" {
 #include "tweetnacl.h"
 }
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -42,7 +42,7 @@ bool ed25519_verify(const uint8_t *sig, const uint8_t *msg, size_t msg_len,
     return err == 0 && recovered_len == msg_len;
 }
 
-} // namespace tk
+} // namespace kveld
 
 // TweetNaCl requires this symbol for key generation, which firmware forbids.
 extern "C" void randombytes(unsigned char *buffer, unsigned long long len)

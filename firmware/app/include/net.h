@@ -9,26 +9,26 @@
 extern "C" {
 #endif
 
-#ifdef CONFIG_TK_NET
+#ifdef CONFIG_KVELD_NET
 
 /** True while anything is on air. */
-bool tk_net_is_active(void);
+bool kveld_net_is_active(void);
 
 /** The form was posted and the credentials are stored. */
-void tk_net_notify_credentials(void);
+void kveld_net_notify_credentials(void);
 
 /** Somebody pressed "sync now" in the portal. */
-void tk_net_notify_sync(void);
+void kveld_net_notify_sync(void);
 
 #else
 
 /** No radio in this image, so nothing is ever on air. */
-static inline bool tk_net_is_active(void)
+static inline bool kveld_net_is_active(void)
 {
     return false;
 }
 
-#endif /* CONFIG_TK_NET */
+#endif /* CONFIG_KVELD_NET */
 
 #ifdef __cplusplus
 }

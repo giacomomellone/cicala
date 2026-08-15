@@ -5,10 +5,10 @@
 
 / {
     aliases {
-        tk-category = &tk_category;
-        tk-next = &tk_next;
-        tk-led-red = &led_red;
-        tk-led-green = &led_green;
+        kveld-category = &kveld_category;
+        kveld-next = &kveld_next;
+        kveld-led-red = &led_red;
+        kveld-led-green = &led_green;
     };
 
     zephyr,user {
@@ -19,11 +19,11 @@
         io-channels = <&adc0 0>;
 
         /* A 100 kΩ/150 kΩ divider puts about 3.0 V on this VBUS input. */
-        tk-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+        kveld-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
     };
 
     /* The status LEDs, each through its own resistor to ground. */
-    tk_leds: tk-leds {
+    kveld_leds: kveld-leds {
         compatible = "gpio-leds";
         led_red: red {
             gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
@@ -36,15 +36,15 @@
     };
 
     /* The two buttons. */
-    tk_buttons: tk-buttons {
+    kveld_buttons: kveld-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
-        tk_category: category {
+        kveld_category: category {
             gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
             zephyr,code = <INPUT_KEY_MENU>;
             label = "category";
         };
-        tk_next: next {
+        kveld_next: next {
             gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
             zephyr,code = <INPUT_KEY_ENTER>;
             label = "next";
@@ -61,7 +61,7 @@
 };
 
 / {
-    tk_mipi_dbi: mipi-dbi {
+    kveld_mipi_dbi: mipi-dbi {
         compatible = "zephyr,mipi-dbi-spi";
         spi-dev = <&spi2>;
         dc-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
@@ -71,7 +71,7 @@
         #size-cells = <0>;
         status = "okay";
 
-        tk_epaper: ssd16xxfb@0 {
+        kveld_epaper: ssd16xxfb@0 {
             compatible = "gooddisplay,gdey0213b74", "solomon,ssd1680";
             reg = <0>;
             mipi-max-frequency = <4000000>;
@@ -92,7 +92,7 @@
     };
 
     chosen {
-        zephyr,display = &tk_epaper;
+        zephyr,display = &kveld_epaper;
     };
 };
 
@@ -127,7 +127,7 @@
 /* Where a synced corpus lives. */
 &flash0 {
     partitions {
-        tk_corpus_partition: partition@400000 {
+        kveld_corpus_partition: partition@400000 {
             label = "corpus";
             reg = <0x400000 DT_SIZE_K(512)>;
         };
@@ -138,10 +138,10 @@
     fstab {
         compatible = "zephyr,fstab";
 
-        tk_corpus_fs: tk_corpus_fs {
+        kveld_corpus_fs: kveld_corpus_fs {
             compatible = "zephyr,fstab,littlefs";
             mount-point = "/corpus";
-            partition = <&tk_corpus_partition>;
+            partition = <&kveld_corpus_partition>;
             automount;
             read-size = <16>;
             prog-size = <16>;

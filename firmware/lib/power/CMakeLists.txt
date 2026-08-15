@@ -1,5 +1,5 @@
-zephyr_library_named(tk_power)
+zephyr_library_named(kveld_power)
 zephyr_library_sources(power_fsm.cpp)
 zephyr_include_directories(include)
 
-add_dependencies(tk_power zephyr_generated_headers)
+add_dependencies(kveld_power zephyr_generated_headers)
