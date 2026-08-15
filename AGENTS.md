@@ -24,6 +24,8 @@ It must not contain GTM plans, pricing strategy, margins, detailed internal COGS
 
 Component price indications in `hardware/pcb/BOM.md` and `docs/prototype_bom.md` are reproduction aids for makers and stay here. A price appearing in a document is not by itself a reason to move it.
 
+The contributor-facing version of this boundary, with the routing procedure and the reason `.gitignore` does not enforce it, is [docs/publication_policy.md](docs/publication_policy.md).
+
 Never copy content from the private repository into this one without explicit publication approval.
 
 If `../kveld-internal` is unavailable, stop and ask rather than putting private material here.
