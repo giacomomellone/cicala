@@ -17,7 +17,7 @@ test.describe("play", () => {
         }
       }).observe({ type: "layout-shift", buffered: true });
     });
-    await page.goto("/");
+    await page.goto(`/q/${payload("en")[0]!.id}`);
 
     const wordmark = page.getByRole("link", { name: "Kveld home" });
     await expect(wordmark).toHaveText("kveld");
