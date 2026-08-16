@@ -257,6 +257,13 @@ ZTEST(kveld_portal, test_page_setup_lists_networks_and_marks_the_language)
     zassert_true(contains(page, "<option value=\"de\" selected>"));
     zassert_false(contains(page, "<option value=\"en\" selected>"));
     zassert_true(contains(page, "type=\"password\""));
+    zassert_true(contains(page, "<span class=\"wordmark\">kveld</span>"));
+    zassert_false(contains(page, "class=\"mark\""), "the old KV tile must not return");
+    zassert_true(contains(page, "background:#faf8f2"));
+    zassert_true(contains(page, "color:#1f1f1d"));
+    zassert_true(contains(page, "#c24a22"), "rust is reserved for interactive states");
+    zassert_false(contains(page, "http://"), "the captive page must not fetch remote assets");
+    zassert_false(contains(page, "https://"), "the captive page must not fetch remote assets");
 }
 
 ZTEST(kveld_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothing)

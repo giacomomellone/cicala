@@ -36,16 +36,20 @@ body {
   gap: 1rem;
   padding: 0.9rem 1.25rem;
   border-bottom: 1px solid var(--line);
+  color: var(--ink);
 }
 
 .wordmark {
-  font-family: var(--font-ui);
-  font-weight: 500;
-  font-size: 0.9375rem;
-  letter-spacing: 0.02em;
-  color: var(--ink);
+  font-family: var(--font-question);
+  font-weight: 400;
+  font-size: clamp(1.4rem, 4vw, 1.6rem);
+  font-kerning: normal;
+  font-feature-settings: "kern" 1;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  color: inherit;
   text-decoration: none;
-  padding: 0.5rem 0;
+  padding: 0.45rem 0.1rem 0.5rem 0;
 }
 
 .site-nav {
@@ -594,6 +598,26 @@ input[type="checkbox"] {
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+@media (max-width: 30rem) {
+  .site-header {
+    gap: 0.5rem;
+    padding-inline: 0.75rem;
+  }
+
+  .site-nav {
+    gap: 0.1rem;
+    font-size: 0.75rem;
+  }
+
+  .site-nav a {
+    padding-inline: 0.3rem;
+  }
+
+  .site-nav .nav-dot {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

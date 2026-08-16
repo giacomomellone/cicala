@@ -41,6 +41,7 @@ Requires `just`, Python 3.11+ and Node 20+. `just setup` creates the venv (`.ven
 ## Documentation
 
 - [docs/design.md](docs/design.md): product and UX rationale
+- [docs/brand.md](docs/brand.md): public wordmark, typography, colour, and asset rules
 - [docs/device_prototype.md](docs/device_prototype.md): device feasibility review, enclosure study targets, and prototype plan
 - [docs/prototype_bom.md](docs/prototype_bom.md): breadboard and rev A parts list
 - [docs/decisions.md](docs/decisions.md): decision log

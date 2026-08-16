@@ -958,3 +958,24 @@ The setup access point now uses WPA2-PSK. Each portal session gets a fresh
 password made from three lowercase words and a digit using the device random
 source. It remains in RAM, appears on the e-paper service card, and is not
 shown by the web status page. The password is cleared when the portal closes.
+
+## 2026-08-16: The Kveld identity is typographic
+
+The primary wordmark is lowercase `kveld` in Literata. The website renders it
+as live text; external assets are PNGs rasterized from the same bundled font.
+IBM Plex Mono remains the interface and metadata typeface. The existing paper,
+ink, line, and rust tokens remain unchanged.
+
+There is no separate logo symbol. Square formats use the lowercase Literata
+`k` from the wordmark. The old question-mark favicon and social image are
+removed, and no SVG logo replaces them. Rust remains an interaction colour and
+does not enter the monochrome wordmark.
+
+The question stays visually dominant. The e-paper and normal device face carry
+no logo, and there are no startup or sleep logo screens. The phone captive
+portal uses a live-text wordmark and the same palette without downloading font
+or image assets. A future enclosure may use a small blind emboss only on its
+underside or concealed lower edge.
+
+Accepted cost: the repository prepares the PNGs but cannot change GitHub or
+other service avatars automatically; those are manual publication steps.

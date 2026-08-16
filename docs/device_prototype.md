@@ -50,6 +50,11 @@ top and its label on the cap. Category names are printed by the display.
 The size is a planning envelope. Component drawings, button-label legibility,
 and the e-paper layout test may change it.
 
+The normal tabletop face remains free of branding: no wordmark appears on the
+e-paper, top shell, or beside the Category and Next controls. A production
+enclosure may use a small blind emboss on the underside or concealed lower
+edge. It is optional and does not change the current prototype renders.
+
 ## How category selection works
 
 The order stays `new people`, `close`, `family`, `work`, `here`, `wild`.
