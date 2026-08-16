@@ -1,10 +1,6 @@
 # BOM — Rev A planning list
 
-The KiCad hierarchy and mechanical board exist, but the subsystem sheets are
-not captured. This list identifies the blocks and candidate mechanical parts
-that Rev A must price and fit. It is not an orderable production BOM. For
-development-board and physical-model purchases, use
-[docs/prototype_bom.md](../../docs/prototype_bom.md).
+The KiCad hierarchy and mechanical board exist, but the subsystem sheets are not captured. This list identifies the blocks and candidate mechanical parts that Rev A must price and fit. It is not an orderable production BOM. For development-board and physical-model purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
 
 | Ref            | Part                                                                                                   | Package               | Candidate MPN                                                                                                 |   Qty | Single-unit indication |
 | -------------- | ------------------------------------------------------------------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------- | ----: | ---------------------: |
@@ -27,20 +23,13 @@ development-board and physical-model purchases, use
 | MECH1          | Small round Category cap with overload stop                                                            | custom                | open                                                                                                          |     1 |                    TBD |
 | MECH2          | Larger rounded-pill Next cap with shallow concave top and overload stop                                | custom                | open                                                                                                          |     1 |                    TBD |
 
-The roughly 20 EUR Waveshare HAT is a reusable development module, not the
-production display cost. The target board uses the bare GDEY0213B74 panel,
-listed at 5.36 USD by Good Display in July 2026, plus the FPC connector and
-roughly 0.50 EUR of SSD1680 support components. Allow about 6–10 EUR for the
-display-specific parts at prototype quantities, before PCB assembly, shipping,
-tax, yield loss, and a protective lens. Request a manufacturer quote once the
-expected production quantity is known.
+The roughly 20 EUR Waveshare HAT is a reusable development module, not the production display cost. The target board uses the bare GDEY0213B74 panel, listed at 5.36 USD by Good Display in July 2026, plus the FPC connector and roughly 0.50 EUR of SSD1680 support components. Allow about 6–10 EUR for the display-specific parts at prototype quantities, before PCB assembly, shipping, tax, yield loss, and a protective lens. Request a manufacturer quote once the expected production quantity is known.
 
 Open during schematic capture:
 
 - BQ25185 charge, input, NTC and thermal settings against the selected protected cell;
 - charge current;
-- external antenna, cable and connector qualification for WROOM-1U, or closure
-  of the WROOM-1 display/keep-out conflict;
+- external antenna, cable and connector qualification for WROOM-1U, or closure of the WROOM-1 display/keep-out conflict;
 - reviewed footprints for the charger, switches, display FPC and status LED;
 - button/antenna separation;
 - both button-cap, lens, USB, and case-seam ingress paths;

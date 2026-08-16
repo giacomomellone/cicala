@@ -72,396 +72,191 @@ Dependency justifications (dev-only, zero runtime bytes): `vitest` is the Vite-n
 
 ## 2026-07-26: Delete the OLED
 
-The device has one display: e-paper, showing only the question. An absolute
-selector makes category preview redundant; follow-up nudges belong in question
-text or human listening; service setup belongs on a phone. This deletes the
-OLED, its window, driver, rail, load switch, and status vocabulary.
+The device has one display: e-paper, showing only the question. An absolute selector makes category preview redundant; follow-up nudges belong in question text or human listening; service setup belongs on a phone. This deletes the OLED, its window, driver, rail, load switch, and status vocabulary.
 
-Accepted cost: battery, sync, and language state have no tabletop display.
-Setup must be discoverable through packaging and the USB-plus-Next service
-gesture. This supersedes the 2026-07-24 decision to show a device display ID on
-the website; human-visible question numbers are removed from both products.
+Accepted cost: battery, sync, and language state have no tabletop display. Setup must be discoverable through packaging and the USB-plus-Next service gesture. This supersedes the 2026-07-24 decision to show a device display ID on the website; human-visible question numbers are removed from both products.
 
 ## 2026-07-26: Use a six-position absolute selector
 
-The physical selector order is `new_people`, `close`, `family`, `work`, `here`,
-`wild`. Position is readable at zero power, a turn cannot silently wrap, and
-the selected deck is read from contacts on every wake. A separate button owns
-Next; turning to a stable detent draws immediately.
+The physical selector order is `new_people`, `close`, `family`, `work`, `here`, `wild`. Position is readable at zero power, a turn cannot silently wrap, and the selected deck is read from contacts on every wake. A separate button owns Next; turning to a stable detent draws immediately.
 
-Accepted cost: a compact absolute switch is less common and more expensive
-than an EC11 encoder, uses six GPIOs in the simple circuit, and freezes the
-position count. Alps Alpine SRBV160803 is only the study candidate because it
-is not ingress rated. The legend and taxonomy must pass a physical model before
-custom electronics.
+Accepted cost: a compact absolute switch is less common and more expensive than an EC11 encoder, uses six GPIOs in the simple circuit, and freezes the position count. Alps Alpine SRBV160803 is only the study candidate because it is not ingress rated. The legend and taxonomy must pass a physical model before custom electronics.
 
 ## 2026-07-26: Store questions once with overlapping deck eligibility
 
-The corpus is one `questions.yaml` per language. Each question has one or more
-eligible decks rather than an owning category. New People assumes no shared
-history; Close assumes familiarity; Family and Work apply their relationship
-constraints; Here supplies a shared third object.
+The corpus is one `questions.yaml` per language. Each question has one or more eligible decks rather than an owning category. New People assumes no shared history; Close assumes familiarity; Family and Work apply their relationship constraints; Here supplies a shared third object.
 
-Wild is a deliberate exception to the rule that labels name a relationship or
-place. It communicates an opt-in to dark, spicy, macabre, or absurd tone.
-`random` describes sampling and `anything` hides the tone change. Dark and
-spicy questions are Wild-only.
+Wild is a deliberate exception to the rule that labels name a relationship or place. It communicates an opt-in to dark, spicy, macabre, or absurd tone. `random` describes sampling and `anything` hides the tone change. Dark and spicy questions are Wild-only.
 
-Accepted cost: deck membership becomes editorial judgment and can change
-without changing a question ID. Coverage totals count eligibility and therefore
-sum to more than the number of stored questions.
+Accepted cost: deck membership becomes editorial judgment and can change without changing a question ID. Coverage totals count eligibility and therefore sum to more than the number of stored questions.
 
 ## 2026-07-26: Keep depth editorial; defer the physical control
 
-Depth 1–3 measures exposure cost and remains independent of tone. Normal
-website and device playback serves depths 1 and 2; depth 3 remains in browse
-and the corpus. There is no depth slider in the first physical prototype.
+Depth 1–3 measures exposure cost and remains independent of tone. Normal website and device playback serves depths 1 and 2; depth 3 remains in browse and the corpus. There is no depth slider in the first physical prototype.
 
-The proposed slider could make a boundary cheap to express, but a visible
-“light” position can also signal rejection on a date or at work. It returns
-only if an unexplained table study shows people moving it publicly and
-unprompted.
+The proposed slider could make a boundary cheap to express, but a visible “light” position can also signal rejection on a date or at work. It returns only if an unexplained table study shows people moving it publicly and unprompted.
 
-Accepted cost: the table cannot request depth 3 from the normal player and
-cannot set a precise exposure ceiling. Next is the only rejection mechanism.
+Accepted cost: the table cannot request depth 3 from the normal player and cannot set a precise exposure ceiling. Next is the only rejection mechanism.
 
 ## 2026-07-26: Reject ramping and hidden session state
 
-Selection is a pure filter of deck eligibility and the playback depth cap.
-Questions do not escalate with presses, time, RTC gaps, or a guessed session
-boundary. The device cannot observe conversational readiness.
+Selection is a pure filter of deck eligibility and the playback depth cap. Questions do not escalate with presses, time, RTC gaps, or a guessed session boundary. The device cannot observe conversational readiness.
 
-Accepted cost: a sequence has no designed dramatic arc. Corpus quality and the
-people at the table must create progression.
+Accepted cost: a sequence has no designed dramatic arc. Corpus quality and the people at the table must create progression.
 
 ## 2026-07-26: New People is the player default
 
-The website opens on New People. There is no depth-control default: including
-depths 1 and 2 in every normal deck replaces the earlier proposal to default a
-three-position control to its middle setting.
+The website opens on New People. There is no depth-control default: including depths 1 and 2 in every normal deck replaces the earlier proposal to default a three-position control to its middle setting.
 
-Accepted cost: returning users must turn or click back to a preferred deck
-once on a new browser. The website persists their later selection locally; the
-physical device always uses its visible selector.
+Accepted cost: returning users must turn or click back to a preferred deck once on a new browser. The website persists their later selection locally; the physical device always uses its visible selector.
 
 ## 2026-07-26: Long press is Next, not Favorite
 
-Every Next press duration draws another question. Physical favorites would
-need confirmation, recovery, and a way to enter a saved collection, creating
-hidden state or another mode. Website favorites remain because the browser can
-show ownership and feedback.
+Every Next press duration draws another question. Physical favorites would need confirmation, recovery, and a way to enter a saved collection, creating hidden state or another mode. Website favorites remain because the browser can show ownership and feedback.
 
-Accepted cost: a device user cannot save a question on the object. They can
-continue talking, take a photo, or find questions later on the website.
+Accepted cost: a device user cannot save a question on the object. They can continue talking, take a photo, or find questions later on the website.
 
 ## 2026-07-26: The first physical bezel is English
 
-The model uses complete English words and center ticks. German questions remain
-in the corpus as the first multilingual content test, but the project will not
-invent German deck labels or supposedly universal icons before the English
-interaction passes.
+The model uses complete English words and center ticks. German questions remain in the corpus as the first multilingual content test, but the project will not invent German deck labels or supposedly universal icons before the English interaction passes.
 
-Accepted cost: the first model is not a multilingual industrial design.
-Replaceable bezel artwork adds a part and future scripts may need a larger
-legend or a different layout.
+Accepted cost: the first model is not a multilingual industrial design. Replaceable bezel artwork adds a part and future scripts may need a larger legend or a different layout.
 
 ## 2026-07-26: QDB2 stores one question with a deck mask
 
-Device bundles store each question once with a six-bit eligibility mask,
-editorial depth, and dark/spicy flags. The physical device no longer needs
-repository IDs or OLED display numbers. Manifest schema and bundle magic both
-advance to version 2.
+Device bundles store each question once with a six-bit eligibility mask, editorial depth, and dark/spicy flags. The physical device no longer needs repository IDs or OLED display numbers. Manifest schema and bundle magic both advance to version 2.
 
-Accepted cost: no backward compatibility with the unshipped QDB1 format. This
-is intentional while firmware is still a stub.
+Accepted cost: no backward compatibility with the unshipped QDB1 format. This is intentional while firmware is still a stub.
 
 ## 2026-08-02: Firmware framework is Zephyr
 
-Zephyr rather than ESP-IDF. It has an in-tree SSD16xx driver with a
-`waveshare_epaper_gdey0213b74` configuration for the exact planned panel, zbus
-for decoupled message passing, ztest and twister for host-side tests, and one
-devicetree description that moves from the DevKitC to the rev A board by
-changing an overlay rather than editing code.
+Zephyr rather than ESP-IDF. It has an in-tree SSD16xx driver with a `waveshare_epaper_gdey0213b74` configuration for the exact planned panel, zbus for decoupled message passing, ztest and twister for host-side tests, and one devicetree description that moves from the DevKitC to the rev A board by changing an overlay rather than editing code.
 
-The workspace uses west T2 topology: `firmware/west.yml` is the manifest,
-`west init -l firmware` makes the repo root the topdir, and zephyr plus its
-modules land in a gitignored `deps/`. The monorepo therefore stays one
-checkout, and nothing from upstream is committed.
+The workspace uses west T2 topology: `firmware/west.yml` is the manifest, `west init -l firmware` makes the repo root the topdir, and zephyr plus its modules land in a gitignored `deps/`. The monorepo therefore stays one checkout, and nothing from upstream is committed.
 
-Pinned at Zephyr v4.4.1 with Zephyr SDK 1.0.1, which `deps/zephyr/SDK_VERSION`
-requires exactly. The SDK moved from 0.x to 1.0 in March 2026 and its release
-assets were renamed, so an older install or a guessed download URL will not
-work. The board target `esp32s3_devkitc/esp32s3/procpu` is verified against the
-v4.4.1 board definition.
+Pinned at Zephyr v4.4.1 with Zephyr SDK 1.0.1, which `deps/zephyr/SDK_VERSION` requires exactly. The SDK moved from 0.x to 1.0 in March 2026 and its release assets were renamed, so an older install or a guessed download URL will not work. The board target `esp32s3_devkitc/esp32s3/procpu` is verified against the v4.4.1 board definition.
 
-Accepted cost: `just fw-build`/`fw-flash` and `.github/workflows/firmware.yml`
-were written for ESP-IDF. The justfile is rewritten here; the workflow is a
-separate pass. Bumping Zephyr means checking `SDK_VERSION` and possibly
-installing a matching SDK, so it stays a deliberate act.
+Accepted cost: `just fw-build`/`fw-flash` and `.github/workflows/firmware.yml` were written for ESP-IDF. The justfile is rewritten here; the workflow is a separate pass. Bumping Zephyr means checking `SDK_VERSION` and possibly installing a matching SDK, so it stays a deliberate act.
 
 ## 2026-08-02: C++17 for application logic, C for Zephyr glue
 
-`Fsm`, `qdb`, the bag and text layout are C++17. Files that use
-`ZBUS_CHAN_DEFINE`, `ZBUS_MSG_INIT`, ISR registration and devicetree glue stay
-C. The reason is mechanical rather than stylistic: several of those macros
-expand to out-of-order designated initializers, which C accepts and C++17
-rejects. Keeping them in `.c` means upstream samples paste in unmodified.
+`Fsm`, `qdb`, the bag and text layout are C++17. Files that use `ZBUS_CHAN_DEFINE`, `ZBUS_MSG_INIT`, ISR registration and devicetree glue stay C. The reason is mechanical rather than stylistic: several of those macros expand to out-of-order designated initializers, which C accepts and C++17 rejects. Keeping them in `.c` means upstream samples paste in unmodified.
 
-Exceptions and RTTI stay disabled and nothing allocates, so the C++ surface
-costs no binary size beyond vtables. Objects are constructed inside `main()`
-rather than as globals, because a static constructor runs before device
-drivers are ready.
+Exceptions and RTTI stay disabled and nothing allocates, so the C++ surface costs no binary size beyond vtables. Objects are constructed inside `main()` rather than as globals, because a static constructor runs before device drivers are ready.
 
-Accepted cost: two languages in one component directory, and a rule that has
-to be explained to every contributor.
+Accepted cost: two languages in one component directory, and a rule that has to be explained to every contributor.
 
 ## 2026-08-02: Deep sleep is a reboot, so retained state lives in RTC memory
 
-Below 30 µA on the ESP32-S3 means deep sleep, which does not preserve SRAM or
-thread stacks. Every wake runs the bootloader and `main()` from the top. The
-shuffle bag, the recent ring, the current question, the partial-refresh counter
-and the bundle fingerprint therefore live in RTC slow memory — about 512 bytes
-against an 8 KB budget. NVS holds only slow-moving configuration.
+Below 30 µA on the ESP32-S3 means deep sleep, which does not preserve SRAM or thread stacks. Every wake runs the bootloader and `main()` from the top. The shuffle bag, the recent ring, the current question, the partial-refresh counter and the bundle fingerprint therefore live in RTC slow memory — about 512 bytes against an 8 KB budget. NVS holds only slow-moving configuration.
 
-This settles the flash-wear question in the bag's favour: Next costs no flash
-write, so button life rather than flash endurance bounds the device.
+This settles the flash-wear question in the bag's favour: Next costs no flash write, so button life rather than flash endurance bounds the device.
 
-Accepted cost: the bag resets when the cell is removed or goes flat, and "next
-question in under 1 s" becomes a boot-time budget covering ROM boot, Zephyr
-init, selector read, draw and panel refresh. It has to be measured on the
-breadboard rather than assumed.
+Accepted cost: the bag resets when the cell is removed or goes flat, and "next question in under 1 s" becomes a boot-time budget covering ROM boot, Zephyr init, selector read, draw and panel refresh. It has to be measured on the breadboard rather than assumed.
 
 ## 2026-08-02: A Next press during a refresh is dropped, not queued
 
-A panel refresh blocks for 0.3–2 s. Queueing presses that arrive during one
-would replay them afterwards as a burst of draws nobody saw, consuming
-questions from the bag invisibly. `app` stays awake during the refresh and
-discards the press instead. One press produces one question and one refresh.
+A panel refresh blocks for 0.3–2 s. Queueing presses that arrive during one would replay them afterwards as a burst of draws nobody saw, consuming questions from the bag invisibly. `app` stays awake during the refresh and discards the press instead. One press produces one question and one refresh.
 
-Accepted cost: a press during a refresh does nothing at all, with no
-acknowledgement, because the device has no status surface to acknowledge it on.
+Accepted cost: a press during a refresh does nothing at all, with no acknowledgement, because the device has no status surface to acknowledge it on.
 
 ## 2026-08-02: A cold boot draws immediately
 
-A device with a valid selector and no retained question draws and does a full
-refresh, because panel content is unknown after a cold boot. A device out of
-the box shows a question without being touched.
+A device with a valid selector and no retained question draws and does a full refresh, because panel content is unknown after a cold boot. A device out of the box shows a question without being touched.
 
-With an invalid selector — zero or several contacts — nothing is drawn and
-nothing is guessed. On a cold boot that means the panel stays blank until one
-contact settles.
+With an invalid selector — zero or several contacts — nothing is drawn and nothing is guessed. On a cold boot that means the panel stays blank until one contact settles.
 
-Accepted cost: packaging has to account for the first question being visible
-before anyone interacts with the device.
+Accepted cost: packaging has to account for the first question being visible before anyone interacts with the device.
 
 ## 2026-08-02: The breadboard stage does not sleep
 
-`CONFIG_PM` stays off until input, display and storage are correct. A board
-that resets on every press is harder to bring up than one that stays awake.
-Accepted cost: the sleep path, which is where the boot-latency budget and the
-30 µA target are decided, is the last thing to be exercised rather than the
-first.
+`CONFIG_PM` stays off until input, display and storage are correct. A board that resets on every press is harder to bring up than one that stays awake. Accepted cost: the sleep path, which is where the boot-latency budget and the 30 µA target are decided, is the last thing to be exercised rather than the first.
 
-_Corrected 2026-08-05._ This entry originally claimed retained state had lived
-in its RTC sections since the first commit, so that enabling deep sleep would
-be a configuration change rather than a rewrite. That was not true: `Bag::State`
-was an ordinary `.bss` object, and `app_logic.cpp` said so. The claim made the
-remaining work look smaller than it was. See the 2026-08-05 entry on retained
-memory.
+_Corrected 2026-08-05._ This entry originally claimed retained state had lived in its RTC sections since the first commit, so that enabling deep sleep would be a configuration change rather than a rewrite. That was not true: `Bag::State` was an ordinary `.bss` object, and `app_logic.cpp` said so. The claim made the remaining work look smaller than it was. See the 2026-08-05 entry on retained memory.
 
 ## 2026-08-02: Host tests default to qemu_xtensa/dc233c
 
-`native_sim` is faster and is the only host platform that emulates GPIO, but it
-builds on Linux only, and development happens on macOS. `qemu_xtensa/dc233c`
-runs a full Zephyr kernel on macOS and matches the target architecture, so it
-is the default for `just fw-test`. CI overrides it with
-`just simboard=native_sim`.
+`native_sim` is faster and is the only host platform that emulates GPIO, but it builds on Linux only, and development happens on macOS. `qemu_xtensa/dc233c` runs a full Zephyr kernel on macOS and matches the target architecture, so it is the default for `just fw-test`. CI overrides it with `just simboard=native_sim`.
 
-Board targets need their SoC qualifier under hardware model v2: plain
-`qemu_xtensa` is a board name, not a target, and twister rejects it. The
-dc233c core configuration comes from the `hal_xtensa` module, which the
-manifest's module allowlist has to include.
+Board targets need their SoC qualifier under hardware model v2: plain `qemu_xtensa` is a board name, not a target, and twister rejects it. The dc233c core configuration comes from the `hal_xtensa` module, which the manifest's module allowlist has to include.
 
-Suites that drive the selector and Next need emulated GPIO and are kept in
-their own directory, so a local run that cannot execute them is visible rather
-than silently green.
+Suites that drive the selector and Next need emulated GPIO and are kept in their own directory, so a local run that cannot execute them is visible rather than silently green.
 
-Accepted cost: two host platforms to keep working, and the GPIO-driven suites
-do not run on a developer machine without Docker.
+Accepted cost: two host platforms to keep working, and the GPIO-driven suites do not run on a developer machine without Docker.
 
 ## 2026-08-02: clang-format for firmware, scoped to repository files
 
-Style is LLVM with Linux brace placement, four-space indent and a 100-column
-limit, which matches the existing `Fsm` sources. `SortIncludes` is off because
-Zephyr headers have ordering requirements. Hand-aligned transition tables are
-wrapped in `// clang-format off`.
+Style is LLVM with Linux brace placement, four-space indent and a 100-column limit, which matches the existing `Fsm` sources. `SortIncludes` is off because Zephyr headers have ordering requirements. Hand-aligned transition tables are wrapped in `// clang-format off`.
 
-Three layers keep it away from Zephyr: `just fmt-fw` drives off `git ls-files`
-so it can only reach tracked files; `deps/.clang-format` sets
-`DisableFormat: true` and is the closest config for anything in the workspace;
-and Zephyr ships its own config. `.clang-format-ignore` was not used because it
-needs clang-format 18 and the system binary is 17.
+Three layers keep it away from Zephyr: `just fmt-fw` drives off `git ls-files` so it can only reach tracked files; `deps/.clang-format` sets `DisableFormat: true` and is the closest config for anything in the workspace; and Zephyr ships its own config. `.clang-format-ignore` was not used because it needs clang-format 18 and the system binary is 17.
 
-Dependency justifications: `ruff` (dev-only, formats and lints `tools/`; the
-stdlib-plus-pyyaml-plus-jsonschema runtime policy is unaffected) and
-`prettier` with `prettier-plugin-astro` (dev-only, formats `website/` and
-markdown). `.prettierignore` excludes `questions/`, whose formatting
-`tools/validate.py --fix` owns.
+Dependency justifications: `ruff` (dev-only, formats and lints `tools/`; the stdlib-plus-pyyaml-plus-jsonschema runtime policy is unaffected) and `prettier` with `prettier-plugin-astro` (dev-only, formats `website/` and markdown). `.prettierignore` excludes `questions/`, whose formatting `tools/validate.py --fix` owns.
 
 ## 2026-08-04: A bespoke binary bundle rather than a standard container
 
-The question bundle stays the flat QDB2 binary in `sync_protocol.md` instead of
-CBOR, MessagePack, protobuf or SQLite. Reviewed when the name turned out to be
-undocumented and a standard format was floated as an alternative.
+The question bundle stays the flat QDB2 binary in `sync_protocol.md` instead of CBOR, MessagePack, protobuf or SQLite. Reviewed when the name turned out to be undocumented and a standard format was floated as an alternative.
 
-The format has exactly one writer (`tools/build_bundle.py`) and one reader
-(`firmware/lib/qdb/`), both in this repo, and no third party ever parses it.
-That removes interoperability — the usual reason to pick a standard — from the
-argument, and leaves cost. A standard container needs a parser on the device:
-zcbor or nanopb is a new module in `west.yml` and flash spent on generality the
-device does not use. The current reader is about 120 lines, allocates nothing,
-and hands out questions as pointers into the mapped bundle. SQLite for 240
-read-only records on an MCU is not a serious option.
+The format has exactly one writer (`tools/build_bundle.py`) and one reader (`firmware/lib/qdb/`), both in this repo, and no third party ever parses it. That removes interoperability — the usual reason to pick a standard — from the argument, and leaves cost. A standard container needs a parser on the device: zcbor or nanopb is a new module in `west.yml` and flash spent on generality the device does not use. The current reader is about 120 lines, allocates nothing, and hands out questions as pointers into the mapped bundle. SQLite for 240 read-only records on an MCU is not a serious option.
 
-The signing pipeline also prefers a plain byte range: ed25519 over the raw
-SHA-256 of the file, with no canonicalisation question to get wrong.
+The signing pipeline also prefers a plain byte range: ed25519 over the raw SHA-256 of the file, with no canonicalisation question to get wrong.
 
-Accepted cost: no off-the-shelf tooling can open a bundle, so the format is
-only as debuggable as `parse_bundle()` makes it, and the two decoders have to
-be changed together. The firmware suites decode real bundles the writer emits,
-which is what catches a one-sided change.
+Accepted cost: no off-the-shelf tooling can open a bundle, so the format is only as debuggable as `parse_bundle()` makes it, and the two decoders have to be changed together. The firmware suites decode real bundles the writer emits, which is what catches a one-sided change.
 
-Naming: QDB is the Question Database Bundle and the trailing digit is the format
-version. Nothing had recorded that, which is what prompted this entry. The name
-is internal — no release has ever published a bundle — so renaming it remains a
-mechanical change across about fifteen files if a better one turns up.
+Naming: QDB is the Question Database Bundle and the trailing digit is the format version. Nothing had recorded that, which is what prompted this entry. The name is internal — no release has ever published a bundle — so renaming it remains a mechanical change across about fifteen files if a better one turns up.
 
 ## 2026-08-04: Replace the rotary selector with a Category button
 
-The default enclosure has two adjacent buttons, Category and Next. Category
-cycles through `new_people`, `close`, `family`, `work`, `here`, and `wild`; the
-e-paper names the active category. Next draws from the category shown. This
-supersedes the 2026-07-26 six-position selector and English-bezel decisions for
-the target product. It also supersedes the question-only e-paper rule from the
-OLED deletion decision: the OLED stays deleted, while the active category now
-shares the e-paper with the question.
+The default enclosure has two adjacent buttons, Category and Next. Category cycles through `new_people`, `close`, `family`, `work`, `here`, and `wild`; the e-paper names the active category. Next draws from the category shown. This supersedes the 2026-07-26 six-position selector and English-bezel decisions for the target product. It also supersedes the question-only e-paper rule from the OLED deletion decision: the OLED stays deleted, while the active category now shares the e-paper with the question.
 
-Removing the knob deletes the shaft opening, labelled arc, uncommon SP6T part,
-rotational load, and selector-specific ingress path. Category names move into
-the existing language and font system. The question screen keeps the active
-category visible so category state remains readable without power.
+Removing the knob deletes the shaft opening, labelled arc, uncommon SP6T part, rotational load, and selector-specific ingress path. Category names move into the existing language and font system. The question screen keeps the active category visible so category state remains readable without power.
 
-Accepted cost: category choice becomes sequential and software-retained rather
-than mechanically absolute. Reaching a category may take five presses, and
-each visible update costs an e-paper refresh. The two-button interaction must
-pass a physical study before schematic capture.
+Accepted cost: category choice becomes sequential and software-retained rather than mechanically absolute. Reaching a category may take five presses, and each visible update costs an e-paper refresh. The two-button interaction must pass a physical study before schematic capture.
 
-The current USB breadboard and firmware are not changed by this decision. They
-continue to use the six-way DIP switch as six one-hot category inputs and one
-Next button until a second button is available. The input mapping, retained
-category state, state machine, and tests change together in a later commit.
+The current USB breadboard and firmware are not changed by this decision. They continue to use the six-way DIP switch as six one-hot category inputs and one Next button until a second button is available. The input mapping, retained category state, state machine, and tests change together in a later commit.
 
 ## 2026-08-05: Give Next physical priority over Category
 
-The two controls are adjacent but intentionally unequal. Category uses a small,
-nearly flush round cap with its label printed on the shell. Next uses a larger,
-slightly raised rounded-pill cap with a shallow concave top and its label on the
-cap. Both sit over the same tactile-switch part.
+The two controls are adjacent but intentionally unequal. Category uses a small, nearly flush round cap with its label printed on the shell. Next uses a larger, slightly raised rounded-pill cap with a shallow concave top and its label on the cap. Both sit over the same tactile-switch part.
 
-Next is the repeated conversational action; Category is changed occasionally.
-Size, height, and shape communicate that frequency without adding an accent
-color, icon, light, or different switch behavior.
+Next is the repeated conversational action; Category is changed occasionally. Size, height, and shape communicate that frequency without adding an accent color, icon, light, or different switch behavior.
 
-Accepted cost: the two cap geometries need separate tooling and overload stops.
-The physical model must confirm that Category remains easy to press
-deliberately and that the larger Next cap does not dominate the face or cause
-accidental presses.
+Accepted cost: the two cap geometries need separate tooling and overload stops. The physical model must confirm that Category remains easy to press deliberately and that the larger Next cap does not dominate the face or cause accidental presses.
 
 ## 2026-08-05: VBUS detect takes GPIO21, battery sense GPIO1
 
-The two power inputs are assigned before the circuit that reads them exists.
-Deep sleep needs every wake input inside GPIO0–21, and by the time the panel,
-the six selector contacts, Next and the bring-up LED are placed, that range has
-three pins left: GPIO1, GPIO14 and GPIO21.
+The two power inputs are assigned before the circuit that reads them exists. Deep sleep needs every wake input inside GPIO0–21, and by the time the panel, the six selector contacts, Next and the bring-up LED are placed, that range has three pins left: GPIO1, GPIO14 and GPIO21.
 
-Battery sense picks first because it has the tighter constraint. It has to be
-sampled during a sync, when the radio is up, and the ESP32-S3's ADC2 shares
-hardware with Wi-Fi — readings taken then can fail. That restricts it to ADC1,
-GPIO1 to GPIO10, of which everything but GPIO1 is already spoken for or a
-strapping pin. VBUS detect is an ordinary digital input, so it takes GPIO21 and
-leaves the last ADC1 channel to the measurement that has nowhere else to go.
+Battery sense picks first because it has the tighter constraint. It has to be sampled during a sync, when the radio is up, and the ESP32-S3's ADC2 shares hardware with Wi-Fi — readings taken then can fail. That restricts it to ADC1, GPIO1 to GPIO10, of which everything but GPIO1 is already spoken for or a strapping pin. VBUS detect is an ordinary digital input, so it takes GPIO21 and leaves the last ADC1 channel to the measurement that has nowhere else to go.
 
-Neither pin gets a devicetree node yet, because nothing reads them and an
-unused node rots. The assignment lives in the overlay header and the wiring
-doc.
+Neither pin gets a devicetree node yet, because nothing reads them and an unused node rots. The assignment lives in the overlay header and the wiring doc.
 
-Accepted cost: one free RTC-capable pin remains, GPIO14, so anything else
-needing a wake input competes with a second analogue measurement for it. On the
-target PCB the bring-up LED goes away and GPIO2 returns to ADC1, which is the
-slack if battery sense turns out to need a companion.
+Accepted cost: one free RTC-capable pin remains, GPIO14, so anything else needing a wake input competes with a second analogue measurement for it. On the target PCB the bring-up LED goes away and GPIO2 returns to ADC1, which is the slack if battery sense turns out to need a companion.
 
 ## 2026-08-05: Deep sleep is spiked before storage, on a branch
 
-The 2026-08-02 entry above put `CONFIG_PM` behind input, display _and_ storage
-being correct. Storage has not been started, so by that ordering the sleep path
-waits for LittleFS, NVS and sync. It is being spiked now instead, ahead of all
-three.
+The 2026-08-02 entry above put `CONFIG_PM` behind input, display _and_ storage being correct. Storage has not been started, so by that ordering the sleep path waits for LittleFS, NVS and sync. It is being spiked now instead, ahead of all three.
 
-The reason is the cost that entry accepted: the sleep path is where the
-boot-latency budget and the wake mechanism are decided, and it was scheduled
-last. The first bench run turned two of those from theory into arithmetic. A
-partial refresh takes 622 ms of a 1 s budget, leaving roughly 380 ms for ROM
-boot, Zephyr init, selector read and draw. And the six selector contacts cannot
-be armed as EXT1 wake sources the way the architecture describes: a deck is
-selected by _holding_ one contact closed, so that pin is low for as long as the
-device sits on the table, and a device armed to wake on it never sleeps. The
-mask has to be computed at sleep time from the current selector position.
+The reason is the cost that entry accepted: the sleep path is where the boot-latency budget and the wake mechanism are decided, and it was scheduled last. The first bench run turned two of those from theory into arithmetic. A partial refresh takes 622 ms of a 1 s budget, leaving roughly 380 ms for ROM boot, Zephyr init, selector read and draw. And the six selector contacts cannot be armed as EXT1 wake sources the way the architecture describes: a deck is selected by _holding_ one contact closed, so that pin is low for as long as the device sits on the table, and a device armed to wake on it never sleeps. The mask has to be computed at sleep time from the current selector position.
 
-Both are the kind of finding that changes a design rather than a line, and
-finding them after sync and the portal are written means rewriting sync and the
-portal.
+Both are the kind of finding that changes a design rather than a line, and finding them after sync and the portal are written means rewriting sync and the portal.
 
-What the original entry protects is the everyday build: a board that reboots on
-every press is miserable to bring up. That is preserved. `CONFIG_PM` stays off
-in `prj.conf`, so `just fw-build` still produces a board that stays awake; the
-spike proves the mechanism on a branch and merges the parts that stand on their
-own. Retained memory is the first of those, and it is worth having before deep
-sleep exists: without it every boot redraws a question the panel is already
-showing, which now has a measured price of 2315 ms.
+What the original entry protects is the everyday build: a board that reboots on every press is miserable to bring up. That is preserved. `CONFIG_PM` stays off in `prj.conf`, so `just fw-build` still produces a board that stays awake; the spike proves the mechanism on a branch and merges the parts that stand on their own. Retained memory is the first of those, and it is worth having before deep sleep exists: without it every boot redraws a question the panel is already showing, which now has a measured price of 2315 ms.
 
-Accepted cost: two config paths to keep working until the spike lands for real,
-and a decision entry that contradicts the ordering of an earlier one rather
-than replacing it.
+Accepted cost: two config paths to keep working until the spike lands for real, and a decision entry that contradicts the ordering of an earlier one rather than replacing it.
 
 ## 2026-08-05: One Category button replaces the six selector inputs
 
-The firmware now reads two buttons. Category advances the deck one step and
-wraps from Wild back to New People; Next asks for a question. The six one-hot
-selector contacts, their 600 ms settle window and the invalid-combination
-handling are gone.
+The firmware now reads two buttons. Category advances the deck one step and wraps from Wild back to New People; Next asks for a question. The six one-hot selector contacts, their 600 ms settle window and the invalid-combination handling are gone.
 
-`device_prototype.md` has specified Category and Next since the rotary selector
-was dropped from the product; the six-input path was the bench rig catching up,
-and it was waiting on a second physical button. There now is one.
+`device_prototype.md` has specified Category and Next since the rotary selector was dropped from the product; the six-input path was the bench rig catching up, and it was waiting on a second physical button. There now is one.
 
-What changes structurally is where the deck lives. A rotary selector holds its
-own state — the knob position _is_ the deck, readable at zero power, which is
-why the deck had no storage anywhere. A button has no position, so the active
-deck moved into the retained block in RTC memory, and a cold boot starts on New
-People.
+What changes structurally is where the deck lives. A rotary selector holds its own state — the knob position _is_ the deck, readable at zero power, which is why the deck had no storage anywhere. A button has no position, so the active deck moved into the retained block in RTC memory, and a cold boot starts on New People.
 
-It also simplifies deep sleep. Six contacts with one permanently closed could
-not be armed as EXT1 wake sources without the closed one waking the device
-immediately; two buttons are both open at rest, so both are normally in the
-mask. The live reading stays, because a button held down at the moment of sleep
-has the same problem in miniature.
+It also simplifies deep sleep. Six contacts with one permanently closed could not be armed as EXT1 wake sources without the closed one waking the device immediately; two buttons are both open at rest, so both are normally in the mask. The live reading stays, because a button held down at the moment of sleep has the same problem in miniature.
 
 Freed: GPIO 5, 6, 7, 15 and 16.
 
-Accepted cost: the deck is no longer readable from the device when it is off.
-Someone returning to a device showing a question cannot tell which deck it came
-from without pressing Category, which changes it. The panel shows the name on
-every advance, which is the mitigation the product design already chose.
+Accepted cost: the deck is no longer readable from the device when it is off. Someone returning to a device showing a question cannot tell which deck it came from without pressing Category, which changes it. The panel shows the name on every advance, which is the mitigation the product design already chose.
 
 ## 2026-08-05: Zephyr is patched locally, through `west patch`
 
@@ -818,10 +613,7 @@ Accepted cost: the runtime figures this bench produces are for a cell three time
 
 ## 2026-08-09: Charged is a guess, and only the LED is allowed to believe it
 
-The Adafruit bq25185 board exposes no firmware-accessible charge-status pad.
-The IC has STAT1 and STAT2 outputs, but the breakout uses status internally and
-does not bring the signals to the breadboard, so this rig can only look at the
-cell.
+The Adafruit bq25185 board exposes no firmware-accessible charge-status pad. The IC has STAT1 and STAT2 outputs, but the breakout uses status internally and does not bring the signals to the breadboard, so this rig can only look at the cell.
 
 `CHARGING` and `CHARGED` are therefore one visit to external power split by a voltage threshold, `CONFIG_KVELD_POWER_FULL_MV`. A lithium cell under constant-voltage charge sits near 4.2 V for the last hour while the current tapers, so this reports full early, by an amount that depends on what the load is doing. There is no reading that would do better.
 
@@ -909,12 +701,7 @@ The battery divider should be **1 MΩ over 470 kΩ**, and switched over both. 1M
 
 The divider constants need no calibration. `KVELD_POWER_DIVIDER_NUM`/`_DEN` stay at 2/1: the rig logs 3890 mV against 3930 on a meter, 1.0 % low, and the error is an offset rather than a ratio, so scaling it would overcorrect at the low end where the reading decides something. It also errs towards refusing early, which is the safe direction.
 
-A charger interface that exposes **charge termination** would remove an
-estimate from the bench. The BQ25185 has STAT1 and STAT2 outputs, but the
-Adafruit breakout does not expose them to firmware. CHARGED is therefore
-inferred from voltage on this rig and runs early by an amount that depends on
-load — acceptable for an LED, and the reason nothing else is allowed to read
-it.
+A charger interface that exposes **charge termination** would remove an estimate from the bench. The BQ25185 has STAT1 and STAT2 outputs, but the Adafruit breakout does not expose them to firmware. CHARGED is therefore inferred from voltage on this rig and runs early by an amount that depends on load — acceptable for an LED, and the reason nothing else is allowed to read it.
 
 Accepted cost: the sleep budget stays a target rather than a measurement until rev A exists, so the runtime figure in the design is still arithmetic rather than an observation.
 
@@ -962,64 +749,28 @@ Accepted cost: an element that genuinely needs to be laid out while carrying `hi
 
 ## 2026-08-15: The setup access point uses a session password
 
-The setup access point now uses WPA2-PSK. Each portal session gets a fresh
-password made from three lowercase words and a digit using the device random
-source. It remains in RAM, appears on the e-paper service card, and is not
-shown by the web status page. The password is cleared when the portal closes.
+The setup access point now uses WPA2-PSK. Each portal session gets a fresh password made from three lowercase words and a digit using the device random source. It remains in RAM, appears on the e-paper service card, and is not shown by the web status page. The password is cleared when the portal closes.
 
 ## 2026-08-16: The Kveld identity is typographic
 
-The primary wordmark is lowercase `kveld` in Literata. The website renders it
-as live text; external assets are PNGs rasterized from the same bundled font.
-IBM Plex Mono remains the interface and metadata typeface. The existing paper,
-ink, line, and rust tokens remain unchanged.
+The primary wordmark is lowercase `kveld` in Literata. The website renders it as live text; external assets are PNGs rasterized from the same bundled font. IBM Plex Mono remains the interface and metadata typeface. The existing paper, ink, line, and rust tokens remain unchanged.
 
-There is no separate logo symbol. Square formats use the lowercase Literata
-`k` from the wordmark. The old question-mark favicon and social image are
-removed, and no SVG logo replaces them. Rust remains an interaction colour and
-does not enter the monochrome wordmark.
+There is no separate logo symbol. Square formats use the lowercase Literata `k` from the wordmark. The old question-mark favicon and social image are removed, and no SVG logo replaces them. Rust remains an interaction colour and does not enter the monochrome wordmark.
 
-The question stays visually dominant. The e-paper and normal device face carry
-no logo, and there are no startup or sleep logo screens. The phone captive
-portal uses a live-text wordmark and the same palette without downloading font
-or image assets. A future enclosure may use a small blind emboss only on its
-underside or concealed lower edge.
+The question stays visually dominant. The e-paper and normal device face carry no logo, and there are no startup or sleep logo screens. The phone captive portal uses a live-text wordmark and the same palette without downloading font or image assets. A future enclosure may use a small blind emboss only on its underside or concealed lower edge.
 
-Accepted cost: the repository prepares the PNGs but cannot change GitHub or
-other service avatars automatically; those are manual publication steps.
+Accepted cost: the repository prepares the PNGs but cannot change GitHub or other service avatars automatically; those are manual publication steps.
 
 ## 2026-08-16: OpenSCAD and KiCad share the Rev A mechanical contract
 
-The Rev A enclosure source is parametric OpenSCAD. The earlier GLB study remains
-a massing reference, not editable manufacturing CAD, and its missing claimed
-SCAD source is not reconstructed by treating the mesh as authoritative.
+The Rev A enclosure source is parametric OpenSCAD. The earlier GLB study remains a massing reference, not editable manufacturing CAD, and its missing claimed SCAD source is not reconstructed by treating the mesh as authoritative.
 
-The case coordinate origin is its rear-left corner. KiCad uses the same X/Y
-values for the 78 × 45 × 1.2 mm board at (3, 3), four mounting holes, switch
-centres, display/FPC envelope, USB-C, light pipe, cell and antenna keep-out. A
-dimension shared by both files changes in both files and in
-`hardware_rev_a.md`.
+The case coordinate origin is its rear-left corner. KiCad uses the same X/Y values for the 78 × 45 × 1.2 mm board at (3, 3), four mounting holes, switch centres, display/FPC envelope, USB-C, light pipe, cell and antenna keep-out. A dimension shared by both files changes in both files and in `hardware_rev_a.md`.
 
-KiCad starts as a constraint board and seven empty hierarchy sheets. It is
-marked not for fabrication until reviewed symbols, footprints, nets and routes
-replace the mechanical datums. The default board is four layers so the native
-USB and ESP32-S3 RF paths can retain continuous reference planes. The exact
-stack comes from the fabricator before routing.
+KiCad starts as a constraint board and seven empty hierarchy sheets. It is marked not for fabrication until reviewed symbols, footprints, nets and routes replace the mechanical datums. The default board is four layers so the native USB and ESP32-S3 RF paths can retain continuous reference planes. The exact stack comes from the fabricator before routing.
 
-Category starts 0.2 mm sub-flush and Next flush. Both values remain coupon
-inputs because KSC321G travel has a broad tolerance. IO0 and EN both get
-concealed recovery pads; IO0 without reset is insufficient on a battery-powered
-board.
+Category starts 0.2 mm sub-flush and Next flush. Both values remain coupon inputs because KSC321G travel has a broad tolerance. IO0 and EN both get concealed recovery pads; IO0 without reset is insufficient on a battery-powered board.
 
-The first overlay also rejects WROOM-1 as the default. Its required PCB-antenna
-clearance overlaps the display envelope in the current case. WROOM-1U becomes
-the Rev A baseline candidate, subject to an internal external-antenna and cable
-route plus assembled radio testing. WROOM-1 remains a gated alternative if a
-later placement closes the display, cell, button, copper and enclosure-metal
-conflicts. The preliminary display FPC datum moves rearward to separate its
-drawn envelope from USB-C; reviewed footprints still have to prove the final
-insertion and courtyard clearance.
+The first overlay also rejects WROOM-1 as the default. Its required PCB-antenna clearance overlaps the display envelope in the current case. WROOM-1U becomes the Rev A baseline candidate, subject to an internal external-antenna and cable route plus assembled radio testing. WROOM-1 remains a gated alternative if a later placement closes the display, cell, button, copper and enclosure-metal conflicts. The preliminary display FPC datum moves rearward to separate its drawn envelope from USB-C; reviewed footprints still have to prove the final insertion and courtyard clearance.
 
-Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for
-hand-shaped surfaces. Rev A keeps simple drafted solids and explicit parameters
-until fit, ingress and interaction tests justify a more complex surface model.
+Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for hand-shaped surfaces. Rev A keeps simple drafted solids and explicit parameters until fit, ingress and interaction tests justify a more complex surface model.

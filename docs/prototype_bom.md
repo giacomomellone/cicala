@@ -1,8 +1,6 @@
 # Prototype BOM
 
-Parts for the working breadboard rig and the planned rev A integration. Prices
-and stock change; order by manufacturer part number and confirm the exact board
-revision at checkout.
+Parts for the working breadboard rig and the planned rev A integration. Prices and stock change; order by manufacturer part number and confirm the exact board revision at checkout.
 
 ## Breadboard rig
 
@@ -20,44 +18,29 @@ revision at checkout.
 | Breadboard and jumper wires                                          |    1 set | temporary wiring                              | existing stock                                                                                                                                                                                                                                    |
 | USB-C data cables                                                    |        3 | UART, native USB/JTAG, and charger            | existing stock                                                                                                                                                                                                                                    |
 
-The display listing must say black/white, 250 × 122, V4, and SKU 12915.
-Three-colour, four-colour, touch, and HAT+ variants use different hardware.
-The module includes the eight-wire PH2.0 cable and accepts 3.3 V logic.
+The display listing must say black/white, 250 × 122, V4, and SKU 12915. Three-colour, four-colour, touch, and HAT+ variants use different hardware. The module includes the eight-wire PH2.0 cable and accepts 3.3 V logic.
 
-The DevKitC N8R8 has enough flash and RAM for firmware development. The rev A
-partition layout targets a 16 MB module and must be checked on that board.
+The DevKitC N8R8 has enough flash and RAM for firmware development. The rev A partition layout targets a 16 MB module and must be checked on that board.
 
 ### Buttons
 
-Ordinary through-hole buttons cover the breadboard tests. The target switch is
-the sealed 2 N C&K **KSC321GLFS**. It is available as
-[RS 1769505](https://de.rs-online.com/web/p/tastschalter/1769505) and from
-[Sinuss](https://sinuss.nl/en/products/ksc321glfs-switch-spst-005a-32vdc-16n-smd-ck-components).
+Ordinary through-hole buttons cover the breadboard tests. The target switch is the sealed 2 N C&K **KSC321GLFS**. It is available as [RS 1769505](https://de.rs-online.com/web/p/tastschalter/1769505) and from [Sinuss](https://sinuss.nl/en/products/ksc321glfs-switch-spst-005a-32vdc-16n-smd-ck-components).
 
-The SMD switch needs soldered leads for breadboard use. Connect one side to
-ground and the opposite side to a GPIO input with its pull-up enabled. Check the
-contact pair with a continuity meter before connecting the ESP32.
+The SMD switch needs soldered leads for breadboard use. Connect one side to ground and the opposite side to a GPIO input with its pull-up enabled. Check the contact pair with a continuity meter before connecting the ESP32.
 
 ### Battery safety
 
-Cut the Adafruit 6092 charge-rate jumper before connecting the cell. This sets
-the charge current to 500 mA, about 0.33C for the 1500 mAh bench cell.
+Cut the Adafruit 6092 charge-rate jumper before connecting the cell. This sets the charge current to 500 mA, about 0.33C for the 1500 mAh bench cell.
 
-Check JST-PH polarity against the charger silkscreen with a meter. Suppliers use
-both connector polarities; a reversed cell can damage the charger and cell.
+Check JST-PH polarity against the charger silkscreen with a meter. Suppliers use both connector polarities; a reversed cell can damage the charger and cell.
 
-The 1500 mAh cell is for measurement. Its roughly 61 × 42 × 5.2 mm envelope
-does not fit the planned enclosure, and its runtime must not be quoted as the
-503035 product-cell runtime.
+The 1500 mAh cell is for measurement. Its roughly 61 × 42 × 5.2 mm envelope does not fit the planned enclosure, and its runtime must not be quoted as the 503035 product-cell runtime.
 
 ## Measurement tools
 
-A multimeter is enough for continuity, divider taps, and steady voltage. Short
-Wi-Fi and e-paper current peaks need a current profiler such as the Nordic
-Power Profiler Kit II.
+A multimeter is enough for continuity, divider taps, and steady voltage. Short Wi-Fi and e-paper current peaks need a current profiler such as the Nordic Power Profiler Kit II.
 
-The DevKitC power LED and WS2812 prevent a useful whole-device sleep-current
-measurement. Measure the 30 µA target on rev A.
+The DevKitC power LED and WS2812 prevent a useful whole-device sleep-current measurement. Measure the 30 µA target on rev A.
 
 ## Rev A integration
 
@@ -71,6 +54,4 @@ measurement. Measure the 30 µA target on rev A.
 | Charger, regulator, USB-C, ESD, load switches, and passives |                  1 set | rev A power and service path; exact parts remain open in `hardware/pcb/BOM.md` |
 | Printed shell, button caps, lens, ballast, and feet         |                  1 set | tabletop interaction and mechanical tests                                      |
 
-Use [hardware wiring](hardware_wiring.md) to assemble and check the breadboard.
-The current validation state and remaining enclosure tests are in
-[device prototype](device_prototype.md).
+Use [hardware wiring](hardware_wiring.md) to assemble and check the breadboard. The current validation state and remaining enclosure tests are in [device prototype](device_prototype.md).

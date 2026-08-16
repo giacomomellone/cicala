@@ -12,6 +12,12 @@ $fn = $preview ? 48 : 96;
 
 part = "assembly"; // [assembly,exploded,top_shell,base,retainer,category_cap,next_cap,lens,steel_skin,light_pipe,pcb_reference,coupon_buttons,coupon_usb,coupon_lens,coupon_boss]
 
+// Public Kveld finish intent. Physical colour and texture remain sample-gated.
+paper_color = [250 / 255, 248 / 255, 242 / 255];
+paper_raised_color = [1, 1, 254 / 255];
+ink_color = [31 / 255, 31 / 255, 29 / 255];
+ink_soft_color = [95 / 255, 94 / 255, 90 / 255];
+
 // Product envelope.
 case_width = 84;
 case_depth = 56;
@@ -254,7 +260,7 @@ module foot(x, y) {
 }
 
 module lens() {
-    color([0.12, 0.15, 0.18, 0.80])
+    color([31 / 255, 34 / 255, 35 / 255, 0.82])
         face_part(
             lens_width,
             lens_depth,
@@ -267,7 +273,7 @@ module lens() {
 }
 
 module panel_reference() {
-    color([0.82, 0.80, 0.70])
+    color(paper_raised_color)
         face_part(
             panel_width,
             panel_depth,
@@ -353,9 +359,9 @@ module gasket_reference() {
 }
 
 module assembly(exploded = 0) {
-    color([0.18, 0.19, 0.20])
+    color(paper_color)
         translate([0, 0, 4 * exploded]) top_shell();
-    color([0.10, 0.11, 0.12])
+    color(paper_color)
         translate([0, 0, -2 * exploded]) base();
     color([0.34, 0.35, 0.36])
         translate([0, 0, -4 * exploded]) steel_skin();
@@ -364,10 +370,11 @@ module assembly(exploded = 0) {
             translate([0, 0, -4 * exploded]) foot(point[0], point[1]);
     translate([0, 0, 3 * exploded]) lens();
     translate([0, 0, 1.5 * exploded]) panel_reference();
-    translate([0, 0, 0.5 * exploded]) retainer();
-    color([0.30, 0.31, 0.32])
+    color(ink_soft_color)
+        translate([0, 0, 0.5 * exploded]) retainer();
+    color(ink_color)
         translate([0, 0, 4 * exploded]) category_cap(true);
-    color([0.30, 0.31, 0.32])
+    color(ink_color)
         translate([0, 0, 4 * exploded]) next_cap(true);
     translate([0, 0, 4 * exploded]) light_pipe();
     if (exploded > 0)

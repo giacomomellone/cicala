@@ -1,10 +1,6 @@
 # Device prototype
 
-The breadboard firmware works. Rev A now has a parametric enclosure and a KiCad
-constraint board. They establish the design datums described here but remain
-prototype files rather than manufacturing data. See
-[Rev A hardware](hardware_rev_a.md) for the files, coordinates and release
-gates.
+The breadboard firmware works. Rev A now has a parametric enclosure and a KiCad constraint board. They establish the design datums described here but remain prototype files rather than manufacturing data. See [Rev A hardware](hardware_rev_a.md) for the files, coordinates and release gates.
 
 !!! warning "Design intent, not built hardware"
 
@@ -13,31 +9,20 @@ gates.
     bench results in the validation sequence come from working hardware, and
     they were taken on the breadboard rig.
 
-Technical CAD images are labelled as models. Photoreal concept renders remain
-outside the public engineering record until publication approval or built
-hardware exists.
+Technical CAD images are labelled as models. Photoreal concept renders remain outside the public engineering record until publication approval or built hardware exists.
 
 ## Interaction
 
 The device has two adjacent buttons:
 
-- **Category** advances through the six categories in a fixed order and shows
-  the selected name on the e-paper;
+- **Category** advances through the six categories in a fixed order and shows the selected name on the e-paper;
 - **Next** draws a question from the category named on the display.
 
-The active category is visible on the e-paper. Reaching a category can take up
-to five presses, so the physical study must check whether the cycle and refresh
-delay remain easy to follow. Wi-Fi, language, and maintenance stay in the phone
-setup flow. Normal playback uses editorial depths 1 and 2.
+The active category is visible on the e-paper. Reaching a category can take up to five presses, so the physical study must check whether the cycle and refresh delay remain easy to follow. Wi-Fi, language, and maintenance stay in the phone setup flow. Normal playback uses editorial depths 1 and 2.
 
 ## Proposed form
 
-The face has three elements: e-paper, Category, and Next. The two buttons sit
-close together above the display, but they do not have equal visual weight.
-Category is a small, 0.2 mm sub-flush round button with its label printed on the
-shell. Next is a larger flush rounded pill with a shallow concave top and its
-label on the cap. These heights are coupon starting points. Category names are
-printed by the display.
+The face has three elements: e-paper, Category, and Next. The two buttons sit close together above the display, but they do not have equal visual weight. Category is a small, 0.2 mm sub-flush round button with its label printed on the shell. Next is a larger flush rounded pill with a shallow concave top and its label on the cap. These heights are coupon starting points. Category names are printed by the display.
 
 | Property      |                                     Study target | Reason                                                                        |
 | ------------- | -----------------------------------------------: | ----------------------------------------------------------------------------- |
@@ -51,49 +36,30 @@ printed by the display.
 | Port          |                 centered USB-C on the lower edge | Absent from the main tabletop view                                            |
 | Finish        |     warm-ivory matte shell; two charcoal buttons | Matches the paper-like website                                                |
 
-The size is a planning envelope. Component drawings, button-label legibility,
-and the e-paper layout test may change it.
+The size is a planning envelope. Component drawings, button-label legibility, and the e-paper layout test may change it.
 
-The normal tabletop face remains free of branding: no wordmark appears on the
-e-paper, top shell, or beside the Category and Next controls. A production
-enclosure may use a small blind emboss on the underside or concealed lower
-edge. It is optional and does not change the current prototype renders.
+The normal tabletop face remains free of branding: no wordmark appears on the e-paper, top shell, or beside the Category and Next controls. A production enclosure may use a small blind emboss on the underside or concealed lower edge. It is optional and does not change the current prototype renders.
 
 ## How category selection works
 
-The order stays `new people`, `close`, `family`, `work`, `here`, `wild`.
-Category advances one step and wraps from Wild to New People. A category press
-replaces the old question with the new category name; another Category press
-continues cycling, while Next draws from the category currently shown. A
-question screen keeps the active category in a small line above the question.
+The order stays `new people`, `close`, `family`, `work`, `here`, `wild`. Category advances one step and wraps from Wild to New People. A category press replaces the old question with the new category name; another Category press continues cycling, while Next draws from the category currently shown. A question screen keeps the active category in a small line above the question.
 
 This gives every state a visible result:
 
 - an accepted Category press changes the name on the e-paper;
 - an accepted Next press changes the question under that name;
-- a press discarded during a panel refresh changes neither the display nor the
-  stored category;
+- a press discarded during a panel refresh changes neither the display nor the stored category;
 - removing power leaves the last category and question readable on the panel.
 
-The firmware retains the category alongside the other RTC state and defaults to
-New People after total state loss.
+The firmware retains the category alongside the other RTC state and defaults to New People after total state loss.
 
 ## Candidate controls
 
-Use the same sealed tactile switch under both actions so force, travel, and
-electrical behavior match. Different external caps create the hierarchy: the
-Category cap is small and low; the Next cap is wider and flush, with a shallow
-concave top.
+Use the same sealed tactile switch under both actions so force, travel, and electrical behavior match. Different external caps create the hierarchy: the Category cap is small and low; the Next cap is wider and flush, with a shallow concave top.
 
-**C&K KSC321GLFS**: IP67 SPST-NO tact switch, 6.2 × 6.2 mm footprint,
-3.5 mm actuator height, 2 ±0.4 N force, at least 15% tactile ratio, 0.2 mm
-electrical travel with +0.3/−0 mm tolerance, and 300,000-cycle rating. Each
-switch needs an external button cap with its own mechanical stop so enclosure
-loads do not crush the switch.
+**C&K KSC321GLFS**: IP67 SPST-NO tact switch, 6.2 × 6.2 mm footprint, 3.5 mm actuator height, 2 ±0.4 N force, at least 15% tactile ratio, 0.2 mm electrical travel with +0.3/−0 mm tolerance, and 300,000-cycle rating. Each switch needs an external button cap with its own mechanical stop so enclosure loads do not crush the switch.
 
-IP67 at the component does not make the assembled enclosure IP67. The lens,
-USB opening, shell seam, and both button-cap interfaces need their own paths
-and tests.
+IP67 at the component does not make the assembled enclosure IP67. The lens, USB opening, shell seam, and both button-cap interfaces need their own paths and tests.
 
 ## Mechanical stack
 
@@ -108,20 +74,15 @@ Use 16 mm as the initial CAD envelope.
 | Protected 503035 cell                    |         5.0–5.5 mm |
 | Bottom shell and clearance               |         1.8–2.2 mm |
 
-Put both switches in the same control area above the panel and carry button
-loads into the top shell with cap stops sized for their different caps. Support
-the e-paper glass continuously around its perimeter. Use four elastomer feet
-positioned to resist either button press.
+Put both switches in the same control area above the panel and carry button loads into the top shell with cap stops sized for their different caps. Support the e-paper glass continuously around its perimeter. Use four elastomer feet positioned to resist either button press.
 
-The category line needs tested fonts, right-to-left layout, and enough width
-for the longest released label.
+The category line needs tested fonts, right-to-left layout, and enough width for the longest released label.
 
 ## Electrical contract
 
 Rev A must provide:
 
-- ESP32-S3-WROOM-1U-N16 baseline, or a WROOM-1-N16 placement that closes the
-  display/antenna conflict, plus the GDEY0213B74 e-paper circuit;
+- ESP32-S3-WROOM-1U-N16 baseline, or a WROOM-1-N16 placement that closes the display/antenna conflict, plus the GDEY0213B74 e-paper circuit;
 - one Category wake input and one independent Next wake input;
 - retained category state with a defined New People cold default;
 - an integrated charging power path or a validated load-sharing circuit;
@@ -130,47 +91,33 @@ Rev A must provide:
 - e-paper power gating and a measured whole-device sleep budget below 30 µA;
 - antenna keep-out clear of the display, battery, button hardware, and copper;
 - hidden development pads, with no extra user-facing controls.
-- concealed IO0 and EN pads for recovery from firmware that prevents USB
-  enumeration;
+- concealed IO0 and EN pads for recovery from firmware that prevents USB enumeration;
 - a sealed front-edge light pipe beside USB-C, with no LED on the tabletop face.
 
 Bench results add these constraints:
 
-- No always-on indicator. DevKitC indicators prevent a useful sleep-current
-  measurement; rev A must expose the whole-device current without a permanent
-  LED load.
-- Use a switched 1 MΩ/470 kΩ battery divider. Its unswitched draw is about
-  2.9 µA, and switching removes that sleep load.
-- Sense VBUS from the USB rail. Firmware uses it for the sync window, charging
-  wake policy, and the status LED.
-- Prefer a charger with charge-state outputs. The BQ25185 IC provides STAT1 and
-  STAT2, but the current bench breakout does not expose them to firmware, so
-  that rig can only infer a full cell from voltage.
+- No always-on indicator. DevKitC indicators prevent a useful sleep-current measurement; rev A must expose the whole-device current without a permanent LED load.
+- Use a switched 1 MΩ/470 kΩ battery divider. Its unswitched draw is about 2.9 µA, and switching removes that sleep load.
+- Sense VBUS from the USB rail. Firmware uses it for the sync window, charging wake policy, and the status LED.
+- Prefer a charger with charge-state outputs. The BQ25185 IC provides STAT1 and STAT2, but the current bench breakout does not expose them to firmware, so that rig can only infer a full cell from voltage.
 
-The question bundle stores each question once with a six-bit deck mask and
-depth metadata. Normal playback excludes depth 3. See
-[sync_protocol.md](sync_protocol.md).
+The question bundle stores each question once with a six-bit deck mask and depth metadata. Normal playback excludes depth 3. See [sync_protocol.md](sync_protocol.md).
 
 ## Validation sequence
 
 ### 1. Website
 
-The website exercises all six deck choices, overlapping membership, Wild tone,
-the New People default, and the depth 1–2 playback cap.
+The website exercises all six deck choices, overlapping membership, Wild tone, the New People default, and the depth 1–2 playback cap.
 
 ### 2. USB-powered breadboard and firmware
 
-The ESP32-S3 DevKitC, the assembled 2.13-inch e-paper module and two tactile
-switches. Flashing, storage, deck selection, debounce, rendering, refresh policy
-and Wi-Fi sync all run there. The [prototype BOM](prototype_bom.md) describes the
-rig and [hardware wiring](hardware_wiring.md) wires it.
+The ESP32-S3 DevKitC, the assembled 2.13-inch e-paper module and two tactile switches. Flashing, storage, deck selection, debounce, rendering, refresh policy and Wi-Fi sync all run there. The [prototype BOM](prototype_bom.md) describes the rig and [hardware wiring](hardware_wiring.md) wires it.
 
 Verified:
 
 - one Next press advances exactly once, and a held button counts once;
 - every released English and German question fits;
-- partial updates remain readable through a representative run — 193 of them,
-  which is where the full-refresh interval comes from;
+- partial updates remain readable through a representative run — 193 of them, which is where the full-refresh interval comes from;
 - firmware can be flashed and debugged without extra programming hardware.
 
 ### 3. Two-button interaction bench
@@ -183,24 +130,17 @@ The electrical and firmware checks pass:
 - cold-state loss defaults visibly to New People;
 - repeated category changes stay readable.
 
-The enclosure study must check whether people distinguish Category and Next
-without explanation.
+The enclosure study must check whether people distinguish Category and Next without explanation.
 
 ### 4. Battery and power-path bench
 
-The breadboard uses a bq25185 charger board, protected cell, and both sense
-dividers. It confirms charging under load, USB/battery handover, battery readings
-within 1% of a meter, boot-time VBUS detection, the plug-in sync window, and
-battery-only operation.
+The breadboard uses a bq25185 charger board, protected cell, and both sense dividers. It confirms charging under load, USB/battery handover, battery readings within 1% of a meter, boot-time VBUS detection, the plug-in sync window, and battery-only operation.
 
-Sleep current requires rev A because the DevKitC indicators exceed the 30 µA
-budget. Brownout margin and the panel's minimum reliable refresh voltage also
-need measurement; see the acceptance targets below.
+Sleep current requires rev A because the DevKitC indicators exceed the 30 µA budget. Brownout margin and the panel's minimum reliable refresh voltage also need measurement; see the acceptance targets below.
 
 ### 5. Controls, PCB, and enclosure integration
 
-Import manufacturer STEP models, place the tested buttons, PCB, and battery,
-then build the first printed enclosure.
+Import manufacturer STEP models, place the tested buttons, PCB, and battery, then build the first printed enclosure.
 
 Run table sessions without explaining the controls first. Check:
 
@@ -214,10 +154,7 @@ Run table sessions without explaining the controls first. Check:
 - the larger Next control is identifiable without reading both labels;
 - the adjacent controls do not cause frequent wrong presses.
 
-If category choice takes more attention than rejecting a poor question with
-Next, revise the cycling interaction before another PCB revision. EVT then
-covers drop, button life, cap overload, pocket lint, radio performance, and
-small spills.
+If category choice takes more attention than rejecting a poor question with Next, revise the cycling interaction before another PCB revision. EVT then covers drop, button life, cap overload, pocket lint, radio performance, and small spills.
 
 ## Acceptance targets
 
