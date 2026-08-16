@@ -1,7 +1,10 @@
 # Device prototype
 
-The breadboard firmware works. Rev A is a PCB and enclosure design; its
-mechanical files are concept inputs rather than manufacturing data.
+The breadboard firmware works. Rev A now has a parametric enclosure and a KiCad
+constraint board. They establish the design datums described here but remain
+prototype files rather than manufacturing data. See
+[Rev A hardware](hardware_rev_a.md) for the files, coordinates and release
+gates.
 
 !!! warning "Design intent, not built hardware"
 
@@ -10,9 +13,9 @@ mechanical files are concept inputs rather than manufacturing data.
     bench results in the validation sequence come from working hardware, and
     they were taken on the breadboard rig.
 
-This page stays text-first. It carries no illustrations until photographs of
-real hardware exist, so nothing here can be mistaken for evidence that the
-enclosure has been made.
+Technical CAD images are labelled as models. Photoreal concept renders remain
+outside the public engineering record until publication approval or built
+hardware exists.
 
 ## Interaction
 
@@ -31,9 +34,10 @@ setup flow. Normal playback uses editorial depths 1 and 2.
 
 The face has three elements: e-paper, Category, and Next. The two buttons sit
 close together above the display, but they do not have equal visual weight.
-Category is a small, nearly flush round button with its label printed on the
-shell. Next is a larger, slightly raised rounded pill with a shallow concave
-top and its label on the cap. Category names are printed by the display.
+Category is a small, 0.2 mm sub-flush round button with its label printed on the
+shell. Next is a larger flush rounded pill with a shallow concave top and its
+label on the cap. These heights are coupon starting points. Category names are
+printed by the display.
 
 | Property      |                                     Study target | Reason                                                                        |
 | ------------- | -----------------------------------------------: | ----------------------------------------------------------------------------- |
@@ -42,7 +46,7 @@ top and its label on the cap. Category names are printed by the display.
 | Orientation   |                       landscape, 3° face incline | Keeps the device readable without becoming a wedge                            |
 | Display       |     2.13″ e-paper behind a matte protective lens | Keeps the category and question visible without power                         |
 | Category      |           small, nearly flush round button, left | Secondary action used only when changing context                              |
-| Next          |        larger, raised rounded-pill button, right | Frequent primary action; easy to find without reading both labels             |
+| Next          |         larger, flush rounded-pill button, right | Frequent primary action; easy to find without reading both labels             |
 | Display label | active category in small type above the question | Allows translated labels without shell changes                                |
 | Port          |                 centered USB-C on the lower edge | Absent from the main tabletop view                                            |
 | Finish        |     warm-ivory matte shell; two charcoal buttons | Matches the paper-like website                                                |
@@ -78,13 +82,14 @@ New People after total state loss.
 
 Use the same sealed tactile switch under both actions so force, travel, and
 electrical behavior match. Different external caps create the hierarchy: the
-Category cap is small and low; the Next cap is wider, slightly raised, and
-shallowly concave.
+Category cap is small and low; the Next cap is wider and flush, with a shallow
+concave top.
 
 **C&K KSC321GLFS**: IP67 SPST-NO tact switch, 6.2 × 6.2 mm footprint,
-3.5 mm actuator height, 2 N force, and 300,000-cycle rating. Each switch needs
-an external button cap with its own mechanical stop so enclosure loads do not
-crush the switch.
+3.5 mm actuator height, 2 ±0.4 N force, at least 15% tactile ratio, 0.2 mm
+electrical travel with +0.3/−0 mm tolerance, and 300,000-cycle rating. Each
+switch needs an external button cap with its own mechanical stop so enclosure
+loads do not crush the switch.
 
 IP67 at the component does not make the assembled enclosure IP67. The lens,
 USB opening, shell seam, and both button-cap interfaces need their own paths
@@ -115,7 +120,8 @@ for the longest released label.
 
 Rev A must provide:
 
-- ESP32-S3-WROOM-1-N16 and the GDEY0213B74 e-paper circuit;
+- ESP32-S3-WROOM-1U-N16 baseline, or a WROOM-1-N16 placement that closes the
+  display/antenna conflict, plus the GDEY0213B74 e-paper circuit;
 - one Category wake input and one independent Next wake input;
 - retained category state with a defined New People cold default;
 - an integrated charging power path or a validated load-sharing circuit;
@@ -124,6 +130,9 @@ Rev A must provide:
 - e-paper power gating and a measured whole-device sleep budget below 30 µA;
 - antenna keep-out clear of the display, battery, button hardware, and copper;
 - hidden development pads, with no extra user-facing controls.
+- concealed IO0 and EN pads for recovery from firmware that prevents USB
+  enumeration;
+- a sealed front-edge light pipe beside USB-C, with no LED on the tabletop face.
 
 Bench results add these constraints:
 
@@ -134,8 +143,9 @@ Bench results add these constraints:
   2.9 µA, and switching removes that sleep load.
 - Sense VBUS from the USB rail. Firmware uses it for the sync window, charging
   wake policy, and the status LED.
-- Prefer a charger with a termination-status output. The bq25185 rig can only
-  infer a full cell from voltage.
+- Prefer a charger with charge-state outputs. The BQ25185 IC provides STAT1 and
+  STAT2, but the current bench breakout does not expose them to firmware, so
+  that rig can only infer a full cell from voltage.
 
 The question bundle stores each question once with a six-bit deck mask and
 depth metadata. Normal playback excludes depth 3. See

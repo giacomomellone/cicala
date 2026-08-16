@@ -818,7 +818,10 @@ Accepted cost: the runtime figures this bench produces are for a cell three time
 
 ## 2026-08-09: Charged is a guess, and only the LED is allowed to believe it
 
-The bq25185 exposes no charge-status pin. Adafruit's board has an orange LED wired to it and no pad, so the firmware cannot be told that charging has terminated — it can only look at the cell.
+The Adafruit bq25185 board exposes no firmware-accessible charge-status pad.
+The IC has STAT1 and STAT2 outputs, but the breakout uses status internally and
+does not bring the signals to the breadboard, so this rig can only look at the
+cell.
 
 `CHARGING` and `CHARGED` are therefore one visit to external power split by a voltage threshold, `CONFIG_KVELD_POWER_FULL_MV`. A lithium cell under constant-voltage charge sits near 4.2 V for the last hour while the current tapers, so this reports full early, by an amount that depends on what the load is doing. There is no reading that would do better.
 
@@ -850,7 +853,7 @@ The reason is the status LEDs. They need the SoC running to be lit, and red hand
 
 `CONFIG_KVELD_POWER_CHARGE_WINDOW_MS` survives, but it now bounds only the sync and update window rather than wakefulness. A device left on a charger overnight should not retry a download for eight hours; it should stay lit and stop asking.
 
-This deleted something. An earlier draft gave the retained block a `charge_window_spent` flag and a layout version bump, because a device that slept mid-charge could not work out whether it had already synced — VBUS stays high for hours and there is no charge-status pin to distinguish a fresh plug-in from an old one. Staying awake removes the question entirely: from the press that opens the window to the unplug, the device never sleeps, so the answer is in RAM. The retained block is unchanged.
+This deleted something. An earlier draft gave the retained block a `charge_window_spent` flag and a layout version bump, because a device that slept mid-charge could not work out whether it had already synced — VBUS stays high for hours and the bench board exposes no charge-status signal to distinguish a fresh plug-in from an old one. Staying awake removes the question entirely: from the press that opens the window to the unplug, the device never sleeps, so the answer is in RAM. The retained block is unchanged.
 
 Accepted cost: a fault that leaves VBUS reading high would keep the device awake indefinitely and flatten the cell it thinks is charging.
 
@@ -906,7 +909,12 @@ The battery divider should be **1 MΩ over 470 kΩ**, and switched over both. 1M
 
 The divider constants need no calibration. `KVELD_POWER_DIVIDER_NUM`/`_DEN` stay at 2/1: the rig logs 3890 mV against 3930 on a meter, 1.0 % low, and the error is an offset rather than a ratio, so scaling it would overcorrect at the low end where the reading decides something. It also errs towards refusing early, which is the safe direction.
 
-A charger that reports **charge termination** would remove an estimate from the design. The bq25185 has no such pin, so CHARGED is inferred from voltage and runs early by an amount that depends on load — acceptable for an LED, and the reason nothing else is allowed to read it.
+A charger interface that exposes **charge termination** would remove an
+estimate from the bench. The BQ25185 has STAT1 and STAT2 outputs, but the
+Adafruit breakout does not expose them to firmware. CHARGED is therefore
+inferred from voltage on this rig and runs early by an amount that depends on
+load — acceptable for an LED, and the reason nothing else is allowed to read
+it.
 
 Accepted cost: the sleep budget stays a target rather than a measurement until rev A exists, so the runtime figure in the design is still arithmetic rather than an observation.
 
@@ -979,3 +987,39 @@ underside or concealed lower edge.
 
 Accepted cost: the repository prepares the PNGs but cannot change GitHub or
 other service avatars automatically; those are manual publication steps.
+
+## 2026-08-16: OpenSCAD and KiCad share the Rev A mechanical contract
+
+The Rev A enclosure source is parametric OpenSCAD. The earlier GLB study remains
+a massing reference, not editable manufacturing CAD, and its missing claimed
+SCAD source is not reconstructed by treating the mesh as authoritative.
+
+The case coordinate origin is its rear-left corner. KiCad uses the same X/Y
+values for the 78 × 45 × 1.2 mm board at (3, 3), four mounting holes, switch
+centres, display/FPC envelope, USB-C, light pipe, cell and antenna keep-out. A
+dimension shared by both files changes in both files and in
+`hardware_rev_a.md`.
+
+KiCad starts as a constraint board and seven empty hierarchy sheets. It is
+marked not for fabrication until reviewed symbols, footprints, nets and routes
+replace the mechanical datums. The default board is four layers so the native
+USB and ESP32-S3 RF paths can retain continuous reference planes. The exact
+stack comes from the fabricator before routing.
+
+Category starts 0.2 mm sub-flush and Next flush. Both values remain coupon
+inputs because KSC321G travel has a broad tolerance. IO0 and EN both get
+concealed recovery pads; IO0 without reset is insufficient on a battery-powered
+board.
+
+The first overlay also rejects WROOM-1 as the default. Its required PCB-antenna
+clearance overlaps the display envelope in the current case. WROOM-1U becomes
+the Rev A baseline candidate, subject to an internal external-antenna and cable
+route plus assembled radio testing. WROOM-1 remains a gated alternative if a
+later placement closes the display, cell, button, copper and enclosure-metal
+conflicts. The preliminary display FPC datum moves rearward to separate its
+drawn envelope from USB-C; reviewed footprints still have to prove the final
+insertion and courtyard clearance.
+
+Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for
+hand-shaped surfaces. Rev A keeps simple drafted solids and explicit parameters
+until fit, ingress and interaction tests justify a more complex surface model.

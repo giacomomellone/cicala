@@ -63,7 +63,7 @@ measurement. Measure the 30 µA target on rev A.
 
 | Part                                                        |               Quantity | Use                                                                            |
 | ----------------------------------------------------------- | ---------------------: | ------------------------------------------------------------------------------ |
-| ESP32-S3-WROOM-1-N16                                        |                      1 | production module and 16 MB partition layout                                   |
+| ESP32-S3-WROOM-1U-N16, with WROOM-1-N16 gated               |                      1 | production module, antenna study and 16 MB partition layout                    |
 | **GDEY0213B74** bare panel                                  | 1, plus optional spare | final display stack                                                            |
 | 24-pin 0.5 mm FPC connector                                 |                      1 | panel connection                                                               |
 | C&K **KSC321GLFS**                                          |                      2 | Category and Next                                                              |

@@ -34,6 +34,13 @@ firmware/tests/fixtures/
 # mkdocs output
 site/
 
+# KiCad per-user state, locks and automatic backups
+*.kicad_prl
+~*.lck
+*-backups/
+*.kicad_sch-bak
+*.kicad_pcb-bak
+
 # vendored docs dependency, fetched by `just docs-deps` (pinned there).
 # Not committed, for the same reason node_modules/ is not.
 docs/assets/javascripts/mermaid.min.js
