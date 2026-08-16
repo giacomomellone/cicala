@@ -4,6 +4,76 @@ import { payload, playable, playReady, schema, seedStorage, smallestDeck } from 
 const questionText = "#q-text";
 
 test.describe("play", () => {
+  test("publishes the live wordmark and PNG identity assets", async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.addInitScript(() => {
+      (window as Window & { identityLayoutShift?: number }).identityLayoutShift = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          const shift = entry as PerformanceEntry & { hadRecentInput: boolean; value: number };
+          if (!shift.hadRecentInput) {
+            (window as Window & { identityLayoutShift: number }).identityLayoutShift += shift.value;
+          }
+        }
+      }).observe({ type: "layout-shift", buffered: true });
+    });
+    await page.goto(`/q/${payload("en")[0]!.id}`);
+
+    const wordmark = page.getByRole("link", { name: "Kveld home" });
+    await expect(wordmark).toHaveText("kveld");
+    await expect(wordmark).toHaveCSS("font-family", /Literata/);
+    await wordmark.focus();
+    await expect(wordmark).toBeFocused();
+
+    const iconHrefs = await page
+      .locator('link[rel="icon"]')
+      .evaluateAll((links) => links.map((link) => (link as HTMLLinkElement).href));
+    expect(iconHrefs).toHaveLength(2);
+    for (const href of iconHrefs) {
+      const response = await page.request.get(href);
+      expect(response.ok()).toBe(true);
+      expect(response.headers()["content-type"]).toContain("image/png");
+    }
+
+    const touchHref = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href");
+    const ogHref = await page.locator('meta[property="og:image"]').getAttribute("content");
+    for (const href of [touchHref, ogHref]) {
+      expect(href).toBeTruthy();
+      const asset = new URL(new URL(href!, page.url()).pathname, page.url()).href;
+      const response = await page.request.get(asset);
+      expect(response.ok()).toBe(true);
+      expect(response.headers()["content-type"]).toContain("image/png");
+    }
+
+    const sizes = await page.evaluate(() => ({
+      viewport: window.innerWidth,
+      page: document.documentElement.scrollWidth,
+      wordmark: Number.parseFloat(getComputedStyle(document.querySelector(".wordmark")!).fontSize),
+      question: Number.parseFloat(getComputedStyle(document.querySelector("#q-text")!).fontSize),
+    }));
+    expect(sizes.page).toBeLessThanOrEqual(sizes.viewport);
+    expect(sizes.question).toBeGreaterThan(sizes.wordmark);
+
+    const fontState = await page.evaluate(async () => {
+      await document.fonts.ready;
+      const externalResources = performance
+        .getEntriesByType("resource")
+        .map((entry) => new URL(entry.name))
+        .filter((url) => url.origin !== location.origin)
+        .map((url) => url.href);
+      return {
+        literata: document.fonts.check("16px Literata"),
+        plex: document.fonts.check('16px "IBM Plex Mono"'),
+        externalResources,
+        layoutShift: (window as Window & { identityLayoutShift?: number }).identityLayoutShift ?? 0,
+      };
+    });
+    expect(fontState.literata).toBe(true);
+    expect(fontState.plex).toBe(true);
+    expect(fontState.externalResources).toEqual([]);
+    expect(fontState.layoutShift).toBeLessThan(0.01);
+  });
+
   test("serves a question without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();

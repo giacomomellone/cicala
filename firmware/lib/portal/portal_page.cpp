@@ -113,35 +113,40 @@ const char *const kHead =
     "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
     "<title>Kveld setup</title><style>"
-    "*{box-sizing:border-box}body{font:16px/1.5 system-ui,sans-serif;margin:0;"
-    "padding:1.25rem;background:#eeeae2;color:#272522}main{max-width:34rem;margin:0 auto}"
-    ".brand{display:flex;gap:.75rem;align-items:center;margin:.25rem 0 1.25rem}"
-    ".mark{display:grid;place-items:center;width:2.5rem;height:2.5rem;border-radius:.75rem;"
-    "background:#272522;color:#f8f5ef;font-weight:700;letter-spacing:-.08em}"
-    ".eyebrow{font-size:.7rem;letter-spacing:.12em;font-weight:700;color:#81786d}"
-    "h1{font-size:1.35rem;line-height:1.2;margin:.1rem 0 0;letter-spacing:-.02em}"
-    "h2{font-size:1rem;margin:0;font-weight:700}label{display:block;margin:1rem 0 .3rem;"
-    "font-weight:650}"
-    "select,input{width:100%;padding:.6rem;font-size:1rem;box-sizing:border-box;"
-    "border:1px solid #c8c0b5;border-radius:.5rem;background:#fff;color:inherit}"
-    "button{margin-top:1rem;width:100%;padding:.7rem;font-size:1rem;font-weight:650;"
-    "border:0;border-radius:.5rem;background:#272522;color:#fff;cursor:pointer}"
-    "button.quiet{background:#e2ddd4;color:#3d3934}button.danger{background:#fff;"
-    "border:1px solid #c9a59a;color:#8b3f32}"
-    ".panel{background:#fdfcf9;border:1px solid #d9d2c8;border-radius:.75rem;"
-    "padding:1rem;margin:0 0 .85rem;box-shadow:0 1px 1px #d9d2c833}"
+    "*{box-sizing:border-box}body{font:14px/1.55 ui-monospace,SFMono-Regular,Menlo,"
+    "Consolas,monospace;margin:0;padding:1.25rem;background:#faf8f2;color:#1f1f1d}"
+    "main{max-width:34rem;margin:0 auto}.brand{display:flex;align-items:baseline;"
+    "justify-content:space-between;gap:1rem;margin:.25rem 0 1rem;padding-bottom:.75rem;"
+    "border-bottom:1px solid #e3e0d6}.wordmark{font:400 2rem/1 Georgia,serif;"
+    "letter-spacing:-.035em}.eyebrow{font-size:.65rem;letter-spacing:.12em;color:#5f5e5a}"
+    "h1{font-size:1.15rem;line-height:1.3;margin:0 0 .45rem;font-weight:500}"
+    "h2{font-size:.9rem;margin:0;font-weight:500}label{display:block;margin:1rem 0 .3rem}"
+    "select,input{width:100%;padding:.7rem;font:inherit;border:1px solid #e3e0d6;"
+    "border-radius:.6rem;background:#fffffe;color:inherit;min-height:44px}"
+    "button{margin-top:1rem;width:100%;padding:.75rem;font:inherit;border:1px solid #1f1f1d;"
+    "border-radius:999px;background:#1f1f1d;color:#faf8f2;cursor:pointer;min-height:44px}"
+    "button.quiet{background:transparent;color:#1f1f1d}button.danger{background:transparent;"
+    "border-color:#c24a22;color:#c24a22}"
+    ".panel{background:#fffffe;border:1px solid #e3e0d6;border-radius:.65rem;"
+    "padding:1rem;margin:0 0 .85rem}"
     ".panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:1rem}"
-    ".lede{color:#6f675e;margin:-.5rem 0 1.1rem}.note{color:#81786d;font-size:.9rem}"
-    ".rule{border:0;border-top:1px solid #e4ded5;margin:1rem 0}.actions{display:flex;gap:.6rem;"
+    ".lede{color:#5f5e5a;margin:0 0 1.1rem}.note{color:#5f5e5a;font-size:.8rem}"
+    ".rule{border:0;border-top:1px solid #e3e0d6;margin:1rem 0}.actions{display:flex;gap:.6rem;"
     "flex-wrap:wrap}.actions form{flex:1;min-width:10rem}.actions button{margin-top:0}"
     "dl{display:grid;grid-template-columns:auto 1fr;gap:.45rem 1rem;margin:1rem 0 0}"
-    "dt{font-weight:650;color:#625b53}dd{margin:0;text-align:right;overflow-wrap:anywhere}"
-    ".pill{display:inline-block;border-radius:99px;padding:.15rem .55rem;font-size:.8rem;"
-    "font-weight:700;background:#e8e2d8}.pill.good{background:#dfe9dc;color:#42613d}"
-    ".pill.warn{background:#f1ddd4;color:#8b3f32}a{color:#514a43}"
+    "dt{color:#5f5e5a}dd{margin:0;text-align:right;overflow-wrap:anywhere}"
+    ".pill{display:inline-block;border:1px solid #e3e0d6;border-radius:99px;padding:.15rem .55rem;"
+    "font-size:.75rem}.pill.good{color:#1f1f1d}.pill.warn{border-color:#c24a22;color:#c24a22}"
+    "a{color:#c24a22}:focus-visible{outline:2px solid #c24a22;outline-offset:2px}"
     "</style></head><body><main>";
 
 const char *const kFoot = "</main></body></html>";
+
+void brand(Writer &w)
+{
+    w.raw("<header class=\"brand\"><span class=\"wordmark\">kveld</span>"
+          "<span class=\"eyebrow\">DEVICE SETUP</span></header>");
+}
 
 void nav(Writer &w, bool on_status)
 {
@@ -185,9 +190,9 @@ int page_setup(char *out, uint16_t out_size, const ScanEntry *nets, uint8_t coun
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
-          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Set up your table</h1>"
-          "</div></header><p class=\"lede\">Give the device a network and choose the language "
+    brand(w);
+    w.raw("<h1>Set up your table</h1><p class=\"lede\">Give the device a network and choose the "
+          "language "
           "for its questions.</p>");
     w.raw("<section class=\"panel\"><div class=\"panel-head\"><h2>Wi-Fi</h2>"
           "<span class=\"note\">saved on the device</span></div>");
@@ -268,8 +273,8 @@ int page_saved(char *out, uint16_t out_size, const char *ssid)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
-          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Saved</h1></div></header>");
+    brand(w);
+    w.raw("<h1>Saved</h1>");
 
     if (ssid == nullptr || ssid[0] == '\0') {
         w.raw("<p class=\"lede\">The language is set. It applies to the next question.</p>");
@@ -302,10 +307,10 @@ int page_notice(char *out, uint16_t out_size, const char *heading, const char *b
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
-          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>");
+    brand(w);
+    w.raw("<h1>");
     w.text(heading != nullptr ? heading : "Kveld");
-    w.raw("</h1></div></header><p class=\"lede\">");
+    w.raw("</h1><p class=\"lede\">");
     w.text(body != nullptr ? body : "Done.");
     w.raw("</p>");
     nav(w, false);
@@ -323,9 +328,9 @@ int page_forget_confirm(char *out, uint16_t out_size)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
-          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Forget saved Wi-Fi?</h1>"
-          "</div></header><p class=\"lede\">This removes every saved network from the device. "
+    brand(w);
+    w.raw("<h1>Forget saved Wi-Fi?</h1><p class=\"lede\">This removes every saved network from the "
+          "device. "
           "Your questions and language stay intact.</p>");
     w.raw("<form method=\"post\" action=\"/forget\"><input type=\"hidden\" name=\"confirm\" "
           "value=\"forget\"><button class=\"danger\" type=\"submit\">Confirm and forget "
@@ -345,9 +350,9 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     Writer w(out, out_size);
 
     w.raw(kHead);
-    w.raw("<header class=\"brand\"><span class=\"mark\">kv</span><div>"
-          "<div class=\"eyebrow\">KVELD DEVICE</div><h1>Device status</h1>"
-          "</div></header><section class=\"panel\"><div class=\"panel-head\"><h2>Connection</h2>");
+    brand(w);
+    w.raw("<h1>Device status</h1><section class=\"panel\"><div class=\"panel-head\">"
+          "<h2>Connection</h2>");
 
     if (status.station_connected) {
         w.raw("<span class=\"pill good\">Connected</span>");

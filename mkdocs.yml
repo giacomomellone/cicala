@@ -12,6 +12,7 @@ strict: true
 nav:
   - overview: index.md
   - design: design.md
+  - brand: brand.md
   - theory: theory.md
   - device prototype: device_prototype.md
   - prototype bom: prototype_bom.md

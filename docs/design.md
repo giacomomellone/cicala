@@ -115,8 +115,10 @@ Navigation is play / browse / contribute / device.
 Favorites remain on the website because a browser can show confirmation and
 ownership without changing the physical object's interaction.
 
-The visual language is warm paper, quiet typography, and one accent. Motion is
-limited to the 120 ms question fade and the category change.
+The visual language is warm paper, Literata questions and wordmark, IBM Plex
+Mono controls, and one functional rust accent. Motion is limited to the 120 ms
+question fade and the category change. The [brand guide](brand.md) defines the
+identity without changing this interaction hierarchy.
 
 ## Deferred work
 
