@@ -1,6 +1,6 @@
 # Application and tests share ../Kconfig.policy.
 
-mainmenu "tischkarte"
+mainmenu "kveld"
 
 rsource "../Kconfig.policy"
 

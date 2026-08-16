@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-// Corrupt tk.* storage values fall back to defaults.
+// Corrupt kveld.* storage values fall back to defaults.
 import { beforeEach, describe, expect, it } from "vitest";
 import {
   getBag,
@@ -25,11 +25,11 @@ describe("favorites", () => {
   });
 
   it("survives corrupted storage", () => {
-    localStorage.setItem("tk.favs", "{not json");
+    localStorage.setItem("kveld.favs", "{not json");
     expect(getFavs()).toEqual([]);
-    localStorage.setItem("tk.favs", JSON.stringify({ nope: 1 }));
+    localStorage.setItem("kveld.favs", JSON.stringify({ nope: 1 }));
     expect(getFavs()).toEqual([]);
-    localStorage.setItem("tk.favs", JSON.stringify(["ok", 42, "also-ok"]));
+    localStorage.setItem("kveld.favs", JSON.stringify(["ok", 42, "also-ok"]));
     expect(getFavs()).toEqual(["ok", "also-ok"]);
   });
 
@@ -40,16 +40,16 @@ describe("favorites", () => {
 });
 
 describe("bags", () => {
-  it("round-trips per lang+deck under the tk.bag.* key", () => {
+  it("round-trips per lang+deck under the kveld.bag.* key", () => {
     setBag("de", "wild", { b: ["q-00000001"], r: ["q-00000002"] });
-    expect(localStorage.getItem("tk.bag.de.wild")).not.toBeNull();
+    expect(localStorage.getItem("kveld.bag.de.wild")).not.toBeNull();
     expect(getBag("de", "wild")).toEqual({ b: ["q-00000001"], r: ["q-00000002"] });
     // Preserve unrelated storage keys.
     expect(getBag("en", "wild")).toEqual({ b: [], r: [] });
   });
 
   it("degrades corrupted bags to empty", () => {
-    localStorage.setItem("tk.bag.en.all", "not json at all");
+    localStorage.setItem("kveld.bag.en.all", "not json at all");
     expect(getBag("en", "all")).toEqual({ b: [], r: [] });
   });
 });
@@ -59,6 +59,6 @@ describe("deck selection", () => {
     expect(getDeck()).toBe("new_people");
     setDeck("here");
     expect(getDeck()).toBe("here");
-    expect(localStorage.getItem("tk.deck")).toBe("here");
+    expect(localStorage.getItem("kveld.deck")).toBe("here");
   });
 });

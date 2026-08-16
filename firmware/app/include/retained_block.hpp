@@ -5,10 +5,10 @@
 #include "retained.hpp"
 
 /** The block, already validated. */
-tk::Retained &tk_retained();
+kveld::Retained &kveld_retained();
 
 /** True when this boot inherited a valid retained block. */
-bool tk_retained_survived();
+bool kveld_retained_survived();
 
 /** Stamp the block so the next boot accepts it. */
-void tk_retained_seal();
+void kveld_retained_seal();

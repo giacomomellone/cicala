@@ -1,4 +1,4 @@
-# tischkarte website
+# kveld website
 
 Astro 5, static output, vanilla TypeScript islands. No UI framework, no Tailwind, no third-party scripts. See spec §7 and [docs/design.md](../docs/design.md).
 

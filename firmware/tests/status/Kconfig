@@ -1,6 +1,6 @@
 # Use the application LED timing.
 
-mainmenu "tischkarte status tests"
+mainmenu "kveld status tests"
 
 rsource "../../Kconfig.policy"
 

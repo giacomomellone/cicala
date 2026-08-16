@@ -1,22 +1,22 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(tischkarte_panel LANGUAGES C CXX)
+project(kveld_panel LANGUAGES C CXX)
 
-set(TK_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
+set(KVELD_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout tk_layout)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained tk_retained)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb tk_qdb)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout kveld_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained kveld_retained)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb kveld_qdb)
 
 target_sources(app PRIVATE
     src/main.cpp
-    ${TK_APP}/src/panel.cpp
-    ${TK_APP}/src/retained_block.cpp
+    ${KVELD_APP}/src/panel.cpp
+    ${KVELD_APP}/src/retained_block.cpp
 )
 
-target_include_directories(app PRIVATE ${TK_APP}/include)
-target_link_libraries(app PRIVATE tk_layout tk_qdb tk_retained)
+target_include_directories(app PRIVATE ${KVELD_APP}/include)
+target_link_libraries(app PRIVATE kveld_layout kveld_qdb kveld_retained)
 
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 

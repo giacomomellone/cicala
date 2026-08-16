@@ -1,6 +1,6 @@
 #include "layout.hpp"
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -347,4 +347,4 @@ bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t 
     return true;
 }
 
-} // namespace tk
+} // namespace kveld

@@ -1,6 +1,6 @@
 # Use the application's input timing.
 
-mainmenu "tischkarte input tests"
+mainmenu "kveld input tests"
 
 rsource "../../Kconfig.policy"
 

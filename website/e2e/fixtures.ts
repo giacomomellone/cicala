@@ -17,7 +17,7 @@ export interface Question {
 }
 
 export interface Schema {
-  "x-tischkarte": {
+  "x-kveld": {
     decks: string[];
     tags: string[];
     depthLabels: string[];
@@ -26,7 +26,7 @@ export interface Schema {
   };
 }
 
-export const schema = readJson<Schema>("../../questions/schema.json")["x-tischkarte"];
+export const schema = readJson<Schema>("../../questions/schema.json")["x-kveld"];
 
 export const payload = (lang: string): Question[] =>
   readJson<{ questions: Question[] }>(`../src/data/questions.${lang}.json`).questions;
@@ -45,7 +45,7 @@ export const smallestDeck = (lang: string): string =>
 export async function playReady(page: Page, lang = "en"): Promise<void> {
   await page.waitForFunction(
     (prefix) => Object.keys(localStorage).some((key) => key.startsWith(prefix)),
-    `tk.bag.${lang}.`,
+    `kveld.bag.${lang}.`,
   );
 }
 

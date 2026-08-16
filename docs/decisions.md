@@ -1,6 +1,6 @@
 # Decisions
 
-Append-only decision log (ADR-lite). One `##` per decision, newest last. Decisions marked DECIDED in the handoff specification (`Tischkarte — Project handoff specification.md` at the repo root) are not repeated here; this file records choices the spec left OPEN, plus every dependency added.
+Append-only decision log (ADR-lite). One `##` per decision, newest last. Decisions marked DECIDED in the handoff specification (`Kveld — Project handoff specification.md` at the repo root) are not repeated here; this file records choices the spec left OPEN, plus every dependency added.
 
 ## 2026-07-24: Repo bootstrapped from the handoff specification
 
@@ -8,7 +8,7 @@ Phase A (database + tools), Phase B (website), and structure-only stubs for firm
 
 ## 2026-07-24: Placeholder org and domain
 
-GitHub org/repo is assumed as `tischkarte/tischkarte` and the site domain as `tischkarte.pages.dev` until the real ones exist. Both live in exactly one place each (`website/src/config.ts`; `$id` in `questions/schema.json`; `--base-url` default in `tools/build_bundle.py`; CODEOWNERS handles in `.github/CODEOWNERS` and maintainer names in `docs/languages.md`), so the rename is a one-commit operation as the spec requires.
+The GitHub repository is `giacomomellone/kveld` and the site domain is `kveld.pages.dev`. Both live in exactly one place each (`website/src/config.ts`; `$id` in `questions/schema.json`; `--base-url` default in `tools/build_bundle.py`; CODEOWNERS handles in `.github/CODEOWNERS` and maintainer names in `docs/languages.md`).
 
 ## 2026-07-24: Tests use stdlib unittest, not pytest
 
@@ -36,7 +36,7 @@ The meta line's `#<id-short>` uses the same formula as the OLED (`decimal of fir
 
 ## 2026-07-24: Permalinks switch the active language
 
-Visiting `/q/<id>` sets the active language (`tk.lang`) to that question's language. A shared German link therefore lands in a fully German experience, and "next question" continues in German. The alternative (keeping the visitor's old language) would show a German question inside English chrome and then jump languages on the first keypress.
+Visiting `/q/<id>` sets the active language (`kveld.lang`) to that question's language. A shared German link therefore lands in a fully German experience, and "next question" continues in German. The alternative (keeping the visitor's old language) would show a German question inside English chrome and then jump languages on the first keypress.
 
 ## 2026-07-24: Generated site data is not committed
 
@@ -331,7 +331,7 @@ only as debuggable as `parse_bundle()` makes it, and the two decoders have to
 be changed together. The firmware suites decode real bundles the writer emits,
 which is what catches a one-sided change.
 
-Naming: QDB is the Tischkarte Bundle and the trailing digit is the format
+Naming: QDB is the Question Database Bundle and the trailing digit is the format
 version. Nothing had recorded that, which is what prompted this entry. The name
 is internal — no release has ever published a bundle — so renaming it remains a
 mechanical change across about fifteen files if a better one turns up.
@@ -481,7 +481,7 @@ EXT1 sees the press that ends a sleep before the kernel exists, and by the time 
 
 So the press was reaching nobody. On hardware that looked like a device that ignored the first press of every conversation: eleven wakes in one capture, zero renders.
 
-The wake mask is the record of that press, and the only one there is. `app/src/sleep.c` latches `esp_sleep_get_ext1_wakeup_status()` at `PRE_KERNEL_1`; `tk_app_init()` replays it — Category advances the deck before it is announced, Next is posted to the state machine, which gained a `BOOT --REDRAW--> DRAWING` transition to answer it.
+The wake mask is the record of that press, and the only one there is. `app/src/sleep.c` latches `esp_sleep_get_ext1_wakeup_status()` at `PRE_KERNEL_1`; `kveld_app_init()` replays it — Category advances the deck before it is announced, Next is posted to the state machine, which gained a `BOOT --REDRAW--> DRAWING` transition to answer it.
 
 That transition is checked before the retained-panel check, not after: waking by Next onto a panel that already holds a question is the ordinary case, and `RETAINED` would decide the panel was already correct and draw nothing — which is exactly the press the user just made. Announcing the deck first instead would be worse than useless, because `REFRESHING` drops presses made during a refresh, so the second press would be swallowed too.
 
@@ -499,15 +499,15 @@ Ghosting after a wake was fixed by this and the reset-pulse skip together, in on
 
 `CONFIG_PM_DEVICE` does not cover this, despite `sleep.conf` having claimed it did. `lib/os/poweroff.c` locks interrupts and calls `z_sys_poweroff()` without touching device PM, and `ssd16xx` defines no PM action for it to call in any case. The comment has been corrected; the symbol stays for `PM_STATE` handling.
 
-`CONFIG_TK_PANEL_DEEP_SLEEP` sends the controller into deep sleep mode 1 — RAM retained — from `sleep_now()`, before the control pins are parked, since holding CS would take the bus away mid-command. Mode 2 drops the RAM, which is the image on the glass.
+`CONFIG_KVELD_PANEL_DEEP_SLEEP` sends the controller into deep sleep mode 1 — RAM retained — from `sleep_now()`, before the control pins are parked, since holding CS would take the bus away mid-command. Mode 2 drops the RAM, which is the image on the glass.
 
-Waking it needs the hardware reset the `ssd16xx` patch removed: a controller in deep sleep ignores SPI, and RES# is the only way back. The patch therefore grew a second symbol, `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET`, which restores the pulse while still skipping the clear and the update. `TK_PANEL_DEEP_SLEEP` selects it.
+Waking it needs the hardware reset the `ssd16xx` patch removed: a controller in deep sleep ignores SPI, and RES# is the only way back. The patch therefore grew a second symbol, `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET`, which restores the pulse while still skipping the clear and the update. `KVELD_PANEL_DEEP_SLEEP` selects it.
 
 Off by default, because both halves of the trade are unmeasured. What it saves is unknown: a meter with 0.1 mA steps read zero across the panel's VCC in deep sleep, which bounds the draw under roughly 50 µA and rules out a controller that is fully awake, but does not distinguish 3 µA from 45 µA against a 30 µA whole-device budget. What it costs is also unknown: the patch's own comment holds that a hardware reset returns the SSD1680's RAM to defaults, and if that is right then every wake falls back to a 2315 ms full refresh and this is not worth having.
 
 The two are worth settling together, on the power mule rather than the DevKitC — the devkit's USB bridge, regulator and LED swamp any sub-milliamp figure taken at the board level.
 
-Splitting the symbol also settles the older question above: the reset skip and the clear skip arrived in one flash and were never told apart. `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET=y` with `TK_PANEL_DEEP_SLEEP=n` is the reset skip alone, which is the isolation that run needed.
+Splitting the symbol also settles the older question above: the reset skip and the clear skip arrived in one flash and were never told apart. `CONFIG_SSD16XX_PRESERVE_IMAGE_HW_RESET=y` with `KVELD_PANEL_DEEP_SLEEP=n` is the reset skip alone, which is the isolation that run needed.
 
 Accepted cost: a third Kconfig combination that nothing on the bench has yet run, and a patch that now carries two symbols into every Zephyr version bump instead of one.
 
@@ -515,7 +515,7 @@ Accepted cost: a third Kconfig combination that nothing on the bench has yet run
 
 [design.md](design.md) and [sync_protocol.md](sync_protocol.md) both specify "connect USB while holding Next" as the service gesture. That needs VBUS detect, which [hardware_wiring.md](hardware_wiring.md) reserves on GPIO21 and which is neither wired on the rig nor present in the devicetree — the pins were reserved so the deep-sleep work would not find the RTC-capable range full, and nothing reads them.
 
-So the shipped gesture is both buttons held through a boot, confirmed for `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` rather than sampled once. It needs no hardware that does not exist, it cannot happen by accident, and it survives as a fallback once VBUS lands — a device whose power path has failed can still be serviced.
+So the shipped gesture is both buttons held through a boot, confirmed for `CONFIG_KVELD_PORTAL_ENTRY_HOLD_MS` rather than sampled once. It needs no hardware that does not exist, it cannot happen by accident, and it survives as a fallback once VBUS lands — a device whose power path has failed can still be serviced.
 
 The buttons are read from the pins rather than through the input layer, which cannot answer the question: `input.c` publishes a press on release and deliberately ignores a release with no press behind it, so a button already down when the device starts produces no event at all.
 
@@ -525,7 +525,7 @@ Accepted cost: two documents now describe a gesture the firmware does not implem
 
 A WPA2 SoftAP needs a passphrase, and the only places to put one are the e-paper and the case. Printing it on the case makes it a shared secret across every unit or a per-unit label to manage; putting it on the panel means it is readable by anyone who can already see the device, which is the same population that can reach the radio.
 
-Open, plus a gesture that needs two hands on the device, plus a window that closes on its own after `CONFIG_TK_PORTAL_WINDOW_MS`, is the posture most consumer setup flows take. What is exposed during that window is the ability to set the Wi-Fi credentials and the language of a question deck. The status page names the saved network and never renders its password back.
+Open, plus a gesture that needs two hands on the device, plus a window that closes on its own after `CONFIG_KVELD_PORTAL_WINDOW_MS`, is the posture most consumer setup flows take. What is exposed during that window is the ability to set the Wi-Fi credentials and the language of a question deck. The status page names the saved network and never renders its password back.
 
 The window is a hard cap rather than an idle timer, deliberately: an idle timer can be held open indefinitely by any phone that keeps probing, and an open access point that never closes is a worse thing to leave on a table than one that ends a setup session early.
 
@@ -533,7 +533,7 @@ The window is a hard cap rather than an idle timer, deliberately: an idle timer 
 
 The architecture said "service entry is not a state", on the grounds that the tabletop face stays a question display. It still does, and it is a state anyway, for a reason that is mechanical rather than aesthetic.
 
-`app_logic` owns the sequence number every card is stamped with, and `tk_app_post_render()` discards any render result whose `seq` is not the one last published. That guard is what fixed the bug where one press appeared to do nothing and the next showed two questions. A card published straight from the `net` thread would allocate a sequence number behind `app_logic`'s back, so the guard would start dropping real renders instead of stale ones.
+`app_logic` owns the sequence number every card is stamped with, and `kveld_app_post_render()` discards any render result whose `seq` is not the one last published. That guard is what fixed the bug where one press appeared to do nothing and the next showed two questions. A card published straight from the `net` thread would allocate a sequence number behind `app_logic`'s back, so the guard would start dropping real renders instead of stale ones.
 
 The portal therefore publishes on `chan_service`, `app` forwards it, and `AppFsm` gains a `SERVICE` state alongside `CATEGORY`. `app` stays the only thread that decides anything and the only publisher of `chan_question`, and the card gets the same refresh accounting as every other card.
 
@@ -547,7 +547,7 @@ This is the widening the manifest comment anticipated — "widen if a build fail
 
 ## 2026-08-06: Wi-Fi ships in the everyday image; the measurement images turn it off
 
-It first landed as a build variant, `just fw-net`, on the reasoning that `CONFIG_TK_SLEEP` is off by default. The measured cost then made that look like the wrong axis to split on:
+It first landed as a build variant, `just fw-net`, on the reasoning that `CONFIG_KVELD_SLEEP` is off by default. The measured cost then made that look like the wrong axis to split on:
 
 |             | without | with   | delta                           |
 | ----------- | ------- | ------ | ------------------------------- |
@@ -558,27 +558,27 @@ It first landed as a build variant, `just fw-net`, on the reasoning that `CONFIG
 
 Both fit with room to spare, and a device whose Wi-Fi cannot be configured without a special build is not the device being built. So `just fw-build` carries the radio.
 
-What the original reasoning was actually protecting is narrower than "the everyday image": it is the images that _measure_ something. `soak.conf` and `sleep.conf` therefore set `CONFIG_TK_NET=n`, `CONFIG_WIFI=n` and `CONFIG_NETWORKING=n`. A partial refresh has already been seen at 2769 ms during a portal session against the 622 ms this rig recorded without one, and until that is explained a ghosting run must not have a radio in it.
+What the original reasoning was actually protecting is narrower than "the everyday image": it is the images that _measure_ something. `soak.conf` and `sleep.conf` therefore set `CONFIG_KVELD_NET=n`, `CONFIG_WIFI=n` and `CONFIG_NETWORKING=n`. A partial refresh has already been seen at 2769 ms during a portal session against the 622 ms this rig recorded without one, and until that is explained a ghosting run must not have a radio in it.
 
 The configuration lives in `app/boards/esp32s3_devkitc_esp32s3_procpu.conf` rather than `prj.conf`. `prj.conf` is shared with qemu and native_sim, `CONFIG_WIFI_ESP32` needs a devicetree node only this SoC has, and putting it there breaks `just fw-sim`. The second Wi-Fi node AP+STA needs is in the matching board overlay for the same reason.
 
-A portal image remains: the same image with `CONFIG_TK_DEBUG_PORTAL=y`, which skips the two-button gesture. The gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
+A portal image remains: the same image with `CONFIG_KVELD_DEBUG_PORTAL=y`, which skips the two-button gesture. The gesture needs two hands on the board at the moment it boots, which makes everything behind it awkward to work on.
 
 ## 2026-08-06: The qemu overlay had not followed the Category button
 
-`just fw-sim` had been failing since the selector was replaced: `app/boards/qemu_xtensa_dc233c.overlay` still described six selector inputs and defined no `tk-category` alias, which `src/input.c` requires. The suites did not catch it because `tests/input` carries its own overlay, and nothing else builds `firmware/app` for qemu.
+`just fw-sim` had been failing since the selector was replaced: `app/boards/qemu_xtensa_dc233c.overlay` still described six selector inputs and defined no `kveld-category` alias, which `src/input.c` requires. The suites did not catch it because `tests/input` carries its own overlay, and nothing else builds `firmware/app` for qemu.
 
 Fixed alongside the portal work rather than separately, because `src/net.c` reads the same two aliases to detect the service gesture. The overlay now describes the two buttons the target has.
 
 ## 2026-08-06: Deep sleep ships in the everyday image, and a wake does not join a network
 
-Sleep and Wi-Fi were separate build variants, and a device needs both at once. `CONFIG_TK_SLEEP` therefore joins `CONFIG_TK_NET` in the devkit board conf, `sleep.conf` and `sleep.overlay` are gone, and `just fw-sleep` with them.
+Sleep and Wi-Fi were separate build variants, and a device needs both at once. `CONFIG_KVELD_SLEEP` therefore joins `CONFIG_KVELD_NET` in the devkit board conf, `sleep.conf` and `sleep.overlay` are gone, and `just fw-sleep` with them.
 
 Not in `prj.conf`, for the reason the radio is not: that file is shared with qemu and native_sim, and `src/sleep.c` is written against the Espressif RTC and sleep APIs. The light-sleep state that has to be disabled moves into the board overlay alongside the second Wi-Fi node.
 
-The two debug images cannot sleep at all now — `TK_SLEEP` gained `depends on !TK_DEBUG_SOAK && !TK_DEBUG_CHARSET`. Both keep a count in ordinary memory across presses, a soak run of its own presses and the charset image of which test page it is on, and a wake is a reboot that loses both. Making it structurally unavailable is better than a conf line somebody can forget: the failure is a confusing run rather than an error. `debug.conf` still turns it off by hand, because there is no symbol to depend on and a debugger loses its thread every two seconds otherwise.
+The two debug images cannot sleep at all now — `KVELD_SLEEP` gained `depends on !KVELD_DEBUG_SOAK && !KVELD_DEBUG_CHARSET`. Both keep a count in ordinary memory across presses, a soak run of its own presses and the charset image of which test page it is on, and a wake is a reboot that loses both. Making it structurally unavailable is better than a conf line somebody can forget: the failure is a confusing run rather than an error. `debug.conf` still turns it off by hand, because there is no symbol to depend on and a debugger loses its thread every two seconds otherwise.
 
-**A wake does not join a network.** Deep sleep makes every press a fresh boot, so connecting on one would put a radio association in front of every question the device ever answers, for a connection nothing yet uses. `net.c` skips it when `tk_wake_button()` reports an EXT1 wake.
+**A wake does not join a network.** Deep sleep makes every press a fresh boot, so connecting on one would put a radio association in front of every question the device ever answers, for a connection nothing yet uses. `net.c` skips it when `kveld_wake_button()` reports an EXT1 wake.
 
 That leaves a cold boot as the only automatic trigger, and once the device sleeps a cold boot is rare — first power-up, the reset pin, or a flat cell. This is deliberate rather than a gap: the manual path already exists, since the service gesture raises the portal and the portal joins the saved network as the last step of its flow. The trigger the design actually wants is USB power plus a known network, and that needs VBUS on GPIO21, which is reserved and unwired. It belongs to the power branch.
 
@@ -586,7 +586,7 @@ That leaves a cold boot as the only automatic trigger, and once the device sleep
 
 Recorded because it was found while merging sleep and could easily be mistaken for something that merge caused. It is not.
 
-`tk_panel_render()` reports the boot's full refresh completing in 18-19 ms, where a full update on this panel takes about 2300 ms. Partial refreshes in the same run are healthy, at 622-625 ms against the 622 ms this rig recorded. The same 18 ms appears in the soak image, which has no radio, no deep sleep and none of the ssd16xx patch symbols, and whose `panel.cpp` is byte-identical to the one on `main` — so neither the merge, the patch, nor the networking configuration is responsible.
+`kveld_panel_render()` reports the boot's full refresh completing in 18-19 ms, where a full update on this panel takes about 2300 ms. Partial refreshes in the same run are healthy, at 622-625 ms against the 622 ms this rig recorded. The same 18 ms appears in the soak image, which has no radio, no deep sleep and none of the ssd16xx patch symbols, and whose `panel.cpp` is byte-identical to the one on `main` — so neither the merge, the patch, nor the networking configuration is responsible.
 
 It was 2301 ms earlier the same day on the same rig, which is what makes it worth writing down rather than assuming it has always been so. What has not been established is whether the glass is actually wrong, or only the number: the full-refresh path brackets the write with `display_blanking_on()` and `display_blanking_off()`, and `panel.cpp` already carries a comment describing a bug with exactly this signature — "the refresh takes about 20 ms, nothing changes on the glass" — from when only the first half was called.
 
@@ -594,11 +594,11 @@ Someone has to look at the panel after a cold boot and say whether the deck name
 
 ## 2026-08-06: Every shipped corpus goes in the image, so the portal's language choice means something
 
-The setup portal offered a language from its first commit and threw the answer away. Worse than not wired: the image embedded exactly one corpus, the one `CONFIG_TK_CORPUS_LANGUAGE` named at build time, so there was no German text on the device to show even if the choice had been stored.
+The setup portal offered a language from its first commit and threw the answer away. Worse than not wired: the image embedded exactly one corpus, the one `CONFIG_KVELD_CORPUS_LANGUAGE` named at build time, so there was no German text on the device to show even if the choice had been stored.
 
-Both bundles now ship. `app/CMakeLists.txt` embeds every language in `TK_CORPUS_LANGUAGES`, `app/src/corpus.c` is the table, and the build fails on a missing bundle rather than shipping a portal that offers a language the device cannot display. Each is about 7 KB against a 1344 KB slot, which is a better trade than a setting that does nothing.
+Both bundles now ship. `app/CMakeLists.txt` embeds every language in `KVELD_CORPUS_LANGUAGES`, `app/src/corpus.c` is the table, and the build fails on a missing bundle rather than shipping a portal that offers a language the device cannot display. Each is about 7 KB against a 1344 KB slot, which is a better trade than a setting that does nothing.
 
-The choice lives in the same NVS as the Wi-Fi credentials and falls back to `CONFIG_TK_CORPUS_LANGUAGE`, which is what a device that has never seen the portal is. A stored language the image no longer carries is dropped rather than obeyed: firmware can ship with a different set than the one that stored it, and a device with no corpus to open would have nothing to draw at all.
+The choice lives in the same NVS as the Wi-Fi credentials and falls back to `CONFIG_KVELD_CORPUS_LANGUAGE`, which is what a device that has never seen the portal is. A stored language the image no longer carries is dropped rather than obeyed: firmware can ship with a different set than the one that stored it, and a device with no corpus to open would have nothing to draw at all.
 
 Changing it publishes `chan_corpus` — the channel the architecture already specified for exactly this, and whose documented rule is that a new corpus applies on the next _requested_ draw. So the question on the panel stays until somebody presses Next. Reopening the store rebinds the bag, whose fingerprint no longer matches, so the shuffle bag resets: indices into the English corpus mean nothing once the German one is open.
 
@@ -610,11 +610,11 @@ An empty network name now means "language only": nothing is stored against Wi-Fi
 
 ## 2026-08-06: Sleep is inhibited across the entry gesture, not only across the portal
 
-`CONFIG_TK_SLEEP_IDLE_MS` and `CONFIG_TK_PORTAL_ENTRY_HOLD_MS` are both two seconds, and the idle timer starts at the first render. So the timer expires while somebody is still holding both buttons to enter setup, and `sleep_now()` was reached with the gesture half-done.
+`CONFIG_KVELD_SLEEP_IDLE_MS` and `CONFIG_KVELD_PORTAL_ENTRY_HOLD_MS` are both two seconds, and the idle timer starts at the first render. So the timer expires while somebody is still holding both buttons to enter setup, and `sleep_now()` was reached with the gesture half-done.
 
 It survived on the bench because sleeping needs at least one button open — `open_pin_mask()` returns zero when both read closed, and the guard refuses. But that covers exactly the instant when both are down and nothing either side of it. Press the two buttons a moment apart and only one is closed when the timer fires: the device sleeps armed on the other, and the press meant for the gesture is spent on the wake instead.
 
-`tk_net_is_active()` therefore covers the confirmation window as well as the running portal. Widening the inhibit rather than lengthening the idle timer, because the relationship between those two numbers should not be load-bearing: either can be tuned for its own reasons.
+`kveld_net_is_active()` therefore covers the confirmation window as well as the running portal. Widening the inhibit rather than lengthening the idle timer, because the relationship between those two numbers should not be load-bearing: either can be tuned for its own reasons.
 
 The "both buttons read closed" message drops from error to warning at the same time. Holding both buttons is a thing people now do on purpose, and reaching that line means a button is held for some other reason or is stuck — worth saying, not a fault.
 
@@ -626,7 +626,7 @@ Certificate validation needs a trusted clock. This device has none: no RTC time 
 
 What actually protects the corpus is already specified and already built into the pipeline: an Ed25519 signature over the bundle's SHA-256, verified against a public key compiled into the image. The 2026-07-24 entry above already reasons that "the firmware side can use any conforming verifier". A key in the image is a stronger statement than a TLS session to a hostname in the same image, and it does not expire.
 
-Given up, plainly: an observer on the path learns that a Tischkarte fetched a bundle, and can block the fetch. The question database is public, so there is nothing to keep confidential, and TLS does not stop anyone blocking traffic either. Replaying an older but validly signed manifest is a real attack and is answered by refusing any manifest whose version is not newer than the installed one.
+Given up, plainly: an observer on the path learns that a Kveld fetched a bundle, and can block the fetch. The question database is public, so there is nothing to keep confidential, and TLS does not stop anyone blocking traffic either. Replaying an older but validly signed manifest is a real attack and is answered by refusing any manifest whose version is not newer than the installed one.
 
 This also takes TLS, a CA bundle, and the CA-rotation failure mode out of an image already at 51% of its partition.
 
@@ -666,7 +666,7 @@ That reasoning holds for a sync nobody asked for, and only for that one. It miss
 
 So the rule splits by who started it. An automatic sync stays silent and applies on the next requested draw, exactly as before. A user-initiated one puts a card on the panel saying what arrived, and it stays there until the next press, which is how every service card already behaves.
 
-No new machinery: this is `TK_CARD_SERVICE` and the `SERVICE` state built for the portal, whose whole behaviour is already "show this until somebody presses". `chan_corpus` keeps its rule — it must not trigger a redraw — because the card travels on `chan_service` instead, which is a different channel with a different meaning.
+No new machinery: this is `KVELD_CARD_SERVICE` and the `SERVICE` state built for the portal, whose whole behaviour is already "show this until somebody presses". `chan_corpus` keeps its rule — it must not trigger a redraw — because the card travels on `chan_service` instead, which is a different channel with a different meaning.
 
 ## 2026-08-07: TLS after all, as a transport rather than as the security boundary
 
@@ -686,11 +686,11 @@ Every release asset URL answers with a 302 to `objects.githubusercontent.com`, a
 
 It also requires the repository to be public before a device can fetch anything at all: a private repository's release asset returns 404 to an unauthenticated request, which is what a device is. Publishing is the intent — this is described as an open-source system, the questions are CC0, and the licences are already in the tree — but a device's update path should not be the thing that forces the timing.
 
-So the manifest points at the site, which gives stable paths with no cross-host hop, and `CONFIG_TK_SYNC_BASE_URL` makes the host a build-time setting rather than something compiled into the flow. Anything that can serve two files over TLS will do, including a plain object store, if the site is ever not the answer.
+So the manifest points at the site, which gives stable paths with no cross-host hop, and `CONFIG_KVELD_SYNC_BASE_URL` makes the host a build-time setting rather than something compiled into the flow. Anything that can serve two files over TLS will do, including a plain object store, if the site is ever not the answer.
 
 ## 2026-08-07: TLS is written but disabled, and sync runs over plain HTTP for now
 
-The 2026-08-07 entry above chose TLS as the transport. The code is there and behind `CONFIG_TK_SYNC_INSECURE=n`, and it does not build: enabling the PSA elliptic-curve support a public host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to compile on `mbedtls_ecc_group_from_psa`. That is a broken configuration combination inside the vendored mbedtls 4, not a missing symbol on this side, and chasing it further was not worth holding the rest of sync for.
+The 2026-08-07 entry above chose TLS as the transport. The code is there and behind `CONFIG_KVELD_SYNC_INSECURE=n`, and it does not build: enabling the PSA elliptic-curve support a public host's handshake needs makes tf-psa-crypto's own `psa_crypto_ecp.c` fail to compile on `mbedtls_ecc_group_from_psa`. That is a broken configuration combination inside the vendored mbedtls 4, not a missing symbol on this side, and chasing it further was not worth holding the rest of sync for.
 
 So the shipped default is plain HTTP, with the reason written where the flag is set. What that costs is confidentiality — an observer learns a device fetched a question bundle — and not integrity: the Ed25519 signature is the security boundary either way, and a device with no clock could not authenticate a server even with TLS on. A tampered bundle is refused exactly as it would have been.
 
@@ -700,9 +700,9 @@ Worth retrying at the next Zephyr bump. Until then it is an open item in the arc
 
 Found on the bench, and it made the whole feature silently do nothing: the device joined a network and was asleep before it had an address.
 
-The idle timer starts at the first render and fires after `CONFIG_TK_SLEEP_IDLE_MS`, two seconds. An association plus DHCP plus a fetch takes rather longer. `tk_net_is_active()` covered the portal and the entry gesture, so nothing stopped `sleep_now()` running in the middle of a cold-boot sync — and since a wake is a fresh boot, the next attempt started over and lost again.
+The idle timer starts at the first render and fires after `CONFIG_KVELD_SLEEP_IDLE_MS`, two seconds. An association plus DHCP plus a fetch takes rather longer. `kveld_net_is_active()` covered the portal and the entry gesture, so nothing stopped `sleep_now()` running in the middle of a cold-boot sync — and since a wake is a fresh boot, the next attempt started over and lost again.
 
-The inhibit now covers the window from asking to join until the sync finishes, with a deadline so a network that never arrives cannot keep the device awake for good. This is the third thing to need that guard, which is the argument for `tk_net_is_active()` being one question the sleep path asks rather than a list of conditions it checks.
+The inhibit now covers the window from asking to join until the sync finishes, with a deadline so a network that never arrives cannot keep the device awake for good. This is the third thing to need that guard, which is the argument for `kveld_net_is_active()` being one question the sleep path asks rather than a list of conditions it checks.
 
 ## 2026-08-07: MCUboot, and the two keys an update is signed with
 
@@ -742,7 +742,7 @@ The chosen language was written and never restored, so a device set to German ca
 
 `load_settings()` in `main.c` now runs at `APPLICATION` init level, which Zephyr runs before the static threads start, so `app` cannot observe a half-loaded configuration. It never fails fatally: a device that cannot read its settings still draws questions in the compiled-in language, which is a better answer than refusing to boot.
 
-A second thing the same bug taught: the settings subsystem matches subtrees component by component, not by string prefix. A handler registered for `tk/fw` does not receive the key `tk/fw_ver`, because `fw` and `fw_ver` are different components — that key falls through to the `tk` handler in `language.c`, which returns `-ENOENT`. The key is `tk/fw/ver`. This was caught on hardware, by a device that reported itself factory-fresh on two consecutive boots.
+A second thing the same bug taught: the settings subsystem matches subtrees component by component, not by string prefix. A handler registered for `kveld/fw` does not receive the key `kveld/fw_ver`, because `fw` and `fw_ver` are different components — that key falls through to the `kveld` handler in `language.c`, which returns `-ENOENT`. The key is `kveld/fw/ver`. This was caught on hardware, by a device that reported itself factory-fresh on two consecutive boots.
 
 ## 2026-08-07: Wi-Fi credentials are at rest in the clear, and that is recorded rather than fixed
 
@@ -770,11 +770,11 @@ So the conclusion inverts. Rather than making the device speak a protocol it can
 
 What decided it is that TLS here cannot ever be the security boundary. The device has no clock — no RTC source, no SNTP, and every wake is a fresh boot — so it cannot check a certificate's expiry or revocation. A TLS session it cannot validate authenticates nobody. The Ed25519 signatures do the work instead: one over each bundle and image, verified against keys compiled into the image and the bootloader, neither of which expires.
 
-Given up, precisely: an observer on the path learns that a Tischkarte fetched a question bundle or a firmware image. Both are public artifacts of a public project. Not given up: an attacker on the path still cannot make the device install anything the keys did not sign, and cannot walk it backwards, because a manifest not newer than what is installed is refused.
+Given up, precisely: an observer on the path learns that a Kveld fetched a question bundle or a firmware image. Both are public artifacts of a public project. Not given up: an attacker on the path still cannot make the device install anything the keys did not sign, and cannot walk it backwards, because a manifest not newer than what is installed is refused.
 
-The cost of the alternative was also real — about 40 KB of flash for TLS, on an image at 57% of its slot, for confidentiality on public data. And it does not build: enabling the PSA elliptic-curve support a public handshake needs breaks tf-psa-crypto's own `psa_crypto_ecp.c`. That code stays behind `CONFIG_TK_SYNC_INSECURE=n` and is worth retrying at the next Zephyr bump, for confidentiality alone rather than as a fix for anything.
+The cost of the alternative was also real — about 40 KB of flash for TLS, on an image at 57% of its slot, for confidentiality on public data. And it does not build: enabling the PSA elliptic-curve support a public handshake needs breaks tf-psa-crypto's own `psa_crypto_ecp.c`. That code stays behind `CONFIG_KVELD_SYNC_INSECURE=n` and is worth retrying at the next Zephyr bump, for confidentiality alone rather than as a fix for anything.
 
-The defaults become `http://tischkarte.invalid/device` — deliberately unresolvable, because a device pointed at a host that does not exist retries for a few seconds each cold boot and carries on, while one pointed at a host somebody else owns is a different matter. The real host replaces it when it exists.
+The defaults become `http://kveld.invalid/device` — deliberately unresolvable, because a device pointed at a host that does not exist retries for a few seconds each cold boot and carries on, while one pointed at a host somebody else owns is a different matter. The real host replaces it when it exists.
 
 ## 2026-08-07: A power switch is the update trigger the hardware can actually have
 
@@ -820,7 +820,7 @@ Accepted cost: the runtime figures this bench produces are for a cell three time
 
 The bq25185 exposes no charge-status pin. Adafruit's board has an orange LED wired to it and no pad, so the firmware cannot be told that charging has terminated — it can only look at the cell.
 
-`CHARGING` and `CHARGED` are therefore one visit to external power split by a voltage threshold, `CONFIG_TK_POWER_FULL_MV`. A lithium cell under constant-voltage charge sits near 4.2 V for the last hour while the current tapers, so this reports full early, by an amount that depends on what the load is doing. There is no reading that would do better.
+`CHARGING` and `CHARGED` are therefore one visit to external power split by a voltage threshold, `CONFIG_KVELD_POWER_FULL_MV`. A lithium cell under constant-voltage charge sits near 4.2 V for the last hour while the current tapers, so this reports full early, by an amount that depends on what the load is doing. There is no reading that would do better.
 
 That is acceptable for an LED. Somebody glancing at a device to see whether it is done is not harmed by being told so ten minutes early, and the failure is self-correcting — they unplug it and it works. It would not be acceptable anywhere else, so nothing else reads it: the sync window, the refresh gate and the sleep inhibitor all ask about external power or about the floor, never about full.
 
@@ -834,11 +834,11 @@ The plan was always that VBUS on GPIO21 would join the deep-sleep wake mask, and
 
 EXT0 can. It is a separate single-pin trigger with its own polarity, it is available on this SoC, and `esp_sleep_enable_ext0_wakeup(21, 1)` would do exactly what was wanted. The reason not to is in Espressif's `sleep_modes.c`: arming EXT0 forces `ESP_PD_DOMAIN_RTC_PERIPH` to stay powered through every sleep, where EXT1 alone leaves that domain off. That is a permanent standby cost against a 30 uA budget, paid on every sleep for the rest of the device's life, to save one button press.
 
-So VBUS is polled — at boot, and every `CONFIG_TK_POWER_SAMPLE_MS` while awake. Plugging in does not wake a sleeping device; the next press does, and that boot finds VBUS high and opens the window. The gesture is "plug it in, press Next", which is the one [design](design.md) specified in the first place.
+So VBUS is polled — at boot, and every `CONFIG_KVELD_POWER_SAMPLE_MS` while awake. Plugging in does not wake a sleeping device; the next press does, and that boot finds VBUS high and opens the window. The gesture is "plug it in, press Next", which is the one [design](design.md) specified in the first place.
 
-The EXT0 path is written up as `CONFIG_TK_POWER_WAKE_ON_USB`, default off, so the cost can be measured rather than argued about.
+The EXT0 path is written up as `CONFIG_KVELD_POWER_WAKE_ON_USB`, default off, so the cost can be measured rather than argued about.
 
-_2026-08-12: written up became built._ `sleep_now()` arms EXT0 on the same `tk-vbus-gpios` pin `power.c` samples, still behind that symbol and still off by default — a switch that changed nothing was a measurement nobody could take. An EXT0 wake reports no button, so no press is replayed and `net` takes its cold-boot branch, which is what waking on a plug-in is for. Neither half is verified: no board has slept yet.
+_2026-08-12: written up became built._ `sleep_now()` arms EXT0 on the same `kveld-vbus-gpios` pin `power.c` samples, still behind that symbol and still off by default — a switch that changed nothing was a measurement nobody could take. An EXT0 wake reports no button, so no press is replayed and `net` takes its cold-boot branch, which is what waking on a plug-in is for. Neither half is verified: no board has slept yet.
 
 Accepted cost: a device plugged in and left alone does not sync until somebody touches it.
 
@@ -848,7 +848,7 @@ Sleeping is decided by `sleep_now()`, which already refuses while a refresh is i
 
 The reason is the status LEDs. They need the SoC running to be lit, and red handing over to green across a charge is most of what they are for — a device that went dark five minutes into an overnight charge would be reporting that it had stopped charging. On mains the current this costs is not the cell's.
 
-`CONFIG_TK_POWER_CHARGE_WINDOW_MS` survives, but it now bounds only the sync and update window rather than wakefulness. A device left on a charger overnight should not retry a download for eight hours; it should stay lit and stop asking.
+`CONFIG_KVELD_POWER_CHARGE_WINDOW_MS` survives, but it now bounds only the sync and update window rather than wakefulness. A device left on a charger overnight should not retry a download for eight hours; it should stay lit and stop asking.
 
 This deleted something. An earlier draft gave the retained block a `charge_window_spent` flag and a layout version bump, because a device that slept mid-charge could not work out whether it had already synced — VBUS stays high for hours and there is no charge-status pin to distinguish a fresh plug-in from an old one. Staying awake removes the question entirely: from the press that opens the window to the unplug, the device never sleeps, so the answer is in RAM. The retained block is unchanged.
 
@@ -882,11 +882,11 @@ Not verified. Nothing in this repo has yet flashed over `/dev/cu.usbmodem*` — 
 
 ## 2026-08-12: A floor under the ladder, rather than an image that cannot draw a card
 
-`CONFIG_TK_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. A board with no divider fitted reads a floating pin and can refuse every refresh. That is what the bench would have hit on the next flash: a floating GPIO1 reads _something_, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
+`CONFIG_KVELD_POWER` is on in the devkit board conf, so every image `just fw-build` and `just fw-flash` produce read the two dividers. Neither divider is soldered. A board with no divider fitted reads a floating pin and can refuse every refresh. That is what the bench would have hit on the next flash: a floating GPIO1 reads _something_, anything under 1600 mV at the tap walks the ladder to LOW or CRITICAL before a thread starts, and `refresh_allowed()` then refuses every press including the one that draws the first card. Blank panel, answered by three red blinks on LEDs that are not wired either.
 
 The alternative was to hold the board-conf enable until the copper exists. Rejected: it would leave the power path in every image except the one anybody flashes, which is how a module rots.
 
-So `lib/power` gets a floor instead. Below `CONFIG_TK_POWER_PLAUSIBLE_MV` — 2500 mV — a reading is not a very flat cell but no cell at all, and the machine returns to UNKNOWN, which already permits refreshes and is already the fail state. The threshold is sound rather than convenient: a protected cell disconnects between 2.5 and 3.0 V and the 3.3 V buck stops before that, so an SoC that is still executing cannot be reading 2.4 V from its own pack.
+So `lib/power` gets a floor instead. Below `CONFIG_KVELD_POWER_PLAUSIBLE_MV` — 2500 mV — a reading is not a very flat cell but no cell at all, and the machine returns to UNKNOWN, which already permits refreshes and is already the fail state. The threshold is sound rather than convenient: a protected cell disconnects between 2.5 and 3.0 V and the 3.3 V buck stops before that, so an SoC that is still executing cannot be reading 2.4 V from its own pack.
 
 The VBUS half cannot be fixed the same way. It is a digital pin, high is high, and software cannot tell a floating input from a charger. An internal pull-down is not the answer either — it would load the planned 100k/150k divider to about 1.3 V, under V_IH, so the divider would stop working once it was fitted. What the firmware does instead is say so: a boot that finds VBUS high while the pack reads implausible logs a warning naming both dividers. The remedy is a jumper, and [hardware wiring](hardware_wiring.md) now asks for one.
 
@@ -904,7 +904,7 @@ Three smaller findings go with it:
 
 The battery divider should be **1 MΩ over 470 kΩ**, and switched over both. 1M/1M halves the standing draw to 2.1 µA; what it costs is a 500 kΩ source, which shows up as roughly 25 mV of ADC-leakage offset at the tap against thresholds 200 mV apart. Switched, it costs nothing at all, which is what a product should spend across a cell it is supposed to be preserving.
 
-The divider constants need no calibration. `TK_POWER_DIVIDER_NUM`/`_DEN` stay at 2/1: the rig logs 3890 mV against 3930 on a meter, 1.0 % low, and the error is an offset rather than a ratio, so scaling it would overcorrect at the low end where the reading decides something. It also errs towards refusing early, which is the safe direction.
+The divider constants need no calibration. `KVELD_POWER_DIVIDER_NUM`/`_DEN` stay at 2/1: the rig logs 3890 mV against 3930 on a meter, 1.0 % low, and the error is an offset rather than a ratio, so scaling it would overcorrect at the low end where the reading decides something. It also errs towards refusing early, which is the safe direction.
 
 A charger that reports **charge termination** would remove an estimate from the design. The bq25185 has no such pin, so CHARGED is inferred from voltage and runs early by an amount that depends on load — acceptable for an LED, and the reason nothing else is allowed to read it.
 
@@ -912,7 +912,7 @@ Accepted cost: the sleep budget stays a target rather than a measurement until r
 
 ## 2026-08-14: The charged threshold has to clear the charger, not approach it
 
-`TK_POWER_FULL_MV` was 4150 mV, fifty under the bq25185's 4.2 V regulation point. On the bench that threshold is unreachable: the divider reads about 40 mV low, so 4150 reported needs 4190 at the cell, and constant-voltage charge approaches 4.2 V asymptotically while the device draws its share of the current. The cell sat at 4140 mV for an hour and the LED stayed red.
+`KVELD_POWER_FULL_MV` was 4150 mV, fifty under the bq25185's 4.2 V regulation point. On the bench that threshold is unreachable: the divider reads about 40 mV low, so 4150 reported needs 4190 at the cell, and constant-voltage charge approaches 4.2 V asymptotically while the device draws its share of the current. The cell sat at 4140 mV for an hour and the LED stayed red.
 
 An unreachable threshold costs the whole green half of a two-colour palette, to buy precision in a number the decision log already describes as an estimate that runs early by an unknown amount. 4050 instead — about 4090 at the cell, which is a full-enough LiPo for something glanced at across a table, and far enough below the regulation point that divider error and charger tolerance both fit in the gap.
 
@@ -922,7 +922,7 @@ Accepted cost: green arrives earlier than before, on a signal that was never a t
 
 A contributor meets the deck, tag and depth vocabulary in three places: the website form, the GitHub issue form, and the validator. All three had their own copy, and the depth strings had already drifted — the website prefilled `3 — consequential disclosure` where the issue form declares `3 — vulnerability, conflict, fear, loss, or consequential disclosure`. GitHub drops a dropdown prefill it does not recognise, so every depth-3 submission arrived with its required depth field blank and the contributor had to fill it in again on a page they had been told was prefilled.
 
-`questions/schema.json` `x-tischkarte` already held the decks and tags; it now also holds `depthLabels`, the exact option strings of the issue form. `website/src/config.ts` restates them so no page parses the schema at runtime, and two tests hold the copies to the original: a Python one over the issue template, a vitest one over the website constants.
+`questions/schema.json` `x-kveld` already held the decks and tags; it now also holds `depthLabels`, the exact option strings of the issue form. `website/src/config.ts` restates them so no page parses the schema at runtime, and two tests hold the copies to the original: a Python one over the issue template, a vitest one over the website constants.
 
 Accepted cost: an option string cannot be reworded in one place any more — the schema and both forms move together, which is the point.
 

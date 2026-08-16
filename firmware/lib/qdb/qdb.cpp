@@ -1,6 +1,6 @@
 #include "qdb.hpp"
 
-namespace tk
+namespace kveld
 {
 
 namespace
@@ -338,4 +338,4 @@ bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index,
     return qdb.at(index, out);
 }
 
-} // namespace tk
+} // namespace kveld

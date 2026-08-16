@@ -5,18 +5,18 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace tk
+namespace kveld
 {
 
-#ifdef CONFIG_TK_PANEL_LINES
-constexpr uint8_t kMaxLines = CONFIG_TK_PANEL_LINES;
+#ifdef CONFIG_KVELD_PANEL_LINES
+constexpr uint8_t kMaxLines = CONFIG_KVELD_PANEL_LINES;
 #else
 constexpr uint8_t kMaxLines = 7;
 #endif
 
-#ifdef CONFIG_TK_MAX_QUESTION_BYTES
+#ifdef CONFIG_KVELD_MAX_QUESTION_BYTES
 // Input byte count bounds the number of decomposed glyphs.
-constexpr uint16_t kMaxGlyphs = CONFIG_TK_MAX_QUESTION_BYTES;
+constexpr uint16_t kMaxGlyphs = CONFIG_KVELD_MAX_QUESTION_BYTES;
 #else
 constexpr uint16_t kMaxGlyphs = 128;
 #endif
@@ -70,4 +70,4 @@ uint8_t decompose(uint32_t cp, Glyph *out);
 bool wrap(const char *text, uint16_t len, uint8_t columns, Glyph *out, uint16_t out_size,
           Layout &result);
 
-} // namespace tk
+} // namespace kveld

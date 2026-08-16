@@ -2,11 +2,11 @@
 
 #include <zephyr/sys/util.h>
 
-namespace tk
+namespace kveld
 {
 
-#ifdef CONFIG_TK_REFRESH_TIMEOUT_MS
-constexpr int64_t kRefreshTimeoutMs = CONFIG_TK_REFRESH_TIMEOUT_MS;
+#ifdef CONFIG_KVELD_REFRESH_TIMEOUT_MS
+constexpr int64_t kRefreshTimeoutMs = CONFIG_KVELD_REFRESH_TIMEOUT_MS;
 #else
 constexpr int64_t kRefreshTimeoutMs = 15000;
 #endif
@@ -223,4 +223,4 @@ void AppFsm::post_service()
     _service_pending = true;
 }
 
-} // namespace tk
+} // namespace kveld

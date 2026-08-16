@@ -10,7 +10,7 @@
 
 #include "channels.h"
 
-LOG_MODULE_REGISTER(tk_input, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(kveld_input, LOG_LEVEL_INF);
 
 #define CATEGORY_CODE INPUT_KEY_MENU
 #define NEXT_CODE INPUT_KEY_ENTER
@@ -37,7 +37,7 @@ static bool press_completed(int32_t value, int64_t *down_at, uint32_t *duration_
     return true;
 }
 
-static void tk_input_cb(struct input_event *evt, void *user_data)
+static void kveld_input_cb(struct input_event *evt, void *user_data)
 {
     ARG_UNUSED(user_data);
 
@@ -49,7 +49,7 @@ static void tk_input_cb(struct input_event *evt, void *user_data)
 
     if (evt->code == CATEGORY_CODE) {
         if (press_completed(evt->value, &category_press_ms, &duration_ms)) {
-            const struct tk_category_msg msg = {
+            const struct kveld_category_msg msg = {
                 .timestamp_ms = k_uptime_get() - duration_ms,
                 .duration_ms = duration_ms,
             };
@@ -62,7 +62,7 @@ static void tk_input_cb(struct input_event *evt, void *user_data)
 
     if (evt->code == NEXT_CODE) {
         if (press_completed(evt->value, &next_press_ms, &duration_ms)) {
-            const struct tk_next_msg msg = {
+            const struct kveld_next_msg msg = {
                 .timestamp_ms = k_uptime_get() - duration_ms,
                 .duration_ms = duration_ms,
             };
@@ -72,13 +72,13 @@ static void tk_input_cb(struct input_event *evt, void *user_data)
     }
 }
 
-INPUT_CALLBACK_DEFINE(NULL, tk_input_cb, NULL);
+INPUT_CALLBACK_DEFINE(NULL, kveld_input_cb, NULL);
 
-int tk_input_init(void)
+int kveld_input_init(void)
 {
     static const struct gpio_dt_spec buttons[] = {
-        GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios),
-        GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios),
+        GPIO_DT_SPEC_GET(DT_ALIAS(kveld_category), gpios),
+        GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios),
     };
 
     for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {

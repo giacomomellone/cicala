@@ -3,7 +3,7 @@
 
 #include "qdb.hpp"
 
-using namespace tk;
+using namespace kveld;
 
 namespace
 {
@@ -17,7 +17,7 @@ const uint8_t de_bundle[] = {
 };
 
 constexpr uint8_t kWildDeck = 5;
-constexpr uint8_t kPlaybackDepth = CONFIG_TK_PLAYBACK_DEPTH_MAX;
+constexpr uint8_t kPlaybackDepth = CONFIG_KVELD_PLAYBACK_DEPTH_MAX;
 
 struct Rng {
     uint32_t state;
@@ -50,9 +50,9 @@ Rng rng;
 
 } // namespace
 
-ZTEST_SUITE(tk_qdb, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(kveld_qdb, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(tk_qdb, test_the_shipped_bundles_open)
+ZTEST(kveld_qdb, test_the_shipped_bundles_open)
 {
     Qdb en;
     Qdb de;
@@ -72,7 +72,7 @@ ZTEST(tk_qdb, test_the_shipped_bundles_open)
     zassert_not_equal(en.fingerprint(), de.fingerprint(), "two corpora must not look alike");
 }
 
-ZTEST(tk_qdb, test_every_question_is_readable_and_within_the_buffer)
+ZTEST(kveld_qdb, test_every_question_is_readable_and_within_the_buffer)
 {
     Qdb qdb;
 
@@ -90,9 +90,9 @@ ZTEST(tk_qdb, test_every_question_is_readable_and_within_the_buffer)
 
             zassert_true(qdb.at(i, q), "question %u must be readable", i);
             zassert_true(q.len > 0, "question %u is empty", i);
-            zassert_true(q.len <= CONFIG_TK_MAX_QUESTION_BYTES,
+            zassert_true(q.len <= CONFIG_KVELD_MAX_QUESTION_BYTES,
                          "question %u is %u bytes, over the %d the device renders", i, q.len,
-                         CONFIG_TK_MAX_QUESTION_BYTES);
+                         CONFIG_KVELD_MAX_QUESTION_BYTES);
             zassert_true(q.depth >= 1 && q.depth <= 3, "question %u has depth %u", i, q.depth);
             zassert_true(q.deck_mask != 0, "question %u belongs to no deck", i);
             zassert_true((q.deck_mask & 0xC0) == 0, "question %u sets a reserved deck bit", i);
@@ -100,7 +100,7 @@ ZTEST(tk_qdb, test_every_question_is_readable_and_within_the_buffer)
     }
 }
 
-ZTEST(tk_qdb, test_tone_flags_stay_in_the_wild_deck)
+ZTEST(kveld_qdb, test_tone_flags_stay_in_the_wild_deck)
 {
     Qdb qdb;
 
@@ -120,7 +120,7 @@ ZTEST(tk_qdb, test_tone_flags_stay_in_the_wild_deck)
     }
 }
 
-ZTEST(tk_qdb, test_the_worked_example_from_the_spec_decodes)
+ZTEST(kveld_qdb, test_the_worked_example_from_the_spec_decodes)
 {
     static const uint8_t bundle[] = {
         'Q',  'D', 'B', '2',  0x09, '2',  '0',  '2',  '6',  '.', '0', '7', '.', '2',
@@ -144,7 +144,7 @@ ZTEST(tk_qdb, test_the_worked_example_from_the_spec_decodes)
     zassert_false(q.dark);
 }
 
-ZTEST(tk_qdb, test_a_damaged_bundle_is_refused)
+ZTEST(kveld_qdb, test_a_damaged_bundle_is_refused)
 {
     Qdb qdb;
 
@@ -165,7 +165,7 @@ ZTEST(tk_qdb, test_a_damaged_bundle_is_refused)
     zassert_false(qdb.is_open(), "a refused bundle must not stay half-open");
 }
 
-ZTEST(tk_qdb, test_trailing_bytes_are_refused)
+ZTEST(kveld_qdb, test_trailing_bytes_are_refused)
 {
     static uint8_t padded[sizeof(en_bundle) + 1];
 
@@ -180,7 +180,7 @@ ZTEST(tk_qdb, test_trailing_bytes_are_refused)
     zassert_false(qdb.open(padded, sizeof(padded)), "a bundle with a tail is not intact");
 }
 
-ZTEST(tk_qdb, test_depth_three_is_out_of_normal_playback)
+ZTEST(kveld_qdb, test_depth_three_is_out_of_normal_playback)
 {
     Qdb qdb;
 
@@ -212,7 +212,7 @@ ZTEST(tk_qdb, test_depth_three_is_out_of_normal_playback)
     }
 }
 
-ZTEST(tk_qdb, test_a_cycle_never_repeats)
+ZTEST(kveld_qdb, test_a_cycle_never_repeats)
 {
     Qdb qdb;
 
@@ -254,7 +254,7 @@ ZTEST(tk_qdb, test_a_cycle_never_repeats)
     }
 }
 
-ZTEST(tk_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
+ZTEST(kveld_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
 {
     Qdb qdb;
 
@@ -284,7 +284,7 @@ ZTEST(tk_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
     zassert_equal(bag.drawn_count(deck), 1, "the new cycle holds only the question just drawn");
 }
 
-ZTEST(tk_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
+ZTEST(kveld_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
 {
     Qdb qdb;
 
@@ -311,7 +311,7 @@ ZTEST(tk_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
     }
 }
 
-ZTEST(tk_qdb, test_the_ring_is_shared_across_decks)
+ZTEST(kveld_qdb, test_the_ring_is_shared_across_decks)
 {
     Qdb qdb;
 
@@ -343,7 +343,7 @@ ZTEST(tk_qdb, test_the_ring_is_shared_across_decks)
     }
 }
 
-ZTEST(tk_qdb, test_a_replaced_corpus_discards_retained_state)
+ZTEST(kveld_qdb, test_a_replaced_corpus_discards_retained_state)
 {
     Qdb en;
     Qdb de;
@@ -371,7 +371,7 @@ ZTEST(tk_qdb, test_a_replaced_corpus_discards_retained_state)
     zassert_equal(bag.drawn_count(1), 0);
 }
 
-ZTEST(tk_qdb, test_an_unopened_bundle_draws_nothing)
+ZTEST(kveld_qdb, test_an_unopened_bundle_draws_nothing)
 {
     Qdb qdb;
 

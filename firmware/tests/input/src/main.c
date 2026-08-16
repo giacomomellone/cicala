@@ -7,24 +7,24 @@
 #include "channels.h"
 #include "input.h"
 
-static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(tk_category), gpios);
-static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(tk_next), gpios);
+static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_category), gpios);
+static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios);
 
-#define PRESS_WAIT K_MSEC(CONFIG_TK_BUTTON_DEBOUNCE_MS + 150)
+#define PRESS_WAIT K_MSEC(CONFIG_KVELD_BUTTON_DEBOUNCE_MS + 150)
 
 static int category_publishes;
 static int next_publishes;
-static struct tk_category_msg last_category;
-static struct tk_next_msg last_next;
+static struct kveld_category_msg last_category;
+static struct kveld_next_msg last_next;
 
 static void observe(const struct zbus_channel *chan)
 {
     if (chan == &chan_category) {
         category_publishes++;
-        last_category = *(const struct tk_category_msg *) zbus_chan_const_msg(chan);
+        last_category = *(const struct kveld_category_msg *) zbus_chan_const_msg(chan);
     } else if (chan == &chan_next) {
         next_publishes++;
-        last_next = *(const struct tk_next_msg *) zbus_chan_const_msg(chan);
+        last_next = *(const struct kveld_next_msg *) zbus_chan_const_msg(chan);
     }
 }
 
@@ -51,7 +51,7 @@ static void *suite_setup(void)
     press(&next_button, false);
     k_sleep(PRESS_WAIT);
 
-    zassert_ok(tk_input_init());
+    zassert_ok(kveld_input_init());
 
     return NULL;
 }
@@ -64,9 +64,9 @@ static void before_each(void *fixture)
     next_publishes = 0;
 }
 
-ZTEST_SUITE(tk_input, NULL, suite_setup, before_each, NULL, NULL);
+ZTEST_SUITE(kveld_input, NULL, suite_setup, before_each, NULL, NULL);
 
-ZTEST(tk_input, test_one_category_press_is_one_event)
+ZTEST(kveld_input, test_one_category_press_is_one_event)
 {
     tap(&category, 60);
 
@@ -74,7 +74,7 @@ ZTEST(tk_input, test_one_category_press_is_one_event)
     zassert_equal(next_publishes, 0, "and it must not look like Next");
 }
 
-ZTEST(tk_input, test_one_next_press_is_one_event)
+ZTEST(kveld_input, test_one_next_press_is_one_event)
 {
     tap(&next_button, 60);
 
@@ -82,7 +82,7 @@ ZTEST(tk_input, test_one_next_press_is_one_event)
     zassert_equal(category_publishes, 0, "and it must not look like Category");
 }
 
-ZTEST(tk_input, test_a_press_is_reported_on_release)
+ZTEST(kveld_input, test_a_press_is_reported_on_release)
 {
     press(&next_button, true);
     k_sleep(PRESS_WAIT);
@@ -93,18 +93,18 @@ ZTEST(tk_input, test_a_press_is_reported_on_release)
     k_sleep(PRESS_WAIT);
 
     zassert_equal(next_publishes, 1);
-    zassert_true(last_next.duration_ms >= (uint32_t) CONFIG_TK_BUTTON_DEBOUNCE_MS,
+    zassert_true(last_next.duration_ms >= (uint32_t) CONFIG_KVELD_BUTTON_DEBOUNCE_MS,
                  "the reported duration should cover the hold, got %u ms", last_next.duration_ms);
 }
 
-ZTEST(tk_input, test_a_long_press_is_still_one_event)
+ZTEST(kveld_input, test_a_long_press_is_still_one_event)
 {
     tap(&next_button, 900);
 
     zassert_equal(next_publishes, 1, "long press is Next, same as a short one");
 }
 
-ZTEST(tk_input, test_the_buttons_are_independent)
+ZTEST(kveld_input, test_the_buttons_are_independent)
 {
     press(&category, true);
     k_sleep(PRESS_WAIT);

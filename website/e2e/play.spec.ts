@@ -37,7 +37,7 @@ test.describe("play", () => {
   test("the shuffle bag never repeats before the deck is exhausted", async ({ page }) => {
     const deck = smallestDeck("en");
     const expected = playable("en", deck);
-    await seedStorage(page, { "tk.deck": deck });
+    await seedStorage(page, { "kveld.deck": deck });
     await page.goto("/");
     await playReady(page);
 
@@ -57,7 +57,7 @@ test.describe("play", () => {
     await page.goto("/");
     await page.locator('[data-deck="family"]').click();
     await expect(page.locator('[data-deck="family"]')).toHaveAttribute("aria-checked", "true");
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.deck"))).toBe("family");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.deck"))).toBe("family");
 
     const eligible = new Set(playable("en", "family").map((q) => q.text));
     for (let i = 0; i < 5; i++) {
@@ -77,7 +77,7 @@ test.describe("play", () => {
     );
     test.skip(tooDeep.size === 0, `no depth-3 question in the ${deck} deck`);
 
-    await seedStorage(page, { "tk.deck": deck });
+    await seedStorage(page, { "kveld.deck": deck });
     await page.goto("/");
     await playReady(page);
     for (let i = 0; i < playable("en", deck).length; i++) {
@@ -94,7 +94,7 @@ test.describe("play", () => {
 
     await page.locator("#q-fav").click();
     await expect(page.locator("#q-fav")).toHaveAttribute("aria-pressed", "true");
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.favs"))).toContain(id);
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.favs"))).toContain(id);
 
     await page.goto(`/q/${id}`);
     await expect(page.locator("#q-fav")).toHaveAttribute("aria-pressed", "true");
@@ -126,7 +126,7 @@ test.describe("permalink", () => {
     const question = payload("de")[0]!;
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("tk.lang"))).toBe("de");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.lang"))).toBe("de");
   });
 
   test("next leaves the permalink for normal play", async ({ page }) => {

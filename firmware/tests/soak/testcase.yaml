@@ -1,10 +1,10 @@
 tests:
-  tischkarte.soak:
+  kveld.soak:
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim
     integration_platforms:
       - qemu_xtensa/dc233c
     tags:
-      - tischkarte
+      - kveld
       - soak

@@ -1,7 +1,7 @@
 /** Firmware updates over the air. */
 
-#ifndef TK_OTA_H
-#define TK_OTA_H
+#ifndef KVELD_OTA_H
+#define KVELD_OTA_H
 
 #include <stddef.h>
 
@@ -9,23 +9,23 @@
 extern "C" {
 #endif
 
-enum tk_ota_result {
+enum kveld_ota_result {
     /** An image is in the spare slot, verified and marked for install. */
-    TK_OTA_STAGED,
+    KVELD_OTA_STAGED,
     /** The manifest offers nothing newer than what is running. */
-    TK_OTA_CURRENT,
+    KVELD_OTA_CURRENT,
     /** Nothing was installed, and the running image is untouched. */
-    TK_OTA_FAILED,
+    KVELD_OTA_FAILED,
 };
 
 /** Check for a newer firmware release, and stage it if there is one. */
-enum tk_ota_result tk_ota_run(char *version, size_t version_size);
+enum kveld_ota_result kveld_ota_run(char *version, size_t version_size);
 
 /** The version of the image that is running, from the VERSION file. */
-const char *tk_ota_running_version(void);
+const char *kveld_ota_running_version(void);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TK_OTA_H */
+#endif /* KVELD_OTA_H */

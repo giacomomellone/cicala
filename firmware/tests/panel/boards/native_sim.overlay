@@ -1,6 +1,6 @@
 
 / {
-    tk_dummy: dummy_dc {
+    kveld_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
         height = <122>;
@@ -8,7 +8,7 @@
     };
 
     chosen {
-        zephyr,display = &tk_dummy;
+        zephyr,display = &kveld_dummy;
     };
 };
 

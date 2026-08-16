@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DECKS, DEPTH_OPTIONS, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
 import schema from "../../questions/schema.json";
 
-const cfg = schema["x-tischkarte"];
+const cfg = schema["x-kveld"];
 
 describe("decks", () => {
   it("keeps the category order from questions/schema.json", () => {

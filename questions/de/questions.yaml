@@ -1,4 +1,4 @@
-# questions/de/questions.yaml — Tischkarte question database (CC0).
+# questions/de/questions.yaml — Kveld question database (CC0).
 # Managed by tools/validate.py --fix. Append new entries WITHOUT id/added;
 # CI assigns them. Never edit an existing id. See CONTRIBUTING.md.
 

@@ -1,14 +1,14 @@
 
 #include <zephyr/ztest.h>
 
-ZTEST_SUITE(tk_smoke, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(kveld_smoke, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(tk_smoke, test_harness_runs)
+ZTEST(kveld_smoke, test_harness_runs)
 {
     zassert_true(true, "ztest runs on native_sim");
 }
 
-ZTEST(tk_smoke, test_cpp17_available)
+ZTEST(kveld_smoke, test_cpp17_available)
 {
     constexpr struct {
         int deck;

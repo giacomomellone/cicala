@@ -19,46 +19,46 @@
 #include "portal_fsm.hpp"
 #include "portal_page.hpp"
 
-LOG_MODULE_DECLARE(tk_net, LOG_LEVEL_INF);
+LOG_MODULE_DECLARE(kveld_net, LOG_LEVEL_INF);
 
 namespace
 {
 
 /* Publishes cards and forwards everything else to portal.c. */
-class Io : public tk::PortalIo
+class Io : public kveld::PortalIo
 {
 public:
-    bool scan_start() override { return tk_portal_scan_start(); }
+    bool scan_start() override { return kveld_portal_scan_start(); }
 
-    bool ap_start() override { return tk_portal_ap_start(); }
+    bool ap_start() override { return kveld_portal_ap_start(); }
 
-    bool serve_start() override { return tk_portal_serve_start(); }
+    bool serve_start() override { return kveld_portal_serve_start(); }
 
-    bool connect_start() override { return tk_portal_connect_start(); }
+    bool connect_start() override { return kveld_portal_connect_start(); }
 
-    void teardown() override { tk_portal_teardown(); }
+    void teardown() override { kveld_portal_teardown(); }
 
-    void show(tk::PortalCard card) override
+    void show(kveld::PortalCard card) override
     {
-        struct tk_service_msg msg = {};
+        struct kveld_service_msg msg = {};
 
         const char *text = nullptr;
 
         switch (card) {
-        case tk::PortalCard::SETUP:
+        case kveld::PortalCard::SETUP:
             /* The setup card includes the access-point name and session password. */
             write_setup(msg);
             break;
 
-        case tk::PortalCard::CONNECTING:
+        case kveld::PortalCard::CONNECTING:
             text = "Setup: joining the network...";
             break;
 
-        case tk::PortalCard::CONNECTED:
+        case kveld::PortalCard::CONNECTED:
             text = "Setup: connected. Wi-Fi is ready.";
             break;
 
-        case tk::PortalCard::REFUSED:
+        case kveld::PortalCard::REFUSED:
             text = "Setup: that did not work. Check the password and try again.";
             break;
         }
@@ -76,16 +76,16 @@ public:
     }
 
 private:
-    static void write_setup(struct tk_service_msg &msg)
+    static void write_setup(struct kveld_service_msg &msg)
     {
         const char *const prefix = "Setup: join \"";
         const char *const middle = "\"\npassword: \"";
         const char *const suffix = "\"\nthen open 192.168.4.1";
-        const char *const ssid = tk_portal_ap_ssid();
-        const char *const password = tk_portal_ap_password();
+        const char *const ssid = kveld_portal_ap_ssid();
+        const char *const password = kveld_portal_ap_password();
 
-        const size_t n = strlen(prefix) + strlen(ssid) + strlen(middle) + strlen(password) +
-                         strlen(suffix);
+        const size_t n =
+            strlen(prefix) + strlen(ssid) + strlen(middle) + strlen(password) + strlen(suffix);
 
         if (n >= sizeof(msg.text)) {
             /* Fall back to the SSID if the full instruction does not fit. */
@@ -119,41 +119,41 @@ private:
 };
 
 Io io;
-tk::PortalFsm fsm(io);
+kveld::PortalFsm fsm(io);
 
 } // namespace
 
-void tk_net_post_start(void)
+void kveld_net_post_start(void)
 {
     fsm.post_start();
 }
 
-void tk_net_post_stop(void)
+void kveld_net_post_stop(void)
 {
     fsm.post_stop();
 }
 
-void tk_net_post_scan_done(void)
+void kveld_net_post_scan_done(void)
 {
     fsm.post_scan_done();
 }
 
-void tk_net_post_ap_ready(bool ok)
+void kveld_net_post_ap_ready(bool ok)
 {
     fsm.post_ap_ready(ok);
 }
 
-void tk_net_post_credentials(void)
+void kveld_net_post_credentials(void)
 {
     fsm.post_credentials();
 }
 
-void tk_net_post_connected(bool ok)
+void kveld_net_post_connected(bool ok)
 {
     fsm.post_connected(ok);
 }
 
-void tk_net_run(void)
+void kveld_net_run(void)
 {
     /* Bound one event to the number of portal states. */
     for (int i = 0; i < 16; i++) {
@@ -169,26 +169,26 @@ void tk_net_run(void)
     LOG_ERR("portal state machine did not settle");
 }
 
-int tk_net_state(void)
+int kveld_net_state(void)
 {
     return fsm.get_current_state();
 }
 
-bool tk_net_portal_active(void)
+bool kveld_net_portal_active(void)
 {
     return fsm.is_active();
 }
 
 /* -------------------------------------------------------------- the pages */
 
-int tk_page_setup(char *out, size_t out_size, const struct tk_scan_entry *nets, uint8_t count,
-                  const char *language)
+int kveld_page_setup(char *out, size_t out_size, const struct kveld_scan_entry *nets, uint8_t count,
+                     const char *language)
 {
     /* Copy across the C boundary so field layout is not an ABI contract. */
-    tk::ScanEntry entries[CONFIG_TK_NET_SCAN_MAX];
+    kveld::ScanEntry entries[CONFIG_KVELD_NET_SCAN_MAX];
 
-    if (count > CONFIG_TK_NET_SCAN_MAX) {
-        count = CONFIG_TK_NET_SCAN_MAX;
+    if (count > CONFIG_KVELD_NET_SCAN_MAX) {
+        count = CONFIG_KVELD_NET_SCAN_MAX;
     }
 
     for (uint8_t i = 0; i < count; i++) {
@@ -198,40 +198,40 @@ int tk_page_setup(char *out, size_t out_size, const struct tk_scan_entry *nets, 
         entries[i].secure = nets[i].secure;
     }
 
-    return tk::page_setup(out, static_cast<uint16_t>(out_size), count > 0 ? entries : nullptr,
-                          count, language);
+    return kveld::page_setup(out, static_cast<uint16_t>(out_size), count > 0 ? entries : nullptr,
+                             count, language);
 }
 
-int tk_page_saved(char *out, size_t out_size, const char *ssid)
+int kveld_page_saved(char *out, size_t out_size, const char *ssid)
 {
-    return tk::page_saved(out, static_cast<uint16_t>(out_size), ssid);
+    return kveld::page_saved(out, static_cast<uint16_t>(out_size), ssid);
 }
 
-int tk_page_notice(char *out, size_t out_size, const char *heading, const char *body)
+int kveld_page_notice(char *out, size_t out_size, const char *heading, const char *body)
 {
-    return tk::page_notice(out, static_cast<uint16_t>(out_size), heading, body);
+    return kveld::page_notice(out, static_cast<uint16_t>(out_size), heading, body);
 }
 
-int tk_page_forget_confirm(char *out, size_t out_size)
+int kveld_page_forget_confirm(char *out, size_t out_size)
 {
-    return tk::page_forget_confirm(out, static_cast<uint16_t>(out_size));
+    return kveld::page_forget_confirm(out, static_cast<uint16_t>(out_size));
 }
 
-int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *saved_ssid,
-                   bool connected, const char *station_ip, const char *connection_error,
-                   const char *sync_result, uint32_t window_remaining_s)
+int kveld_page_status(char *out, size_t out_size, const char *ap_ssid, const char *saved_ssid,
+                      bool connected, const char *station_ip, const char *connection_error,
+                      const char *sync_result, uint32_t window_remaining_s)
 {
-    tk::PortalStatus status = {};
+    kveld::PortalStatus status = {};
 
     char corpus_version[32] = {};
     uint16_t corpus_count = 0;
 
-    tk_app_corpus(corpus_version, sizeof(corpus_version), &corpus_count);
+    kveld_app_corpus(corpus_version, sizeof(corpus_version), &corpus_count);
 
     status.ap_ssid = ap_ssid;
     status.board = CONFIG_BOARD_TARGET;
     status.firmware_version = APP_VERSION_STRING;
-    status.corpus_language = tk_language();
+    status.corpus_language = kveld_language();
     status.corpus_version = corpus_version;
     status.corpus_count = corpus_count;
     status.saved_ssid = saved_ssid;
@@ -241,18 +241,18 @@ int tk_page_status(char *out, size_t out_size, const char *ap_ssid, const char *
     status.sync_result = sync_result;
     status.window_remaining_s = window_remaining_s;
 
-    return tk::page_status(out, static_cast<uint16_t>(out_size), status);
+    return kveld::page_status(out, static_cast<uint16_t>(out_size), status);
 }
 
 /* --------------------------------------------------------------- the wire */
 
-int tk_form_field(const char *body, uint16_t len, const char *key, char *out, uint16_t out_size)
+int kveld_form_field(const char *body, uint16_t len, const char *key, char *out, uint16_t out_size)
 {
-    return tk::form_field(body, len, key, out, out_size);
+    return kveld::form_field(body, len, key, out, out_size);
 }
 
-uint16_t tk_dns_hijack(const uint8_t *query, uint16_t len, uint32_t addr, uint8_t *out,
-                       uint16_t out_size)
+uint16_t kveld_dns_hijack(const uint8_t *query, uint16_t len, uint32_t addr, uint8_t *out,
+                          uint16_t out_size)
 {
-    return tk::dns_hijack(query, len, addr, out, out_size);
+    return kveld::dns_hijack(query, len, addr, out, out_size);
 }

@@ -4,8 +4,8 @@
 
 / {
     aliases {
-        tk-category = &tk_category;
-        tk-next = &tk_next;
+        kveld-category = &kveld_category;
+        kveld-next = &kveld_next;
     };
 
     gpio0: gpio_emul {
@@ -19,14 +19,14 @@
         low-level;
     };
 
-    tk_buttons: tk-buttons {
+    kveld_buttons: kveld-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
-        tk_category: category { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_MENU>; label = "category"; };
-        tk_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
+        kveld_category: category { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_MENU>; label = "category"; };
+        kveld_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
     };
 
-    tk_dummy: dummy_dc {
+    kveld_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
         height = <122>;
@@ -34,6 +34,6 @@
     };
 
     chosen {
-        zephyr,display = &tk_dummy;
+        zephyr,display = &kveld_dummy;
     };
 };

@@ -93,8 +93,8 @@ Use 1% metal-film resistors. The 100 nF battery-sense capacitor must be ceramic
 ```
 
 The tap is half the cell voltage. Place the capacitor across the lower resistor,
-close to GPIO1. `CONFIG_TK_POWER_DIVIDER_NUM=2` and
-`CONFIG_TK_POWER_DIVIDER_DEN=1` convert the ADC reading back to cell voltage.
+close to GPIO1. `CONFIG_KVELD_POWER_DIVIDER_NUM=2` and
+`CONFIG_KVELD_POWER_DIVIDER_DEN=1` convert the ADC reading back to cell voltage.
 
 | Resistor pair   | Current at 4.2 V | Source impedance |
 | --------------- | ---------------: | ---------------: |
@@ -129,7 +129,7 @@ read by the normal firmware and must not float. Remove each jumper only after
 checking the corresponding divider tap with a meter.
 
 The buttons are the deep-sleep wake sources. USB insertion is sampled on the
-next boot; `CONFIG_TK_POWER_WAKE_ON_USB` is disabled because the ESP32-S3 cannot
+next boot; `CONFIG_KVELD_POWER_WAKE_ON_USB` is disabled because the ESP32-S3 cannot
 mix EXT1 trigger polarities per pin.
 
 ## Buttons
@@ -282,7 +282,7 @@ Measured with a Waveshare 2.13-inch V4 panel:
 
 | Measurement                   | Result                                             | Configuration                        |
 | ----------------------------- | -------------------------------------------------- | ------------------------------------ |
-| Consecutive partial refreshes | minor artifacts at 193; visible ghosting before 64 | `TK_FULL_REFRESH_INTERVAL=16`        |
+| Consecutive partial refreshes | minor artifacts at 193; visible ghosting before 64 | `KVELD_FULL_REFRESH_INTERVAL=16`     |
 | Partial refresh duration      | 622 ms ±2 ms across 193 refreshes                  | below the 1 s product target         |
 | Refresh after deep-sleep wake | 624 ms                                             | Zephyr panel patch applied           |
 | Peak thread stack             | logging 89%; other threads 18–38%                  | `LOG_PROCESS_THREAD_STACK_SIZE=2048` |
@@ -309,7 +309,7 @@ Use `just fw-flash <profile>` and `just fw-monitor <profile>`.
 | `power`   | Log raw and converted ADC values once per second. Use for divider calibration and discharge measurements.      |
 
 For the refresh floor, replace the cell with a bench supply and reduce voltage
-in steps while requesting partial refreshes. Set `TK_REFRESH_MIN_MV` above the
+in steps while requesting partial refreshes. Set `KVELD_REFRESH_MIN_MV` above the
 first voltage that leaves visible artifacts. Below the configured floor, the
 panel should remain unchanged and the red LED should blink three times.
 

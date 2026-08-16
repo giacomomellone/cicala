@@ -1,5 +1,5 @@
 # Route each question corpus to its language maintainers. Keep these owners in
-# sync with docs/languages.md; the current handle is a placeholder.
+# sync with docs/languages.md.
 
-/questions/en/ @tischkarte-maintainer
-/questions/de/ @tischkarte-maintainer
+/questions/en/ @giacomomellone
+/questions/de/ @giacomomellone

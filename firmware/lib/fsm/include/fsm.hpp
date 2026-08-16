@@ -8,7 +8,7 @@
 #define STATE(x) (static_cast<int>(State::x))
 #define TRANSITION(x) (static_cast<int>(Transition::x))
 
-namespace tk
+namespace kveld
 {
 
 constexpr int64_t operator""_ms(unsigned long long v)
@@ -75,4 +75,4 @@ private:
     bool _entered; ///< false until the first run(); see the constructor
 };
 
-} // namespace tk
+} // namespace kveld

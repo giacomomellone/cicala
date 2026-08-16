@@ -1,6 +1,6 @@
 # Deutscher Stil-Leitfaden
 
-So schreibst du eine Tischkarte-Frage auf Deutsch. Die Messlatte: Sie passt zu
+So schreibst du eine Kveld-Frage auf Deutsch. Die Messlatte: Sie passt zu
 jedem gewählten Deck, ist nicht mit Ja oder Nein zu erledigen und ist konkret
 genug, um eine Geschichte anzustoßen. Die Begründung für diese Regeln steht in
 der [Theorie](../../docs/theory.md).

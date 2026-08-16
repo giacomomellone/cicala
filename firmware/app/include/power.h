@@ -9,43 +9,43 @@
 extern "C" {
 #endif
 
-#ifdef CONFIG_TK_POWER
+#ifdef CONFIG_KVELD_POWER
 
-/** True unless the cell is under CONFIG_TK_REFRESH_MIN_MV. */
-bool tk_power_refresh_allowed(void);
+/** True unless the cell is under CONFIG_KVELD_REFRESH_MIN_MV. */
+bool kveld_power_refresh_allowed(void);
 
 /** The last reading in millivolts at the pack, or 0 before there is one. */
-uint16_t tk_power_millivolts(void);
+uint16_t kveld_power_millivolts(void);
 
 /** True whenever VBUS is present. */
-bool tk_power_external(void);
+bool kveld_power_external(void);
 
 /** True while a plug-in still has sync and update time left on it. */
-bool tk_power_charge_window_open(void);
+bool kveld_power_charge_window_open(void);
 
 #else
 
-static inline bool tk_power_refresh_allowed(void)
+static inline bool kveld_power_refresh_allowed(void)
 {
     return true;
 }
 
-static inline uint16_t tk_power_millivolts(void)
+static inline uint16_t kveld_power_millivolts(void)
 {
     return 0;
 }
 
-static inline bool tk_power_external(void)
+static inline bool kveld_power_external(void)
 {
     return false;
 }
 
-static inline bool tk_power_charge_window_open(void)
+static inline bool kveld_power_charge_window_open(void)
 {
     return false;
 }
 
-#endif /* CONFIG_TK_POWER */
+#endif /* CONFIG_KVELD_POWER */
 
 #ifdef __cplusplus
 }

@@ -7,7 +7,7 @@
 
 #include "fsm.hpp"
 
-namespace tk
+namespace kveld
 {
 
 /** Effects performed by the tabletop state machine. */
@@ -93,4 +93,4 @@ private:
     static const Fsm::StateTransition _transitions[];
 };
 
-} // namespace tk
+} // namespace kveld

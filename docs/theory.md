@@ -3,9 +3,9 @@
 [Design](design.md) governs the product. This page governs the question
 corpus: what a good question asks a person to do, how to revise one, and where
 depth becomes pressure. The [English style
-guide](https://github.com/tischkarte/tischkarte/blob/main/questions/en/STYLE.md)
+guide](https://github.com/giacomomellone/kveld/blob/main/questions/en/STYLE.md)
 and [German style
-guide](https://github.com/tischkarte/tischkarte/blob/main/questions/de/STYLE.md)
+guide](https://github.com/giacomomellone/kveld/blob/main/questions/de/STYLE.md)
 turn this theory into language-specific rules.
 
 ## Retrieval and construction
@@ -237,7 +237,7 @@ typical conversations with strangers as less intimate than they would ideally
 prefer. This supports making substantive questions available. It does not
 justify forcing them or assuming that every table wants the same depth.
 
-Research does not supply Tischkarte's deck taxonomy. Decks are UI affordances,
+Research does not supply Kveld's deck taxonomy. Decks are UI affordances,
 not empirical kinds of conversation. Corpus-linguistic work on 2.3 million
 words of conversation classified stretches of talk by communicative purposes
 and found 16 discourse types; conventional genres such as jokes and personal
@@ -273,7 +273,7 @@ when it became work?” can fit Close and Work without being copied or assigned
 an objective category. Dark and spicy questions are Wild-only because
 eligibility overlap must not leak their tone into Family or Work.
 
-## Consequences for Tischkarte
+## Consequences for Kveld
 
 Depth remains editorial exposure-cost metadata, independent from tone. The
 first physical prototype has no depth control. Normal playback samples depths 1

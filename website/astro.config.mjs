@@ -4,7 +4,7 @@ import { defineConfig } from "astro/config";
 // Static output stays independent of a hosting vendor.
 export default defineConfig({
   // Canonical origin until a custom domain is configured.
-  site: "https://tischkarte.pages.dev",
+  site: "https://kveld.pages.dev",
   output: "static",
   trailingSlash: "never",
   build: {

@@ -1,5 +1,5 @@
-zephyr_library_named(tk_sync)
+zephyr_library_named(kveld_sync)
 zephyr_library_sources(manifest.cpp)
 zephyr_include_directories(include)
 
-add_dependencies(tk_sync zephyr_generated_headers)
+add_dependencies(kveld_sync zephyr_generated_headers)
