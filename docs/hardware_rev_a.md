@@ -54,10 +54,10 @@ specified 15.85 mm rear and 12.91 mm front surface heights both survive the
 84 × 56 × 15.85 mm overall bounding box including feet and the flush light
 pipe.
 
-![Rev A PCB constraint map](assets/images/hardware_rev_a/pcb_constraint_map.png)
+![Rev A PCB constraint map](assets/images/hardware_rev_a/pcb_constraint_map.svg)
 
-_KiCad constraint map. Grey marks enclosure datums; blue marks keep-outs and
-warnings. It contains no routed circuit._
+_KiCad vector constraint map. Grey marks enclosure datums; blue marks keep-outs
+and warnings. It contains no routed circuit._
 
 ## Mechanical stack
 
