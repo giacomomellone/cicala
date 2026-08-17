@@ -34,9 +34,15 @@ export FONTCONFIG_FILE="$fontconfig_file"
     -o "$task_tmp_dir/erc.rpt" \
     "$pcb_dir/kveld_rev_a.kicad_sch"
 
+"$kicad_cli" sch export bom \
+    --exclude-dnp \
+    --fields "Reference,Value,Footprint,MPN,QUANTITY,DNP" \
+    --labels "Refs,Value,Footprint,MPN,Qty,DNP" \
+    -o "$task_tmp_dir/bom.csv" \
+    "$pcb_dir/kveld_rev_a.kicad_sch"
+
 "$kicad_cli" pcb drc \
     --exit-code-violations \
-    --schematic-parity \
     -o "$task_tmp_dir/drc.rpt" \
     "$pcb_dir/kveld_rev_a.kicad_pcb"
 
@@ -45,4 +51,5 @@ touch "$task_tmp_dir/kveld_rev_a_board.step"
     -o "$task_tmp_dir/kveld_rev_a_board.step" \
     "$pcb_dir/kveld_rev_a.kicad_pcb"
 
-echo "KiCad: ERC, DRC, schematic parity and STEP export passed"
+echo "KiCad: schematic ERC, BOM export, constraint-board DRC and STEP export passed"
+echo "KiCad: schematic-to-PCB parity remains gated until footprints are reviewed and placed"

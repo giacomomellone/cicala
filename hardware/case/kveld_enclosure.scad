@@ -10,7 +10,10 @@
 
 $fn = $preview ? 48 : 96;
 
-part = "assembly"; // [assembly,exploded,top_shell,base,retainer,category_cap,next_cap,lens,steel_skin,light_pipe,pcb_reference,coupon_buttons,coupon_usb,coupon_lens,coupon_boss]
+part = "assembly"; // [assembly,exploded,section,top_shell,base,retainer,category_cap,next_cap,lens,steel_skin,light_pipe,pcb_reference,coupon_buttons,coupon_buttons_assembly,coupon_usb,coupon_lens,coupon_boss]
+section_axis = "x"; // [x,y,z]
+section_position_percent = 50; // [0:1:100]
+section_keep = "positive"; // [negative,positive]
 
 // Public Kveld finish intent. Physical colour and texture remain sample-gated.
 paper_color = [250 / 255, 248 / 255, 242 / 255];
@@ -190,12 +193,14 @@ module top_shell_blank() {
             );
 
         // USB-C mouth and adjacent status-light channel through the front wall.
-        translate([
-            usb_x - usb_width / 2,
-            case_depth - wall - 1,
-            usb_center_z - usb_height / 2
-        ])
-            cube([usb_width, wall + 2, usb_height]);
+        translate([usb_x, case_depth + 1, usb_center_z])
+            rotate([90, 0, 0])
+                xy_centered_rounded_prism(
+                    usb_width,
+                    usb_height,
+                    wall + 2,
+                    usb_height / 2
+                );
         translate([light_pipe_x, case_depth + 0.5, light_pipe_center_z])
             rotate([90, 0, 0])
                 cylinder(d = light_pipe_diameter, h = wall + 3);
@@ -383,6 +388,53 @@ module assembly(exploded = 0) {
         gasket_reference();
 }
 
+module section_view() {
+    extent = 200;
+    section_position = section_position_percent / 100 * (
+        section_axis == "x" ? case_width :
+        section_axis == "y" ? case_depth :
+        face_rear_z
+    );
+    intersection() {
+        assembly();
+        if (section_axis == "x")
+            translate([
+                section_keep == "positive" ? section_position : -extent,
+                -extent,
+                -extent
+            ])
+                cube([
+                    section_keep == "positive" ? extent : section_position + extent,
+                    2 * extent,
+                    2 * extent
+                ]);
+        else if (section_axis == "y")
+            translate([
+                -extent,
+                section_keep == "positive" ? section_position : -extent,
+                -extent
+            ])
+                cube([
+                    2 * extent,
+                    section_keep == "positive" ? extent : section_position + extent,
+                    2 * extent
+                ]);
+        else if (section_axis == "z")
+            translate([
+                -extent,
+                -extent,
+                section_keep == "positive" ? section_position : -extent
+            ])
+                cube([
+                    2 * extent,
+                    2 * extent,
+                    section_keep == "positive" ? extent : section_position + extent
+                ]);
+        else
+            assert(false, str("Unknown section axis: ", section_axis));
+    }
+}
+
 module coupon_buttons() {
     difference() {
         rounded_prism(50, 24, 3.0, 2);
@@ -395,14 +447,25 @@ module coupon_buttons() {
                 next_bore_radius
             );
     }
-    translate([13, 12, 3.2]) category_cap(false);
-    translate([36, 12, 4.35]) next_cap(false);
+}
+
+module coupon_buttons_assembly() {
+    color(paper_color) coupon_buttons();
+    color(ink_color) translate([13, 12, 4.35]) category_cap(false);
+    color(ink_color) translate([36, 12, 4.35]) next_cap(false);
 }
 
 module coupon_usb() {
     difference() {
         rounded_prism(34, 12, 8, 2);
-        translate([12.3, -0.1, 2.1]) cube([usb_width, 12.2, usb_height]);
+        translate([17, 12.1, 4])
+            rotate([90, 0, 0])
+                xy_centered_rounded_prism(
+                    usb_width,
+                    usb_height,
+                    12.2,
+                    usb_height / 2
+                );
         translate([27, 12.1, 4])
             rotate([90, 0, 0])
                 cylinder(d = light_pipe_diameter, h = 12.2);
@@ -436,6 +499,7 @@ echo(str("PCB_ORIGIN_MM=", pcb_x, ",", pcb_y, ",", pcb_z));
 
 if (part == "assembly") assembly(0);
 else if (part == "exploded") assembly(4);
+else if (part == "section") section_view();
 else if (part == "top_shell") top_shell();
 else if (part == "base") base();
 else if (part == "retainer") retainer();
@@ -446,6 +510,7 @@ else if (part == "steel_skin") steel_skin();
 else if (part == "light_pipe") translate([-light_pipe_x, -case_depth, -light_pipe_center_z]) light_pipe();
 else if (part == "pcb_reference") pcb_reference();
 else if (part == "coupon_buttons") coupon_buttons();
+else if (part == "coupon_buttons_assembly") coupon_buttons_assembly();
 else if (part == "coupon_usb") coupon_usb();
 else if (part == "coupon_lens") coupon_lens();
 else if (part == "coupon_boss") coupon_boss();

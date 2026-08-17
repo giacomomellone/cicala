@@ -1,6 +1,6 @@
 # Rev A hardware
 
-Rev A is the first integrated enclosure and PCB study. The files establish a shared coordinate system, component envelopes, recovery access, and validation gates. They are suitable for fit studies and schematic capture. They are not released for PCB fabrication or production tooling.
+Rev A is the first integrated enclosure and PCB study. The files establish a shared coordinate system, component envelopes, captured schematic, recovery access, and validation gates. They are suitable for fit and electrical review. They are not released for PCB fabrication or production tooling.
 
 ![CAD model of the Rev A enclosure](assets/images/hardware_rev_a/enclosure_assembly.png)
 
@@ -76,7 +76,7 @@ The KiCad project starts with a four-layer 1.2 mm FR-4 stack:
 
 Four layers are the Rev A default for the ESP32-S3 RF return path, native USB, and the dense display/power layout. The final stack and controlled-impedance geometry must come from the selected PCB fabricator before routing USB.
 
-The root schematic contains seven empty hierarchy sheets: USB and protection, battery charger, 3V3 regulation, ESP32-S3 core, e-paper interface, controls and status, and programming and test. Empty sheets make subsystem ownership and net contracts explicit without implying that an unreviewed circuit is ready.
+The root schematic contains seven captured hierarchy sheets: USB and protection, battery charger, 3V3 buck-boost regulation, ESP32-S3 core, e-paper interface, controls and status, and programming and test. The first pass uses named global nets at subsystem boundaries so the power and firmware contracts remain visible during review.
 
 ### Firmware pin contract
 
@@ -91,7 +91,7 @@ Existing firmware pins stay fixed unless a hardware review changes both sides in
 | Charger STAT1 / STAT2   |        6 / 7 | inputs; truth table belongs in the charger sheet   |
 | Display reset / busy    |        8 / 9 | preserve current firmware mapping                  |
 | Display CS / MOSI / CLK | 10 / 11 / 12 | preserve current firmware mapping                  |
-| Charger enable          |           14 | polarity documented at the sheet boundary          |
+| Charger enable          |           14 | active-low; 100 kΩ pull-down enables by default     |
 | Status red / green      |      15 / 16 | both low means no LED sleep load                   |
 | Next                    |           17 | active-low RTC wake input                          |
 | Display D/C             |           18 | preserve current firmware mapping                  |
@@ -101,13 +101,21 @@ Existing firmware pins stay fixed unless a hardware review changes both sides in
 
 IO0 and EN both need concealed service pads. IO0 alone does not recover a battery-powered board unless reset can also be asserted. Expose ground, 3V3, VBUS, battery, UART0, USB, the display bus, charger status and removable current links on the underside.
 
-## Parts requiring schematic decisions
+## Electrical baseline
 
-The GDEY0213B74, KSC321G LFS and XC6220B331 are retained. WROOM-1U-N16 is the Rev A baseline candidate, with a qualified external antenna and a defined cable route. The current case does not yet demonstrate the 15 mm clearance Espressif requires around a WROOM-1 PCB antenna: its study envelope conflicts with the display region. WROOM-1-N16 remains a gated alternative only if a revised placement, full-height metal exclusion and assembled radio test close that conflict. The two modules are assembly alternatives, not parts to fit at once.
+The captured USB-C port is a 5 V USB 2.0 sink without USB-PD. Its data pair connects through USBLC6-2SC6 ESD protection and 22 Ω series resistors to the ESP32-S3 native USB pins. The port is the normal flashing, serial-console and JTAG path. Concealed IO0, EN and UART0 access remains available for recovery.
+
+BQ25185 provides the single-cell power path and charger. The schematic sets a 500 mA USB input limit and 250 mA charge current for a protected 500 mAh pack, pulls `/CE` low by default, and exposes both open-drain status outputs to firmware. The pack specification requires a PCM and a 10 kΩ, B=3435 K NTC on a three-wire keyed harness.
+
+TPS63802 replaces the earlier LDO candidate. Its buck-boost topology holds 3.3 V across the useful protected-LiPo range instead of dropping out as the cell approaches 3.3 V. A second TPS22917 switches the complete 1 MΩ/470 kΩ battery divider, and another removes power from the e-paper panel and boost network between refreshes.
+
+GDEY0213B74 remains the panel and the boost circuit follows its reference design. The board-side connector candidate is a bottom-contact Hirose FH12-24S-0.5SH. Its contact orientation, insertion motion and folded FPC route remain mechanical review items.
+
+WROOM-1-N16 is the preferred assembly for the expected close-range captive-portal use. WROOM-1U-N16 remains an alternative on the same module pad pattern if the onboard-antenna placement cannot clear the display, cell, buttons, copper and enclosure metal. Close range reduces the required link budget; it does not remove Espressif's keep-out or the assembled radio test. The two modules are assembly alternatives, not parts to fit at once.
 
 The preliminary FPC connector and USB datums have 0.5 mm between their drawn envelopes after moving the FPC centre rearward to Y=40. This only proves that the placeholders no longer overlap. The reviewed connector footprints, FPC insertion motion, cable fold and USB shell courtyard must establish the final clearance.
 
-BQ25185 is the current charger candidate because it provides a power path and STAT1/STAT2 charge-state outputs. Charge current, input current, NTC behavior, ship/factory mode, thermal margin and the chosen protected cell still require a sheet-level review. Firmware voltage inference remains valid for the existing bench board; Rev A should use the status outputs when fitted.
+A published protected LP503035 pack is approximately 36 × 30 × 5 mm before the wire exit and swelling allowance. The CAD keep-out is currently 35 × 30 × 5.4 mm, so the exact pack drawing does not fit the nominal X dimension. Increase the volume or qualify a different protected pack before ordering either the cell or a complete shell.
 
 KSC321G LFS is specified at 2 ±0.4 N, at least 15% tactile ratio, and electrical travel of 0.2 mm with +0.3/−0 mm tolerance. Cap geometry must accommodate that range. A fixed 0.25 mm travel or a 50% snap ratio is not a design input.
 
@@ -123,7 +131,7 @@ Run `just hw-check` for file-level checks. Before ordering a PCB or complete she
 6. Measure whole-device sleep current at the cell, e-paper refresh brownout margin, radio performance, charging temperature and LED leakage.
 7. Run drop, cap-overload, button-life, lint and small-spill tests. Keep ingress claims out of product material until a complete assembly passes a defined test method.
 
-The current ERC, PCB DRC, schematic parity and STEP export pass in KiCad 10.0.5. These checks validate the skeleton file structure and mechanical outline; they do not validate a circuit that has not been captured.
+The current hierarchical schematic passes ERC with zero errors and zero warnings in KiCad 10.0.5. Constraint-board DRC and STEP export also pass. Schematic-to-PCB parity is deferred until U3, L1, L2, SW1/SW2 and D4 have reviewed footprints and the components are placed. These automated checks do not replace electrical, layout or physical review.
 
 ## Primary references
 
@@ -131,3 +139,8 @@ The current ERC, PCB DRC, schematic parity and STEP export pass in KiCad 10.0.5.
 - [C&K KSC3 series data sheet](https://www.ckswitches.com/media/1969/ksc3.pdf)
 - [Espressif PCB layout guidance](https://docs.espressif.com/projects/esp-hardware-design-guidelines/en/latest/esp32s3/pcb-layout-design.html)
 - [TI BQ25185 data sheet](https://www.ti.com/document-viewer/BQ25185/datasheet/GUID-038472CB-EA03-4FB2-B894-ED0D9E1E6481)
+- [TI TPS63802 data sheet](https://www.ti.com/lit/ds/symlink/tps63802.pdf)
+- [TI TPS22917 product page](https://www.ti.com/product/TPS22917)
+- [ST USBLC6-2SC6 data sheet](https://www.st.com/resource/en/datasheet/usblc6-2.pdf)
+- [Hirose FH12-24S-0.5SH](https://www.hirose.com/product/p/CL0528-0015-4-98)
+- [Lipo Battery LP503035 protected-pack drawing](https://www.lipolbattery.com/LiPo-Battery-Datahseet/LiPo_Battery_LP503035_3.7V_500mAh.pdf)

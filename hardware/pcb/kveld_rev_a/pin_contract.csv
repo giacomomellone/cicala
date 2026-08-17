@@ -4,14 +4,14 @@ VBAT_SENSE_EN,2,output,high,battery_charger,low,Switch the complete divider
 BOOT_IO0,0,input,low,programming_test,pulled_high,Concealed recovery pad
 BTN_CATEGORY,4,input,low,controls_status,RTC wake,Preserve firmware mapping
 EPD_PWR_EN,5,output,high,epaper,low,Panel and boost off between refreshes
-CHG_STAT1,6,input,charger-defined,battery_charger,input,Truth table from BQ25185 sheet
-CHG_STAT2,7,input,charger-defined,battery_charger,input,Truth table from BQ25185 sheet
+CHG_STAT1,6,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT2
+CHG_STAT2,7,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT1
 EPD_RESET,8,output,low,epaper,inactive,Preserve firmware mapping
 EPD_BUSY,9,input,panel-defined,epaper,input,Preserve firmware mapping
 EPD_CS,10,output,low,epaper,high,Preserve firmware mapping
 EPD_MOSI,11,output,high,epaper,inactive,Preserve firmware mapping
 EPD_CLK,12,output,high,epaper,inactive,Preserve firmware mapping
-CHG_ENABLE,14,output,charger-defined,battery_charger,defined,Polarity fixed during capture
+CHG_ENABLE,14,output,low,battery_charger,low,Low enables BQ25185 charging; 100 kΩ pull-down enables by default
 STATUS_RED,15,output,high,controls_status,low,Both status outputs low means off
 STATUS_GREEN,16,output,high,controls_status,low,Both status outputs low means off
 BTN_NEXT,17,input,low,controls_status,RTC wake,Preserve firmware mapping
