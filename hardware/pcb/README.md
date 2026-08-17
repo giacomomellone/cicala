@@ -1,35 +1,56 @@
-# PCB — rev A plan
+# PCB — Rev A foundation
 
-Schematic capture has not started. The electrical contract is in the
-[device prototype review](../../docs/device_prototype.md#electrical-contract).
-Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+The KiCad 10 project is under `kveld_rev_a/`. It contains a validated mechanical board and empty hierarchical schematic sheets. It is a capture starting point, not a circuit or fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-Rev A must measure whole-device sleep current. The DevKitC's power LED and
-WS2812 exceed the 30 µA target, so breadboard measurements cannot bound it.
+The shared coordinate, stack-up, pin and validation contracts are in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` is the planning list for parts that will populate the hierarchy.
 
-## Blocks
+## What exists
 
-| Block | Part | Notes |
-|---|---|---|
-| MCU / radio | **ESP32-S3-WROOM-1-N16** | 16 MB flash; USB-JTAG for programming; Wi-Fi only, no Bluetooth by policy |
-| E-paper | **GDEY0213B74** 2.13″, 24-pin FPC | SSD1680 controller; boost circuit per the Good Display reference design (MOSFET + inductor + diodes) |
-| Category | **KSC321GLFS** sealed tactile switch | wake GPIO; advances one retained category and updates the e-paper label |
-| Next | **KSC321GLFS** sealed tactile switch | independent wake GPIO; every press duration means Next |
-| Charger / power path | **open** | rev A needs an integrated power path or validated load sharing because sync runs while charging. Prefer a part that reports charge termination: the bench's bq25185 has no such pin, so "charged" is inferred from voltage and only the LED is allowed to believe it |
-| Regulator | **XC6220** 3.3 V LDO | low-IQ for deep-sleep budget (< 30 µA target) |
-| USB | USB-C 16-pin receptacle | 5.1 kΩ pulldowns on both CC lines (device role). One connector does charge, flashing, console and JTAG — D+/D− to GPIO19/20, no bridge chip |
-| Battery | **503035 LiPo, 500 mAh** | JST-PH; fits the case envelope with the e-paper module. The 1500 mAh cell on the bench is a bench part and does not fit |
-| Status LED | bi-colour red/green, two GPIOs | Both lit is amber. Use no addressable controller; a WS2812 idles at about 0.6 mA with its emitters dark |
-| Boot strap | test point or internal button on **IO0** | The only way back from an image that reconfigures GPIO19/20 or crashes before USB enumerates. The two product buttons are on other pins |
+- `kveld_rev_a.kicad_pro`: KiCad project metadata;
+- `kveld_rev_a.kicad_sch`: root hierarchy with seven subsystem sheets;
+- `kveld_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
+- `pin_contract.csv`: firmware-to-schematic signal allocation;
+- `renders/constraint_map.svg`: vector plot of mechanical datums and keep-outs;
+- `renders/board_top.png`: empty-board 3D check;
+- `exports/kveld_rev_a_board.step`: board outline for enclosure fit checks.
 
-## Schematic requirements
+The PCB skeleton carries four Ø2.7 mm mechanical holes, a 2 mm corner radius, and user-layer envelopes for the panel, FPC, USB-C, switches, cap bores, status light, cell, gasket, ESP32-S3 module and service holes. Keep-out zones prohibit all copper and metal below the module antenna and prohibit bottom-side components in the 503035 cell volume.
 
-- Parts active during sleep must stay within the power budget. Category and Next are wake inputs.
-- The e-paper stays powered off between refreshes; the SSD1680 boost is enabled only during a refresh window.
-- USB-C needs ESD/input protection and a VBUS-sense path in addition to the two 5.1 kΩ CC pull-downs.
-- Switch the battery divider off during sleep. A permanent 1M/1M divider draws about 2.1 µA. A 1M/470k divider adds about 25 mV of ADC-leakage error at the tap; policy thresholds are 200 mV apart.
-- The status LED must be genuinely off when off. Two GPIOs held low are; anything with a controller in the package is not.
-- Keep the module antenna at a board edge with the manufacturer keep-out clear of the display, cell, button hardware, and copper.
-- Test pads for UART0/JTAG, display buses, VBUS, 3V3, and battery rail on the back side; include current-measurement links.
+All component outlines are mechanical datums. They are deliberately not electrical footprints. Replace each with a footprint reviewed against the current manufacturer drawing before placing copper.
 
-See [`BOM.md`](BOM.md) for the placeholder part list.
+## Hierarchy
+
+| Sheet                | First capture pass                                                           |
+| -------------------- | ---------------------------------------------------------------------------- |
+| USB and protection   | receptacle, CC pull-downs, ESD, VBUS input and sense                         |
+| Battery charger      | BQ25185 candidate, cell connector, NTC, limits, STAT1/2                      |
+| 3V3 regulation       | XC6220, rail measurement link and decoupling                                 |
+| ESP32-S3 core        | WROOM-1U baseline or gated WROOM-1 option, EN, IO0, native USB and strapping |
+| E-paper interface    | FPC, SSD1680 boost network, power gate and discharge state                   |
+| Controls and status  | KSC321G switches, side-fire bi-colour LED and leakage rules                  |
+| Programming and test | IO0/EN, UART0, rails, display bus and current links                          |
+
+Start capture from the power tree and recovery path. A battery-powered USB device needs both IO0 and EN access: plugging USB into a running unit is not a reliable reset action. Keep these pads concealed from normal use and reachable with the enclosure open.
+
+## Layout constraints
+
+- Retain the current firmware pins recorded in `docs/hardware_rev_a.md`.
+- Treat the full WROOM-1 rectangle as a conflict study, not an accepted placement. Its PCB-antenna clearance overlaps the current display envelope. WROOM-1U is the baseline after its external antenna, connector and cable route are qualified. WROOM-1 stays open only for a placement that clears copper, display, cell, button hardware and enclosure metal by the module guidance.
+- Keep the steel ballast, cell, display and button hardware out of the antenna volume. Test the final assembled radio; a drawing cannot qualify it.
+- Route GPIO19/20 as native USB over continuous ground. Set impedance from the selected four-layer fabricator stack before routing.
+- Keep charger, cell and e-paper boost current loops short. Do not route their switching returns through the USB or antenna reference path.
+- Put all development pads and current links on the underside. Maintain tool access with the base removed and prevent contact with the cell pouch.
+- Keep the preliminary FPC connector centred at (42, 40) and USB-C at the front datum only until reviewed footprints replace the envelopes. Their current drawings have 0.5 mm between them, which is not a manufacturing clearance.
+- Use a side-fire or light-guide-coupled bi-colour LED at the X=52 front-edge datum. Both firmware outputs low must leave no standing LED load.
+
+## Validation
+
+KiCad 10.0.5 currently reports zero ERC violations, zero PCB DRC violations, zero unconnected items, and zero schematic-parity issues. Those results mean the hierarchy and constraint board are structurally valid. The empty sheets do not prove an electrical design.
+
+Run the same checks with:
+
+```sh
+just hw-pcb-check
+```
+
+Do not produce Gerbers until the schematic, reviewed footprints, routed board, manufacturer stack, BOM, assembly drawing and enclosure interference check all pass their gates.

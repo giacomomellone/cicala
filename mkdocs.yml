@@ -15,6 +15,7 @@ nav:
   - brand: brand.md
   - theory: theory.md
   - device prototype: device_prototype.md
+  - rev A hardware: hardware_rev_a.md
   - prototype bom: prototype_bom.md
   - hardware wiring: hardware_wiring.md
   - firmware primer: firmware_primer.md

@@ -358,6 +358,22 @@ fw-sim-debug: _fw-fixtures
 fw-clean:
     rm -rf build/
 
+# --------------------------------------------------------------- hardware
+
+# validate every printable enclosure selector
+[group('hardware')]
+hw-case-check:
+    hardware/case/check_enclosure.sh
+
+# validate the KiCad hierarchy, board skeleton and STEP export
+[group('hardware')]
+hw-pcb-check:
+    hardware/pcb/check_rev_a.sh
+
+# validate both Rev A hardware sources
+[group('hardware')]
+hw-check: hw-case-check hw-pcb-check
+
 # ------------------------------------------------------------------- tests
 
 # everything that runs without hardware
