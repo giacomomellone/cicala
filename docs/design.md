@@ -32,13 +32,13 @@ notifications, or reason to be checked between questions.
 The top face has a small Category button, a larger primary Next button, and one
 e-paper display. The e-paper shows the active category.
 
-| Input                               | Action                                                                      | Feedback                                                                             |
-| ----------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Press Category                      | Advance through `new people`, `close`, `family`, `work`, `here`, and `wild` | Replace the old question with the selected category name; Wild wraps to New People   |
-| Press Next                          | Draw another eligible question                                              | One e-paper refresh                                                                  |
-| Hold Next                           | Same as a short press                                                       | One e-paper refresh; press duration has no second meaning                            |
-| Leave it alone                      | Sleep                                                                       | The question and active category remain readable on e-paper                          |
-| Hold Category and Next through boot | Enter service setup                                                         | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
+| Input                               | Action                                                              | Feedback                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Press Category                      | Advance through `new people`, `close`, `family`, `here`, and `wild` | Replace the old question with the selected category name; Wild wraps to New People   |
+| Press Next                          | Draw another eligible question                                      | One e-paper refresh                                                                  |
+| Hold Next                           | Same as a short press                                               | One e-paper refresh; press duration has no second meaning                            |
+| Leave it alone                      | Sleep                                                               | The question and active category remain readable on e-paper                          |
+| Hold Category and Next through boot | Enter service setup                                                 | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
 
 Hard rules:
 
@@ -78,6 +78,12 @@ algorithm and gives no warning about tone. Dark and spicy questions are
 exclusive to Wild so they cannot leak into Work or Family through overlapping
 membership.
 
+The device offers five of the six decks. `work` stays in the corpus and on the
+website but leaves the object's Category cycle: the object belongs on
+household tables, and Work's constraint — nothing that can change someone's
+standing — serves a context it is not in. The bundle format keeps the `work`
+mask bit; only the offered cycle shrinks.
+
 ## Depth without a control
 
 Depth remains editorial metadata:
@@ -93,6 +99,12 @@ The first player and physical prototype draw only depths 1 and 2. Depth 3 stays
 in the corpus and browse view while consent is unresolved. There is no ramp,
 session counter, idle heuristic, or inferred readiness. The product cannot
 observe a conversation well enough to know when to escalate.
+
+Texture is not a ramp. Within a deck, the bag prefers a question whose depth
+band and form differ from the one just shown, and relaxes to a uniform draw
+when the pool cannot offer one. This decorrelates consecutive draws — no run
+of three reflective questions — without modeling the table: the only state is
+the last-served band and form mask, which describes the panel, not a session.
 
 A physical depth slider remains a testable hypothesis, not part of this
 prototype. Its proposed benefit is public, low-cost boundary setting. Its

@@ -269,7 +269,7 @@ just fw-monitor
 ```
 
 - Boot selects New People and shows its category name.
-- Category advances through all six categories and wraps.
+- Category advances through all five categories and wraps.
 - Next shows one question per accepted press.
 - Holding and releasing a button produces one event.
 

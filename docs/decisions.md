@@ -774,3 +774,15 @@ Category starts 0.2 mm sub-flush and Next flush. Both values remain coupon input
 The first overlay also rejects WROOM-1 as the default. Its required PCB-antenna clearance overlaps the display envelope in the current case. WROOM-1U becomes the Rev A baseline candidate, subject to an internal external-antenna and cable route plus assembled radio testing. WROOM-1 remains a gated alternative if a later placement closes the display, cell, button, copper and enclosure-metal conflicts. The preliminary display FPC datum moves rearward to separate its drawn envelope from USB-C; reviewed footprints still have to prove the final insertion and courtyard clearance.
 
 Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for hand-shaped surfaces. Rev A keeps simple drafted solids and explicit parameters until fit, ingress and interaction tests justify a more complex surface model.
+
+## 2026-08-18: Texture without session state, and Work leaves the device cycle
+
+The bag now prefers a question whose depth band and form differ from the one just shown, on the device and the web player. A candidate scores one point for repeating the last depth band and one for sharing a form tag; the draw is uniform within the cheapest class and relaxes toward uniform when the pool offers nothing cheaper, mirroring how the recent ring already relaxes. The intent is decorrelation — uniform randomness can serve three reflective questions in a row — not progression.
+
+This extends the 2026-07-26 rejection of ramping and hidden session state rather than reversing it. The only new state is the last-served band and form mask, two bytes in the retained block (retained version 2). It describes the panel, not the table; it claims nothing about readiness; it never raises depth over time. A designed arc would need a session boundary the device does not have, and would guess wrong whenever a sitting does not match it.
+
+QDB2 gains the five form-tag bits as a third per-question byte and becomes QDB3. Writer (`tools/build_bundle.py`), reader (`firmware/lib/qdb/`), the worked example in [sync_protocol.md](sync_protocol.md) and the suites move in one commit, per the 2026-08-04 rule that the two decoders change together. No device or published bundle exists yet, so there is no migration.
+
+The device Category cycle drops Work: five decks on the object, six on the website and in the corpus. The object is built for tables at home; Work's constraint — nothing that can change someone's standing — belongs to a context the object is not in. The bundle mask keeps the `work` bit and the website player keeps the deck; only the offered cycle shrinks.
+
+Accepted cost: the two platforms implement the same rule differently at the margin (refill-time arrangement on the web, draw-time preference in firmware), and the fixture recipe had to stop trusting glob order — `dist/bundles/` accumulates every past build and an older bundle sorted last, so `just fw-test` could silently test a stale corpus.
