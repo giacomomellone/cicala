@@ -56,7 +56,7 @@ channels, and storage adapters live in `firmware/app/src/`.
 | -------------------------------------------- | ------------------------------------------------------------------- |
 | `lib/fsm`                                    | table-driven state machine engine with an injectable clock          |
 | `lib/app_fsm`                                | Category, Next, render, and service-card policy                     |
-| `lib/qdb`                                    | QDB2 validation and draw-without-repeats state                      |
+| `lib/qdb`                                    | QDB3 validation and draw-without-repeats state                      |
 | `lib/layout`                                 | UTF-8 decoding, accent composition, and line wrapping               |
 | `lib/portal`                                 | portal state machine, form parsing, DNS replies, and HTML rendering |
 | `lib/power`                                  | battery and external-power states                                   |
@@ -109,7 +109,7 @@ LittleFS takes precedence; the compiled copy remains the fallback.
 flowchart LR
     YAML[questions/*.yaml] --> BUILD[tools/build_bundle.py]
     BUILD --> GZIP[dist/bundles/*.qdb.gz]
-    GZIP --> RAW[firmware test fixtures<br/>raw QDB2]
+    GZIP --> RAW[firmware test fixtures<br/>raw QDB3]
     RAW --> EMBED[compiled corpora]
     HTTP[verified sync download] --> LFS[(LittleFS /corpus)]
     EMBED --> OPEN[qdb::open]
@@ -122,7 +122,7 @@ fingerprint clears indices that belong to the previous corpus.
 
 ### QDB reader
 
-`Qdb::open()` validates the whole QDB2 buffer: magic, record lengths, question
+`Qdb::open()` validates the whole QDB3 buffer: magic, record lengths, question
 count, and trailing bytes. Questions point into that buffer, so the buffer must
 outlive every returned view.
 
@@ -156,6 +156,14 @@ flowchart TB
 Every eligible question in a category is shown once before that category's
 bitmap resets. The recent ring is relaxed when it would prevent a draw. The bag
 state lives in RTC slow memory, so ordinary Next presses do not write flash.
+
+With `CONFIG_KVELD_TEXTURE` on, each uniform pick above becomes a preference.
+A candidate scores one point for repeating the depth band of the question just
+served and one for sharing a form tag with it, and the draw is uniform within
+the cheapest class, relaxing toward uniform when the pool offers nothing
+cheaper. The state this needs — last band and last form mask, two bytes,
+shared across categories like the ring — describes the panel rather than the
+table: texture decorrelates consecutive draws and never escalates.
 
 ## Tabletop state machine
 
@@ -355,7 +363,7 @@ the installed version after a successful update. See
 flowchart LR
     RTC[RTC slow memory<br/>bag · display · active category] -->|lost on total power loss| COLD[cold defaults]
     NVS[NVS<br/>Wi-Fi credentials · language · versions] -->|cleared by factory reset| EMPTY[unset]
-    LFS[LittleFS<br/>synced QDB2 files] -->|atomic rename| NEW[new corpus]
+    LFS[LittleFS<br/>synced QDB3 files] -->|atomic rename| NEW[new corpus]
     SLOT[MCUboot secondary slot<br/>candidate firmware] -->|verified boot| APP[running image]
 ```
 

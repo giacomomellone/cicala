@@ -11,8 +11,11 @@
 extern "C" {
 #endif
 
-/** Decks, in the order Category advances through them. */
+/** Decks in the bundle mask, in schema order. */
 #define KVELD_DECK_COUNT 6
+
+/** The device cycles five of the six decks; Work stays on the website. */
+#define KVELD_DECK_CYCLE_COUNT 5
 
 /** Event channel: one Category press happened. */
 struct kveld_category_msg {
@@ -118,6 +121,12 @@ const char *kveld_power_name(uint8_t state);
 
 /** English deck label shown on the panel for every corpus language. */
 const char *kveld_deck_label(uint8_t deck);
+
+/** True when the device offers this deck in the Category cycle. */
+bool kveld_deck_on_device(uint8_t deck);
+
+/** The deck one Category press after `deck`; a deck outside the cycle restarts it. */
+uint8_t kveld_deck_cycle_next(uint8_t deck);
 
 #ifdef __cplusplus
 }

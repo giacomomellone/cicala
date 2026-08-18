@@ -1,6 +1,6 @@
 # qdb
 
-`firmware/lib/qdb/` validates QDB2 bundles and draws eligible questions without
+`firmware/lib/qdb/` validates QDB3 bundles and draws eligible questions without
 repeats until a deck cycle is exhausted. Normal playback accepts depths 1 and
 2. Dark and spicy questions remain exclusive to Wild.
 

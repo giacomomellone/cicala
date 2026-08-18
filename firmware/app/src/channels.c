@@ -52,6 +52,32 @@ const char *kveld_deck_label(uint8_t deck)
     return deck_labels[deck];
 }
 
+/* Category order on the device: schema order minus work. The mask bits keep
+   their schema positions; only the offered cycle shrinks. */
+static const uint8_t deck_cycle[KVELD_DECK_CYCLE_COUNT] = {0, 1, 2, 4, 5};
+
+bool kveld_deck_on_device(uint8_t deck)
+{
+    for (uint8_t i = 0; i < KVELD_DECK_CYCLE_COUNT; i++) {
+        if (deck_cycle[i] == deck) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+uint8_t kveld_deck_cycle_next(uint8_t deck)
+{
+    for (uint8_t i = 0; i < KVELD_DECK_CYCLE_COUNT; i++) {
+        if (deck_cycle[i] == deck) {
+            return deck_cycle[(i + 1) % KVELD_DECK_CYCLE_COUNT];
+        }
+    }
+
+    return deck_cycle[0];
+}
+
 /* Labels used in display refresh logs. */
 static const char *const card_names[] = {
     "question",
