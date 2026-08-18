@@ -69,6 +69,14 @@ export function toggleFav(id: string): boolean {
   return false;
 }
 
+export function getLastShown(lang: string): string {
+  return read(`kveld.last.${lang}`) ?? "";
+}
+
+export function setLastShown(lang: string, id: string): void {
+  write(`kveld.last.${lang}`, id);
+}
+
 export interface Bag {
   b: string[]; // remaining ids, popped from the end
   r: string[]; // last 5 shown, excluded from the next reshuffle

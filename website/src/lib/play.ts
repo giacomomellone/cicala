@@ -1,10 +1,19 @@
 // Play controller: no-repeat draws, session history, favorites, and sharing.
 
-import { DECKS, PLAYBACK_DEPTH_MAX } from "../config";
+import { BAG_TEXTURE, DECKS, PLAYBACK_DEPTH_MAX } from "../config";
 import { tr } from "./apply-i18n";
 import { drawFromBag } from "./bag";
 import { detectLang, loadPayload, type Payload, type Question } from "./data";
-import { getBag, getDeck, isFav, setBag, setDeck, toggleFav } from "./store";
+import {
+  getBag,
+  getDeck,
+  getLastShown,
+  isFav,
+  setBag,
+  setDeck,
+  setLastShown,
+  toggleFav,
+} from "./store";
 
 interface Shown {
   q: Question;
@@ -50,9 +59,13 @@ export async function initPlay(): Promise<void> {
 
   function drawNext(selectedDeck: string): Shown | null {
     const bag = getBag(lang, selectedDeck);
-    const id = drawFromBag(bag, idsFor(selectedDeck));
+    const texture = BAG_TEXTURE
+      ? { seed: byId.get(getLastShown(lang)), meta: (id: string) => byId.get(id) }
+      : undefined;
+    const id = drawFromBag(bag, idsFor(selectedDeck), Math.random, texture);
     if (id === null) return null;
     setBag(lang, selectedDeck, bag);
+    setLastShown(lang, id);
     const q = byId.get(id);
     return q ? { q, deck: selectedDeck } : null;
   }
@@ -147,6 +160,7 @@ export async function initPlay(): Promise<void> {
     record(seed);
     renderMeta(seed);
     setActiveDeck(deck);
+    setLastShown(lang, seed.q.id); // the permalink is what is on screen
   } else {
     setActiveDeck(deck);
     const entry = drawNext(deck);
