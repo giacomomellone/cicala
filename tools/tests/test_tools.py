@@ -296,7 +296,7 @@ class TestBundle(unittest.TestCase):
                 self.assertEqual(entry["sha256"], hashlib.sha256(raw).hexdigest())
 
                 # The raw bundle is the format itself, magic and all.
-                self.assertEqual(raw[:4], b"QDB2")
+                self.assertEqual(raw[:4], b"QDB3")
 
                 # Both artifacts are published and carry the same questions.
                 self.assertEqual(gzip.decompress(gz), raw)
@@ -312,6 +312,36 @@ class TestBundle(unittest.TestCase):
             gz = (Path(tmp) / "bundle-en-test.1.qdb.gz").read_bytes()
 
             self.assertEqual(build_bundle.parse_bundle(raw), build_bundle.parse_bundle(gz))
+
+    def test_forms_round_trip_from_the_corpus(self):
+        # Every form tag in the YAML must survive the bundle byte-for-byte;
+        # the bag's texture preference reads only these bits on device.
+        rep = validate.Reporter()
+        _, cfg = validate.load_config(REPO, rep)
+        forms = build_bundle.form_tags(cfg)
+        self.assertEqual(
+            forms, ["icebreaker", "reflective", "hypothetical", "memory", "wouldyourather"]
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, _ = run_quiet(
+                build_bundle.main, ["--root", str(REPO), "--out", tmp, "--version", "test.1"]
+            )
+            self.assertEqual(code, 0)
+            for lang in ("en", "de"):
+                entries = validate.parse_file(REPO / "questions" / lang / "questions.yaml", rep)
+                expected = {
+                    entry["text"]: sorted(tag for tag in entry.get("tags", []) if tag in forms)
+                    for entry in entries
+                }
+                blob = (Path(tmp) / f"bundle-{lang}-test.1.qdb").read_bytes()
+                parsed = build_bundle.parse_bundle(blob)
+                self.assertEqual(len(parsed["questions"]), len(expected))
+                for question in parsed["questions"]:
+                    self.assertEqual(
+                        sorted(question["forms"]),
+                        expected[question["text"]],
+                        f"forms mismatch for {question['text']!r}",
+                    )
 
 
 if __name__ == "__main__":

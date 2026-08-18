@@ -38,9 +38,9 @@ public key compiled into the firmware. The device rejects manifests whose
 version is not newer than the installed version, which limits replay of an old
 signed release.
 
-## QDB2 bundle
+## QDB3 bundle
 
-**QDB2** is the flat binary form of the question database used by the device.
+**QDB3** is the flat binary form of the question database used by the device.
 The format version is part of the magic bytes.
 
 Two file extensions contain the same data:
@@ -55,13 +55,14 @@ binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
 | Field              |  Size | Meaning                                                                                 |
 | ------------------ | ----: | --------------------------------------------------------------------------------------- |
-| magic              |     4 | ASCII `QDB2`                                                                            |
+| magic              |     4 | ASCII `QDB3`                                                                            |
 | version            | 1 + n | u8 length, then release version                                                         |
 | language           | 1 + n | u8 length, then language code                                                           |
 | count              |     2 | u16 number of unique questions                                                          |
 | then, per question |       |                                                                                         |
 | deck mask          |     1 | bits 0–5 are `new_people`, `close`, `family`, `work`, `here`, `wild`; bits 6–7 are zero |
 | metadata           |     1 | bits 0–1 are `depth - 1`; bit 2 is `spicy`; bit 3 is `dark`; bits 4–7 are zero          |
+| forms              |     1 | form-tag bits in schema tag order minus the tone flags; bits 5–7 are zero               |
 | text               | 2 + n | u16 byte length, then question text                                                     |
 
 The bundle omits IDs because the physical device has no favorites, permalinks,
@@ -70,7 +71,9 @@ A question with several eligible decks is stored once with several mask bits,
 which avoids duplicated text.
 
 Dark and spicy flags are tone metadata. Corpus validation requires either flag
-to be exclusive to the Wild deck. Normal playback filters out depth 3.
+to be exclusive to the Wild deck. Normal playback filters out depth 3. The
+forms byte carries the remaining tags — icebreaker, reflective, hypothetical,
+memory, wouldyourather — which the bag's texture preference reads.
 
 ### Worked example
 
@@ -79,15 +82,16 @@ People and Close:
 
 `When did you last sing out loud?`
 
-Its deck mask is `00000011` and metadata is `00000001`.
+Its deck mask is `00000011`, metadata is `00000001`, and forms is `00000000`.
 
 ```text
-51 44 42 32                                      "QDB2"
+51 44 42 33                                      "QDB3"
 09 32 30 32 36 2E 30 37 2E 32                    len=9, "2026.07.2"
 02 65 6E                                         len=2, "en"
 01 00                                            count = 1
 03                                               new_people + close
 01                                               depth 2, no tone flags
+00                                               no form tags
 20 00                                            text length = 32
 57 68 65 6E 20 64 69 64 20 79 6F 75 20 6C 61 73
 74 20 73 69 6E 67 20 6F 75 74 20 6C 6F 75 64 3F
