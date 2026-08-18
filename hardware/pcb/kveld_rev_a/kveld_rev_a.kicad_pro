@@ -670,32 +670,16 @@
       "kveld_rev_a"
     ],
     [
-      "ec6a4142-4d1a-4dc3-bf4d-d872aa16ed11",
-      "USB and protection"
-    ],
-    [
       "5c37343c-ce2e-4af1-8c0e-7996e7e59814",
-      "ESP32-S3 core"
+      "Controller and user I/O"
     ],
     [
       "76abdd1f-1863-43cb-987e-b8bd556e1e12",
-      "Battery charger"
+      "Power and USB"
     ],
     [
       "9467d62a-f8ed-46c9-a7cb-f7af887ddb15",
-      "E-paper interface"
-    ],
-    [
-      "3c899076-a33a-4891-b58a-11f087d05b17",
-      "Programming and test"
-    ],
-    [
-      "08e619ba-3dc7-4ba0-9c64-2f6de41f5813",
-      "3V3 regulation"
-    ],
-    [
-      "596d9c0b-1cc4-4d7c-b49f-c8e1385b3816",
-      "Controls and status"
+      "E-paper display"
     ]
   ],
   "text_variables": {},

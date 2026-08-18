@@ -777,7 +777,7 @@ Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for hand-
 
 ## 2026-08-18: Rev A captures the power tree and keeps both antenna variants open
 
-The seven KiCad sheets now contain the first complete circuit baseline. One USB-C port supplies 5 V and uses the ESP32-S3 native USB Serial/JTAG block for flashing, console and debugging; there is no USB-PD controller or USB-to-UART bridge. USBLC6-2SC6 protects the data pair, and IO0 plus EN remain reachable on concealed recovery pads.
+The three functional KiCad sheets now contain the first complete circuit baseline. One USB-C port supplies 5 V and uses the ESP32-S3 native USB Serial/JTAG block for flashing, console and debugging; there is no USB-PD controller or USB-to-UART bridge. USBLC6-2SC6 protects the data pair, and IO0 plus EN remain reachable on concealed recovery pads.
 
 BQ25185 is no longer an open charger candidate. Rev A sets it for a 4.2 V cell, 500 mA input limit and 250 mA charge, with STAT1/STAT2 connected to firmware. The product-cell specification is a protected 500 mAh 503035-class pack with a 10 kΩ, B=3435 K NTC. The supplier remains open because the current 35 × 30 mm CAD keep-out is narrower than at least one published protected LP503035 drawing; the exact pack and enclosure must close together.
 

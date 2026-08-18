@@ -76,7 +76,7 @@ The KiCad project starts with a four-layer 1.2 mm FR-4 stack:
 
 Four layers are the Rev A default for the ESP32-S3 RF return path, native USB, and the dense display/power layout. The final stack and controlled-impedance geometry must come from the selected PCB fabricator before routing USB.
 
-The root schematic contains seven captured hierarchy sheets: USB and protection, battery charger, 3V3 buck-boost regulation, ESP32-S3 core, e-paper interface, controls and status, and programming and test. The first pass uses named global nets at subsystem boundaries so the power and firmware contracts remain visible during review.
+The root schematic contains three captured hierarchy sheets: Power and USB, Controller and user I/O, and E-paper display. Short local connections are drawn directly; named global nets remain at functional boundaries, dense controller and connector fan-out, shared rails and production test access so the power and firmware contracts remain visible during review.
 
 ### Firmware pin contract
 

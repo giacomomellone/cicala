@@ -7,7 +7,7 @@ The shared coordinate, stack-up, pin and validation contracts are in [docs/hardw
 ## What exists
 
 - `kveld_rev_a.kicad_pro`: KiCad project metadata;
-- `kveld_rev_a.kicad_sch`: root hierarchy with seven subsystem sheets;
+- `kveld_rev_a.kicad_sch`: root hierarchy with three functional sheets;
 - `kveld_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
 - `kveld_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library;
 - `pin_contract.csv`: firmware-to-schematic signal allocation;
@@ -21,15 +21,13 @@ All component outlines are mechanical datums. They are deliberately not electric
 
 ## Hierarchy
 
-| Sheet                     | Captured circuit                                                               |
-| ------------------------- | ------------------------------------------------------------------------------ |
-| USB and protection        | USB-C USB 2.0 receptacle, CC pull-downs, USBLC6 ESD and VBUS sensing           |
-| Battery charger           | BQ25185 at 250 mA, protected cell/NTC connector, status and switched ADC path  |
-| 3V3 buck-boost regulation | TPS63802, 0.47 µH inductor, feedback, power-good and output decoupling         |
-| ESP32-S3 core             | WROOM-1 preferred/WROOM-1U alternate, EN, IO0, native USB and pin contract     |
-| E-paper interface         | GDEY0213B74 FPC, SSD1680 boost network and switched panel power                |
-| Controls and status       | KSC321G switches, hardware debounce and side-fire red/green LED                |
-| Programming and test      | Tag-Connect recovery and underside test access for rails and critical signals |
+| Sheet                   | Captured circuit                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Power and USB           | USB-C protection and sensing, BQ25185 charger, protected cell path and TPS63802 |
+| Controller and user I/O | ESP32-S3, EN/IO0, buttons, status LED, recovery header and production test pads |
+| E-paper display         | GDEY0213B74 FPC, SSD1680 boost network and switched panel power                  |
+
+Short local connections are drawn directly. Named global labels are reserved for sheet boundaries, controller or connector fan-out, shared rails and production test access.
 
 Start capture from the power tree and recovery path. A battery-powered USB device needs both IO0 and EN access: plugging USB into a running unit is not a reliable reset action. Keep these pads concealed from normal use and reachable with the enclosure open.
 

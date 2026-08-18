@@ -1,6 +1,6 @@
 # BOM — Rev A schematic baseline
 
-The seven KiCad subsystem sheets are captured and pass ERC. This list records the selected electrical parts and off-board assemblies. It is suitable for component sourcing and footprint review, but it is not yet an orderable PCBA BOM: six physical footprints, board placement, routing, alternates and live assembler stock still need review. For the development rig and physical-model purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
+The three functional KiCad sheets are captured and pass ERC. This list records the selected electrical parts and off-board assemblies. It is suitable for component sourcing and footprint review, but it is not yet an orderable PCBA BOM: six physical footprints, board placement, routing, alternates and live assembler stock still need review. For the development rig and physical-model purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
 
 ## Selected parts
 
