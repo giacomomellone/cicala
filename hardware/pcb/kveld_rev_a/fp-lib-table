@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "kveld") (type "KiCad") (uri "${KIPRJMOD}/kveld.pretty") (options "") (descr "Kveld Rev A custom footprints (parts absent from the KiCad library)"))
+)

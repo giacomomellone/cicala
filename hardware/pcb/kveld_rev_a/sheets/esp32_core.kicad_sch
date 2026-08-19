@@ -2186,7 +2186,7 @@
 	)
 	(text "Production test points"
 		(exclude_from_sim no)
-		(at 30.48 144.78 0)
+		(at 30.48 142.24 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2274,7 +2274,7 @@
 	)
 	(wire
 		(pts
-			(xy 198.12 157.48) (xy 198.12 160.02)
+			(xy 76.2 182.88) (xy 76.2 185.42)
 		)
 		(stroke
 			(width 0)
@@ -2384,7 +2384,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 157.48) (xy 76.2 160.02)
+			(xy 116.84 182.88) (xy 116.84 185.42)
 		)
 		(stroke
 			(width 0)
@@ -2474,7 +2474,7 @@
 	)
 	(wire
 		(pts
-			(xy 157.48 157.48) (xy 157.48 160.02)
+			(xy 35.56 182.88) (xy 35.56 185.42)
 		)
 		(stroke
 			(width 0)
@@ -2484,7 +2484,7 @@
 	)
 	(wire
 		(pts
-			(xy 238.76 157.48) (xy 238.76 160.02)
+			(xy 137.16 152.4) (xy 137.16 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2514,7 +2514,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 157.48) (xy 55.88 160.02)
+			(xy 55.88 152.4) (xy 55.88 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2724,7 +2724,7 @@
 	)
 	(wire
 		(pts
-			(xy 116.84 157.48) (xy 116.84 160.02)
+			(xy 96.52 152.4) (xy 96.52 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2734,7 +2734,7 @@
 	)
 	(wire
 		(pts
-			(xy 218.44 157.48) (xy 218.44 160.02)
+			(xy 96.52 182.88) (xy 96.52 185.42)
 		)
 		(stroke
 			(width 0)
@@ -2754,7 +2754,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 157.48) (xy 137.16 160.02)
+			(xy 116.84 152.4) (xy 116.84 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2854,7 +2854,7 @@
 	)
 	(wire
 		(pts
-			(xy 96.52 157.48) (xy 96.52 160.02)
+			(xy 76.2 152.4) (xy 76.2 154.94)
 		)
 		(stroke
 			(width 0)
@@ -2914,7 +2914,7 @@
 	)
 	(wire
 		(pts
-			(xy 35.56 157.48) (xy 35.56 160.02)
+			(xy 35.56 152.4) (xy 35.56 154.94)
 		)
 		(stroke
 			(width 0)
@@ -3034,7 +3034,7 @@
 	)
 	(wire
 		(pts
-			(xy 177.8 157.48) (xy 177.8 160.02)
+			(xy 55.88 182.88) (xy 55.88 185.42)
 		)
 		(stroke
 			(width 0)
@@ -3189,7 +3189,7 @@
 	)
 	(global_label "FACTORY_RESET_OD"
 		(shape passive)
-		(at 137.16 160.02 270)
+		(at 116.84 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3199,7 +3199,7 @@
 		)
 		(uuid "1702b765-3b94-4956-8f5f-f489739dfc3b")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 137.16 160.02 0)
+			(at 116.84 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3212,7 +3212,7 @@
 	)
 	(global_label "REG_PG"
 		(shape passive)
-		(at 238.76 160.02 270)
+		(at 137.16 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3222,7 +3222,7 @@
 		)
 		(uuid "1ca09e37-7b39-49be-bf6e-213eb51d0d88")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 238.76 160.02 0)
+			(at 137.16 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3281,7 +3281,7 @@
 	)
 	(global_label "VBAT"
 		(shape passive)
-		(at 177.8 160.02 270)
+		(at 55.88 185.42 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3291,7 +3291,7 @@
 		)
 		(uuid "2e0ba6af-3b60-48a9-ac7e-5a9ae0f203e5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 177.8 160.02 0)
+			(at 55.88 185.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3304,7 +3304,7 @@
 	)
 	(global_label "3V3"
 		(shape passive)
-		(at 157.48 160.02 270)
+		(at 35.56 185.42 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3314,7 +3314,7 @@
 		)
 		(uuid "30b3423e-923f-41d6-9b7d-d7991b7f79f8")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 157.48 160.02 0)
+			(at 35.56 185.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3673,7 +3673,7 @@
 	)
 	(global_label "UART0_TX"
 		(shape passive)
-		(at 96.52 160.02 270)
+		(at 76.2 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3683,7 +3683,7 @@
 		)
 		(uuid "6b90482c-ecba-4125-a8a5-64a5227f2f4d")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 96.52 160.02 0)
+			(at 76.2 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3766,7 +3766,7 @@
 	)
 	(global_label "VSYS"
 		(shape passive)
-		(at 198.12 160.02 270)
+		(at 76.2 185.42 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3776,7 +3776,7 @@
 		)
 		(uuid "7ebe8f78-f43f-4924-9757-c1975c7fa964")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 198.12 160.02 0)
+			(at 76.2 185.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4000,7 +4000,7 @@
 
 	(global_label "CHIP_EN"
 		(shape passive)
-		(at 55.88 160.02 270)
+		(at 55.88 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4010,7 +4010,7 @@
 		)
 		(uuid "abdccb72-24a0-45f5-8bfc-a42c408af106")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 55.88 160.02 0)
+			(at 55.88 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4023,7 +4023,7 @@
 	)
 	(global_label "BOOT_IO0"
 		(shape passive)
-		(at 35.56 160.02 270)
+		(at 35.56 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4033,7 +4033,7 @@
 		)
 		(uuid "ae08701b-0fd3-469e-b352-c7ac64845927")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 35.56 160.02 0)
+			(at 35.56 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4069,7 +4069,7 @@
 	)
 	(global_label "USB_VBUS"
 		(shape passive)
-		(at 218.44 160.02 270)
+		(at 96.52 185.42 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4079,7 +4079,7 @@
 		)
 		(uuid "b59a75a2-0ff2-462d-9c53-9e02dbd325ef")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 218.44 160.02 0)
+			(at 96.52 185.42 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4349,7 +4349,7 @@
 	)
 	(global_label "UART0_RX"
 		(shape passive)
-		(at 116.84 160.02 270)
+		(at 96.52 154.94 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4359,7 +4359,7 @@
 		)
 		(uuid "fa0f6109-0d7f-41c4-9ce1-08ae05db7d66")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 116.84 160.02 0)
+			(at 96.52 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4418,7 +4418,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 238.76 157.48 0)
+		(at 137.16 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4428,7 +4428,7 @@
 		(dnp no)
 		(uuid "17407c0e-d045-4d91-bb13-2e19c61aaa02")
 		(property "Reference" "TP11"
-			(at 233.68 147.32 0)
+			(at 132.08 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4438,7 +4438,7 @@
 			)
 		)
 		(property "Value" "REG_PG"
-			(at 233.68 149.86 0)
+			(at 132.08 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4448,7 +4448,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 238.76 157.48 0)
+			(at 137.16 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4459,7 +4459,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 238.76 157.48 0)
+			(at 137.16 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4470,7 +4470,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 238.76 157.48 0)
+			(at 137.16 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4602,7 +4602,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KSC6xxG"
 			(at 43.18 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -4663,7 +4663,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 177.8 157.48 0)
+		(at 55.88 182.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4673,7 +4673,7 @@
 		(dnp no)
 		(uuid "2f5cbcf3-a00a-4034-9309-a4f446460695")
 		(property "Reference" "TP8"
-			(at 172.72 147.32 0)
+			(at 50.8 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4683,7 +4683,7 @@
 			)
 		)
 		(property "Value" "VBAT"
-			(at 172.72 149.86 0)
+			(at 50.8 175.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4693,7 +4693,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 177.8 157.48 0)
+			(at 55.88 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4704,7 +4704,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 177.8 157.48 0)
+			(at 55.88 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4715,7 +4715,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 177.8 157.48 0)
+			(at 55.88 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4818,7 +4818,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 116.84 157.48 0)
+		(at 96.52 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -4828,7 +4828,7 @@
 		(dnp no)
 		(uuid "3d5d73e9-40d8-48a7-a2b3-81bd44213839")
 		(property "Reference" "TP5"
-			(at 111.76 147.32 0)
+			(at 91.44 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4838,7 +4838,7 @@
 			)
 		)
 		(property "Value" "UART0_RX"
-			(at 111.76 149.86 0)
+			(at 91.44 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -4848,7 +4848,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 116.84 157.48 0)
+			(at 96.52 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4859,7 +4859,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 116.84 157.48 0)
+			(at 96.52 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4870,7 +4870,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 116.84 157.48 0)
+			(at 96.52 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5210,7 +5210,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 76.2 157.48 0)
+		(at 116.84 182.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5220,7 +5220,7 @@
 		(dnp no)
 		(uuid "55f516dd-6d9f-4dd3-bf4f-06b014b5644a")
 		(property "Reference" "TP3"
-			(at 71.12 147.32 0)
+			(at 111.76 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5230,7 +5230,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 71.12 149.86 0)
+			(at 111.76 175.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5240,7 +5240,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 76.2 157.48 0)
+			(at 116.84 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5251,7 +5251,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 76.2 157.48 0)
+			(at 116.84 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5262,7 +5262,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 76.2 157.48 0)
+			(at 116.84 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5286,7 +5286,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 157.48 157.48 0)
+		(at 35.56 182.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5296,7 +5296,7 @@
 		(dnp no)
 		(uuid "5d71199e-c106-4f0e-af5f-06ee4e17ef39")
 		(property "Reference" "TP7"
-			(at 152.4 147.32 0)
+			(at 30.48 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5306,7 +5306,7 @@
 			)
 		)
 		(property "Value" "3V3"
-			(at 152.4 149.86 0)
+			(at 30.48 175.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5316,7 +5316,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 157.48 157.48 0)
+			(at 35.56 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5327,7 +5327,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 157.48 157.48 0)
+			(at 35.56 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5338,7 +5338,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 157.48 157.48 0)
+			(at 35.56 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5362,7 +5362,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 35.56 157.48 0)
+		(at 35.56 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5372,7 +5372,7 @@
 		(dnp no)
 		(uuid "65e94a0d-9ef2-4c63-93b7-111dc593a3ea")
 		(property "Reference" "TP1"
-			(at 30.48 147.32 0)
+			(at 30.48 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5382,7 +5382,7 @@
 			)
 		)
 		(property "Value" "BOOT_IO0"
-			(at 30.48 149.86 0)
+			(at 30.48 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5392,7 +5392,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 35.56 157.48 0)
+			(at 35.56 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5403,7 +5403,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 35.56 157.48 0)
+			(at 35.56 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5414,7 +5414,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 35.56 157.48 0)
+			(at 35.56 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5596,7 +5596,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 137.16 157.48 0)
+		(at 116.84 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5606,7 +5606,7 @@
 		(dnp no)
 		(uuid "861f1118-9929-4e3c-8563-9156e5b1f2b9")
 		(property "Reference" "TP6"
-			(at 132.08 147.32 0)
+			(at 111.76 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5616,7 +5616,7 @@
 			)
 		)
 		(property "Value" "FACTORY_RESET_OD"
-			(at 132.08 149.86 0)
+			(at 111.76 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5626,7 +5626,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 137.16 157.48 0)
+			(at 116.84 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5637,7 +5637,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 137.16 157.48 0)
+			(at 116.84 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5648,7 +5648,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 137.16 157.48 0)
+			(at 116.84 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5792,7 +5792,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "kveld:LED_Kingbright_APBA2006SURKCGKC"
 			(at 223.52 55.88 0)
 			(hide yes)
 			(show_name no)
@@ -5888,7 +5888,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Button_Switch_SMD:SW_Push_1P1T_NO_CK_KSC6xxG"
 			(at 43.18 45.72 0)
 			(hide yes)
 			(show_name no)
@@ -5949,7 +5949,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 96.52 157.48 0)
+		(at 76.2 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5959,7 +5959,7 @@
 		(dnp no)
 		(uuid "a8ab00dd-ebce-4c49-a444-aab750da28e4")
 		(property "Reference" "TP4"
-			(at 91.44 147.32 0)
+			(at 71.12 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5969,7 +5969,7 @@
 			)
 		)
 		(property "Value" "UART0_TX"
-			(at 91.44 149.86 0)
+			(at 71.12 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5979,7 +5979,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 96.52 157.48 0)
+			(at 76.2 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5990,7 +5990,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 96.52 157.48 0)
+			(at 76.2 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6001,7 +6001,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 96.52 157.48 0)
+			(at 76.2 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6232,7 +6232,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 55.88 157.48 0)
+		(at 55.88 152.4 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -6242,7 +6242,7 @@
 		(dnp no)
 		(uuid "b1f37121-80f9-4d5c-b8fa-8e5fc6f750d1")
 		(property "Reference" "TP2"
-			(at 50.8 147.32 0)
+			(at 50.8 142.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6252,7 +6252,7 @@
 			)
 		)
 		(property "Value" "CHIP_EN"
-			(at 50.8 149.86 0)
+			(at 50.8 144.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6262,7 +6262,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 55.88 157.48 0)
+			(at 55.88 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6273,7 +6273,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 55.88 157.48 0)
+			(at 55.88 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6284,7 +6284,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 55.88 157.48 0)
+			(at 55.88 152.4 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6466,7 +6466,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 198.12 157.48 0)
+		(at 76.2 182.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -6476,7 +6476,7 @@
 		(dnp no)
 		(uuid "d6c7a1b3-4491-4da8-91cc-db81c562054e")
 		(property "Reference" "TP9"
-			(at 193.04 147.32 0)
+			(at 71.12 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6486,7 +6486,7 @@
 			)
 		)
 		(property "Value" "VSYS"
-			(at 193.04 149.86 0)
+			(at 71.12 175.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6496,7 +6496,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 198.12 157.48 0)
+			(at 76.2 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6507,7 +6507,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 198.12 157.48 0)
+			(at 76.2 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6518,7 +6518,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 198.12 157.48 0)
+			(at 76.2 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6700,7 +6700,7 @@
 	)
 	(symbol
 		(lib_id "Connector:TestPoint")
-		(at 218.44 157.48 0)
+		(at 96.52 182.88 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -6710,7 +6710,7 @@
 		(dnp no)
 		(uuid "f02a4f7e-c6e2-442c-b2a9-460adce0ed2e")
 		(property "Reference" "TP10"
-			(at 213.36 147.32 0)
+			(at 91.44 172.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6720,7 +6720,7 @@
 			)
 		)
 		(property "Value" "USB_VBUS"
-			(at 213.36 149.86 0)
+			(at 91.44 175.26 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6730,7 +6730,7 @@
 			)
 		)
 		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 218.44 157.48 0)
+			(at 96.52 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6741,7 +6741,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 218.44 157.48 0)
+			(at 96.52 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6752,7 +6752,7 @@
 			)
 		)
 		(property "Description" "test point"
-			(at 218.44 157.48 0)
+			(at 96.52 182.88 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6988,7 +6988,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 76.2 160.02 0)
+		(at 116.84 185.42 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6996,34 +6996,34 @@
 		(dnp no)
 		(uuid "f7387815-33e3-40d5-a58b-57bf0589859b")
 		(property "Reference" "#PWR0135"
-			(at 76.2 166.37 0)
+			(at 116.84 191.77 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
 			(effects (font (size 1.27 1.27)))
 		)
 		(property "Value" "GND"
-			(at 76.2 163.83 0)
+			(at 116.84 189.23 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects (font (size 1.27 1.27)))
 		)
 		(property "Footprint" ""
-			(at 76.2 160.02 0)
+			(at 116.84 185.42 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
 			(effects (font (size 1.27 1.27)))
 		)
 		(property "Datasheet" ""
-			(at 76.2 160.02 0)
+			(at 116.84 185.42 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
 			(effects (font (size 1.27 1.27)))
 		)
 		(property "Description" "Power symbol creates a global label with name GND, ground"
-			(at 76.2 160.02 0)
+			(at 116.84 185.42 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)

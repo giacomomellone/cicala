@@ -5668,7 +5668,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "kveld:L_TDK_VLS4012"
 			(at 104.14 50.8 0)
 			(hide yes)
 			(show_name no)

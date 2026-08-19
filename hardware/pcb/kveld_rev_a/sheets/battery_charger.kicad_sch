@@ -2676,18 +2676,6 @@
 		(uuid "4a89bf9e-8c56-468d-a8a9-c90793cf01b7")
 	)
 	(junction
-		(at 66.04 137.16)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f66e7b27-bee8-4cc6-aa98-86a88a4320e8")
-	)
-	(junction
-		(at 86.36 137.16)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "d37697d3-0083-404d-8d94-cad56fd9ad16")
-	)
-	(junction
 		(at 220.98 63.5)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2712,19 +2700,6 @@
 		(uuid "c99c8b99-5f1b-4335-9323-9146c220e353")
 	)
 	(junction
-		(at 248.92 87.63)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "e6f4a363-8c85-4443-bb0b-d362414dbd04")
-	)
-	(junction
-		(at 248.92 95.25)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "7fc10483-e346-4d25-83fb-bfefb2d4d6a9")
-	)
-
-	(junction
 		(at 60.96 58.42)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2735,12 +2710,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "9a064eb1-507b-4f93-bf80-5bd1cce66f1a")
-	)
-	(junction
-		(at 104.14 137.16)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "7ec0a6b2-a074-4351-ba8e-73c340d0a6ac")
 	)
 	(junction
 		(at 185.42 102.87)
@@ -2762,12 +2731,6 @@
 	)
 
 	(junction
-		(at 63.5 137.16)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "bb278386-a5e0-41f6-a384-3117500782b0")
-	)
-	(junction
 		(at 185.42 100.33)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2787,16 +2750,6 @@
 		(uuid "1834d08b-7835-40f6-9c59-cd0efbf346e1")
 	)
 
-	(wire
-		(pts
-			(xy 241.3 63.5) (xy 248.92 63.5)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0176f5d9-8306-49d5-995c-9ae56b62abaf")
-	)
 	(wire
 		(pts
 			(xy 271.78 152.4) (xy 271.78 153.67)
@@ -2856,6 +2809,62 @@
 			(type default)
 		)
 		(uuid "064848be-62a1-4f3a-b27a-b7327352b37e")
+	)
+	(wire
+		(pts
+			(xy 241.3 63.5) (xy 246.38 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "764b6819-7e09-4300-9007-e1d02c2c1b89")
+	)
+	(wire
+		(pts
+			(xy 246.38 63.5) (xy 246.38 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6032231a-ee5a-44bf-88e8-7949d629e8fd")
+	)
+	(wire
+		(pts
+			(xy 246.38 101.6) (xy 248.92 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "20f49845-7709-4b7c-99ec-fb0c70c6f3b1")
+	)
+	(wire
+		(pts
+			(xy 248.92 95.25) (xy 248.92 107.95)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be41ca95-95ed-47cc-ae62-ff2b3b23bb63")
+	)
+	(wire
+		(pts
+			(xy 248.92 85.09) (xy 248.92 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f2e96582-1fc9-47a4-b929-c9858ee31635")
+	)
+	(junction
+		(at 248.92 101.6)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "a8c6bee2-2b1a-40a5-b7a4-ea171794fbdc")
 	)
 	(wire
 		(pts
@@ -3006,16 +3015,6 @@
 			(type default)
 		)
 		(uuid "254a74a5-a4e3-4af1-ad03-23fda9161f29")
-	)
-	(wire
-		(pts
-			(xy 248.92 63.5) (xy 248.92 107.95)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2bcf77be-d545-4408-a593-57117d96c13a")
 	)
 	(wire
 		(pts
@@ -3829,16 +3828,6 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 137.16) (xy 104.14 137.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d72133c2-0f12-43c9-8d7f-fd046ac381ac")
-	)
-	(wire
-		(pts
 			(xy 185.42 100.33) (xy 185.42 102.87)
 		)
 		(stroke
@@ -3876,6 +3865,62 @@
 			(type default)
 		)
 		(uuid "e1d98078-e9dc-4802-90ba-0668a4233669")
+	)
+	(wire
+		(pts
+			(xy 86.36 137.16) (xy 88.9 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ba600ecc-e44e-4ef1-ad04-b59345facc0e")
+	)
+	(global_label "BATT_NTC"
+		(shape passive)
+		(at 66.04 137.16 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "8389603c-3fc8-42c0-9e4e-79ba8a60b1c9")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 66.04 137.16 180)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "BATT_NTC"
+		(shape passive)
+		(at 104.14 137.16 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "e112f871-f52c-4200-b738-a11c73d253c3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 104.14 137.16 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
 	)
 	(wire
 		(pts
@@ -5614,7 +5659,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "kveld:L_Coilcraft_XFL4015"
 			(at 231.14 35.56 0)
 			(hide yes)
 			(show_name no)
@@ -5704,7 +5749,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "kveld:Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm"
 			(at 231.14 60.96 0)
 			(hide yes)
 			(show_name no)
