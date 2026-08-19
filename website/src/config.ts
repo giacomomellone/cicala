@@ -5,6 +5,10 @@ export const SITE_URL = "https://kveld.pages.dev";
 // Category cycle order from questions/schema.json.
 export const DECKS = ["new_people", "close", "family", "work", "here", "wild"] as const;
 export type Deck = (typeof DECKS)[number];
+
+// The decks the player offers, in the same order as the device's Category
+// cycle (firmware/app/src/channels.c). Work stays in the corpus and browse.
+export const DEVICE_DECKS = ["new_people", "close", "family", "here", "wild"] as const;
 export const PLAYBACK_DEPTH_MAX = 2;
 
 // GitHub issue-form depth values, in schema order.

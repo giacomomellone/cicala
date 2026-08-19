@@ -34,7 +34,8 @@ const en = {
 
   // play
   "play.next": "next question →",
-  "play.hint": "or press space",
+  "play.category": "category",
+  "play.hint": "space for next, c for category",
   "play.save": "save",
   "play.saved": "saved",
   "play.share": "share",
@@ -113,7 +114,7 @@ const en = {
   "device.t.feedback": "feedback",
   "device.t.r1a": "press Category",
   "device.t.r1b": "advance to the next category",
-  "device.t.r1c": "e-paper shows the category name; the sixth press wraps to the first",
+  "device.t.r1c": "e-paper shows the category name; the fifth press wraps to the first",
   "device.t.r2a": "press Next",
   "device.t.r2b": "draw another question",
   "device.t.r2c": "one e-paper refresh; a long press does exactly the same thing",
@@ -174,7 +175,8 @@ const de: Record<StringKey, string> = {
   "tag.wouldyourather": "entweder oder",
 
   "play.next": "nächste frage →",
-  "play.hint": "oder leertaste drücken",
+  "play.category": "kategorie",
+  "play.hint": "leertaste für nächste, c für kategorie",
   "play.save": "merken",
   "play.saved": "gemerkt",
   "play.share": "teilen",
@@ -249,7 +251,7 @@ const de: Record<StringKey, string> = {
   "device.t.feedback": "rückmeldung",
   "device.t.r1a": "Kategorie drücken",
   "device.t.r1b": "zur nächsten Kategorie wechseln",
-  "device.t.r1c": "das E-Papier zeigt den Kategorienamen; der sechste Druck springt zur ersten",
+  "device.t.r1c": "das E-Papier zeigt den Kategorienamen; der fünfte Druck springt zur ersten",
   "device.t.r2a": "Weiter drücken",
   "device.t.r2b": "eine andere Frage ziehen",
   "device.t.r2c": "eine E-Papier-Aktualisierung; langes Drücken verhält sich genauso",

@@ -786,3 +786,11 @@ QDB2 gains the five form-tag bits as a third per-question byte and becomes QDB3.
 The device Category cycle drops Work: five decks on the object, six on the website and in the corpus. The object is built for tables at home; Work's constraint — nothing that can change someone's standing — belongs to a context the object is not in. The bundle mask keeps the `work` bit and the website player keeps the deck; only the offered cycle shrinks.
 
 Accepted cost: the two platforms implement the same rule differently at the margin (refill-time arrangement on the web, draw-time preference in firmware), and the fixture recipe had to stop trusting glob order — `dist/bundles/` accumulates every past build and an older bundle sorted last, so `just fw-test` could silently test a stale corpus.
+
+## 2026-08-19: The web player mirrors the device, decks included
+
+The player now behaves like the object: Category cycles the same five decks in the same order and shows the deck name, and Next draws from the named deck. The six direct deck buttons are gone, and Work leaves the play experience; it remains in the corpus, the browse view, and the contribution vocabulary. The 2026-08-18 entry scoped Work's removal to the device; parity extends it to the player, which matters beyond consistency: the player is the cheapest rig for trying the physical interaction, and it can only serve as that rig if the two match.
+
+Two deliberate differences survive. The web page still opens on a question rather than a deck name — a browser has none of the e-paper's unknown-state problem, and the play page's job is to show a question before anything else. And favorites, share links, and backward history stay web-only, as before: a browser can confirm ownership without adding state to the object.
+
+Accepted cost: a returning visitor whose stored deck is `work` lands on New People, and the corpus vocabulary (six decks) no longer matches what either player offers (five).

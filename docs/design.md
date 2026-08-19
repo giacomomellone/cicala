@@ -117,8 +117,10 @@ before it earns a component.
 
 Navigation is play / browse / contribute / device.
 
-1. The player: one question in dominant type, a six-choice deck control,
-   Next, save, and share. It uses depths 1 and 2 and defaults to New People.
+1. The player: one question in dominant type and the device's own model —
+   Category cycles the five device decks and names the deck, Next draws from
+   it — plus save and share. It uses depths 1 and 2 and defaults to New
+   People.
 2. Browse: all questions, including depth 3, with deck and editorial metadata.
 3. Contribution: one question stored once, with one or more eligible decks and
    an editorial depth.
