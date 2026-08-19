@@ -123,18 +123,33 @@ test.describe("play", () => {
     for (const shown of seen) expect(texts).toContain(shown);
   });
 
-  test("a deck selection sticks and only serves that deck", async ({ page }) => {
+  test("the category button cycles the five decks, skipping work, and wraps", async ({ page }) => {
     await page.goto("/");
-    await page.locator('[data-deck="family"]').click();
-    await expect(page.locator('[data-deck="family"]')).toHaveAttribute("aria-checked", "true");
+    await playReady(page);
+    const category = page.getByRole("button", { name: /^category$/i });
+
+    // From the New People default, one full turn lands back on it.
+    for (const name of ["close", "family", "here", "wild", "new people"]) {
+      await category.click();
+      await expect(page.locator(questionText)).toHaveText(name);
+    }
+  });
+
+  test("a category choice sticks and only serves that deck", async ({ page }) => {
+    await page.goto("/");
+    await playReady(page);
+    const category = page.getByRole("button", { name: /^category$/i });
+    await category.click(); // close
+    await category.click(); // family
+    await expect(page.locator(questionText)).toHaveText("family");
     await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.deck"))).toBe("family");
 
     const eligible = new Set(playable("en", "family").map((q) => q.text));
     for (let i = 0; i < 5; i++) {
+      await page.getByRole("button", { name: /next question/i }).click();
       await expect
         .poll(async () => eligible.has(await page.locator(questionText).innerText()))
         .toBe(true);
-      await page.getByRole("button", { name: /next question/i }).click();
     }
   });
 

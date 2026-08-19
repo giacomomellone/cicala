@@ -1,10 +1,21 @@
-// Play controller: no-repeat draws, session history, favorites, and sharing.
+// Play controller: the device's Category/Next model, plus the web extras a
+// browser can support without adding state to the object — history,
+// favorites, and sharing.
 
-import { DECKS, PLAYBACK_DEPTH_MAX } from "../config";
+import { BAG_TEXTURE, DEVICE_DECKS, PLAYBACK_DEPTH_MAX } from "../config";
 import { tr } from "./apply-i18n";
 import { drawFromBag } from "./bag";
 import { detectLang, loadPayload, type Payload, type Question } from "./data";
-import { getBag, getDeck, isFav, setBag, setDeck, toggleFav } from "./store";
+import {
+  getBag,
+  getDeck,
+  getLastShown,
+  isFav,
+  setBag,
+  setDeck,
+  setLastShown,
+  toggleFav,
+} from "./store";
 
 interface Shown {
   q: Question;
@@ -21,18 +32,25 @@ export async function initPlay(): Promise<void> {
 
   const qText = document.getElementById("q-text")!;
   const qSwap = document.getElementById("q-swap")!;
+  const qMeta = document.getElementById("q-meta")!;
+  const deckName = document.getElementById("q-deck-name")!;
   const favBtn = document.getElementById("q-fav") as HTMLButtonElement;
   const favLabel = document.getElementById("q-fav-label")!;
   const shareBtn = document.getElementById("q-share") as HTMLButtonElement;
   const shareLabel = document.getElementById("q-share-label")!;
   const nextBtn = document.getElementById("q-next") as HTMLButtonElement;
-  const selectors = Array.from(root.querySelectorAll<HTMLButtonElement>("[data-deck]"));
+  const categoryBtn = document.getElementById("q-category") as HTMLButtonElement;
 
   const lang = detectLang();
   const isPermalink = root.dataset.permalink === "1";
   const seedId = root.dataset.seedId ?? "";
-  let deck = isPermalink ? (root.dataset.seedDeck ?? "new_people") : getDeck();
-  if (!(DECKS as readonly string[]).includes(deck)) deck = "new_people";
+
+  // The player offers the device cycle; anything else (e.g. a stored or
+  // permalink deck from before parity) lands on the cycle's first deck.
+  const playDeck = (name: string): string =>
+    (DEVICE_DECKS as readonly string[]).includes(name) ? name : DEVICE_DECKS[0];
+
+  let deck = playDeck(isPermalink ? (root.dataset.seedDeck ?? "new_people") : getDeck());
 
   let payload: Payload;
   try {
@@ -48,11 +66,17 @@ export async function initPlay(): Promise<void> {
       .filter((q) => q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(selectedDeck))
       .map((q) => q.id);
 
+  const deckLabel = (name: string): string => tr(lang, `deck.${name}` as never);
+
   function drawNext(selectedDeck: string): Shown | null {
     const bag = getBag(lang, selectedDeck);
-    const id = drawFromBag(bag, idsFor(selectedDeck));
+    const texture = BAG_TEXTURE
+      ? { seed: byId.get(getLastShown(lang)), meta: (id: string) => byId.get(id) }
+      : undefined;
+    const id = drawFromBag(bag, idsFor(selectedDeck), Math.random, texture);
     if (id === null) return null;
     setBag(lang, selectedDeck, bag);
+    setLastShown(lang, id);
     const q = byId.get(id);
     return q ? { q, deck: selectedDeck } : null;
   }
@@ -76,27 +100,36 @@ export async function initPlay(): Promise<void> {
   }
 
   function renderQuestion(entry: Shown): void {
+    qText.classList.remove("is-name");
+    qMeta.style.visibility = "";
     qText.textContent = entry.q.text;
-    deck = entry.deck;
-    setActiveDeck(deck);
+    deck = playDeck(entry.deck);
+    deckName.textContent = deckLabel(deck);
     renderMeta(entry);
     document.documentElement.lang = lang;
   }
 
-  async function show(entry: Shown, fade = true): Promise<void> {
+  /* The deck-name card, as on the device: the name replaces the question
+     until Next draws. */
+  function renderName(): void {
+    qText.classList.add("is-name");
+    qText.textContent = deckLabel(deck);
+    qMeta.style.visibility = "hidden";
+  }
+
+  async function swap(render: () => void, fade = true): Promise<void> {
     if (fade && !reducedMotion) {
       qSwap.classList.add("is-fading");
       await sleep(120);
-      renderQuestion(entry);
+      render();
       qSwap.classList.remove("is-fading");
     } else {
-      renderQuestion(entry);
+      render();
     }
   }
 
-  function setActiveDeck(selectedDeck: string): void {
-    for (const selector of selectors)
-      selector.setAttribute("aria-checked", String(selector.dataset.deck === selectedDeck));
+  async function show(entry: Shown, fade = true): Promise<void> {
+    await swap(() => renderQuestion(entry), fade);
   }
 
   // Replace the permalink entry when normal play begins.
@@ -106,13 +139,17 @@ export async function initPlay(): Promise<void> {
 
   async function next(): Promise<void> {
     leavePermalink();
-    if (cursor < history.length - 1) {
+    // Forward history only belongs to the deck it was drawn from; a Category
+    // change since makes Next a fresh draw, and record() drops the tail.
+    if (cursor < history.length - 1 && history[cursor + 1]!.deck === deck) {
       cursor++;
       await show(history[cursor]!);
       return;
     }
     const entry = drawNext(deck);
     if (!entry) {
+      qText.classList.remove("is-name");
+      qMeta.style.visibility = "";
       qText.textContent = tr(lang, "play.empty");
       return;
     }
@@ -127,18 +164,12 @@ export async function initPlay(): Promise<void> {
     }
   }
 
-  async function selectDeck(selectedDeck: string): Promise<void> {
-    deck = selectedDeck;
-    setDeck(selectedDeck);
-    setActiveDeck(selectedDeck);
+  async function cycleCategory(): Promise<void> {
     leavePermalink();
-    const entry = drawNext(selectedDeck);
-    if (!entry) {
-      qText.textContent = tr(lang, "play.empty");
-      return;
-    }
-    record(entry);
-    await show(entry);
+    const i = (DEVICE_DECKS as readonly string[]).indexOf(deck);
+    deck = DEVICE_DECKS[(i + 1) % DEVICE_DECKS.length] ?? "new_people";
+    setDeck(deck);
+    await swap(renderName);
   }
 
   const seedQuestion = seedId ? (byId.get(seedId) ?? null) : null;
@@ -146,23 +177,18 @@ export async function initPlay(): Promise<void> {
   if (seed && isPermalink) {
     record(seed);
     renderMeta(seed);
-    setActiveDeck(deck);
+    setLastShown(lang, seed.q.id); // the permalink is what is on screen
   } else {
-    setActiveDeck(deck);
     const entry = drawNext(deck);
     if (entry) {
       record(entry);
       await show(entry, false);
     }
   }
+  deckName.textContent = deckLabel(deck);
 
   nextBtn.addEventListener("click", () => void next());
-
-  for (const selector of selectors)
-    selector.addEventListener("click", () => {
-      const selectedDeck = selector.dataset.deck;
-      if (selectedDeck) void selectDeck(selectedDeck);
-    });
+  categoryBtn.addEventListener("click", () => void cycleCategory());
 
   favBtn.addEventListener("click", () => {
     const entry = history[cursor];
@@ -198,11 +224,10 @@ export async function initPlay(): Promise<void> {
       void next();
     } else if (e.key === "ArrowLeft") {
       void prev();
+    } else if (e.key === "c" || e.key === "C") {
+      void cycleCategory();
     } else if (e.key === "f" || e.key === "F") {
       favBtn.click();
-    } else if (e.key >= "1" && e.key <= "6") {
-      const selector = selectors[Number(e.key) - 1];
-      if (selector?.dataset.deck) void selectDeck(selector.dataset.deck);
     }
   });
 }

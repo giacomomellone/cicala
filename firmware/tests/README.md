@@ -31,7 +31,7 @@ can emulate GPIO through a `zephyr,gpio-emul` devicetree node.
 
 A suite that needs the application's `CONFIG_KVELD_*` values adds a `Kconfig`
 containing `rsource "../../Kconfig.policy"`, the same file `app/Kconfig` pulls
-in. Bundle and layout suites use QDB2 fixtures generated from the real question
+in. Bundle and layout suites use QDB3 fixtures generated from the real question
 database by `just fw-test`; the fixture files are gitignored.
 
 Timing, electrical behavior, and the e-paper glass require the breadboard. See

@@ -1,5 +1,7 @@
 #include "qdb.hpp"
 
+#include <string.h>
+
 namespace kveld
 {
 
@@ -9,6 +11,23 @@ namespace
 // FNV-1a identifies corpus changes in retained bag state.
 constexpr uint32_t kFnvOffset = 2166136261u;
 constexpr uint32_t kFnvPrime = 16777619u;
+
+/** Magic bytes double as the format version. */
+constexpr uint8_t kMagic[] = {'Q', 'D', 'B', '3'};
+
+/** Per-question record: mask, metadata, forms, u16 LE text length, text. */
+constexpr size_t kRecordHeaderBytes = 5;
+constexpr size_t kRecordMetadataOffset = 1;
+constexpr size_t kRecordFormsOffset = 2;
+constexpr size_t kRecordTextLenOffset = 3;
+
+/** Metadata byte: bits 0–1 are depth - 1, then the tone flags. */
+constexpr uint8_t kDepthBitsMask = 0x03;
+constexpr uint8_t kSpicyBit = 1 << 2;
+constexpr uint8_t kDarkBit = 1 << 3;
+
+/** Texture cost classes: band and form can each repeat, or neither, or both. */
+constexpr uint8_t kTextureClasses = 3;
 
 uint32_t fnv1a(uint32_t hash, const void *data, size_t len)
 {
@@ -33,15 +52,15 @@ bool Qdb::open(const uint8_t *data, size_t size)
 {
     _data = nullptr;
 
-    if (data == nullptr || size < 4) {
+    if (data == nullptr || size < sizeof(kMagic)) {
         return false;
     }
 
-    if (data[0] != 'Q' || data[1] != 'D' || data[2] != 'B' || data[3] != '2') {
+    if (memcmp(data, kMagic, sizeof(kMagic)) != 0) {
         return false;
     }
 
-    size_t pos = 4;
+    size_t pos = sizeof(kMagic);
 
     // The version and language are u8-length-prefixed strings.
     const char *strings[2] = {nullptr, nullptr};
@@ -79,13 +98,13 @@ bool Qdb::open(const uint8_t *data, size_t size)
     size_t walk = pos;
 
     for (uint16_t i = 0; i < count; i++) {
-        if (walk + 4 > size) {
+        if (walk + kRecordHeaderBytes > size) {
             return false;
         }
 
-        const uint16_t text_len = read_u16(data + walk + 2);
+        const uint16_t text_len = read_u16(data + walk + kRecordTextLenOffset);
 
-        walk += 4;
+        walk += kRecordHeaderBytes;
 
         if (walk + text_len > size) {
             return false;
@@ -126,18 +145,19 @@ bool Qdb::at(uint16_t index, Question &out) const
     size_t pos = _first;
 
     for (uint16_t i = 0; i < index; i++) {
-        pos += 4 + read_u16(_data + pos + 2);
+        pos += kRecordHeaderBytes + read_u16(_data + pos + kRecordTextLenOffset);
     }
 
     const uint8_t mask = _data[pos];
-    const uint8_t metadata = _data[pos + 1];
-    const uint16_t text_len = read_u16(_data + pos + 2);
+    const uint8_t metadata = _data[pos + kRecordMetadataOffset];
+    const uint16_t text_len = read_u16(_data + pos + kRecordTextLenOffset);
 
     out.deck_mask = mask;
-    out.depth = static_cast<uint8_t>((metadata & 0x03) + 1);
-    out.spicy = (metadata & (1 << 2)) != 0;
-    out.dark = (metadata & (1 << 3)) != 0;
-    out.text = reinterpret_cast<const char *>(_data + pos + 4);
+    out.depth = static_cast<uint8_t>((metadata & kDepthBitsMask) + 1);
+    out.forms = _data[pos + kRecordFormsOffset];
+    out.spicy = (metadata & kSpicyBit) != 0;
+    out.dark = (metadata & kDarkBit) != 0;
+    out.text = reinterpret_cast<const char *>(_data + pos + kRecordHeaderBytes);
     out.len = text_len;
 
     return true;
@@ -165,13 +185,14 @@ uint16_t Qdb::eligible_count(uint8_t deck, uint8_t max_depth) const
 
     for (uint16_t i = 0; i < _count; i++) {
         const uint8_t mask = _data[pos];
-        const uint8_t depth = static_cast<uint8_t>((_data[pos + 1] & 0x03) + 1);
+        const uint8_t metadata = _data[pos + kRecordMetadataOffset];
+        const uint8_t depth = static_cast<uint8_t>((metadata & kDepthBitsMask) + 1);
 
         if ((mask & (1u << deck)) != 0 && depth <= max_depth) {
             total++;
         }
 
-        pos += 4 + read_u16(_data + pos + 2);
+        pos += kRecordHeaderBytes + read_u16(_data + pos + kRecordTextLenOffset);
     }
 
     return total;
@@ -193,6 +214,8 @@ void Bag::reset()
 {
     _state.recent_len = 0;
     _state.recent_next = 0;
+    _state.last_band = 0;
+    _state.last_forms = 0;
 
     for (uint8_t deck = 0; deck < kDeckCount; deck++) {
         clear_deck(deck);
@@ -261,11 +284,32 @@ uint16_t Bag::drawn_count(uint8_t deck) const
     return total;
 }
 
+uint8_t Bag::texture_cost(const Question &q) const
+{
+    const uint8_t band = depth_band(q.depth);
+    uint8_t cost = 0;
+
+    if (_state.last_band != 0 && band == _state.last_band) {
+        cost++;
+    }
+
+    if (_state.last_forms != 0 && (q.forms & _state.last_forms) != 0) {
+        cost++;
+    }
+
+    return cost;
+}
+
 bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_recent,
                uint16_t &index) const
 {
-    // Count first to avoid a candidate buffer.
+    // Count first to avoid a candidate buffer. With texture on, the draw is
+    // uniform within the cheapest cost class: a question that repeats both
+    // the depth band and a form of the last serve only wins when nothing
+    // cheaper remains.
+    uint16_t class_count[kTextureClasses] = {0};
     uint16_t candidates = 0;
+    uint8_t best = kTextureClasses; // unset: costs run 0..kTextureClasses-1
 
     for (uint16_t i = 0; i < qdb.count(); i++) {
         if (!qdb.is_eligible(i, deck, max_depth) || is_drawn(deck, i)) {
@@ -276,14 +320,30 @@ bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_rece
             continue;
         }
 
+        uint8_t cost = 0;
+
+        if (kTexture) {
+            Question q;
+
+            if (qdb.at(i, q)) {
+                cost = texture_cost(q);
+            }
+        }
+
+        class_count[cost]++;
         candidates++;
+
+        if (cost < best) {
+            best = cost;
+        }
     }
 
     if (candidates == 0) {
         return false;
     }
 
-    uint16_t target = static_cast<uint16_t>(_rand(_ctx) % candidates);
+    const uint16_t pool = kTexture ? class_count[best] : candidates;
+    uint16_t target = static_cast<uint16_t>(_rand(_ctx) % pool);
 
     for (uint16_t i = 0; i < qdb.count(); i++) {
         if (!qdb.is_eligible(i, deck, max_depth) || is_drawn(deck, i)) {
@@ -292,6 +352,14 @@ bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_rece
 
         if (honour_recent && is_recent(i)) {
             continue;
+        }
+
+        if (kTexture) {
+            Question q;
+
+            if (!qdb.at(i, q) || texture_cost(q) != best) {
+                continue;
+            }
         }
 
         if (target == 0) {
@@ -335,7 +403,16 @@ bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index,
     mark_drawn(deck, index);
     push_recent(index);
 
-    return qdb.at(index, out);
+    if (!qdb.at(index, out)) {
+        return false;
+    }
+
+    // Texture compares against what the panel showed, not against the deck's
+    // history, so a deck switch does not reset it. A cycle reset keeps it too.
+    _state.last_band = depth_band(out.depth);
+    _state.last_forms = out.forms;
+
+    return true;
 }
 
 } // namespace kveld

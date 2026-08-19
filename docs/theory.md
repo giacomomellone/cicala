@@ -291,6 +291,10 @@ after several questions, and it has no reliable session boundary. “Which habit
 have you changed this month?” must stand on its own instead of being unlocked
 by answering “What made you laugh today?”
 
+Texture is not a ramp either. The bag prefers a different depth band and form
+than the question just shown, which decorrelates consecutive draws; it claims
+nothing about the table's readiness and never raises depth over time.
+
 Reciprocity is a hard style rule: never write a question the asker could not
 also answer. “Which mistake do people like you keep making?” points outward and
 judges. “Which mistake do you keep repeating?” can pass around the table.

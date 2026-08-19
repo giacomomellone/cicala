@@ -1,4 +1,4 @@
-/* QDB2 reader and no-repeat shuffle bag. */
+/* QDB3 reader and no-repeat shuffle bag. */
 
 #pragma once
 
@@ -23,7 +23,42 @@ constexpr uint8_t kRecentRing = CONFIG_KVELD_RECENT_RING;
 constexpr uint8_t kRecentRing = 20;
 #endif
 
+#ifdef CONFIG_KVELD_TEXTURE
+constexpr bool kTexture = true;
+#else
+constexpr bool kTexture = false;
+#endif
+
 constexpr uint16_t kBitmapWords = (kMaxQuestions + 31) / 32;
+
+/** Deck indices in the bundle mask, in questions/schema.json order. */
+enum DeckIndex : uint8_t {
+    kDeckNewPeople = 0,
+    kDeckClose,
+    kDeckFamily,
+    kDeckWork,
+    kDeckHere,
+    kDeckWild,
+};
+
+/** Deck-mask bits in use; everything above is reserved. */
+constexpr uint8_t kDeckMaskValid = static_cast<uint8_t>((1u << kDeckCount) - 1);
+
+/** Form bits in schema tag order minus the tone flags spicy and dark. */
+constexpr uint8_t kFormIcebreaker = 1 << 0;
+constexpr uint8_t kFormReflective = 1 << 1;
+constexpr uint8_t kFormHypothetical = 1 << 2;
+constexpr uint8_t kFormMemory = 1 << 3;
+constexpr uint8_t kFormWouldYouRather = 1 << 4;
+constexpr uint8_t kFormBitsValid = static_cast<uint8_t>(
+    kFormIcebreaker | kFormReflective | kFormHypothetical | kFormMemory | kFormWouldYouRather);
+
+/** The bag's texture banding: little public exposure versus a personal
+    construction or more. */
+constexpr uint8_t depth_band(uint8_t depth)
+{
+    return depth >= 2 ? 2 : 1;
+}
 
 struct Question {
     /** Points into the bundle buffer. Not NUL-terminated. */
@@ -33,6 +68,8 @@ struct Question {
     uint8_t deck_mask;
     /** Editorial depth, 1..3. */
     uint8_t depth;
+    /** Form bitmask; zero when the question carries no form tag. */
+    uint8_t forms;
     bool spicy;
     bool dark;
 };
@@ -40,7 +77,7 @@ struct Question {
 class Qdb
 {
 public:
-    /** Open a decompressed QDB2 image after validating all bounds and records. */
+    /** Open a decompressed QDB3 image after validating all bounds and records. */
     bool open(const uint8_t *data, size_t size);
 
     bool is_open() const { return _data != nullptr; }
@@ -94,6 +131,10 @@ public:
         uint16_t recent[kRecentRing];
         uint8_t recent_len;
         uint8_t recent_next;
+        /** Depth band and form mask of the question served last, shared
+            across decks; zero when nothing has been served. */
+        uint8_t last_band;
+        uint8_t last_forms;
         /** One bit per question, per deck: already drawn this cycle. */
         uint32_t drawn[kDeckCount][kBitmapWords];
     };
@@ -115,6 +156,9 @@ public:
 private:
     bool pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_recent,
               uint16_t &index) const;
+    /** Cost of serving a question now: one for the same depth band as the
+        last serve, one for sharing a form with it. */
+    uint8_t texture_cost(const Question &q) const;
     bool is_recent(uint16_t index) const;
     bool is_drawn(uint8_t deck, uint16_t index) const;
     void mark_drawn(uint8_t deck, uint16_t index);

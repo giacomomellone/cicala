@@ -3,6 +3,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Page } from "@playwright/test";
+import { DEVICE_DECKS } from "../src/config";
 
 const at = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
 
@@ -35,11 +36,12 @@ export const payload = (lang: string): Question[] =>
 export const playable = (lang: string, deck: string): Question[] =>
   payload(lang).filter((q) => q.depth <= schema.playbackDepthMax && q.decks.includes(deck));
 
-/** The category that requires the fewest draws to exhaust. */
+/** The category that requires the fewest draws to exhaust, among the decks
+    the player offers. */
 export const smallestDeck = (lang: string): string =>
-  schema.decks
-    .map((deck) => ({ deck, size: playable(lang, deck).length }))
-    .sort((a, b) => a.size - b.size)[0]!.deck;
+  DEVICE_DECKS.map((deck) => ({ deck, size: playable(lang, deck).length })).sort(
+    (a, b) => a.size - b.size,
+  )[0]!.deck;
 
 /** Wait for the play island to replace the build-time seed question. */
 export async function playReady(page: Page, lang = "en"): Promise<void> {

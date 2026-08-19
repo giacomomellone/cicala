@@ -272,7 +272,7 @@ int kveld_app_init(void)
 #endif
 
     if (!open_corpus(io.qdb)) {
-        LOG_ERR("the embedded corpus is not a valid QDB2 bundle");
+        LOG_ERR("the embedded corpus is not a valid QDB3 bundle");
         return -EINVAL;
     }
 
@@ -295,7 +295,7 @@ int kveld_app_init(void)
     if (woke_by == KVELD_WAKE_CATEGORY) {
         kveld::Retained &block = kveld_retained();
 
-        block.active_deck = (uint8_t) ((block.active_deck + 1) % KVELD_DECK_COUNT);
+        block.active_deck = kveld_deck_cycle_next(block.active_deck);
         kveld_retained_seal();
 
         LOG_INF("woken by Category");
@@ -305,8 +305,8 @@ int kveld_app_init(void)
         fsm.post_next();
     }
 
-    const uint8_t deck =
-        kveld_retained().active_deck < KVELD_DECK_COUNT ? kveld_retained().active_deck : 0;
+    const uint8_t stored_deck = kveld_retained().active_deck;
+    const uint8_t deck = kveld_deck_on_device(stored_deck) ? stored_deck : 0;
 
     LOG_INF("active deck: %u %s", deck, kveld_deck_name(deck));
 
@@ -319,7 +319,7 @@ void kveld_app_post_category(void)
 {
     kveld::Retained &block = kveld_retained();
 
-    block.active_deck = (uint8_t) ((block.active_deck + 1) % KVELD_DECK_COUNT);
+    block.active_deck = kveld_deck_cycle_next(block.active_deck);
     kveld_retained_seal();
 
     LOG_INF("category: deck %u %s", block.active_deck, kveld_deck_name(block.active_deck));
