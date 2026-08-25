@@ -5,7 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-namespace kveld
+namespace cicala
 {
 
 constexpr size_t kEd25519SignatureBytes = 64;
@@ -15,4 +15,4 @@ constexpr size_t kEd25519PublicKeyBytes = 32;
 bool ed25519_verify(const uint8_t *sig, const uint8_t *msg, size_t msg_len,
                     const uint8_t *public_key);
 
-} // namespace kveld
+} // namespace cicala

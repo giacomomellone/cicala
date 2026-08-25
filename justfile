@@ -1,4 +1,4 @@
-# kveld — type `just` to see what you can do.
+# cicala — type `just` to see what you can do.
 # One-time machine setup: `just setup` (plus `just fw-init` for firmware work)
 
 set shell := ["bash", "-cu"]
@@ -20,7 +20,7 @@ monport := if port == "" { "" } else { "-p " + port }
 
 # The native USB jack carries JTAG and the debug console.
 
-usbport := env("KVELD_USB_PORT", shell("ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true"))
+usbport := env("CICALA_USB_PORT", shell("ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true"))
 usbmonport := if usbport == "" { "" } else { "-p " + usbport }
 
 # Override the Zephyr SDK location when needed:
@@ -220,23 +220,23 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
             cmake+=("-DEXTRA_CONF_FILE=debug.conf" "-DEXTRA_DTC_OVERLAY_FILE=debug.overlay")
             ;;
         charset)
-            cmake+=("-DCONFIG_KVELD_DEBUG_CHARSET=y")
+            cmake+=("-DCONFIG_CICALA_DEBUG_CHARSET=y")
             ;;
         soak)
             cmake+=("-DEXTRA_CONF_FILE=soak.conf")
             ;;
         retain)
-            cmake+=("-DEXTRA_CONF_FILE=soak.conf" "-DCONFIG_KVELD_DEBUG_SOAK_REBOOT=y")
+            cmake+=("-DEXTRA_CONF_FILE=soak.conf" "-DCONFIG_CICALA_DEBUG_SOAK_REBOOT=y")
             ;;
         power)
             sysbuild=true
-            cmake+=("-DCONFIG_KVELD_DEBUG_POWER=y")
+            cmake+=("-DCONFIG_CICALA_DEBUG_POWER=y")
             ;;
         portal)
-            cmake+=("-DCONFIG_KVELD_DEBUG_PORTAL=y")
+            cmake+=("-DCONFIG_CICALA_DEBUG_PORTAL=y")
             ;;
         corpus)
-            cmake+=("-DCONFIG_KVELD_DEBUG_CORPUS_STORE=y")
+            cmake+=("-DCONFIG_CICALA_DEBUG_CORPUS_STORE=y")
             ;;
         bench)
             if [ -z "$host" ]; then
@@ -245,9 +245,9 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
             fi
             cmake+=(
                 "-DEXTRA_CONF_FILE=bench.conf"
-                "-DCONFIG_KVELD_SYNC_HOST=\"$host\""
-                "-DCONFIG_KVELD_SYNC_PORT={{ port }}"
-                "-DCONFIG_KVELD_SYNC_BASE_URL=\"http://$host:{{ port }}\""
+                "-DCONFIG_CICALA_SYNC_HOST=\"$host\""
+                "-DCONFIG_CICALA_SYNC_PORT={{ port }}"
+                "-DCONFIG_CICALA_SYNC_BASE_URL=\"http://$host:{{ port }}\""
             )
             ;;
         ota)
@@ -262,11 +262,11 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
             fi
             cmake+=(
                 "-DEXTRA_CONF_FILE=bench.conf"
-                "-DCONFIG_KVELD_OTA=y"
-                "-DCONFIG_KVELD_SYNC_HOST=\"$host\""
-                "-DCONFIG_KVELD_SYNC_PORT={{ port }}"
-                "-DCONFIG_KVELD_SYNC_BASE_URL=\"http://$host:{{ port }}\""
-                "-DCONFIG_KVELD_OTA_BASE_URL=\"http://$host:{{ port }}\""
+                "-DCONFIG_CICALA_OTA=y"
+                "-DCONFIG_CICALA_SYNC_HOST=\"$host\""
+                "-DCONFIG_CICALA_SYNC_PORT={{ port }}"
+                "-DCONFIG_CICALA_SYNC_BASE_URL=\"http://$host:{{ port }}\""
+                "-DCONFIG_CICALA_OTA_BASE_URL=\"http://$host:{{ port }}\""
             )
             ;;
     esac

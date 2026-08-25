@@ -1,6 +1,6 @@
 #include "manifest.hpp"
 
-namespace kveld
+namespace cicala
 {
 
 namespace
@@ -429,4 +429,4 @@ bool firmware_parse(const char *json, size_t len, FirmwareRelease &out)
     return true;
 }
 
-} // namespace kveld
+} // namespace cicala

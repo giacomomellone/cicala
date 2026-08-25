@@ -8,7 +8,7 @@
 #include "portal_fsm.hpp"
 #include "portal_page.hpp"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -35,11 +35,11 @@ bool contains(const char *haystack, const char *needle)
 
 } // namespace
 
-ZTEST_SUITE(kveld_portal, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_portal, NULL, NULL, NULL, NULL, NULL);
 
 /* DNS */
 
-ZTEST(kveld_portal, test_dns_parses_a_real_query)
+ZTEST(cicala_portal, test_dns_parses_a_real_query)
 {
     DnsQuery q = {};
 
@@ -52,7 +52,7 @@ ZTEST(kveld_portal, test_dns_parses_a_real_query)
     zassert_equal(q.question_end, sizeof(kQueryA));
 }
 
-ZTEST(kveld_portal, test_dns_answers_with_the_portal_address)
+ZTEST(cicala_portal, test_dns_answers_with_the_portal_address)
 {
     const uint16_t n = dns_hijack(kQueryA, sizeof(kQueryA), kApAddr, reply, sizeof(reply));
 
@@ -94,7 +94,7 @@ ZTEST(kveld_portal, test_dns_answers_with_the_portal_address)
     zassert_equal(answer[15], 1);
 }
 
-ZTEST(kveld_portal, test_dns_answers_aaaa_empty_rather_than_not_at_all)
+ZTEST(cicala_portal, test_dns_answers_aaaa_empty_rather_than_not_at_all)
 {
     memcpy(query_aaaa, kQueryA, sizeof(kQueryA));
     query_aaaa[sizeof(kQueryA) - 3] = kDnsTypeAaaa;
@@ -106,7 +106,7 @@ ZTEST(kveld_portal, test_dns_answers_aaaa_empty_rather_than_not_at_all)
     zassert_equal(reply[7], 0, "ANCOUNT is zero");
 }
 
-ZTEST(kveld_portal, test_dns_rejects_what_it_should_not_answer)
+ZTEST(cicala_portal, test_dns_rejects_what_it_should_not_answer)
 {
     DnsQuery q = {};
     uint8_t bad[sizeof(kQueryA)];
@@ -142,7 +142,7 @@ ZTEST(kveld_portal, test_dns_rejects_what_it_should_not_answer)
     zassert_false(dns_parse_query(kQueryA, sizeof(kQueryA) - 2, q));
 }
 
-ZTEST(kveld_portal, test_dns_will_not_overrun_the_reply_buffer)
+ZTEST(cicala_portal, test_dns_will_not_overrun_the_reply_buffer)
 {
     DnsQuery q = {};
 
@@ -156,7 +156,7 @@ ZTEST(kveld_portal, test_dns_will_not_overrun_the_reply_buffer)
 
 /* Form decoding */
 
-ZTEST(kveld_portal, test_form_reads_the_fields_a_browser_posts)
+ZTEST(cicala_portal, test_form_reads_the_fields_a_browser_posts)
 {
     const char body[] = "ssid=Cafe+Krone&psk=hunter2&lang=de";
     char value[kPskBufSize];
@@ -171,7 +171,7 @@ ZTEST(kveld_portal, test_form_reads_the_fields_a_browser_posts)
     zassert_str_equal(value, "de", "the last field has no ampersand after it");
 }
 
-ZTEST(kveld_portal, test_form_decodes_a_password_worth_escaping)
+ZTEST(cicala_portal, test_form_decodes_a_password_worth_escaping)
 {
     const char body[] = "psk=a%26b%3Dc%25d+e%2Bf";
     char value[kPskBufSize];
@@ -180,7 +180,7 @@ ZTEST(kveld_portal, test_form_decodes_a_password_worth_escaping)
     zassert_str_equal(value, "a&b=c%d e+f");
 }
 
-ZTEST(kveld_portal, test_form_matches_whole_keys_only)
+ZTEST(cicala_portal, test_form_matches_whole_keys_only)
 {
     const char body[] = "xssid=wrong&ssid_hidden=wrong&ssid=right";
     char value[kSsidBufSize];
@@ -189,7 +189,7 @@ ZTEST(kveld_portal, test_form_matches_whole_keys_only)
     zassert_str_equal(value, "right");
 }
 
-ZTEST(kveld_portal, test_form_rejects_rather_than_guesses)
+ZTEST(cicala_portal, test_form_rejects_rather_than_guesses)
 {
     char value[kPskBufSize];
 
@@ -205,7 +205,7 @@ ZTEST(kveld_portal, test_form_rejects_rather_than_guesses)
     zassert_equal(form_field("psk=abcdef", 10, "psk", small, sizeof(small)), -1);
 }
 
-ZTEST(kveld_portal, test_form_accepts_an_empty_value)
+ZTEST(cicala_portal, test_form_accepts_an_empty_value)
 {
     char value[kPskBufSize];
 
@@ -215,7 +215,7 @@ ZTEST(kveld_portal, test_form_accepts_an_empty_value)
 
 /* Page rendering */
 
-ZTEST(kveld_portal, test_page_escapes_a_network_name_from_the_air)
+ZTEST(cicala_portal, test_page_escapes_a_network_name_from_the_air)
 {
     ScanEntry nets[1] = {};
 
@@ -229,7 +229,7 @@ ZTEST(kveld_portal, test_page_escapes_a_network_name_from_the_air)
     zassert_true(contains(page, "&lt;script&gt;alert(1)&lt;/script&gt;"));
 }
 
-ZTEST(kveld_portal, test_page_escapes_a_name_that_would_break_out_of_an_attribute)
+ZTEST(cicala_portal, test_page_escapes_a_name_that_would_break_out_of_an_attribute)
 {
     ScanEntry nets[1] = {};
 
@@ -241,7 +241,7 @@ ZTEST(kveld_portal, test_page_escapes_a_name_that_would_break_out_of_an_attribut
     zassert_true(contains(page, "&quot; onfocus=&quot;x"));
 }
 
-ZTEST(kveld_portal, test_page_setup_lists_networks_and_marks_the_language)
+ZTEST(cicala_portal, test_page_setup_lists_networks_and_marks_the_language)
 {
     ScanEntry nets[2] = {};
 
@@ -257,7 +257,7 @@ ZTEST(kveld_portal, test_page_setup_lists_networks_and_marks_the_language)
     zassert_true(contains(page, "<option value=\"de\" selected>"));
     zassert_false(contains(page, "<option value=\"en\" selected>"));
     zassert_true(contains(page, "type=\"password\""));
-    zassert_true(contains(page, "<span class=\"wordmark\">kveld</span>"));
+    zassert_true(contains(page, "<span class=\"wordmark\">cicala</span>"));
     zassert_false(contains(page, "class=\"mark\""), "the old KV tile must not return");
     zassert_true(contains(page, "background:#faf8f2"));
     zassert_true(contains(page, "color:#1f1f1d"));
@@ -266,7 +266,7 @@ ZTEST(kveld_portal, test_page_setup_lists_networks_and_marks_the_language)
     zassert_false(contains(page, "https://"), "the captive page must not fetch remote assets");
 }
 
-ZTEST(kveld_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothing)
+ZTEST(cicala_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothing)
 {
     zassert_true(page_setup(page, sizeof(page), nullptr, 0, "en") > 0);
 
@@ -274,10 +274,10 @@ ZTEST(kveld_portal, test_page_setup_still_takes_a_name_when_the_scan_found_nothi
     zassert_true(contains(page, "No networks in range"));
 }
 
-ZTEST(kveld_portal, test_page_status_never_shows_the_saved_password)
+ZTEST(cicala_portal, test_page_status_never_shows_the_saved_password)
 {
     const PortalStatus status = {
-        "Kveld-A1B2",
+        "Cicala-A1B2",
         "esp32s3_devkitc",
         "en",
         "2026.07.2",
@@ -293,7 +293,7 @@ ZTEST(kveld_portal, test_page_status_never_shows_the_saved_password)
 
     zassert_true(page_status(page, sizeof(page), status) > 0);
 
-    zassert_true(contains(page, "Kveld-A1B2"));
+    zassert_true(contains(page, "Cicala-A1B2"));
     zassert_true(contains(page, "esp32s3_devkitc"));
     zassert_true(contains(page, "240 in en"));
     zassert_true(contains(page, "2026.07.2"));
@@ -305,11 +305,21 @@ ZTEST(kveld_portal, test_page_status_never_shows_the_saved_password)
     zassert_true(contains(page, "Questions are up to date."));
 }
 
-ZTEST(kveld_portal, test_page_status_reports_an_unconfigured_device)
+ZTEST(cicala_portal, test_page_status_reports_an_unconfigured_device)
 {
     const PortalStatus status = {
-        "Kveld-A1B2", "esp32s3_devkitc", "en", "2026.07.2", 240, "0.1.0", nullptr, false,
-        "",           "Wi-Fi error -5",  "",   12,
+        "Cicala-A1B2",
+        "esp32s3_devkitc",
+        "en",
+        "2026.07.2",
+        240,
+        "0.1.0",
+        nullptr,
+        false,
+        "",
+        "Wi-Fi error -5",
+        "",
+        12,
     };
 
     zassert_true(page_status(page, sizeof(page), status) > 0);
@@ -318,20 +328,20 @@ ZTEST(kveld_portal, test_page_status_reports_an_unconfigured_device)
     zassert_true(contains(page, "Wi-Fi error -5"));
 }
 
-ZTEST(kveld_portal, test_page_notice_escapes_its_message)
+ZTEST(cicala_portal, test_page_notice_escapes_its_message)
 {
     zassert_true(page_notice(page, sizeof(page), "Done", "Use <network> & save") > 0);
     zassert_true(contains(page, "Use &lt;network&gt; &amp; save"));
 }
 
-ZTEST(kveld_portal, test_page_forget_requires_confirmation)
+ZTEST(cicala_portal, test_page_forget_requires_confirmation)
 {
     zassert_true(page_forget_confirm(page, sizeof(page)) > 0);
     zassert_true(contains(page, "Confirm and forget Wi-Fi"));
     zassert_true(contains(page, "Your questions and language stay intact."));
 }
 
-ZTEST(kveld_portal, test_page_reports_a_buffer_too_small_rather_than_writing_past_it)
+ZTEST(cicala_portal, test_page_reports_a_buffer_too_small_rather_than_writing_past_it)
 {
     ScanEntry nets[1] = {};
     char tiny[64];
@@ -342,13 +352,13 @@ ZTEST(kveld_portal, test_page_reports_a_buffer_too_small_rather_than_writing_pas
     zassert_equal(page_saved(tiny, sizeof(tiny), "Krone"), -1);
 }
 
-ZTEST(kveld_portal, test_page_saved_names_the_network_being_joined)
+ZTEST(cicala_portal, test_page_saved_names_the_network_being_joined)
 {
     zassert_true(page_saved(page, sizeof(page), "Cafe & Bar") > 0);
     zassert_true(contains(page, "Cafe &amp; Bar"));
 }
 
-ZTEST(kveld_portal, test_html_escape_covers_every_character_that_matters)
+ZTEST(cicala_portal, test_html_escape_covers_every_character_that_matters)
 {
     char out[64];
     const char in[] = "&<>\"'";
@@ -357,7 +367,7 @@ ZTEST(kveld_portal, test_html_escape_covers_every_character_that_matters)
     zassert_str_equal(out, "&amp;&lt;&gt;&quot;&#39;");
 }
 
-ZTEST(kveld_portal, test_html_escape_reports_a_buffer_too_small)
+ZTEST(cicala_portal, test_html_escape_reports_a_buffer_too_small)
 {
     char out[8];
 
@@ -463,7 +473,7 @@ void reach_serving(TestPortalFsm &fsm, FakeIo &io)
 
 } // namespace
 
-ZTEST(kveld_portal, test_fsm_starts_off_and_stays_there)
+ZTEST(cicala_portal, test_fsm_starts_off_and_stays_there)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -476,7 +486,7 @@ ZTEST(kveld_portal, test_fsm_starts_off_and_stays_there)
     zassert_equal(io.ap_starts, 0);
 }
 
-ZTEST(kveld_portal, test_fsm_scans_before_it_raises_the_access_point)
+ZTEST(cicala_portal, test_fsm_scans_before_it_raises_the_access_point)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -503,7 +513,7 @@ ZTEST(kveld_portal, test_fsm_scans_before_it_raises_the_access_point)
     zassert_equal(io.last_card, PortalCard::SETUP, "the panel names the network to join");
 }
 
-ZTEST(kveld_portal, test_fsm_gives_up_on_a_scan_that_never_reports)
+ZTEST(cicala_portal, test_fsm_gives_up_on_a_scan_that_never_reports)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -522,7 +532,7 @@ ZTEST(kveld_portal, test_fsm_gives_up_on_a_scan_that_never_reports)
     zassert_equal(fsm.get_current_state(), STATE(AP_STARTING));
 }
 
-ZTEST(kveld_portal, test_fsm_carries_on_when_the_scan_cannot_be_started)
+ZTEST(cicala_portal, test_fsm_carries_on_when_the_scan_cannot_be_started)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -536,7 +546,7 @@ ZTEST(kveld_portal, test_fsm_carries_on_when_the_scan_cannot_be_started)
                   "no waiting for a scan that is not running");
 }
 
-ZTEST(kveld_portal, test_fsm_ends_when_the_access_point_will_not_come_up)
+ZTEST(cicala_portal, test_fsm_ends_when_the_access_point_will_not_come_up)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -555,7 +565,7 @@ ZTEST(kveld_portal, test_fsm_ends_when_the_access_point_will_not_come_up)
     zassert_false(fsm.is_active());
 }
 
-ZTEST(kveld_portal, test_fsm_ends_when_nothing_can_be_served)
+ZTEST(cicala_portal, test_fsm_ends_when_nothing_can_be_served)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -573,7 +583,7 @@ ZTEST(kveld_portal, test_fsm_ends_when_nothing_can_be_served)
     zassert_equal(io.teardowns, 1);
 }
 
-ZTEST(kveld_portal, test_fsm_joins_a_network_when_the_form_arrives)
+ZTEST(cicala_portal, test_fsm_joins_a_network_when_the_form_arrives)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -597,7 +607,7 @@ ZTEST(kveld_portal, test_fsm_joins_a_network_when_the_form_arrives)
     zassert_equal(io.teardowns, 0, "the AP stays up so the status page can be read");
 }
 
-ZTEST(kveld_portal, test_fsm_puts_a_refused_password_back_on_the_form)
+ZTEST(cicala_portal, test_fsm_puts_a_refused_password_back_on_the_form)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -622,7 +632,7 @@ ZTEST(kveld_portal, test_fsm_puts_a_refused_password_back_on_the_form)
     zassert_equal(io.connects, 2);
 }
 
-ZTEST(kveld_portal, test_fsm_treats_a_silent_network_as_a_refusal)
+ZTEST(cicala_portal, test_fsm_treats_a_silent_network_as_a_refusal)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -644,7 +654,7 @@ ZTEST(kveld_portal, test_fsm_treats_a_silent_network_as_a_refusal)
     zassert_equal(io.last_card, PortalCard::REFUSED);
 }
 
-ZTEST(kveld_portal, test_fsm_closes_the_window_on_its_own)
+ZTEST(cicala_portal, test_fsm_closes_the_window_on_its_own)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -663,7 +673,7 @@ ZTEST(kveld_portal, test_fsm_closes_the_window_on_its_own)
     zassert_false(fsm.is_active());
 }
 
-ZTEST(kveld_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
+ZTEST(cicala_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
 {
     FakeIo io;
     TestPortalFsm fsm(io);
@@ -690,7 +700,7 @@ ZTEST(kveld_portal, test_fsm_gives_the_status_page_a_window_of_its_own)
     zassert_equal(io.teardowns, 1);
 }
 
-ZTEST(kveld_portal, test_fsm_stops_from_wherever_it_is)
+ZTEST(cicala_portal, test_fsm_stops_from_wherever_it_is)
 {
     for (int stop_at = 0; stop_at < 4; stop_at++) {
         FakeIo io;
@@ -723,7 +733,7 @@ ZTEST(kveld_portal, test_fsm_stops_from_wherever_it_is)
     }
 }
 
-ZTEST(kveld_portal, test_fsm_ignores_a_stop_that_arrives_with_nothing_running)
+ZTEST(cicala_portal, test_fsm_ignores_a_stop_that_arrives_with_nothing_running)
 {
     FakeIo io;
     TestPortalFsm fsm(io);

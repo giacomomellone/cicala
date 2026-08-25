@@ -3,7 +3,7 @@
 
 #include "app_fsm.hpp"
 
-using namespace kveld;
+using namespace cicala;
 using State = AppFsm::State;
 
 namespace
@@ -106,9 +106,9 @@ void boot_to_question(TestAppFsm &fsm, FakeIo &io, uint8_t deck)
 
 } // namespace
 
-ZTEST_SUITE(kveld_app_fsm, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_app_fsm, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_app_fsm, test_boot_waits_for_a_valid_deck)
+ZTEST(cicala_app_fsm, test_boot_waits_for_a_valid_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -121,7 +121,7 @@ ZTEST(kveld_app_fsm, test_boot_waits_for_a_valid_deck)
     zassert_equal(io.labels, 0, "an invalid deck must not be named");
 }
 
-ZTEST(kveld_app_fsm, test_boot_announces_the_deck)
+ZTEST(cicala_app_fsm, test_boot_announces_the_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -135,7 +135,7 @@ ZTEST(kveld_app_fsm, test_boot_announces_the_deck)
     zassert_equal(io.draws, 0, "the first question waits for a press");
 }
 
-ZTEST(kveld_app_fsm, test_boot_with_a_retained_question_draws_nothing)
+ZTEST(cicala_app_fsm, test_boot_with_a_retained_question_draws_nothing)
 {
     FakeIo io;
     io.retained = true;
@@ -151,7 +151,7 @@ ZTEST(kveld_app_fsm, test_boot_with_a_retained_question_draws_nothing)
     zassert_equal(io.labels, 0);
 }
 
-ZTEST(kveld_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
+ZTEST(cicala_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
 {
     FakeIo io;
     io.retained = true;
@@ -169,7 +169,7 @@ ZTEST(kveld_app_fsm, test_a_next_pending_at_boot_is_answered_with_a_question)
     zassert_equal(io.last_deck, 2);
 }
 
-ZTEST(kveld_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
+ZTEST(cicala_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -183,7 +183,7 @@ ZTEST(kveld_app_fsm, test_a_next_pending_at_boot_beats_the_deck_announcement)
     zassert_equal(io.labels, 0);
 }
 
-ZTEST(kveld_app_fsm, test_a_next_wake_settles_without_announcing_the_deck)
+ZTEST(cicala_app_fsm, test_a_next_wake_settles_without_announcing_the_deck)
 {
     FakeIo io;
     io.retained = true;
@@ -203,7 +203,7 @@ ZTEST(kveld_app_fsm, test_a_next_wake_settles_without_announcing_the_deck)
     zassert_equal(io.labels, 0, "the deck was never in doubt; naming it would be noise");
 }
 
-ZTEST(kveld_app_fsm, test_next_asks_for_a_question)
+ZTEST(cicala_app_fsm, test_next_asks_for_a_question)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -219,7 +219,7 @@ ZTEST(kveld_app_fsm, test_next_asks_for_a_question)
     zassert_equal(io.labels, 1, "and does not repeat the deck name");
 }
 
-ZTEST(kveld_app_fsm, test_next_keeps_asking_from_the_same_deck)
+ZTEST(cicala_app_fsm, test_next_keeps_asking_from_the_same_deck)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -234,7 +234,7 @@ ZTEST(kveld_app_fsm, test_next_keeps_asking_from_the_same_deck)
     zassert_equal(io.labels, 1, "the name is announced once, when the deck changes");
 }
 
-ZTEST(kveld_app_fsm, test_changing_the_active_deck_announces_it)
+ZTEST(cicala_app_fsm, test_changing_the_active_deck_announces_it)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -250,7 +250,7 @@ ZTEST(kveld_app_fsm, test_changing_the_active_deck_announces_it)
     zassert_equal(io.draws, 1, "changing category does not request a question");
 }
 
-ZTEST(kveld_app_fsm, test_the_deck_name_stays_until_next)
+ZTEST(cicala_app_fsm, test_the_deck_name_stays_until_next)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -276,7 +276,7 @@ ZTEST(kveld_app_fsm, test_the_deck_name_stays_until_next)
     zassert_equal(io.last_deck, 5, "and the question comes from the deck just named");
 }
 
-ZTEST(kveld_app_fsm, test_an_invalid_deck_keeps_what_is_on_the_panel)
+ZTEST(cicala_app_fsm, test_an_invalid_deck_keeps_what_is_on_the_panel)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -291,7 +291,7 @@ ZTEST(kveld_app_fsm, test_an_invalid_deck_keeps_what_is_on_the_panel)
     zassert_equal(io.labels, 1);
 }
 
-ZTEST(kveld_app_fsm, test_a_press_during_a_refresh_is_dropped)
+ZTEST(cicala_app_fsm, test_a_press_during_a_refresh_is_dropped)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -313,7 +313,7 @@ ZTEST(kveld_app_fsm, test_a_press_during_a_refresh_is_dropped)
     zassert_equal(io.draws, 2, "the press made during the refresh must not queue");
 }
 
-ZTEST(kveld_app_fsm, test_a_panel_that_never_answers_times_out)
+ZTEST(cicala_app_fsm, test_a_panel_that_never_answers_times_out)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -322,7 +322,7 @@ ZTEST(kveld_app_fsm, test_a_panel_that_never_answers_times_out)
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
-    fsm.advance(CONFIG_KVELD_REFRESH_TIMEOUT_MS - 1);
+    fsm.advance(CONFIG_CICALA_REFRESH_TIMEOUT_MS - 1);
     fsm.run();
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
@@ -334,7 +334,7 @@ ZTEST(kveld_app_fsm, test_a_panel_that_never_answers_times_out)
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
 }
 
-ZTEST(kveld_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
+ZTEST(cicala_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -343,7 +343,7 @@ ZTEST(kveld_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(REFRESHING));
 
-    fsm.advance(CONFIG_KVELD_REFRESH_TIMEOUT_MS);
+    fsm.advance(CONFIG_CICALA_REFRESH_TIMEOUT_MS);
     settle(fsm);
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
 
@@ -364,7 +364,7 @@ ZTEST(kveld_app_fsm, test_a_render_arriving_after_the_timeout_is_not_reused)
     zassert_equal(io.draws, 1, "and exactly one question was drawn for that press");
 }
 
-ZTEST(kveld_app_fsm, test_a_failed_render_fails_without_waiting)
+ZTEST(cicala_app_fsm, test_a_failed_render_fails_without_waiting)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -378,7 +378,7 @@ ZTEST(kveld_app_fsm, test_a_failed_render_fails_without_waiting)
     zassert_equal(fsm.get_current_state(), STATE(FAIL));
 }
 
-ZTEST(kveld_app_fsm, test_an_empty_deck_fails_once_and_settles)
+ZTEST(cicala_app_fsm, test_an_empty_deck_fails_once_and_settles)
 {
     FakeIo io;
     io.draw_succeeds = false;
@@ -394,7 +394,7 @@ ZTEST(kveld_app_fsm, test_an_empty_deck_fails_once_and_settles)
     zassert_equal(io.draws, 1, "a deck that yields nothing must not be retried in a loop");
 }
 
-ZTEST(kveld_app_fsm, test_an_empty_deck_is_retried_on_the_next_press)
+ZTEST(cicala_app_fsm, test_an_empty_deck_is_retried_on_the_next_press)
 {
     FakeIo io;
     io.draw_succeeds = false;
@@ -415,7 +415,7 @@ ZTEST(kveld_app_fsm, test_an_empty_deck_is_retried_on_the_next_press)
     zassert_equal(io.draws, 2);
 }
 
-ZTEST(kveld_app_fsm, test_a_deck_name_that_cannot_be_shown_does_not_loop)
+ZTEST(cicala_app_fsm, test_a_deck_name_that_cannot_be_shown_does_not_loop)
 {
     FakeIo io;
     io.label_succeeds = false;
@@ -430,7 +430,7 @@ ZTEST(kveld_app_fsm, test_a_deck_name_that_cannot_be_shown_does_not_loop)
     zassert_equal(io.labels, 1, "and not keep trying to announce the same deck");
 }
 
-ZTEST(kveld_app_fsm, test_only_refreshing_asks_the_loop_to_stay_awake)
+ZTEST(cicala_app_fsm, test_only_refreshing_asks_the_loop_to_stay_awake)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -448,7 +448,7 @@ ZTEST(kveld_app_fsm, test_only_refreshing_asks_the_loop_to_stay_awake)
     zassert_false(fsm.current_state_has_timeout(), "SHOWING is where deep sleep happens");
 }
 
-ZTEST(kveld_app_fsm, test_the_portal_gets_a_card_and_the_table_gets_it_back)
+ZTEST(cicala_app_fsm, test_the_portal_gets_a_card_and_the_table_gets_it_back)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -472,7 +472,7 @@ ZTEST(kveld_app_fsm, test_the_portal_gets_a_card_and_the_table_gets_it_back)
     zassert_equal(fsm.get_current_state(), STATE(SHOWING));
 }
 
-ZTEST(kveld_app_fsm, test_a_press_during_setup_still_asks_a_question)
+ZTEST(cicala_app_fsm, test_a_press_during_setup_still_asks_a_question)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -494,7 +494,7 @@ ZTEST(kveld_app_fsm, test_a_press_during_setup_still_asks_a_question)
     zassert_equal(io.draws, 1);
 }
 
-ZTEST(kveld_app_fsm, test_a_card_the_panel_refuses_does_not_wedge_the_table)
+ZTEST(cicala_app_fsm, test_a_card_the_panel_refuses_does_not_wedge_the_table)
 {
     FakeIo io;
     TestAppFsm fsm(io);
@@ -517,7 +517,7 @@ ZTEST(kveld_app_fsm, test_a_card_the_panel_refuses_does_not_wedge_the_table)
     zassert_equal(io.draws, 1);
 }
 
-ZTEST(kveld_app_fsm, test_a_card_arriving_mid_refresh_waits_rather_than_being_dropped)
+ZTEST(cicala_app_fsm, test_a_card_arriving_mid_refresh_waits_rather_than_being_dropped)
 {
     FakeIo io;
     TestAppFsm fsm(io);

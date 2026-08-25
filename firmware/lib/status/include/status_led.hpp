@@ -7,17 +7,17 @@
 
 #include "power_state.hpp"
 
-namespace kveld
+namespace cicala
 {
 
-#ifdef CONFIG_KVELD_STATUS_LED_BLINK_MS
-constexpr int64_t kStatusBlinkMs = CONFIG_KVELD_STATUS_LED_BLINK_MS;
+#ifdef CONFIG_CICALA_STATUS_LED_BLINK_MS
+constexpr int64_t kStatusBlinkMs = CONFIG_CICALA_STATUS_LED_BLINK_MS;
 #else
 constexpr int64_t kStatusBlinkMs = 200;
 #endif
 
-#ifdef CONFIG_KVELD_STATUS_LED_PULSE_MS
-constexpr int64_t kStatusPulseMs = CONFIG_KVELD_STATUS_LED_PULSE_MS;
+#ifdef CONFIG_CICALA_STATUS_LED_PULSE_MS
+constexpr int64_t kStatusPulseMs = CONFIG_CICALA_STATUS_LED_PULSE_MS;
 #else
 constexpr int64_t kStatusPulseMs = 1500;
 #endif
@@ -88,4 +88,4 @@ private:
     int64_t _burst_end_ms = 0;
 };
 
-} // namespace kveld
+} // namespace cicala

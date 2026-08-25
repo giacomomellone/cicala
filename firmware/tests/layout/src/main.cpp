@@ -6,7 +6,7 @@
 #include "layout.hpp"
 #include "qdb.hpp"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -19,7 +19,7 @@ const uint8_t de_bundle[] = {
 #include "de_qdb.inc"
 };
 
-constexpr uint8_t kColumns = CONFIG_KVELD_PANEL_COLUMNS;
+constexpr uint8_t kColumns = CONFIG_CICALA_PANEL_COLUMNS;
 
 Glyph glyphs[kMaxGlyphs];
 Layout layout;
@@ -44,9 +44,9 @@ bool line_reads(const Layout &l, uint8_t index, const char *expected)
 
 } // namespace
 
-ZTEST_SUITE(kveld_layout, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_layout, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_layout, test_utf8_decodes_one_and_two_byte_sequences)
+ZTEST(cicala_layout, test_utf8_decodes_one_and_two_byte_sequences)
 {
     uint32_t cp = 0;
 
@@ -60,7 +60,7 @@ ZTEST(kveld_layout, test_utf8_decodes_one_and_two_byte_sequences)
     zassert_equal(cp, 0x00DF, "sharp s");
 }
 
-ZTEST(kveld_layout, test_utf8_rejects_malformed_input)
+ZTEST(cicala_layout, test_utf8_rejects_malformed_input)
 {
     uint32_t cp = 0;
 
@@ -72,7 +72,7 @@ ZTEST(kveld_layout, test_utf8_rejects_malformed_input)
     zassert_equal(utf8_decode("\xE0\x80\xAF", 3, cp), 0, "overlong, three bytes");
 }
 
-ZTEST(kveld_layout, test_utf8_length_counts_characters_not_bytes)
+ZTEST(cicala_layout, test_utf8_length_counts_characters_not_bytes)
 {
     zassert_equal(utf8_length("Gr\xC3\xBC\xC3\x9F"
                               "e",
@@ -81,7 +81,7 @@ ZTEST(kveld_layout, test_utf8_length_counts_characters_not_bytes)
     zassert_equal(utf8_length("\xC3", 1), 0, "malformed input has no length");
 }
 
-ZTEST(kveld_layout, test_accents_become_a_base_letter_and_a_mark)
+ZTEST(cicala_layout, test_accents_become_a_base_letter_and_a_mark)
 {
     Glyph out[2];
 
@@ -116,7 +116,7 @@ ZTEST(kveld_layout, test_accents_become_a_base_letter_and_a_mark)
     zassert_true(out[0].mark == Mark::ACUTE);
 }
 
-ZTEST(kveld_layout, test_ligatures_fall_back_to_two_letters)
+ZTEST(cicala_layout, test_ligatures_fall_back_to_two_letters)
 {
     Glyph out[2];
 
@@ -133,7 +133,7 @@ ZTEST(kveld_layout, test_ligatures_fall_back_to_two_letters)
     zassert_equal(out[1].base, 'e');
 }
 
-ZTEST(kveld_layout, test_unrepresentable_characters_report_themselves)
+ZTEST(cicala_layout, test_unrepresentable_characters_report_themselves)
 {
     Glyph out[2];
 
@@ -145,7 +145,7 @@ ZTEST(kveld_layout, test_unrepresentable_characters_report_themselves)
     zassert_equal(glyphs[layout.lines[0].offset].base, '?');
 }
 
-ZTEST(kveld_layout, test_a_short_question_is_one_line)
+ZTEST(cicala_layout, test_a_short_question_is_one_line)
 {
     const char *text = "What made you laugh?";
 
@@ -157,7 +157,7 @@ ZTEST(kveld_layout, test_a_short_question_is_one_line)
     zassert_true(line_reads(layout, 0, "What made you laugh?"));
 }
 
-ZTEST(kveld_layout, test_wrapping_breaks_on_spaces_and_drops_them)
+ZTEST(cicala_layout, test_wrapping_breaks_on_spaces_and_drops_them)
 {
     const char *text = "one two three four";
 
@@ -167,7 +167,7 @@ ZTEST(kveld_layout, test_wrapping_breaks_on_spaces_and_drops_them)
     zassert_true(line_reads(layout, 1, "three four"));
 }
 
-ZTEST(kveld_layout, test_explicit_line_breaks_start_new_lines)
+ZTEST(cicala_layout, test_explicit_line_breaks_start_new_lines)
 {
     const char *text = "join network\npass secret\nthen open";
 
@@ -178,7 +178,7 @@ ZTEST(kveld_layout, test_explicit_line_breaks_start_new_lines)
     zassert_true(line_reads(layout, 2, "then open"));
 }
 
-ZTEST(kveld_layout, test_a_word_longer_than_the_line_is_broken)
+ZTEST(cicala_layout, test_a_word_longer_than_the_line_is_broken)
 {
     const char *text = "antidisestablishmentarianism";
 
@@ -190,7 +190,7 @@ ZTEST(kveld_layout, test_a_word_longer_than_the_line_is_broken)
     }
 }
 
-ZTEST(kveld_layout, test_decomposition_happens_before_wrapping)
+ZTEST(cicala_layout, test_decomposition_happens_before_wrapping)
 {
     const char *text = "Stra\xC3\x9F"
                        "e";
@@ -201,7 +201,7 @@ ZTEST(kveld_layout, test_decomposition_happens_before_wrapping)
     zassert_true(line_reads(layout, 0, "Strasse"));
 }
 
-ZTEST(kveld_layout, test_an_accent_costs_one_cell_not_two)
+ZTEST(cicala_layout, test_an_accent_costs_one_cell_not_two)
 {
     const char *text = "Gr\xC3\xBC\xC3\x9F"
                        "e";
@@ -215,7 +215,7 @@ ZTEST(kveld_layout, test_an_accent_costs_one_cell_not_two)
     zassert_true(glyphs[line.offset + 2].mark == Mark::DIAERESIS, "the u keeps its umlaut");
 }
 
-ZTEST(kveld_layout, test_text_needing_too_many_lines_is_flagged)
+ZTEST(cicala_layout, test_text_needing_too_many_lines_is_flagged)
 {
     static char text[512];
     uint16_t len = 0;
@@ -233,14 +233,14 @@ ZTEST(kveld_layout, test_text_needing_too_many_lines_is_flagged)
     zassert_equal(layout.count, kMaxLines);
 }
 
-ZTEST(kveld_layout, test_a_full_output_buffer_is_refused)
+ZTEST(cicala_layout, test_a_full_output_buffer_is_refused)
 {
     const char *text = "far too long for the space given";
 
     zassert_false(wrap(text, 32, kColumns, glyphs, 8, layout));
 }
 
-ZTEST(kveld_layout, test_every_shipped_question_fits_the_panel)
+ZTEST(cicala_layout, test_every_shipped_question_fits_the_panel)
 {
     Qdb qdb;
 

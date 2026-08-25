@@ -10,19 +10,19 @@
 
 #include "corpus.h"
 
-LOG_MODULE_REGISTER(kveld_corpus, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_corpus, LOG_LEVEL_INF);
 
 /* Buffer the largest corpus accepted by QDB and panel limits. */
-static uint8_t corpus_buf[CONFIG_KVELD_MAX_CORPUS_BYTES];
+static uint8_t corpus_buf[CONFIG_CICALA_MAX_CORPUS_BYTES];
 static size_t corpus_len;
 
 /* `/corpus/en.qdb`, and the staging name beside it. */
 static void corpus_path(const char *code, const char *suffix, char *out, size_t out_size)
 {
-    (void) snprintf(out, out_size, KVELD_CORPUS_DIR "/%s.qdb%s", code, suffix);
+    (void) snprintf(out, out_size, CICALA_CORPUS_DIR "/%s.qdb%s", code, suffix);
 }
 
-uint8_t *kveld_corpus_buffer(size_t *capacity)
+uint8_t *cicala_corpus_buffer(size_t *capacity)
 {
     if (capacity != NULL) {
         *capacity = sizeof(corpus_buf);
@@ -31,7 +31,7 @@ uint8_t *kveld_corpus_buffer(size_t *capacity)
     return corpus_buf;
 }
 
-const uint8_t *kveld_corpus_stored(const char *code, size_t *size)
+const uint8_t *cicala_corpus_stored(const char *code, size_t *size)
 {
     char path[48];
     struct fs_dirent info;
@@ -80,7 +80,7 @@ const uint8_t *kveld_corpus_stored(const char *code, size_t *size)
     return corpus_buf;
 }
 
-int kveld_corpus_store(const char *code, const uint8_t *data, size_t size)
+int cicala_corpus_store(const char *code, const uint8_t *data, size_t size)
 {
     char path[48];
     char staging[48];

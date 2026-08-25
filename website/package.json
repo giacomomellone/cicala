@@ -1,9 +1,10 @@
 {
-  "name": "kveld-website",
+  "name": "cicala-website",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
+    "brand-assets": "node scripts/render-brand-assets.mjs",
     "data": "python3 ../tools/build_site_data.py",
     "dev": "astro dev",
     "build": "astro build",

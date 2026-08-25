@@ -17,59 +17,61 @@
 #include "sleep.h"
 #include "status.h"
 
-LOG_MODULE_REGISTER(kveld_app, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_app, LOG_LEVEL_INF);
 
 namespace
 {
 
-#ifdef CONFIG_KVELD_DEBUG_CORPUS_STORE
+#ifdef CONFIG_CICALA_DEBUG_CORPUS_STORE
 void store_compiled_in_corpus()
 {
-    const int index = kveld_corpus_find(kveld_language());
+    const int index = cicala_corpus_find(cicala_language());
 
     if (index < 0) {
         return;
     }
 
     size_t size = 0;
-    const uint8_t *const data = kveld_corpus_data((size_t) index, &size);
+    const uint8_t *const data = cicala_corpus_data((size_t) index, &size);
 
-    LOG_WRN("CONFIG_KVELD_DEBUG_CORPUS_STORE: writing the compiled-in %s corpus to the filesystem",
-            kveld_language());
+    LOG_WRN("CONFIG_CICALA_DEBUG_CORPUS_STORE: writing the compiled-in %s corpus to the filesystem",
+            cicala_language());
 
-    (void) kveld_corpus_store(kveld_language(), data, size);
+    (void) cicala_corpus_store(cicala_language(), data, size);
 }
 #endif
 
-bool open_corpus(kveld::Qdb &qdb)
+bool open_corpus(cicala::Qdb &qdb)
 {
     size_t size = 0;
 
     /* Prefer a valid stored corpus, with the compiled corpus as fallback. */
-    const uint8_t *const stored = kveld_corpus_stored(kveld_language(), &size);
+    const uint8_t *const stored = cicala_corpus_stored(cicala_language(), &size);
 
     if (stored != nullptr && qdb.open(stored, size)) {
         return true;
     }
 
     if (stored != nullptr) {
-        LOG_ERR("the stored %s corpus does not parse; using the compiled-in one", kveld_language());
+        LOG_ERR("the stored %s corpus does not parse; using the compiled-in one",
+                cicala_language());
     }
 
-    int index = kveld_corpus_find(kveld_language());
+    int index = cicala_corpus_find(cicala_language());
 
     if (index < 0) {
-        LOG_WRN("no corpus for %s; falling back to %s", kveld_language(), kveld_corpus_language(0));
+        LOG_WRN("no corpus for %s; falling back to %s", cicala_language(),
+                cicala_corpus_language(0));
         index = 0;
     }
 
-    const uint8_t *const data = kveld_corpus_data((size_t) index, &size);
+    const uint8_t *const data = cicala_corpus_data((size_t) index, &size);
 
     return qdb.open(data, size);
 }
 
 /* Keep the no-repeat cycle across deep-sleep restarts. */
-kveld::Bag::State &bag_state = kveld_retained().bag;
+cicala::Bag::State &bag_state = cicala_retained().bag;
 
 uint32_t random_u32(void *ctx)
 {
@@ -78,7 +80,7 @@ uint32_t random_u32(void *ctx)
     return sys_rand32_get();
 }
 
-#ifdef CONFIG_KVELD_DEBUG_CHARSET
+#ifdef CONFIG_CICALA_DEBUG_CHARSET
 const char *const debug_pages[] = {
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
     "abcdefghijklmnopqrstuvwxyz",
@@ -94,11 +96,11 @@ const char *const debug_pages[] = {
 };
 #endif
 
-class Io : public kveld::AppIo
+class Io : public cicala::AppIo
 {
 public:
-    kveld::Qdb qdb;
-    kveld::Bag bag{bag_state, random_u32, nullptr};
+    cicala::Qdb qdb;
+    cicala::Bag bag{bag_state, random_u32, nullptr};
 
     bool draw(uint8_t deck) override
     {
@@ -108,9 +110,9 @@ public:
         }
 
         uint16_t index = 0;
-        kveld::Question question;
+        cicala::Question question;
 
-#ifdef CONFIG_KVELD_DEBUG_CHARSET
+#ifdef CONFIG_CICALA_DEBUG_CHARSET
         const char *const page = debug_pages[_page];
 
         _page = (_page + 1) % ARRAY_SIZE(debug_pages);
@@ -120,13 +122,13 @@ public:
 
         LOG_INF("charset page %u/%u: %s", _page, (unsigned int) ARRAY_SIZE(debug_pages), page);
 #else
-        if (!bag.draw(qdb, deck, CONFIG_KVELD_PLAYBACK_DEPTH_MAX, index, question)) {
-            LOG_WRN("deck %u (%s) yielded nothing", deck, kveld_deck_name(deck));
+        if (!bag.draw(qdb, deck, CONFIG_CICALA_PLAYBACK_DEPTH_MAX, index, question)) {
+            LOG_WRN("deck %u (%s) yielded nothing", deck, cicala_deck_name(deck));
             return false;
         }
 #endif
 
-        struct kveld_question_msg msg = {};
+        struct cicala_question_msg msg = {};
 
         msg.seq = ++_seq;
         msg.deck = deck;
@@ -142,7 +144,7 @@ public:
             msg.text[i] = question.text[i];
         }
 
-        LOG_INF("deck %u %s: %.*s", deck, kveld_deck_name(deck), (int) msg.len, msg.text);
+        LOG_INF("deck %u %s: %.*s", deck, cicala_deck_name(deck), (int) msg.len, msg.text);
 
         _last_deck = deck;
         _last_was_question = true;
@@ -157,20 +159,20 @@ public:
             return false;
         }
 
-        const char *label = kveld_deck_label(deck);
+        const char *label = cicala_deck_label(deck);
 
-        struct kveld_question_msg msg = {};
+        struct cicala_question_msg msg = {};
 
         msg.seq = ++_seq;
         msg.deck = deck;
-        msg.kind = KVELD_CARD_CATEGORY;
+        msg.kind = CICALA_CARD_CATEGORY;
 
         while (msg.len < sizeof(msg.text) && label[msg.len] != '\0') {
             msg.text[msg.len] = label[msg.len];
             msg.len++;
         }
 
-        LOG_INF("deck %u %s: showing the name", deck, kveld_deck_name(deck));
+        LOG_INF("deck %u %s: showing the name", deck, cicala_deck_name(deck));
 
         _last_deck = deck;
         _last_was_question = false;
@@ -180,9 +182,9 @@ public:
 
     bool retained_matches(uint8_t deck) const override
     {
-        const kveld::Retained &block = kveld_retained();
+        const cicala::Retained &block = cicala_retained();
 
-        return kveld_retained_survived() && block.showing_question && block.deck == deck;
+        return cicala_retained_survived() && block.showing_question && block.deck == deck;
     }
 
     bool show_service() override
@@ -191,11 +193,11 @@ public:
             return false;
         }
 
-        struct kveld_question_msg msg = {};
+        struct cicala_question_msg msg = {};
 
         msg.seq = ++_seq;
         msg.deck = _last_deck;
-        msg.kind = KVELD_CARD_SERVICE;
+        msg.kind = CICALA_CARD_SERVICE;
         msg.len = _service_len;
 
         for (uint16_t i = 0; i < _service_len; i++) {
@@ -226,26 +228,26 @@ public:
 
     void remember()
     {
-        kveld::Retained &block = kveld_retained();
+        cicala::Retained &block = cicala_retained();
 
         block.deck = _last_deck;
         block.showing_question = _last_was_question;
         block.seq = _seq;
 
-        kveld_retained_seal();
+        cicala_retained_seal();
     }
 
 private:
     bool refresh_allowed()
     {
-        if (kveld_power_refresh_allowed()) {
+        if (cicala_power_refresh_allowed()) {
             return true;
         }
 
         LOG_WRN("%u mV is under the %d mV floor; the panel keeps what it has",
-                kveld_power_millivolts(), CONFIG_KVELD_REFRESH_MIN_MV);
+                cicala_power_millivolts(), CONFIG_CICALA_REFRESH_MIN_MV);
 
-        kveld_status_note_refresh_blocked();
+        cicala_status_note_refresh_blocked();
 
         return false;
     }
@@ -253,21 +255,21 @@ private:
     uint32_t _seq = 0;
     uint8_t _last_deck = 0;
     bool _last_was_question = false;
-    char _service_text[CONFIG_KVELD_MAX_QUESTION_BYTES] = {};
+    char _service_text[CONFIG_CICALA_MAX_QUESTION_BYTES] = {};
     uint16_t _service_len = 0;
-#ifdef CONFIG_KVELD_DEBUG_CHARSET
+#ifdef CONFIG_CICALA_DEBUG_CHARSET
     uint8_t _page = 0;
 #endif
 };
 
 Io io;
-kveld::AppFsm fsm(io);
+cicala::AppFsm fsm(io);
 
 } // namespace
 
-int kveld_app_init(void)
+int cicala_app_init(void)
 {
-#ifdef CONFIG_KVELD_DEBUG_CORPUS_STORE
+#ifdef CONFIG_CICALA_DEBUG_CORPUS_STORE
     store_compiled_in_corpus();
 #endif
 
@@ -279,60 +281,60 @@ int kveld_app_init(void)
     /* bind() resets bag state when the corpus fingerprint changes. */
     const bool kept = io.bag.bind(io.qdb);
 
-    if (kveld_retained_survived()) {
-        io.adopt_seq(kveld_retained().seq);
+    if (cicala_retained_survived()) {
+        io.adopt_seq(cicala_retained().seq);
     }
 
     LOG_INF("corpus: %u questions, %.*s, version %.*s", io.qdb.count(), io.qdb.language_len(),
             io.qdb.language(), io.qdb.version_len(), io.qdb.version());
-    LOG_INF("retained state: %s", !kveld_retained_survived() ? "cold boot, starting a fresh cycle"
-                                  : kept                     ? "kept across the reboot"
-                                                             : "discarded, the bundle changed");
+    LOG_INF("retained state: %s", !cicala_retained_survived() ? "cold boot, starting a fresh cycle"
+                                  : kept                      ? "kept across the reboot"
+                                                              : "discarded, the bundle changed");
 
     /* Replay the wake press captured before the input driver started. */
-    const enum kveld_wake_source woke_by = kveld_wake_button();
+    const enum cicala_wake_source woke_by = cicala_wake_button();
 
-    if (woke_by == KVELD_WAKE_CATEGORY) {
-        kveld::Retained &block = kveld_retained();
+    if (woke_by == CICALA_WAKE_CATEGORY) {
+        cicala::Retained &block = cicala_retained();
 
-        block.active_deck = kveld_deck_cycle_next(block.active_deck);
-        kveld_retained_seal();
+        block.active_deck = cicala_deck_cycle_next(block.active_deck);
+        cicala_retained_seal();
 
         LOG_INF("woken by Category");
-    } else if (woke_by == KVELD_WAKE_NEXT) {
+    } else if (woke_by == CICALA_WAKE_NEXT) {
         LOG_INF("woken by Next");
 
         fsm.post_next();
     }
 
-    const uint8_t stored_deck = kveld_retained().active_deck;
-    const uint8_t deck = kveld_deck_on_device(stored_deck) ? stored_deck : 0;
+    const uint8_t stored_deck = cicala_retained().active_deck;
+    const uint8_t deck = cicala_deck_on_device(stored_deck) ? stored_deck : 0;
 
-    LOG_INF("active deck: %u %s", deck, kveld_deck_name(deck));
+    LOG_INF("active deck: %u %s", deck, cicala_deck_name(deck));
 
     fsm.post_selector(deck, true);
 
     return 0;
 }
 
-void kveld_app_post_category(void)
+void cicala_app_post_category(void)
 {
-    kveld::Retained &block = kveld_retained();
+    cicala::Retained &block = cicala_retained();
 
-    block.active_deck = kveld_deck_cycle_next(block.active_deck);
-    kveld_retained_seal();
+    block.active_deck = cicala_deck_cycle_next(block.active_deck);
+    cicala_retained_seal();
 
-    LOG_INF("category: deck %u %s", block.active_deck, kveld_deck_name(block.active_deck));
+    LOG_INF("category: deck %u %s", block.active_deck, cicala_deck_name(block.active_deck));
 
     fsm.post_selector(block.active_deck, true);
 }
 
-void kveld_app_post_next(void)
+void cicala_app_post_next(void)
 {
     fsm.post_next();
 }
 
-void kveld_app_corpus(char *version, size_t version_size, uint16_t *count)
+void cicala_app_corpus(char *version, size_t version_size, uint16_t *count)
 {
     *count = io.qdb.count();
 
@@ -350,30 +352,30 @@ void kveld_app_corpus(char *version, size_t version_size, uint16_t *count)
     version[n] = '\0';
 }
 
-void kveld_app_reload_corpus(void)
+void cicala_app_reload_corpus(void)
 {
-#ifdef CONFIG_KVELD_DEBUG_CORPUS_STORE
+#ifdef CONFIG_CICALA_DEBUG_CORPUS_STORE
     store_compiled_in_corpus();
 #endif
 
     if (!open_corpus(io.qdb)) {
-        LOG_ERR("could not reopen the corpus for %s", kveld_language());
+        LOG_ERR("could not reopen the corpus for %s", cicala_language());
         return;
     }
 
     /* A language change resets bag state through the corpus fingerprint. */
     (void) io.bag.bind(io.qdb);
 
-    LOG_INF("corpus is now %s, %u questions", kveld_language(), io.qdb.count());
+    LOG_INF("corpus is now %s, %u questions", cicala_language(), io.qdb.count());
 }
 
-void kveld_app_post_service(const char *text, uint16_t len)
+void cicala_app_post_service(const char *text, uint16_t len)
 {
     io.set_service(text, len);
     fsm.post_service();
 }
 
-void kveld_app_post_render(bool ok, uint32_t seq)
+void cicala_app_post_render(bool ok, uint32_t seq)
 {
     if (seq != io.last_seq()) {
         LOG_WRN("late render for seq %u, waiting on %u — discarded", seq, io.last_seq());
@@ -388,7 +390,7 @@ void kveld_app_post_render(bool ok, uint32_t seq)
     fsm.post_render(ok);
 }
 
-void kveld_app_run(void)
+void cicala_app_run(void)
 {
     // Bound one event to the number of application states.
     for (int i = 0; i < 16; i++) {
@@ -404,22 +406,22 @@ void kveld_app_run(void)
     LOG_ERR("state machine did not settle");
 }
 
-bool kveld_app_needs_timeout(void)
+bool cicala_app_needs_timeout(void)
 {
     return fsm.current_state_has_timeout();
 }
 
-int kveld_app_state(void)
+int cicala_app_state(void)
 {
     return fsm.get_current_state();
 }
 
-bool kveld_app_is_busy(void)
+bool cicala_app_is_busy(void)
 {
-    return fsm.get_current_state() == static_cast<int>(kveld::AppFsm::State::REFRESHING);
+    return fsm.get_current_state() == static_cast<int>(cicala::AppFsm::State::REFRESHING);
 }
 
-bool kveld_app_is_settled(void)
+bool cicala_app_is_settled(void)
 {
-    return fsm.get_current_state() == static_cast<int>(kveld::AppFsm::State::SHOWING);
+    return fsm.get_current_state() == static_cast<int>(cicala::AppFsm::State::SHOWING);
 }

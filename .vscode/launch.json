@@ -9,7 +9,7 @@
       "program": "${workspaceFolder}/build/sim-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
-      "miDebuggerPath": "${config:kveld.gdbSim}",
+      "miDebuggerPath": "${config:cicala.gdbSim}",
       "miDebuggerServerAddress": "localhost:1234",
       "stopAtConnect": true,
       "preLaunchTask": "fw: sim debugserver",
@@ -28,7 +28,7 @@
       "program": "${workspaceFolder}/build/esp32s3-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
-      "miDebuggerPath": "${config:kveld.gdbTarget}",
+      "miDebuggerPath": "${config:cicala.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "preLaunchTask": "fw: openocd server",
       // Resume after the reset command and stop at user breakpoints.
@@ -54,7 +54,7 @@
       "program": "${workspaceFolder}/build/esp32s3-debug/zephyr/zephyr.elf",
       "cwd": "${workspaceFolder}",
       "MIMode": "gdb",
-      "miDebuggerPath": "${config:kveld.gdbTarget}",
+      "miDebuggerPath": "${config:cicala.gdbTarget}",
       "miDebuggerServerAddress": "localhost:3333",
       "stopAtConnect": true,
       // Halt after attaching to the remote target.

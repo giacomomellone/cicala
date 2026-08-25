@@ -8,7 +8,7 @@ _Parametric CAD render, 16 August 2026. The colours show warm-paper and charcoal
 
 ## Source files
 
-The mechanical source is `hardware/case/kveld_enclosure.scad`. Printable Rev A exports live beside it under `hardware/case/exports/rev_a/`. The KiCad 10 project is `hardware/pcb/kveld_rev_a/kveld_rev_a.kicad_pro`.
+The mechanical source is `hardware/case/cicala_enclosure.scad`. Printable Rev A exports live beside it under `hardware/case/exports/rev_a/`. The KiCad 10 project is `hardware/pcb/cicala_rev_a/cicala_rev_a.kicad_pro`.
 
 OpenSCAD is the source of truth for the enclosure. KiCad owns the board outline, stack-up, copper and component placement. Dimensions shared by both files use the case coordinate system below and must be changed together.
 
@@ -91,7 +91,7 @@ Existing firmware pins stay fixed unless a hardware review changes both sides in
 | Charger STAT1 / STAT2   |        6 / 7 | inputs; truth table belongs in the charger sheet   |
 | Display reset / busy    |        8 / 9 | preserve current firmware mapping                  |
 | Display CS / MOSI / CLK | 10 / 11 / 12 | preserve current firmware mapping                  |
-| Charger enable          |           14 | active-low; 100 kΩ pull-down enables by default     |
+| Charger enable          |           14 | active-low; 100 kΩ pull-down enables by default    |
 | Status red / green      |      15 / 16 | both low means no LED sleep load                   |
 | Next                    |           17 | active-low RTC wake input                          |
 | Display D/C             |           18 | preserve current firmware mapping                  |
@@ -131,7 +131,7 @@ Run `just hw-check` for file-level checks. Before ordering a PCB or complete she
 6. Measure whole-device sleep current at the cell, e-paper refresh brownout margin, radio performance, charging temperature and LED leakage.
 7. Run drop, cap-overload, button-life, lint and small-spill tests. Keep ingress claims out of product material until a complete assembly passes a defined test method.
 
-The current hierarchical schematic passes ERC with zero errors and zero warnings in KiCad 10.0.5. Constraint-board DRC and STEP export also pass. Every symbol now carries a footprint: KiCad library parts where one exists, and four project land patterns in `hardware/pcb/kveld_rev_a/kveld.pretty` for U3, L1, L2 and D4. Schematic-to-PCB parity is still deferred until those drafted lands pass a manufacturer-drawing review and the components are placed. These automated checks do not replace electrical, layout or physical review; ERC in particular accepts electrically valid but topologically wrong wiring, so it did not catch the two circuit errors noted below.
+The current hierarchical schematic passes ERC with zero errors and zero warnings in KiCad 10.0.5. Constraint-board DRC and STEP export also pass. Every symbol now carries a footprint: KiCad library parts where one exists, and four project land patterns in `hardware/pcb/cicala_rev_a/cicala.pretty` for U3, L1, L2 and D4. Schematic-to-PCB parity is still deferred until those drafted lands pass a manufacturer-drawing review and the components are placed. These automated checks do not replace electrical, layout or physical review; ERC in particular accepts electrically valid but topologically wrong wiring, so it did not catch the two circuit errors noted below.
 
 Two schematic errors were found and corrected. The TPS63802 feedback divider was shorted — a straight wire tied FB to VOUT and bypassed R14, so the part would have regulated the 3.3 V rail down to its 0.5 V reference; it is now wired VOUT → R14 → FB node → R15 → GND. The BQ25185 TS/MR pin and the pack NTC wire (J3.2) were tied straight to VBAT, which the charger reads as an out-of-range temperature and suspends charging; TS/MR is now the `BATT_NTC` net carrying only J3.2, while BAT stays on VBAT. The charger sources ~38 µA into TS, so the 10 kΩ B=3435 pack NTC to GND needs no external resistors and sets an approximate 1.5 °C to 59 °C charge window. Both fixes still need bench confirmation on an assembled board.
 

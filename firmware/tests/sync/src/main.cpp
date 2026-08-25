@@ -6,7 +6,7 @@
 #include "manifest.hpp"
 #include "release_manifest.h"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -15,9 +15,9 @@ constexpr size_t kLen = sizeof(kReleaseManifest) - 1;
 
 } // namespace
 
-ZTEST_SUITE(kveld_sync, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_sync, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_sync, test_versions_compare_as_numbers_not_as_text)
+ZTEST(cicala_sync, test_versions_compare_as_numbers_not_as_text)
 {
     zassert_true(version_compare("2026.08.9", "2026.08.10") < 0);
     zassert_true(version_compare("2026.08.10", "2026.08.9") > 0);
@@ -27,20 +27,20 @@ ZTEST(kveld_sync, test_versions_compare_as_numbers_not_as_text)
     zassert_equal(version_compare("2026.08.1", "2026.08.1"), 0);
 }
 
-ZTEST(kveld_sync, test_a_missing_component_counts_as_zero)
+ZTEST(cicala_sync, test_a_missing_component_counts_as_zero)
 {
     zassert_equal(version_compare("2026.08", "2026.08.0"), 0);
     zassert_true(version_compare("2026.08", "2026.08.1") < 0);
     zassert_true(version_compare("2026.08.1", "2026.08") > 0);
 }
 
-ZTEST(kveld_sync, test_a_version_long_enough_to_overflow_does_not_wrap)
+ZTEST(cicala_sync, test_a_version_long_enough_to_overflow_does_not_wrap)
 {
     zassert_true(version_compare("999999999999999999", "2026.08.1") > 0);
     zassert_equal(version_compare(nullptr, "2026.08.1"), 0);
 }
 
-ZTEST(kveld_sync, test_the_published_manifest_parses)
+ZTEST(cicala_sync, test_the_published_manifest_parses)
 {
     Manifest m = {};
 
@@ -50,7 +50,7 @@ ZTEST(kveld_sync, test_the_published_manifest_parses)
     zassert_true(m.min_fw[0] != '\0');
 }
 
-ZTEST(kveld_sync, test_the_published_entry_carries_a_signature_and_a_raw_bundle)
+ZTEST(cicala_sync, test_the_published_entry_carries_a_signature_and_a_raw_bundle)
 {
     ManifestEntry e = {};
 
@@ -68,14 +68,14 @@ ZTEST(kveld_sync, test_the_published_entry_carries_a_signature_and_a_raw_bundle)
     zassert_true(de.size != e.size || de.count != e.count);
 }
 
-ZTEST(kveld_sync, test_a_language_that_is_not_published_is_not_invented)
+ZTEST(cicala_sync, test_a_language_that_is_not_published_is_not_invented)
 {
     ManifestEntry e = {};
 
     zassert_false(manifest_entry(kReleaseManifest, kLen, "fr", e));
 }
 
-ZTEST(kveld_sync, test_an_unsigned_development_bundle_is_marked_as_such)
+ZTEST(cicala_sync, test_an_unsigned_development_bundle_is_marked_as_such)
 {
     static const char json[] =
         "{\"schema\":3,\"version\":\"dev\",\"min_fw\":\"0.1.0\",\"languages\":{\"en\":{"
@@ -89,7 +89,7 @@ ZTEST(kveld_sync, test_an_unsigned_development_bundle_is_marked_as_such)
     zassert_false(e.signed_, "an unsigned bundle must never read as signed");
 }
 
-ZTEST(kveld_sync, test_a_truncated_or_empty_manifest_is_refused)
+ZTEST(cicala_sync, test_a_truncated_or_empty_manifest_is_refused)
 {
     Manifest m = {};
 
@@ -105,7 +105,7 @@ ZTEST(kveld_sync, test_a_truncated_or_empty_manifest_is_refused)
     }
 }
 
-ZTEST(kveld_sync, test_a_field_too_long_to_hold_is_refused)
+ZTEST(cicala_sync, test_a_field_too_long_to_hold_is_refused)
 {
     static char json[1024];
     int n = snprintk(json, sizeof(json),
@@ -125,7 +125,7 @@ ZTEST(kveld_sync, test_a_field_too_long_to_hold_is_refused)
     zassert_false(manifest_entry(json, (size_t) n, "en", e));
 }
 
-ZTEST(kveld_sync, test_a_malformed_digest_or_signature_is_refused)
+ZTEST(cicala_sync, test_a_malformed_digest_or_signature_is_refused)
 {
     ManifestEntry e = {};
 
@@ -149,7 +149,7 @@ ZTEST(kveld_sync, test_a_malformed_digest_or_signature_is_refused)
     zassert_false(manifest_entry(short_sig, sizeof(short_sig) - 1, "en", e));
 }
 
-ZTEST(kveld_sync, test_a_zero_sized_bundle_is_refused)
+ZTEST(cicala_sync, test_a_zero_sized_bundle_is_refused)
 {
     static const char json[] =
         "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
@@ -162,11 +162,11 @@ ZTEST(kveld_sync, test_a_zero_sized_bundle_is_refused)
     zassert_false(manifest_entry(json, sizeof(json) - 1, "en", e));
 }
 
-ZTEST(kveld_sync, test_a_firmware_manifest_parses)
+ZTEST(cicala_sync, test_a_firmware_manifest_parses)
 {
     static const char json[] =
         "{\"schema\":1,\"version\":\"0.2.0\","
-        "\"url\":\"https://h/device/kveld-0.2.0.bin\",\"size\":782628,"
+        "\"url\":\"https://h/device/cicala-0.2.0.bin\",\"size\":782628,"
         "\"sha256\":\"0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20\","
         "\"sig\":\"" /* 64 bytes of 0x41, base64 */
         "QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ=="
@@ -177,7 +177,7 @@ ZTEST(kveld_sync, test_a_firmware_manifest_parses)
     zassert_true(firmware_parse(json, sizeof(json) - 1, r));
     zassert_equal(r.schema, 1);
     zassert_str_equal(r.version, "0.2.0");
-    zassert_str_equal(r.url, "https://h/device/kveld-0.2.0.bin");
+    zassert_str_equal(r.url, "https://h/device/cicala-0.2.0.bin");
     zassert_equal(r.size, 782628);
     zassert_true(r.signed_);
     zassert_equal(r.sha256[0], 0x01);
@@ -186,7 +186,7 @@ ZTEST(kveld_sync, test_a_firmware_manifest_parses)
     zassert_equal(r.sig[63], 'A');
 }
 
-ZTEST(kveld_sync, test_an_unsigned_firmware_manifest_parses_but_is_marked)
+ZTEST(cicala_sync, test_an_unsigned_firmware_manifest_parses_but_is_marked)
 {
     static const char json[] =
         "{\"schema\":1,\"version\":\"0.2.0\",\"url\":\"https://h/f.bin\",\"size\":1,"
@@ -199,7 +199,7 @@ ZTEST(kveld_sync, test_an_unsigned_firmware_manifest_parses_but_is_marked)
     zassert_false(r.signed_);
 }
 
-ZTEST(kveld_sync, test_a_firmware_manifest_missing_a_field_is_refused)
+ZTEST(cicala_sync, test_a_firmware_manifest_missing_a_field_is_refused)
 {
     FirmwareRelease r = {};
 
@@ -221,7 +221,7 @@ ZTEST(kveld_sync, test_a_firmware_manifest_missing_a_field_is_refused)
     zassert_false(firmware_parse(no_digest, sizeof(no_digest) - 1, r));
 }
 
-ZTEST(kveld_sync, test_a_zero_sized_image_is_refused)
+ZTEST(cicala_sync, test_a_zero_sized_image_is_refused)
 {
     static const char json[] =
         "{\"schema\":1,\"version\":\"0.2.0\",\"url\":\"https://h/f.bin\",\"size\":0,"
@@ -233,7 +233,7 @@ ZTEST(kveld_sync, test_a_zero_sized_image_is_refused)
     zassert_false(firmware_parse(json, sizeof(json) - 1, r));
 }
 
-ZTEST(kveld_sync, test_firmware_versions_order_the_way_ota_needs)
+ZTEST(cicala_sync, test_firmware_versions_order_the_way_ota_needs)
 {
     zassert_true(version_compare("0.2.0", "0.1.0") > 0);
     zassert_equal(version_compare("0.1.0", "0.1.0"), 0);

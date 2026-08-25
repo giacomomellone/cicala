@@ -20,7 +20,7 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 This is the public product and engineering repository. It owns the public website, firmware, hardware design sources, reproducible BOMs, protocols, technical documentation, build instructions, the public roadmap, contribution guidance, licenses, and public-facing project assets.
 
-It must not contain GTM plans, pricing strategy, margins, detailed internal COGS analysis, supplier quotes or contacts, cash planning, private brand research, unpublished product concepts, customer identities, raw research data, participant consent records, or private compliance and manufacturing operations. Content in those categories belongs in the sibling `../kveld-internal` repository.
+It must not contain GTM plans, pricing strategy, margins, detailed internal COGS analysis, supplier quotes or contacts, cash planning, private brand research, unpublished product concepts, customer identities, raw research data, participant consent records, or private compliance and manufacturing operations. Content in those categories belongs in the sibling `../cicala-internal` repository.
 
 Component price indications in `hardware/pcb/BOM.md` and `docs/prototype_bom.md` are reproduction aids for makers and stay here. A price appearing in a document is not by itself a reason to move it.
 
@@ -28,7 +28,7 @@ The contributor-facing version of this boundary, with the routing procedure and 
 
 Never copy content from the private repository into this one without explicit publication approval.
 
-If `../kveld-internal` is unavailable, stop and ask rather than putting private material here.
+If `../cicala-internal` is unavailable, stop and ask rather than putting private material here.
 
 ### Shared operating rules
 

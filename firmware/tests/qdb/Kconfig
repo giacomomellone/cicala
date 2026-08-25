@@ -1,6 +1,6 @@
 # Use the application bag capacity and recent-ring size.
 
-mainmenu "kveld qdb tests"
+mainmenu "cicala qdb tests"
 
 rsource "../../Kconfig.policy"
 

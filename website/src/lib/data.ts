@@ -42,7 +42,7 @@ let config: SiteConfig | null = null;
 
 export function siteConfig(): SiteConfig {
   if (!config) {
-    const el = document.getElementById("kveld-config");
+    const el = document.getElementById("cicala-config");
     config = el
       ? (JSON.parse(el.textContent || "{}") as SiteConfig)
       : {

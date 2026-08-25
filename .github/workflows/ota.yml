@@ -66,7 +66,7 @@ jobs:
           base="http://$host:$port"
 
           {
-            echo "bench_args=-DCONFIG_KVELD_SYNC_HOST=\"$host\" -DCONFIG_KVELD_SYNC_PORT=$port -DCONFIG_KVELD_SYNC_BASE_URL=\"$base\" -DCONFIG_KVELD_OTA_BASE_URL=\"$base\""
+            echo "bench_args=-DCONFIG_CICALA_SYNC_HOST=\"$host\" -DCONFIG_CICALA_SYNC_PORT=$port -DCONFIG_CICALA_SYNC_BASE_URL=\"$base\" -DCONFIG_CICALA_OTA_BASE_URL=\"$base\""
             echo "base_url=$base"
           } >> "$GITHUB_ENV"
 
@@ -195,8 +195,8 @@ jobs:
       - name: Publish it where devices will look
         if: (github.event_name == 'push' || inputs.sync_host == '') && env.DEVICE_BUCKET != ''
         run: |
-          aws s3 cp dist/firmware/kveld-${version}.bin \
-            "s3://$DEVICE_BUCKET/device/kveld-${version}.bin" \
+          aws s3 cp dist/firmware/cicala-${version}.bin \
+            "s3://$DEVICE_BUCKET/device/cicala-${version}.bin" \
             --cache-control 'public, max-age=31536000, immutable' --no-progress
 
           # Upload the short-lived manifest after its immutable image.

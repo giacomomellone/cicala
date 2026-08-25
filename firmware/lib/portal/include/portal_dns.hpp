@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-namespace kveld
+namespace cicala
 {
 
 /** Maximum classic DNS UDP message size. */
@@ -45,4 +45,4 @@ uint16_t dns_build_reply(const uint8_t *msg, uint16_t len, const DnsQuery &query
 uint16_t dns_hijack(const uint8_t *msg, uint16_t len, uint32_t addr, uint8_t *out,
                     uint16_t out_size);
 
-} // namespace kveld
+} // namespace cicala

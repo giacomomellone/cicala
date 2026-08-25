@@ -1,5 +1,5 @@
-zephyr_library_named(kveld_layout)
+zephyr_library_named(cicala_layout)
 zephyr_library_sources(layout.cpp)
 zephyr_include_directories(include)
 
-add_dependencies(kveld_layout zephyr_generated_headers)
+add_dependencies(cicala_layout zephyr_generated_headers)

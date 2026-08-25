@@ -1,6 +1,6 @@
 #include "portal_dns.hpp"
 
-namespace kveld
+namespace cicala
 {
 
 namespace
@@ -172,4 +172,4 @@ uint16_t dns_hijack(const uint8_t *msg, uint16_t len, uint32_t addr, uint8_t *ou
     return dns_build_reply(msg, len, query, addr, out, out_size);
 }
 
-} // namespace kveld
+} // namespace cicala

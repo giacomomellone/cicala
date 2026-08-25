@@ -10,7 +10,7 @@ the design and [hardware wiring](hardware_wiring.md) for the rig.
 ```text
 firmware/
 ├── west.yml                    Zephyr revision and module allowlist
-├── Kconfig.policy              shared CONFIG_KVELD_* settings
+├── Kconfig.policy              shared CONFIG_CICALA_* settings
 ├── app/
 │   ├── prj.conf                common Zephyr configuration
 │   ├── boards/                 board configuration and overlays
@@ -112,7 +112,7 @@ Project settings live in `firmware/Kconfig.policy`; the application and tests
 include the same file. Common values are visible in the resolved configuration:
 
 ```sh
-grep '^CONFIG_KVELD_' build/esp32s3/app/zephyr/.config
+grep '^CONFIG_CICALA_' build/esp32s3/app/zephyr/.config
 ```
 
 Use `just fw-menuconfig` to inspect symbols and dependencies. Persist a setting

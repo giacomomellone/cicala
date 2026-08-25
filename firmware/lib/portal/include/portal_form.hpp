@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-namespace kveld
+namespace cicala
 {
 
 /** IEEE 802.11 SSID limit plus a terminator. */
@@ -19,4 +19,4 @@ int form_field(const char *body, uint16_t len, const char *key, char *out, uint1
 /** Percent-decode a value. Return its length, or -1 on error. */
 int form_decode(const char *value, uint16_t len, char *out, uint16_t out_size);
 
-} // namespace kveld
+} // namespace cicala

@@ -3,7 +3,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/sys/__assert.h>
 
-namespace kveld
+namespace cicala
 {
 
 Fsm::Fsm(const StateTransition *transitions, size_t count, int initial_state)
@@ -103,4 +103,4 @@ void Fsm::perform_transition(int next_state)
     on_enter_state(_current_state);
 }
 
-} // namespace kveld
+} // namespace cicala

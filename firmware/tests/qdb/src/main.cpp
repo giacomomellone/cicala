@@ -5,7 +5,7 @@
 
 #include "qdb.hpp"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -18,7 +18,7 @@ const uint8_t de_bundle[] = {
 #include "de_qdb.inc"
 };
 
-constexpr uint8_t kPlaybackDepth = CONFIG_KVELD_PLAYBACK_DEPTH_MAX;
+constexpr uint8_t kPlaybackDepth = CONFIG_CICALA_PLAYBACK_DEPTH_MAX;
 
 struct Rng {
     uint32_t state;
@@ -51,9 +51,9 @@ Rng rng;
 
 } // namespace
 
-ZTEST_SUITE(kveld_qdb, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_qdb, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_qdb, test_the_shipped_bundles_open)
+ZTEST(cicala_qdb, test_the_shipped_bundles_open)
 {
     Qdb en;
     Qdb de;
@@ -73,7 +73,7 @@ ZTEST(kveld_qdb, test_the_shipped_bundles_open)
     zassert_not_equal(en.fingerprint(), de.fingerprint(), "two corpora must not look alike");
 }
 
-ZTEST(kveld_qdb, test_every_question_is_readable_and_within_the_buffer)
+ZTEST(cicala_qdb, test_every_question_is_readable_and_within_the_buffer)
 {
     Qdb qdb;
 
@@ -91,9 +91,9 @@ ZTEST(kveld_qdb, test_every_question_is_readable_and_within_the_buffer)
 
             zassert_true(qdb.at(i, q), "question %u must be readable", i);
             zassert_true(q.len > 0, "question %u is empty", i);
-            zassert_true(q.len <= CONFIG_KVELD_MAX_QUESTION_BYTES,
+            zassert_true(q.len <= CONFIG_CICALA_MAX_QUESTION_BYTES,
                          "question %u is %u bytes, over the %d the device renders", i, q.len,
-                         CONFIG_KVELD_MAX_QUESTION_BYTES);
+                         CONFIG_CICALA_MAX_QUESTION_BYTES);
             zassert_true(q.depth >= 1 && q.depth <= 3, "question %u has depth %u", i, q.depth);
             zassert_true(q.deck_mask != 0, "question %u belongs to no deck", i);
             zassert_equal(q.deck_mask >> kDeckCount, 0, "question %u sets a reserved deck bit", i);
@@ -103,7 +103,7 @@ ZTEST(kveld_qdb, test_every_question_is_readable_and_within_the_buffer)
     }
 }
 
-ZTEST(kveld_qdb, test_tone_flags_stay_in_the_wild_deck)
+ZTEST(cicala_qdb, test_tone_flags_stay_in_the_wild_deck)
 {
     Qdb qdb;
 
@@ -123,7 +123,7 @@ ZTEST(kveld_qdb, test_tone_flags_stay_in_the_wild_deck)
     }
 }
 
-ZTEST(kveld_qdb, test_the_worked_example_from_the_spec_decodes)
+ZTEST(cicala_qdb, test_the_worked_example_from_the_spec_decodes)
 {
     static const uint8_t bundle[] = {
         'Q',  'D', 'B', '3',  0x09, '2',  '0',  '2',  '6',  '.',  '0', '7', '.', '2',
@@ -197,7 +197,7 @@ static void open_synthetic(Qdb &qdb, const SynQ *qs, uint16_t n)
     zassert_true(qdb.open(synthetic_buf, build_synthetic(synthetic_buf, qs, n)));
 }
 
-ZTEST(kveld_qdb, test_a_damaged_bundle_is_refused)
+ZTEST(cicala_qdb, test_a_damaged_bundle_is_refused)
 {
     Qdb qdb;
 
@@ -218,7 +218,7 @@ ZTEST(kveld_qdb, test_a_damaged_bundle_is_refused)
     zassert_false(qdb.is_open(), "a refused bundle must not stay half-open");
 }
 
-ZTEST(kveld_qdb, test_trailing_bytes_are_refused)
+ZTEST(cicala_qdb, test_trailing_bytes_are_refused)
 {
     static uint8_t padded[sizeof(en_bundle) + 1];
 
@@ -233,7 +233,7 @@ ZTEST(kveld_qdb, test_trailing_bytes_are_refused)
     zassert_false(qdb.open(padded, sizeof(padded)), "a bundle with a tail is not intact");
 }
 
-ZTEST(kveld_qdb, test_depth_three_is_out_of_normal_playback)
+ZTEST(cicala_qdb, test_depth_three_is_out_of_normal_playback)
 {
     Qdb qdb;
 
@@ -265,7 +265,7 @@ ZTEST(kveld_qdb, test_depth_three_is_out_of_normal_playback)
     }
 }
 
-ZTEST(kveld_qdb, test_a_cycle_never_repeats)
+ZTEST(cicala_qdb, test_a_cycle_never_repeats)
 {
     Qdb qdb;
 
@@ -307,7 +307,7 @@ ZTEST(kveld_qdb, test_a_cycle_never_repeats)
     }
 }
 
-ZTEST(kveld_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
+ZTEST(cicala_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
 {
     Qdb qdb;
 
@@ -337,7 +337,7 @@ ZTEST(kveld_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
     zassert_equal(bag.drawn_count(deck), 1, "the new cycle holds only the question just drawn");
 }
 
-ZTEST(kveld_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
+ZTEST(cicala_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
 {
     Qdb qdb;
 
@@ -364,7 +364,7 @@ ZTEST(kveld_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
     }
 }
 
-ZTEST(kveld_qdb, test_the_ring_is_shared_across_decks)
+ZTEST(cicala_qdb, test_the_ring_is_shared_across_decks)
 {
     Qdb qdb;
 
@@ -396,7 +396,7 @@ ZTEST(kveld_qdb, test_the_ring_is_shared_across_decks)
     }
 }
 
-ZTEST(kveld_qdb, test_a_replaced_corpus_discards_retained_state)
+ZTEST(cicala_qdb, test_a_replaced_corpus_discards_retained_state)
 {
     Qdb en;
     Qdb de;
@@ -424,7 +424,7 @@ ZTEST(kveld_qdb, test_a_replaced_corpus_discards_retained_state)
     zassert_equal(bag.drawn_count(1), 0);
 }
 
-ZTEST(kveld_qdb, test_an_unopened_bundle_draws_nothing)
+ZTEST(cicala_qdb, test_an_unopened_bundle_draws_nothing)
 {
     Qdb qdb;
 
@@ -442,7 +442,7 @@ ZTEST(kveld_qdb, test_an_unopened_bundle_draws_nothing)
     zassert_false(bag.draw(qdb, kDeckCount, kPlaybackDepth, index, q), "there is no seventh deck");
 }
 
-ZTEST(kveld_qdb, test_texture_alternates_depth_bands_when_the_pool_allows)
+ZTEST(cicala_qdb, test_texture_alternates_depth_bands_when_the_pool_allows)
 {
     static const SynQ qs[] = {
         {(1u << kDeckNewPeople), 1, 0, "One?"},   {(1u << kDeckNewPeople), 2, 0, "Two?"},
@@ -478,7 +478,7 @@ ZTEST(kveld_qdb, test_texture_alternates_depth_bands_when_the_pool_allows)
     }
 }
 
-ZTEST(kveld_qdb, test_texture_keeps_form_variety_when_the_band_cannot_change)
+ZTEST(cicala_qdb, test_texture_keeps_form_variety_when_the_band_cannot_change)
 {
     /* One depth band only; the form preference must survive that relaxation. */
     static const SynQ qs[] = {
@@ -512,7 +512,7 @@ ZTEST(kveld_qdb, test_texture_keeps_form_variety_when_the_band_cannot_change)
     }
 }
 
-ZTEST(kveld_qdb, test_texture_relaxes_when_every_candidate_repeats)
+ZTEST(cicala_qdb, test_texture_relaxes_when_every_candidate_repeats)
 {
     static const SynQ qs[] = {
         {(1u << kDeckNewPeople), 2, kFormIcebreaker, "One?"},
@@ -539,7 +539,7 @@ ZTEST(kveld_qdb, test_texture_relaxes_when_every_candidate_repeats)
     }
 }
 
-ZTEST(kveld_qdb, test_texture_survives_a_cycle_reset)
+ZTEST(cicala_qdb, test_texture_survives_a_cycle_reset)
 {
     static const SynQ qs[] = {
         {(1u << kDeckNewPeople), 1, 0, "One?"},
@@ -576,7 +576,7 @@ ZTEST(kveld_qdb, test_texture_survives_a_cycle_reset)
                   "a new cycle still avoids repeating the last band shown");
 }
 
-ZTEST(kveld_qdb, test_texture_is_shared_across_decks)
+ZTEST(cicala_qdb, test_texture_is_shared_across_decks)
 {
     static const SynQ qs[] = {
         {(1u << kDeckNewPeople), 1, 0, "New people one?"},
@@ -604,7 +604,7 @@ ZTEST(kveld_qdb, test_texture_is_shared_across_decks)
     zassert_equal(index, 2, "the table just saw depth 1, so Close should offer depth 2");
 }
 
-ZTEST(kveld_qdb, test_form_bits_decode)
+ZTEST(cicala_qdb, test_form_bits_decode)
 {
     /* icebreaker | hypothetical on Here, depth 1. */
     static const SynQ qs[] = {

@@ -488,7 +488,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "kveld_rev_a.kicad_pro",
+    "filename": "cicala_rev_a.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -656,8 +656,8 @@
     "subpart_id_separator": 0,
     "top_level_sheets": [
       {
-        "filename": "kveld_rev_a.kicad_sch",
-        "name": "kveld_rev_a",
+        "filename": "cicala_rev_a.kicad_sch",
+        "name": "cicala_rev_a",
         "uuid": "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc"
       }
     ],
@@ -667,7 +667,7 @@
   "sheets": [
     [
       "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc",
-      "kveld_rev_a"
+      "cicala_rev_a"
     ],
     [
       "76abdd1f-1863-43cb-987e-b8bd556e1e12",

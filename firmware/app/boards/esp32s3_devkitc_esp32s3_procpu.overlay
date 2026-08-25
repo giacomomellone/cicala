@@ -5,10 +5,10 @@
 
 / {
     aliases {
-        kveld-category = &kveld_category;
-        kveld-next = &kveld_next;
-        kveld-led-red = &led_red;
-        kveld-led-green = &led_green;
+        cicala-category = &cicala_category;
+        cicala-next = &cicala_next;
+        cicala-led-red = &led_red;
+        cicala-led-green = &led_green;
     };
 
     zephyr,user {
@@ -19,11 +19,11 @@
         io-channels = <&adc0 0>;
 
         /* A 100 kΩ/150 kΩ divider puts about 3.0 V on this VBUS input. */
-        kveld-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
+        cicala-vbus-gpios = <&gpio0 21 GPIO_ACTIVE_HIGH>;
     };
 
     /* The status LEDs, each through its own resistor to ground. */
-    kveld_leds: kveld-leds {
+    cicala_leds: cicala-leds {
         compatible = "gpio-leds";
         led_red: red {
             gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
@@ -36,15 +36,15 @@
     };
 
     /* The two buttons. */
-    kveld_buttons: kveld-buttons {
+    cicala_buttons: cicala-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
-        kveld_category: category {
+        cicala_category: category {
             gpios = <&gpio0 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
             zephyr,code = <INPUT_KEY_MENU>;
             label = "category";
         };
-        kveld_next: next {
+        cicala_next: next {
             gpios = <&gpio0 17 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
             zephyr,code = <INPUT_KEY_ENTER>;
             label = "next";
@@ -61,7 +61,7 @@
 };
 
 / {
-    kveld_mipi_dbi: mipi-dbi {
+    cicala_mipi_dbi: mipi-dbi {
         compatible = "zephyr,mipi-dbi-spi";
         spi-dev = <&spi2>;
         dc-gpios = <&gpio0 18 GPIO_ACTIVE_HIGH>;
@@ -71,7 +71,7 @@
         #size-cells = <0>;
         status = "okay";
 
-        kveld_epaper: ssd16xxfb@0 {
+        cicala_epaper: ssd16xxfb@0 {
             compatible = "gooddisplay,gdey0213b74", "solomon,ssd1680";
             reg = <0>;
             mipi-max-frequency = <4000000>;
@@ -92,7 +92,7 @@
     };
 
     chosen {
-        zephyr,display = &kveld_epaper;
+        zephyr,display = &cicala_epaper;
     };
 };
 
@@ -127,7 +127,7 @@
 /* Where a synced corpus lives. */
 &flash0 {
     partitions {
-        kveld_corpus_partition: partition@400000 {
+        cicala_corpus_partition: partition@400000 {
             label = "corpus";
             reg = <0x400000 DT_SIZE_K(512)>;
         };
@@ -138,10 +138,10 @@
     fstab {
         compatible = "zephyr,fstab";
 
-        kveld_corpus_fs: kveld_corpus_fs {
+        cicala_corpus_fs: cicala_corpus_fs {
             compatible = "zephyr,fstab,littlefs";
             mount-point = "/corpus";
-            partition = <&kveld_corpus_partition>;
+            partition = <&cicala_corpus_partition>;
             automount;
             read-size = <16>;
             prog-size = <16>;

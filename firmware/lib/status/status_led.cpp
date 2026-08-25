@@ -1,6 +1,6 @@
 #include "status_led.hpp"
 
-namespace kveld
+namespace cicala
 {
 
 void StatusLed::arm(Colour colour, uint8_t blinks)
@@ -107,4 +107,4 @@ bool StatusLed::animating(int64_t now_ms)
     return pattern(now_ms).rhythm != Rhythm::STEADY;
 }
 
-} // namespace kveld
+} // namespace cicala

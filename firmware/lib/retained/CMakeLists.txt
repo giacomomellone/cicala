@@ -1,5 +1,5 @@
-zephyr_library_named(kveld_retained)
+zephyr_library_named(cicala_retained)
 zephyr_library_sources(retained.cpp)
 zephyr_include_directories(include)
 
-add_dependencies(kveld_retained zephyr_generated_headers)
+add_dependencies(cicala_retained zephyr_generated_headers)

@@ -23,12 +23,12 @@ static const struct {
     {"de", corpus_de, sizeof(corpus_de)},
 };
 
-size_t kveld_corpus_count(void)
+size_t cicala_corpus_count(void)
 {
     return ARRAY_SIZE(corpora);
 }
 
-const char *kveld_corpus_language(size_t index)
+const char *cicala_corpus_language(size_t index)
 {
     if (index >= ARRAY_SIZE(corpora)) {
         return NULL;
@@ -37,7 +37,7 @@ const char *kveld_corpus_language(size_t index)
     return corpora[index].language;
 }
 
-const uint8_t *kveld_corpus_data(size_t index, size_t *size)
+const uint8_t *cicala_corpus_data(size_t index, size_t *size)
 {
     if (index >= ARRAY_SIZE(corpora)) {
         return NULL;
@@ -48,7 +48,7 @@ const uint8_t *kveld_corpus_data(size_t index, size_t *size)
     return corpora[index].data;
 }
 
-int kveld_corpus_find(const char *code)
+int cicala_corpus_find(const char *code)
 {
     if (code == NULL) {
         return -1;

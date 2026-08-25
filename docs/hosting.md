@@ -17,8 +17,8 @@ HTTPS upgrade.
 Use one name for each host:
 
 ```text
-kveld.example          website
-device.kveld.example   device endpoint
+cicala.example          website
+device.cicala.example   device endpoint
 ```
 
 The device hostname is compiled into firmware. Set it before flashing hardware
@@ -26,7 +26,7 @@ that cannot be reached later by cable.
 
 ## Website on Cloudflare Pages
 
-1. Create a Cloudflare Pages project named `kveld` using **Upload assets**.
+1. Create a Cloudflare Pages project named `cicala` using **Upload assets**.
    CI deploys with Wrangler, so no Git connection is needed.
 2. Create an API token with `Account · Cloudflare Pages · Edit` permission.
 3. Add these GitHub repository secrets:
@@ -45,7 +45,7 @@ secrets exist.
 
 An S3 static-website endpoint serves plain HTTP on port 80 without redirecting.
 
-1. Create a bucket named exactly `device.kveld.example` in a suitable
+1. Create a bucket named exactly `device.cicala.example` in a suitable
    region.
 2. Disable Block Public Access for the bucket.
 3. Allow anonymous reads under `/device/`:
@@ -59,7 +59,7 @@ An S3 static-website endpoint serves plain HTTP on port 80 without redirecting.
          "Effect": "Allow",
          "Principal": "*",
          "Action": "s3:GetObject",
-         "Resource": "arn:aws:s3:::device.kveld.example/device/*"
+         "Resource": "arn:aws:s3:::device.cicala.example/device/*"
        }
      ]
    }
@@ -86,8 +86,8 @@ Create an IAM user with programmatic access limited to the device bucket:
       "Effect": "Allow",
       "Action": ["s3:PutObject", "s3:GetObject", "s3:ListBucket"],
       "Resource": [
-        "arn:aws:s3:::device.kveld.example",
-        "arn:aws:s3:::device.kveld.example/*"
+        "arn:aws:s3:::device.cicala.example",
+        "arn:aws:s3:::device.cicala.example/*"
       ]
     }
   ]
@@ -97,7 +97,7 @@ Create an IAM user with programmatic access limited to the device bucket:
 Add these repository secrets:
 
 ```text
-DEVICE_BUCKET          device.kveld.example
+DEVICE_BUCKET          device.cicala.example
 DEVICE_BUCKET_KEY_ID   AKIA…
 DEVICE_BUCKET_SECRET   …
 DEVICE_BUCKET_REGION   eu-central-1
@@ -112,20 +112,20 @@ immutable and use a long cache lifetime.
 Set these defaults in `firmware/Kconfig.policy`:
 
 ```text
-KVELD_SYNC_HOST       "device.kveld.example"
-KVELD_SYNC_BASE_URL   "http://device.kveld.example/device"
-KVELD_OTA_BASE_URL    "http://device.kveld.example/device"
+CICALA_SYNC_HOST       "device.cicala.example"
+CICALA_SYNC_BASE_URL   "http://device.cicala.example/device"
+CICALA_OTA_BASE_URL    "http://device.cicala.example/device"
 ```
 
-Keep `KVELD_SYNC_PORT=80` and `KVELD_SYNC_INSECURE=y`.
+Keep `CICALA_SYNC_PORT=80` and `CICALA_SYNC_INSECURE=y`.
 
 ## Verification
 
 Check that both manifests return `200` over HTTP:
 
 ```sh
-curl -sI http://device.kveld.example/device/firmware.json | head -1
-curl -sI http://device.kveld.example/device/manifest.json | head -1
+curl -sI http://device.cicala.example/device/firmware.json | head -1
+curl -sI http://device.cicala.example/device/manifest.json | head -1
 ```
 
 A `301` or `308` response means that a proxy or host is upgrading the request.

@@ -1,6 +1,6 @@
 # Use the application's input timing.
 
-mainmenu "kveld input tests"
+mainmenu "cicala input tests"
 
 rsource "../../Kconfig.policy"
 

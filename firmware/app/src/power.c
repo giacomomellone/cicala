@@ -10,21 +10,21 @@
 #include "power.h"
 #include "power_logic.h"
 
-LOG_MODULE_REGISTER(kveld_power_adc, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_power_adc, LOG_LEVEL_INF);
 
-#define KVELD_USER_NODE DT_PATH(zephyr_user)
+#define CICALA_USER_NODE DT_PATH(zephyr_user)
 
-static const struct adc_dt_spec battery = ADC_DT_SPEC_GET(KVELD_USER_NODE);
+static const struct adc_dt_spec battery = ADC_DT_SPEC_GET(CICALA_USER_NODE);
 
-static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(KVELD_USER_NODE, kveld_vbus_gpios);
+static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(CICALA_USER_NODE, cicala_vbus_gpios);
 
 /* Suspend samples while panel load causes pack-voltage sag. */
-#define KVELD_POWER_BUSY_RETRY_MS 250
+#define CICALA_POWER_BUSY_RETRY_MS 250
 
-#if IS_ENABLED(CONFIG_KVELD_DEBUG_POWER)
-#define KVELD_POWER_INTERVAL_MS 1000
+#if IS_ENABLED(CONFIG_CICALA_DEBUG_POWER)
+#define CICALA_POWER_INTERVAL_MS 1000
 #else
-#define KVELD_POWER_INTERVAL_MS CONFIG_KVELD_POWER_SAMPLE_MS
+#define CICALA_POWER_INTERVAL_MS CONFIG_CICALA_POWER_SAMPLE_MS
 #endif
 
 static void power_sample(struct k_work *work);
@@ -67,7 +67,7 @@ static bool read_tap_mv(int32_t *mv)
         return false;
     }
 
-    if (IS_ENABLED(CONFIG_KVELD_DEBUG_POWER)) {
+    if (IS_ENABLED(CONFIG_CICALA_DEBUG_POWER)) {
         LOG_INF("raw %u -> %d mV at the pin", raw, value);
     }
 
@@ -87,7 +87,7 @@ static bool read_pack_mv(uint16_t *mv)
     int32_t total = 0;
     int taken = 0;
 
-    for (int i = 0; i < CONFIG_KVELD_POWER_CONFIRM_SAMPLES; i++) {
+    for (int i = 0; i < CONFIG_CICALA_POWER_CONFIRM_SAMPLES; i++) {
         int32_t one = 0;
 
         if (!read_tap_mv(&one)) {
@@ -103,7 +103,7 @@ static bool read_pack_mv(uint16_t *mv)
     }
 
     const int32_t tap = total / taken;
-    const int32_t pack = tap * CONFIG_KVELD_POWER_DIVIDER_NUM / CONFIG_KVELD_POWER_DIVIDER_DEN;
+    const int32_t pack = tap * CONFIG_CICALA_POWER_DIVIDER_NUM / CONFIG_CICALA_POWER_DIVIDER_DEN;
 
     *mv = (uint16_t) pack;
 
@@ -131,8 +131,8 @@ static void power_sample(struct k_work *work)
 {
     ARG_UNUSED(work);
 
-    if (kveld_app_is_busy()) {
-        (void) k_work_reschedule(&sample_work, K_MSEC(KVELD_POWER_BUSY_RETRY_MS));
+    if (cicala_app_is_busy()) {
+        (void) k_work_reschedule(&sample_work, K_MSEC(CICALA_POWER_BUSY_RETRY_MS));
         return;
     }
 
@@ -141,13 +141,13 @@ static void power_sample(struct k_work *work)
     uint16_t mv = 0;
 
     if (read_pack_mv(&mv)) {
-        kveld_power_post_sample(mv, usb);
+        cicala_power_post_sample(mv, usb);
     } else {
         /* Preserve VBUS transitions when the ADC is unavailable. */
-        kveld_power_post_usb(usb);
+        cicala_power_post_usb(usb);
     }
 
-    (void) k_work_reschedule(&sample_work, K_MSEC(KVELD_POWER_INTERVAL_MS));
+    (void) k_work_reschedule(&sample_work, K_MSEC(CICALA_POWER_INTERVAL_MS));
 }
 
 static int power_start(void)
@@ -172,10 +172,10 @@ static int power_start(void)
     /* Synchronous, and before any thread starts. */
     power_sample(NULL);
 
-    if (kveld_power_external() && kveld_power_millivolts() < CONFIG_KVELD_POWER_PLAUSIBLE_MV) {
+    if (cicala_power_external() && cicala_power_millivolts() < CONFIG_CICALA_POWER_PLAUSIBLE_MV) {
         /* This combination usually means both divider inputs are floating. */
         LOG_WRN("VBUS is high but the pack reads %u mV; check both dividers are fitted",
-                kveld_power_millivolts());
+                cicala_power_millivolts());
     }
 
     return 0;

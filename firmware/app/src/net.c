@@ -25,7 +25,7 @@
 #include "status.h"
 #include "sync.h"
 
-LOG_MODULE_REGISTER(kveld_net, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_net, LOG_LEVEL_INF);
 
 #define NET_STACK_SIZE 6144
 
@@ -68,22 +68,22 @@ static atomic_t sync_busy;
 /* Deadline for acquiring a station address. */
 static int64_t sync_deadline;
 
-static void kveld_net_show_sync_result(enum kveld_sync_result result, uint16_t count,
-                                       const char *version)
+static void cicala_net_show_sync_result(enum cicala_sync_result result, uint16_t count,
+                                        const char *version)
 {
-    struct kveld_service_msg msg = {};
+    struct cicala_service_msg msg = {};
 
     switch (result) {
-    case KVELD_SYNC_UPDATED:
+    case CICALA_SYNC_UPDATED:
         msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text),
                                       "New questions: %u in this deck (%s)", count, version);
         break;
 
-    case KVELD_SYNC_CURRENT:
+    case CICALA_SYNC_CURRENT:
         msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text), "Questions are up to date.");
         break;
 
-    case KVELD_SYNC_FAILED:
+    case CICALA_SYNC_FAILED:
     default:
         msg.len =
             (uint16_t) snprintk(msg.text, sizeof(msg.text), "Could not check for new questions.");
@@ -95,7 +95,7 @@ static void kveld_net_show_sync_result(enum kveld_sync_result result, uint16_t c
     }
 
     msg.text[msg.len] = '\0';
-    kveld_portal_set_sync_result(msg.text);
+    cicala_portal_set_sync_result(msg.text);
 
     (void) zbus_chan_pub(&chan_service, &msg, K_MSEC(100));
 }
@@ -106,18 +106,18 @@ static void raise(uint32_t bit)
     k_sem_give(&wake);
 }
 
-void kveld_net_notify_sync(void)
+void cicala_net_notify_sync(void)
 {
     raise(EV_SYNC);
 }
 
-bool kveld_net_is_active(void)
+bool cicala_net_is_active(void)
 {
     return atomic_get(&confirming_gesture) != 0 || atomic_get(&sync_busy) != 0 ||
-           kveld_net_portal_active();
+           cicala_net_portal_active();
 }
 
-void kveld_net_notify_credentials(void)
+void cicala_net_notify_credentials(void)
 {
     raise(EV_CREDENTIALS);
 }
@@ -130,8 +130,8 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
     case NET_EVENT_WIFI_SCAN_RESULT: {
         const struct wifi_scan_result *result = (const struct wifi_scan_result *) cb->info;
 
-        kveld_portal_scan_add((const char *) result->ssid, result->ssid_length, result->rssi,
-                              result->security != WIFI_SECURITY_TYPE_NONE);
+        cicala_portal_scan_add((const char *) result->ssid, result->ssid_length, result->rssi,
+                               result->security != WIFI_SECURITY_TYPE_NONE);
         break;
     }
 
@@ -150,12 +150,12 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
         const struct wifi_status *status = (const struct wifi_status *) cb->info;
 
         if (status->status == 0) {
-            kveld_portal_clear_connection_error();
-            kveld_portal_set_station_connected(true);
+            cicala_portal_clear_connection_error();
+            cicala_portal_set_station_connected(true);
             raise(EV_CONNECTED);
         } else {
             LOG_WRN("the network refused us: %d", status->status);
-            kveld_portal_set_connection_error(status->status);
+            cicala_portal_set_connection_error(status->status);
             raise(EV_REFUSED);
         }
 
@@ -163,7 +163,7 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
     }
 
     case NET_EVENT_WIFI_DISCONNECT_RESULT:
-        kveld_portal_set_station_connected(false);
+        cicala_portal_set_station_connected(false);
         break;
 
     case NET_EVENT_WIFI_AP_STA_CONNECTED:
@@ -178,11 +178,11 @@ static void on_wifi_event(struct net_mgmt_event_callback *cb, uint64_t event, st
 static bool service_gesture_held(void)
 {
     static const struct gpio_dt_spec buttons[] = {
-        GPIO_DT_SPEC_GET(DT_ALIAS(kveld_category), gpios),
-        GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios),
+        GPIO_DT_SPEC_GET(DT_ALIAS(cicala_category), gpios),
+        GPIO_DT_SPEC_GET(DT_ALIAS(cicala_next), gpios),
     };
 
-    for (int elapsed = 0; elapsed <= CONFIG_KVELD_PORTAL_ENTRY_HOLD_MS; elapsed += 50) {
+    for (int elapsed = 0; elapsed <= CONFIG_CICALA_PORTAL_ENTRY_HOLD_MS; elapsed += 50) {
         for (size_t i = 0; i < ARRAY_SIZE(buttons); i++) {
             if (gpio_pin_get_dt(&buttons[i]) != 1) {
                 return false;
@@ -200,97 +200,97 @@ static void drain_events(void)
     const atomic_val_t pending = atomic_clear(&events);
 
     if (pending & EV_SCAN_DONE) {
-        kveld_net_post_scan_done();
+        cicala_net_post_scan_done();
     }
 
     if (pending & EV_AP_OK) {
-        kveld_net_post_ap_ready(true);
+        cicala_net_post_ap_ready(true);
     }
 
     if (pending & EV_AP_FAILED) {
-        kveld_net_post_ap_ready(false);
+        cicala_net_post_ap_ready(false);
     }
 
     if (pending & EV_CREDENTIALS) {
-        kveld_net_post_credentials();
+        cicala_net_post_credentials();
     }
 
     if (pending & EV_CONNECTED) {
-        kveld_net_post_connected(true);
+        cicala_net_post_connected(true);
 
         if (sync_when_connected) {
             sync_when_connected = false;
 
             /* Activity and sleep inhibition use the same sync lifetime. */
-            kveld_status_set_activity(true);
+            cicala_status_set_activity(true);
 
             run_sync(false);
 
             /* Questions first, firmware second. */
-            if (IS_ENABLED(CONFIG_KVELD_OTA_ON_COLD_BOOT)) {
+            if (IS_ENABLED(CONFIG_CICALA_OTA_ON_COLD_BOOT)) {
                 run_ota();
             }
 
-            kveld_status_set_activity(false);
+            cicala_status_set_activity(false);
             atomic_set(&sync_busy, 0);
         }
     }
 
     if (pending & EV_REFUSED) {
-        kveld_net_post_connected(false);
+        cicala_net_post_connected(false);
     }
 
     if (pending & EV_SYNC) {
         atomic_set(&sync_busy, 1);
-        kveld_status_set_activity(true);
+        cicala_status_set_activity(true);
         run_sync(true);
         run_ota();
-        kveld_status_set_activity(false);
+        cicala_status_set_activity(false);
         atomic_set(&sync_busy, 0);
     }
 }
 
 static void run_sync(bool asked_for)
 {
-    if (!kveld_portal_station_connected()) {
+    if (!cicala_portal_station_connected()) {
         LOG_INF("no network, so nothing to sync from");
         return;
     }
 
     uint16_t count = 0;
-    char version[KVELD_CORPUS_VERSION_LEN] = {0};
+    char version[CICALA_CORPUS_VERSION_LEN] = {0};
 
-    const enum kveld_sync_result result =
-        kveld_sync_run(kveld_language(), &count, version, sizeof(version));
+    const enum cicala_sync_result result =
+        cicala_sync_run(cicala_language(), &count, version, sizeof(version));
 
-    if (result != KVELD_SYNC_UPDATED) {
+    if (result != CICALA_SYNC_UPDATED) {
         if (asked_for) {
-            kveld_net_show_sync_result(result, 0, "");
+            cicala_net_show_sync_result(result, 0, "");
         }
 
         return;
     }
 
     /* The corpus on disk has changed, so `app` reopens it. */
-    struct kveld_corpus_msg msg = {};
+    struct cicala_corpus_msg msg = {};
 
-    (void) strncpy(msg.language, kveld_language(), sizeof(msg.language) - 1);
+    (void) strncpy(msg.language, cicala_language(), sizeof(msg.language) - 1);
     (void) zbus_chan_pub(&chan_corpus, &msg, K_MSEC(100));
 
-    kveld_net_show_sync_result(result, count, version);
+    cicala_net_show_sync_result(result, count, version);
 }
 
-#ifdef CONFIG_KVELD_OTA
+#ifdef CONFIG_CICALA_OTA
 
 static void run_ota(void)
 {
-    if (!kveld_portal_station_connected()) {
+    if (!cicala_portal_station_connected()) {
         return;
     }
 
     char version[32] = {0};
 
-    if (kveld_ota_run(version, sizeof(version)) != KVELD_OTA_STAGED) {
+    if (cicala_ota_run(version, sizeof(version)) != CICALA_OTA_STAGED) {
         return;
     }
 
@@ -306,7 +306,7 @@ static void run_ota(void)
 
 static void run_ota(void) {}
 
-#endif /* CONFIG_KVELD_OTA */
+#endif /* CONFIG_CICALA_OTA */
 
 static void net_thread(void *p1, void *p2, void *p3)
 {
@@ -317,7 +317,7 @@ static void net_thread(void *p1, void *p2, void *p3)
     net_mgmt_init_event_callback(&wifi_cb, on_wifi_event, WIFI_EVENTS);
     net_mgmt_add_event_callback(&wifi_cb);
 
-    if (kveld_portal_init() != 0) {
+    if (cicala_portal_init() != 0) {
         LOG_ERR("no radio; the device runs on its compiled-in corpus");
         return;
     }
@@ -325,21 +325,21 @@ static void net_thread(void *p1, void *p2, void *p3)
     /* Inhibit sleep for the full service-entry gesture. */
     atomic_set(&confirming_gesture, 1);
 
-    const bool gesture = !IS_ENABLED(CONFIG_KVELD_DEBUG_PORTAL) && service_gesture_held();
+    const bool gesture = !IS_ENABLED(CONFIG_CICALA_DEBUG_PORTAL) && service_gesture_held();
 
     atomic_set(&confirming_gesture, 0);
 
-    if (IS_ENABLED(CONFIG_KVELD_DEBUG_PORTAL)) {
-        LOG_WRN("CONFIG_KVELD_DEBUG_PORTAL: entering setup without the gesture");
-        kveld_net_post_start();
+    if (IS_ENABLED(CONFIG_CICALA_DEBUG_PORTAL)) {
+        LOG_WRN("CONFIG_CICALA_DEBUG_PORTAL: entering setup without the gesture");
+        cicala_net_post_start();
     } else if (gesture) {
         LOG_INF("both buttons held through boot — entering setup");
-        kveld_net_post_start();
-    } else if (kveld_wake_button() != KVELD_WAKE_NONE && !kveld_power_charge_window_open()) {
+        cicala_net_post_start();
+    } else if (cicala_wake_button() != CICALA_WAKE_NONE && !cicala_power_charge_window_open()) {
         /* Battery wakes serve the button without joining Wi-Fi. */
         LOG_INF("woken by a button; not joining a network");
     } else {
-        if (kveld_wake_button() != KVELD_WAKE_NONE) {
+        if (cicala_wake_button() != CICALA_WAKE_NONE) {
             /* A button wake during the external-power window may sync. */
             LOG_INF("woken on external power; joining to sync");
         } else {
@@ -348,29 +348,30 @@ static void net_thread(void *p1, void *p2, void *p3)
         }
 
         /* Wait for the station result within the configured timeout. */
-        if (kveld_portal_connect_stored()) {
+        if (cicala_portal_connect_stored()) {
             sync_when_connected = true;
-            sync_deadline = k_uptime_get() + CONFIG_KVELD_NET_CONNECT_TIMEOUT_MS;
+            sync_deadline = k_uptime_get() + CONFIG_CICALA_NET_CONNECT_TIMEOUT_MS;
             atomic_set(&sync_busy, 1);
         }
     }
 
     while (true) {
         drain_events();
-        kveld_net_run();
+        cicala_net_run();
 
         /* A missing address must not keep the device awake indefinitely. */
         if (sync_when_connected && k_uptime_get() > sync_deadline) {
             LOG_INF("no address after %d ms; not syncing this boot",
-                    CONFIG_KVELD_NET_CONNECT_TIMEOUT_MS);
+                    CONFIG_CICALA_NET_CONNECT_TIMEOUT_MS);
             sync_when_connected = false;
             atomic_set(&sync_busy, 0);
         }
 
-        kveld_status_set_portal(kveld_net_portal_active());
+        cicala_status_set_portal(cicala_net_portal_active());
 
-        (void) k_sem_take(&wake, kveld_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
+        (void) k_sem_take(&wake, cicala_net_is_active() ? K_MSEC(TICK_MS) : K_FOREVER);
     }
 }
 
-K_THREAD_DEFINE(kveld_net_thread, NET_STACK_SIZE, net_thread, NULL, NULL, NULL, NET_PRIORITY, 0, 0);
+K_THREAD_DEFINE(cicala_net_thread, NET_STACK_SIZE, net_thread, NULL, NULL, NULL, NET_PRIORITY, 0,
+                0);

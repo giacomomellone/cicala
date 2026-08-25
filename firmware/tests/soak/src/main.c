@@ -7,9 +7,9 @@
 #include "channels.h"
 #include "input.h"
 
-static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios);
+static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_next), gpios);
 
-#define RUN_WAIT K_MSEC(10 * CONFIG_KVELD_DEBUG_SOAK_INTERVAL_MS + 1000)
+#define RUN_WAIT K_MSEC(10 * CONFIG_CICALA_DEBUG_SOAK_INTERVAL_MS + 1000)
 
 #define EXPECTED_RENDERS 6
 
@@ -23,7 +23,7 @@ static bool seq_repeated;
 static void observe(const struct zbus_channel *chan)
 {
     if (chan == &chan_question) {
-        const struct kveld_question_msg *msg = zbus_chan_const_msg(chan);
+        const struct cicala_question_msg *msg = zbus_chan_const_msg(chan);
 
         if (msg->seq <= last_seq) {
             seq_repeated = true;
@@ -32,7 +32,7 @@ static void observe(const struct zbus_channel *chan)
         last_seq = msg->seq;
         questions++;
     } else if (chan == &chan_render) {
-        const struct kveld_render_msg *msg = zbus_chan_const_msg(chan);
+        const struct cicala_render_msg *msg = zbus_chan_const_msg(chan);
 
         renders++;
 
@@ -55,14 +55,14 @@ static void *suite_setup(void)
     zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, 1));
     k_sleep(K_MSEC(100));
 
-    zassert_ok(kveld_input_init());
+    zassert_ok(cicala_input_init());
 
     return NULL;
 }
 
-ZTEST_SUITE(kveld_soak, NULL, suite_setup, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_soak, NULL, suite_setup, NULL, NULL, NULL);
 
-ZTEST(kveld_soak, test_the_chain_runs_hands_off)
+ZTEST(cicala_soak, test_the_chain_runs_hands_off)
 {
     k_sleep(RUN_WAIT);
 

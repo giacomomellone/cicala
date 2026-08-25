@@ -1,6 +1,6 @@
 # Use the application retained-block layout.
 
-mainmenu "kveld retained tests"
+mainmenu "cicala retained tests"
 
 rsource "../../Kconfig.policy"
 

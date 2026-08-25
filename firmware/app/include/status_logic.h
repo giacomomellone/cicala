@@ -10,25 +10,25 @@ extern "C" {
 #endif
 
 /** What the two pins should be doing. */
-enum kveld_status_colour {
-    KVELD_STATUS_OFF = 0,
-    KVELD_STATUS_RED,
-    KVELD_STATUS_GREEN,
+enum cicala_status_colour {
+    CICALA_STATUS_OFF = 0,
+    CICALA_STATUS_RED,
+    CICALA_STATUS_GREEN,
     /** Both lit. */
-    KVELD_STATUS_AMBER,
+    CICALA_STATUS_AMBER,
 };
 
 /** Where power stands, plus whether a press was just turned away. */
-void kveld_status_post_power(uint8_t state, bool refresh_blocked);
+void cicala_status_post_power(uint8_t state, bool refresh_blocked);
 
-void kveld_status_post_portal(bool on_air);
-void kveld_status_post_activity(bool busy);
+void cicala_status_post_portal(bool on_air);
+void cicala_status_post_activity(bool busy);
 
 /** The instantaneous colour, with blinks and pulses already resolved. */
-uint8_t kveld_status_output(int64_t now_ms);
+uint8_t cicala_status_output(int64_t now_ms);
 
 /** True while the output can change without any new input arriving. */
-bool kveld_status_animating(int64_t now_ms);
+bool cicala_status_animating(int64_t now_ms);
 
 #ifdef __cplusplus
 }

@@ -2,7 +2,7 @@
 
 The three functional KiCad sheets are captured and pass ERC. This list records the selected electrical parts and off-board assemblies. Every symbol now carries a footprint, so it is suitable for component sourcing and layout, but it is not yet an orderable PCBA BOM: the four project-drawn land patterns need a manufacturer-drawing review, and board placement, routing, alternates and live assembler stock still need work. For the development rig and physical-model purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
 
-Project-drawn land patterns live in `kveld_rev_a/kveld.pretty` (registered through `fp-lib-table`): `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm` (U3, no exposed pad), `L_Coilcraft_XFL4015` (L2), `L_TDK_VLS4012` (L1) and the preliminary `LED_Kingbright_APBA2006SURKCGKC` (D4). All other parts use KiCad library footprints.
+Project-drawn land patterns live in `cicala_rev_a/cicala.pretty` (registered through `fp-lib-table`): `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm` (U3, no exposed pad), `L_Coilcraft_XFL4015` (L2), `L_TDK_VLS4012` (L1) and the preliminary `LED_Kingbright_APBA2006SURKCGKC` (D4). All other parts use KiCad library footprints.
 
 ## Selected parts
 
@@ -14,14 +14,14 @@ Project-drawn land patterns live in `kveld_rev_a/kveld.pretty` (registered throu
 | J1       | USB-C USB 2.0 receptacle                     | 16-pin mid-mount SMD             | TYPE-C-31-M-12                                              |   1 | Selected; enclosure/courtyard gate |
 | U4       | USB 2.0 ESD protection                      | SOT-23-6                         | USBLC6-2SC6                                                 |   1 | Selected |
 | U2       | Single-cell charger and power path           | DLH WSON-10, 2.2 × 2.0 mm        | BQ25185DLHR                                                 |   1 | Selected; 250 mA charge, 500 mA input, 4.2 V cell |
-| U3       | 3.3 V low-IQ buck-boost regulator            | DLA VSON-10, 2.0 × 3.0 mm        | TPS63802DLAR                                                |   1 | Selected; footprint drafted (kveld, no EP); land review pending |
+| U3       | 3.3 V low-IQ buck-boost regulator            | DLA VSON-10, 2.0 × 3.0 mm        | TPS63802DLAR                                                |   1 | Selected; footprint drafted (cicala, no EP); land review pending |
 | U5, U6   | Battery-divider and display load switches    | SOT-23-6                         | TPS22917DBVR                                                |   2 | Selected |
-| L2       | Buck-boost inductor, 0.47 µH                 | 4.0 × 4.0 mm                     | XFL4015-471ME                                               |   1 | Selected; footprint drafted (kveld); land review pending |
-| L1       | E-paper boost inductor, 47 µH                | 4.0 × 4.0 × 1.2 mm               | VLS4012CX-470M-1                                            |   1 | Selected; footprint drafted (kveld); land review pending |
+| L2       | Buck-boost inductor, 0.47 µH                 | 4.0 × 4.0 mm                     | XFL4015-471ME                                               |   1 | Selected; footprint drafted (cicala); land review pending |
+| L1       | E-paper boost inductor, 47 µH                | 4.0 × 4.0 × 1.2 mm               | VLS4012CX-470M-1                                            |   1 | Selected; footprint drafted (cicala); land review pending |
 | Q1       | E-paper boost MOSFET                         | SC-70                            | Si1308EDL-T1-GE3                                           |   1 | Selected |
 | D1–D3    | E-paper boost Schottky diodes                | SOD-123                          | MBR0530                                                    |   3 | Selected |
 | SW1, SW2 | Sealed 2 N SPST-NO tact switches             | 6.2 × 6.2 mm SMD                 | KSC321GLFS                                                 |   2 | Selected; footprint KiCad CK_KSC6xxG confirmed vs KSC3 land; cap stack open |
-| D4       | Right-angle red/green bi-colour LED          | 2.0 × 1.0 mm side-view SMD       | APBA2006SURKCGKC                                           |   1 | Selected; footprint drafted (kveld, PRELIMINARY); pad-map + optical coupling open |
+| D4       | Right-angle red/green bi-colour LED          | 2.0 × 1.0 mm side-view SMD       | APBA2006SURKCGKC                                           |   1 | Selected; footprint drafted (cicala, PRELIMINARY); pad-map + optical coupling open |
 | J3       | Protected-cell connector with thermistor     | 3-pin JST-PH, horizontal SMD      | S3B-PH-SM4-TB(LF)(SN), mated custom harness                |   1 | Connector selected; wire order must be keyed in drawing |
 | BT1      | Protected 1S LiPo, nominal 500 mAh           | 503035-class pack, 3-wire harness | Custom pack with PCM and 10 kΩ, B=3435 K NTC               |   1 | Supplier drawing and enclosure fit open |
 | J4       | Concealed recovery connector                 | Tag-Connect TC2030-IDC-NL pads    | PCB footprint only                                         |   1 | DNP connector; underside access gate |

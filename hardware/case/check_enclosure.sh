@@ -2,8 +2,8 @@
 set -euo pipefail
 
 case_dir=$(cd "$(dirname "$0")" && pwd)
-source_file="$case_dir/kveld_enclosure.scad"
-task_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/kveld-case-check.XXXXXX")
+source_file="$case_dir/cicala_enclosure.scad"
+task_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/cicala-case-check.XXXXXX")
 trap 'rm -rf "$task_tmp_dir"' EXIT
 
 if [[ -n "${OPENSCAD_BIN:-}" ]]; then

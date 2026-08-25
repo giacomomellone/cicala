@@ -43,7 +43,7 @@ def main(argv=None) -> int:
         default=None,
         help="ed25519 private key PEM; omit for an unsigned dev manifest",
     )
-    parser.add_argument("--base-url", default="http://kveld.invalid/device")
+    parser.add_argument("--base-url", default="http://cicala.invalid/device")
     args = parser.parse_args(argv)
 
     raw = args.image.read_bytes()
@@ -60,7 +60,7 @@ def main(argv=None) -> int:
     out_dir = args.out or args.root / "dist" / "firmware"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    name = f"kveld-{args.version}.bin"
+    name = f"cicala-{args.version}.bin"
     shutil.copyfile(args.image, out_dir / name)
 
     # Sign the exact bytes named by the manifest.

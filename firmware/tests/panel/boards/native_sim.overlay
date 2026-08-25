@@ -1,6 +1,6 @@
 
 / {
-    kveld_dummy: dummy_dc {
+    cicala_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
         height = <122>;
@@ -8,7 +8,7 @@
     };
 
     chosen {
-        zephyr,display = &kveld_dummy;
+        zephyr,display = &cicala_dummy;
     };
 };
 

@@ -384,11 +384,11 @@ class TestFirmwareManifest(unittest.TestCase):
             self.assertEqual(code, 0)
 
             manifest = json.loads((out / "firmware.json").read_text())
-            published = (out / "kveld-0.2.0.bin").read_bytes()
+            published = (out / "cicala-0.2.0.bin").read_bytes()
 
             self.assertEqual(manifest["schema"], 1)
             self.assertEqual(manifest["version"], "0.2.0")
-            self.assertTrue(manifest["url"].endswith("kveld-0.2.0.bin"))
+            self.assertTrue(manifest["url"].endswith("cicala-0.2.0.bin"))
             self.assertEqual(manifest["size"], len(published))
             self.assertEqual(manifest["sha256"], hashlib.sha256(published).hexdigest())
 
@@ -428,7 +428,7 @@ def issue_form_options():
 
 
 def schema_config():
-    return json.loads((REPO / "questions" / "schema.json").read_text(encoding="utf-8"))["x-kveld"]
+    return json.loads((REPO / "questions" / "schema.json").read_text(encoding="utf-8"))["x-cicala"]
 
 
 class TestIssueFormVocabulary(unittest.TestCase):

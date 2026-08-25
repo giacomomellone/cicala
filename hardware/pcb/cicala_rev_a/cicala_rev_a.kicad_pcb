@@ -8,10 +8,10 @@
 	)
 	(paper "A4")
 	(title_block
-		(title "Kveld Rev A constraint skeleton")
+		(title "Cicala Rev A constraint skeleton")
 		(date "2026-08-16")
 		(rev "A0")
-		(company "Kveld")
+		(company "Cicala")
 		(comment 1 "NOT FABRICATION READY — mechanical and placement contract only")
 	)
 	(layers
@@ -99,7 +99,7 @@
 	(gr_text "ANTENNA — NO COPPER / METAL" (at 9 28 90) (layer "User.2") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2503") (effects (font (size 0.65 0.65) (thickness 0.1))))
 	(gr_text "DISPLAY ENVELOPE ABOVE" (at 42 35 0) (layer "User.1") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2504") (effects (font (size 1 1) (thickness 0.15))))
 	(gr_text "USB-C" (at 42 46 0) (layer "F.SilkS") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2505") (effects (font (size 0.8 0.8) (thickness 0.12))))
-	(gr_text "KVELD REV A0" (at 69 5.5 0) (layer "F.SilkS") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2506") (effects (font (size 1 1) (thickness 0.15))))
+	(gr_text "CICALA REV A0" (at 69 5.5 0) (layer "F.SilkS") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2506") (effects (font (size 1 1) (thickness 0.15))))
 	(gr_text "FPC DATUM — VERIFY FOOTPRINT" (at 42 40 0) (layer "User.1") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2507") (effects (font (size 0.65 0.65) (thickness 0.1))))
 	(gr_text "WROOM-1 CONFLICT / 1U BASELINE" (at 16 28 90) (layer "Cmts.User") (uuid "cbcc0d18-89a5-4751-a01d-49a9b0ef2508") (effects (font (size 0.55 0.55) (thickness 0.09))))
 

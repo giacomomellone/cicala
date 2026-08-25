@@ -1,48 +1,48 @@
 # Product policy shared by the application and firmware tests.
 # Measured settings cite their basis in the help text.
 
-config KVELD_BUTTON_DEBOUNCE_MS
+config CICALA_BUTTON_DEBOUNCE_MS
     int "Category and Next debounce (ms)"
     default 30
     help
       Debounce used by gpio-keys. Keep it equal to debounce-interval-ms in
       every board overlay. One event is emitted when a button is released.
 
-config KVELD_CORPUS_LANGUAGE
+config CICALA_CORPUS_LANGUAGE
     string "Language of the corpus compiled into the image"
     default "en"
     help
       Factory corpus used before network setup. It must match a bundle built
       by `just bundle`.
 
-config KVELD_PANEL_MARGIN_PX
+config CICALA_PANEL_MARGIN_PX
     int "Blank border around the text (pixels)"
     default 10
     help
       Ten pixels equals one cfb_font_1016 character cell.
 
-config KVELD_PANEL_COLUMNS
+config CICALA_PANEL_COLUMNS
     int "Characters per line the panel fits"
     default 23
     help
       (250 - 2 * margin) / 10 for cfb_font_1016. A build assertion checks the
       configured value against the panel width.
 
-config KVELD_PANEL_LINES
+config CICALA_PANEL_LINES
     int "Lines of text the panel fits"
     default 6
     help
       (122 - 2 * margin) / 16 for cfb_font_1016. The corpus layout test checks
       every shipped question.
 
-config KVELD_PANEL_AUTOSIZE
+config CICALA_PANEL_AUTOSIZE
     bool "Pick the largest font each question fits in"
     default y
     help
       Choose among the 10x16, 15x24, and 20x32 CFB fonts. Disabled mode always
       uses 10x16.
 
-config KVELD_PANEL_MAX_LEADING_PCT
+config CICALA_PANEL_MAX_LEADING_PCT
     int "Most extra space between lines, as a percentage of the font height"
     default 50
     range 0 100
@@ -50,103 +50,103 @@ config KVELD_PANEL_MAX_LEADING_PCT
       Cap the unused vertical space shared between lines. The default raises
       average vertical fill from 66% to 82% on the shipped corpus.
 
-config KVELD_PANEL_BOLD
+config CICALA_PANEL_BOLD
     bool "Thicken glyphs by overdrawing"
     default y
     help
       Draw each glyph again one pixel to the right. Disable for hardware font
       comparisons.
 
-config KVELD_DEBUG_CHARSET
+config CICALA_DEBUG_CHARSET
     bool "Show character-set test pages instead of questions"
     default n
     help
       Next advances through ASCII, language samples, and composed diacritics.
       Used by the charset profile.
 
-config KVELD_DEBUG_SOAK
+config CICALA_DEBUG_SOAK
     bool "Press Next automatically, forever"
     default n
     help
       Schedule Next after each refresh. The soak profile suppresses periodic
       full refreshes so panel ghosting accumulates.
 
-config KVELD_DEBUG_SOAK_INTERVAL_MS
+config CICALA_DEBUG_SOAK_INTERVAL_MS
     int "Wait between a finished refresh and the next automatic press (ms)"
     default 5000
-    depends on KVELD_DEBUG_SOAK
+    depends on CICALA_DEBUG_SOAK
     help
       Delay from a completed refresh to the next automatic press.
 
-config KVELD_DEBUG_SOAK_REBOOT
+config CICALA_DEBUG_SOAK_REBOOT
     bool "Reboot part-way through a soak run"
     default n
-    depends on KVELD_DEBUG_SOAK
+    depends on CICALA_DEBUG_SOAK
     select REBOOT
     help
       Warm-reboot during a soak run to test RTC-retained shuffle, refresh, and
       panel state. A cold reset clears the RTC domain.
 
-config KVELD_DEBUG_SOAK_REBOOT_EVERY
+config CICALA_DEBUG_SOAK_REBOOT_EVERY
     int "Presses between reboots"
     default 3
-    depends on KVELD_DEBUG_SOAK_REBOOT
+    depends on CICALA_DEBUG_SOAK_REBOOT
 
-config KVELD_SLEEP
+config CICALA_SLEEP
     bool "Enter deep sleep when the table goes quiet"
     default n
-    depends on !KVELD_DEBUG_SOAK && !KVELD_DEBUG_CHARSET
+    depends on !CICALA_DEBUG_SOAK && !CICALA_DEBUG_CHARSET
     select POWEROFF
     select PM
     help
       Enter ESP32-S3 deep sleep after the idle window. RTC memory preserves
       tabletop state across the restart. The release board enables this.
 
-config KVELD_PANEL_DEEP_SLEEP
+config CICALA_PANEL_DEEP_SLEEP
     bool "Put the panel controller to sleep too"
     default n
-    depends on KVELD_SLEEP
+    depends on CICALA_SLEEP
     select SSD16XX_PRESERVE_IMAGE_HW_RESET
     help
       Put the SSD1680 into RAM-retaining deep sleep. Current saving and RAM
       retention across the wake reset remain unmeasured.
 
-config KVELD_SLEEP_IDLE_MS
+config CICALA_SLEEP_IDLE_MS
     int "Quiet time before sleeping (ms)"
     default 2000
-    depends on KVELD_SLEEP
+    depends on CICALA_SLEEP
     help
       Measured from the latest input, category change, or refresh.
 
-config KVELD_REFRESH_TIMEOUT_MS
+config CICALA_REFRESH_TIMEOUT_MS
     int "How long to wait for the display before giving up (ms)"
     default 15000
     help
       Bounds a stalled refresh. Bench measurements are 622 ms for a partial
       refresh and about 2315 ms for a full refresh at room temperature.
 
-config KVELD_FULL_REFRESH_INTERVAL
+config CICALA_FULL_REFRESH_INTERVAL
     int "Partial refreshes between full refreshes"
     default 16
     help
       Sixteen partial refreshes remain clean in normal use. A soak run reached
       193 before artifacts became unacceptable.
 
-config KVELD_PLAYBACK_DEPTH_MAX
+config CICALA_PLAYBACK_DEPTH_MAX
     int "Maximum editorial depth in normal playback"
     default 2
     range 1 3
     help
       Normal playback excludes depth 3. See docs/design.md.
 
-config KVELD_RECENT_RING
+config CICALA_RECENT_RING
     int "Questions excluded from the start of a new bag cycle"
     default 20
     help
       Shared across categories. When the ring excludes every remaining
       question in a category, the bag relaxes the ring.
 
-config KVELD_TEXTURE
+config CICALA_TEXTURE
     bool "Prefer a different depth band and form than the last question"
     default y
     help
@@ -156,14 +156,14 @@ config KVELD_TEXTURE
       decorrelates consecutive draws; it is not session state and does not
       escalate. Disable for A/B studies. See docs/design.md.
 
-config KVELD_MAX_QUESTIONS
+config CICALA_MAX_QUESTIONS
     int "Largest corpus the bag can track"
     default 512
     help
       Sets the RTC bitmap width: one bit per question per category. A 512-item
       limit uses 384 bytes. Larger bundles are rejected by Qdb::open().
 
-config KVELD_DEBUG_CORPUS_STORE
+config CICALA_DEBUG_CORPUS_STORE
     bool "Write the compiled-in corpus to the filesystem at boot"
     default n
     depends on FILE_SYSTEM_LITTLEFS
@@ -171,73 +171,73 @@ config KVELD_DEBUG_CORPUS_STORE
       Exercise the LittleFS read path used by synced corpora. Used by the
       corpus profile.
 
-config KVELD_MAX_CORPUS_BYTES
+config CICALA_MAX_CORPUS_BYTES
     int "Largest synced corpus the device will read (bytes)"
     default 32768
     help
       QDB keeps pointers into one RAM buffer. This limit covers 512 questions;
       the 240-question English corpus is about 15 KB.
 
-config KVELD_MAX_QUESTION_BYTES
+config CICALA_MAX_QUESTION_BYTES
     int "Largest question the device will render (UTF-8 bytes)"
     default 128
     help
       Bounds messages on chan_question. The longest shipped question is 94
       bytes, and the QDB suite checks every built bundle.
 
-config KVELD_NET
+config CICALA_NET
     bool "Wi-Fi, and the setup portal that configures it"
     default n
     help
       Enable Wi-Fi, stored credentials, the setup access point, and HTTP
       services. The release board enables this.
 
-config KVELD_DEBUG_PORTAL
+config CICALA_DEBUG_PORTAL
     bool "Enter setup at every boot, without the gesture"
     default n
-    depends on KVELD_NET
+    depends on CICALA_NET
     help
       Used by the portal profile.
 
-config KVELD_SYNC
+config CICALA_SYNC
     bool "Fetch question bundles over the network"
     default n
-    depends on KVELD_NET
+    depends on CICALA_NET
     help
       Download, verify, and install newer question bundles. Enable this only
-      with a reachable KVELD_SYNC_BASE_URL. See docs/sync_protocol.md.
+      with a reachable CICALA_SYNC_BASE_URL. See docs/sync_protocol.md.
 
-config KVELD_SYNC_BASE_URL
+config CICALA_SYNC_BASE_URL
     string "Where the manifest and bundles are served from"
-    default "http://kveld.invalid/device"
-    depends on KVELD_SYNC
+    default "http://cicala.invalid/device"
+    depends on CICALA_SYNC
     help
       Base URL for manifest.json and bundle URLs. Redirects are unsupported;
       the default .invalid host cannot resolve.
 
-config KVELD_SYNC_HOST
+config CICALA_SYNC_HOST
     string "Host name to connect to and resolve"
-    default "kveld.invalid"
-    depends on KVELD_SYNC
+    default "cicala.invalid"
+    depends on CICALA_SYNC
     help
       Host used for DNS and TLS SNI.
 
-config KVELD_SYNC_PORT
+config CICALA_SYNC_PORT
     int "Port"
     default 80
-    depends on KVELD_SYNC
+    depends on CICALA_SYNC
 
-config KVELD_SYNC_INSECURE
+config CICALA_SYNC_INSECURE
     bool "Connect without TLS"
     default y
-    depends on KVELD_SYNC
+    depends on CICALA_SYNC
     help
       Use plain HTTP. Ed25519 authenticates artifacts; traffic remains visible.
 
-config KVELD_OTA
+config CICALA_OTA
     bool "Install firmware updates over the network"
     default n
-    depends on KVELD_SYNC
+    depends on CICALA_SYNC
     depends on BOOTLOADER_MCUBOOT
     select STREAM_FLASH
     select IMG_MANAGER
@@ -247,68 +247,68 @@ config KVELD_OTA
       Download a newer image into the spare MCUboot slot, verify it, and mark
       it for installation. See docs/firmware_update.md.
 
-      KVELD_SYNC supplies the shared connection and signature code.
+      CICALA_SYNC supplies the shared connection and signature code.
       BOOTLOADER_MCUBOOT supplies the spare slot and installer. STREAM_FLASH is
       selected explicitly because IMG_MANAGER depends on it without selecting
       it. Progressive erase avoids one large erase before the download.
 
-config KVELD_OTA_BASE_URL
+config CICALA_OTA_BASE_URL
     string "Where the firmware manifest and images are served from"
-    default "http://kveld.invalid/device"
-    depends on KVELD_OTA
+    default "http://cicala.invalid/device"
+    depends on CICALA_OTA
     help
       Base URL for firmware.json and image URLs. It may differ from the bundle
-      URL, but both endpoints must resolve through KVELD_SYNC_HOST.
+      URL, but both endpoints must resolve through CICALA_SYNC_HOST.
 
-config KVELD_OTA_ON_COLD_BOOT
+config CICALA_OTA_ON_COLD_BOOT
     bool "Check for firmware on a cold boot, after the corpus sync"
     default y
-    depends on KVELD_OTA
+    depends on CICALA_OTA
     help
       Disable this to allow updates only from the portal sync action.
 
-config KVELD_PORTAL_SSID_PREFIX
+config CICALA_PORTAL_SSID_PREFIX
     string "Setup network name, before the per-device suffix"
-    default "Kveld"
-    depends on KVELD_NET
+    default "Cicala"
+    depends on CICALA_NET
     help
       The SoftAP name is <prefix>-XXXX, using a suffix derived from the device
       id.
 
-config KVELD_PORTAL_ENTRY_HOLD_MS
+config CICALA_PORTAL_ENTRY_HOLD_MS
     int "Both buttons held this long after boot to enter setup (ms)"
     default 2000
-    depends on KVELD_NET
+    depends on CICALA_NET
 
-config KVELD_PORTAL_WINDOW_MS
+config CICALA_PORTAL_WINDOW_MS
     int "How long the portal stays up (ms)"
     default 300000
     help
       Measured from HTTP startup. A successful network join restarts the window
       once for the status page.
 
-config KVELD_PORTAL_SCAN_MS
+config CICALA_PORTAL_SCAN_MS
     int "How long to wait for the scan before giving up on it (ms)"
     default 8000
     help
       Scan before starting the access point because both share one radio. The
       setup form accepts a typed SSID when scanning times out.
 
-config KVELD_NET_CONNECT_TIMEOUT_MS
+config CICALA_NET_CONNECT_TIMEOUT_MS
     int "How long to wait for a network to accept us (ms)"
     default 20000
     help
       Covers association, authentication, and DHCP. A timeout returns the
       portal to its setup page.
 
-config KVELD_NET_SCAN_MAX
+config CICALA_NET_SCAN_MAX
     int "Networks kept from a scan"
     default 12
-    depends on KVELD_NET
+    depends on CICALA_NET
     help
       Bounds the setup-page scan list. Each retained entry uses 34 bytes.
 
-config KVELD_POWER
+config CICALA_POWER
     bool "Measure the cell, and decide what its voltage means"
     default n
     select ADC
@@ -316,110 +316,110 @@ config KVELD_POWER
       Sample battery voltage and VBUS. Power state gates panel refreshes,
       controls wakefulness, and drives status LEDs. See docs/hardware_wiring.md.
 
-config KVELD_REFRESH_MIN_MV
+config CICALA_REFRESH_MIN_MV
     int "Minimum cell voltage for a panel refresh (mV)"
     default 3200
     help
       Below this value the panel remains unchanged and power state becomes LOW.
       The panel failure threshold remains an open measurement.
 
-config KVELD_POWER_CRITICAL_MV
+config CICALA_POWER_CRITICAL_MV
     int "Cell voltage below which the device says so loudly (mV)"
     default 3000
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       LOW gives one amber blink; CRITICAL gives three red blinks. Both refuse
       panel refreshes.
 
-config KVELD_POWER_PLAUSIBLE_MV
+config CICALA_POWER_PLAUSIBLE_MV
     int "Lowest pack reading that could be a cell (mV)"
     default 2500
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Lower values indicate a missing or faulty divider and produce UNKNOWN,
       which leaves refreshes enabled.
 
-config KVELD_POWER_FULL_MV
+config CICALA_POWER_FULL_MV
     int "Cell voltage that counts as charged (mV)"
     default 4050
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Controls only the green LED. The divider reads about 40 mV low, so the
       default represents about 4090 mV at the cell.
 
-config KVELD_POWER_HYSTERESIS_MV
+config CICALA_POWER_HYSTERESIS_MV
     int "Millivolts a reading must clear a threshold by to cross back (mV)"
     default 120
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Applied during voltage recovery. Panel refreshes can sag the pack by more
       than 120 mV for about two seconds.
 
-config KVELD_POWER_SAMPLE_MS
+config CICALA_POWER_SAMPLE_MS
     int "Time between readings while awake (ms)"
     default 10000
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Periodic interval for long awake periods such as charging and setup.
 
-config KVELD_POWER_CONFIRM_SAMPLES
+config CICALA_POWER_CONFIRM_SAMPLES
     int "Readings averaged into the one taken at boot"
     default 4
     range 1 16
-    depends on KVELD_POWER
+    depends on CICALA_POWER
 
-config KVELD_POWER_CHARGE_WINDOW_MS
+config CICALA_POWER_CHARGE_WINDOW_MS
     int "How long a plug-in keeps the sync and update window open (ms)"
     default 300000
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Limits network work for one continuous external-power connection. The
       device remains awake while VBUS is present.
 
-config KVELD_POWER_DIVIDER_NUM
+config CICALA_POWER_DIVIDER_NUM
     int "Battery divider, numerator"
     default 2
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Pack millivolts equal the ADC reading times NUM / DEN. The 470 kΩ /
       470 kΩ bench divider uses 2 / 1.
 
-config KVELD_POWER_DIVIDER_DEN
+config CICALA_POWER_DIVIDER_DEN
     int "Battery divider, denominator"
     default 1
-    depends on KVELD_POWER
+    depends on CICALA_POWER
 
-config KVELD_POWER_WAKE_ON_USB
+config CICALA_POWER_WAKE_ON_USB
     bool "Wake from deep sleep when USB is plugged in"
     default n
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       VBUS uses EXT0 because the active-low buttons use EXT1. EXT0 keeps the RTC
       peripheral domain powered, so enable this only after measuring its sleep
       current.
 
-config KVELD_DEBUG_POWER
+config CICALA_DEBUG_POWER
     bool "Log the cell voltage continuously"
     default n
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
       Sample once per second and log raw and converted values. Used by the
       power profile for calibration and discharge measurements.
 
-config KVELD_STATUS_LED
+config CICALA_STATUS_LED
     bool "Show power, the portal and transfers on two LEDs"
     default n
-    depends on KVELD_POWER
+    depends on CICALA_POWER
     help
-      Drive active-high red and green GPIO LEDs. Boards without a kveld_leds
+      Drive active-high red and green GPIO LEDs. Boards without a cicala_leds
       devicetree node compile this feature out.
 
-config KVELD_STATUS_LED_BLINK_MS
+config CICALA_STATUS_LED_BLINK_MS
     int "On, and off, time of one blink (ms)"
     default 200
-    depends on KVELD_STATUS_LED
+    depends on CICALA_STATUS_LED
 
-config KVELD_STATUS_LED_PULSE_MS
+config CICALA_STATUS_LED_PULSE_MS
     int "Full cycle of the transfer pulse (ms)"
     default 1500
-    depends on KVELD_STATUS_LED
+    depends on CICALA_STATUS_LED

@@ -6,23 +6,23 @@
 
 #include "fsm.hpp"
 
-namespace kveld
+namespace cicala
 {
 
-#ifdef CONFIG_KVELD_PORTAL_WINDOW_MS
-constexpr int64_t kPortalWindowMs = CONFIG_KVELD_PORTAL_WINDOW_MS;
+#ifdef CONFIG_CICALA_PORTAL_WINDOW_MS
+constexpr int64_t kPortalWindowMs = CONFIG_CICALA_PORTAL_WINDOW_MS;
 #else
 constexpr int64_t kPortalWindowMs = 300000;
 #endif
 
-#ifdef CONFIG_KVELD_PORTAL_SCAN_MS
-constexpr int64_t kPortalScanMs = CONFIG_KVELD_PORTAL_SCAN_MS;
+#ifdef CONFIG_CICALA_PORTAL_SCAN_MS
+constexpr int64_t kPortalScanMs = CONFIG_CICALA_PORTAL_SCAN_MS;
 #else
 constexpr int64_t kPortalScanMs = 8000;
 #endif
 
-#ifdef CONFIG_KVELD_NET_CONNECT_TIMEOUT_MS
-constexpr int64_t kConnectTimeoutMs = CONFIG_KVELD_NET_CONNECT_TIMEOUT_MS;
+#ifdef CONFIG_CICALA_NET_CONNECT_TIMEOUT_MS
+constexpr int64_t kConnectTimeoutMs = CONFIG_CICALA_NET_CONNECT_TIMEOUT_MS;
 #else
 constexpr int64_t kConnectTimeoutMs = 20000;
 #endif
@@ -143,4 +143,4 @@ private:
     static const Fsm::StateTransition _transitions[];
 };
 
-} // namespace kveld
+} // namespace cicala

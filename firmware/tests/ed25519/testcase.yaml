@@ -1,5 +1,5 @@
 tests:
-  kveld.ed25519:
+  cicala.ed25519:
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim
@@ -7,5 +7,5 @@ tests:
       - qemu_xtensa/dc233c
     timeout: 300
     tags:
-      - kveld
+      - cicala
       - ed25519

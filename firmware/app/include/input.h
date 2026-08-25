@@ -7,7 +7,7 @@ extern "C" {
 #endif
 
 /** Check both buttons are present and start reporting. */
-int kveld_input_init(void);
+int cicala_input_init(void);
 
 #ifdef __cplusplus
 }

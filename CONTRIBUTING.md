@@ -4,7 +4,7 @@
 
 This is the contribution that matters most. Two ways, both take about 30 seconds:
 
-1. **Website:** the [contribute page](https://kveld.pages.dev/contribute) has a form that pre-fills everything for you.
+1. **Website:** the [contribute page](https://cicala.dev/contribute) has a form that pre-fills everything for you.
 2. **GitHub:** open a [new-question issue](../../issues/new?template=new-question.yml) directly.
 
 Either way you'll need a free GitHub account. Within a minute of opening the issue, a bot comments to say whether your question passes the automatic checks — length, the question mark, the deck and tone rules, the per-language word list, and whether the database already has it. If something is off, edit the issue and the check runs again. A maintainer who speaks your language reviews every submission that passes; once approved, an automated workflow turns the issue into a pull request and your question ships to the website (within minutes of merge) and to every device (with the next database release). [docs/contribution_pipeline.md](docs/contribution_pipeline.md) describes the whole path.

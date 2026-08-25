@@ -1,5 +1,5 @@
-zephyr_library_named(kveld_ed25519)
+zephyr_library_named(cicala_ed25519)
 zephyr_library_sources(ed25519.cpp vendor/tweetnacl.c)
 zephyr_include_directories(include vendor)
 
-add_dependencies(kveld_ed25519 zephyr_generated_headers)
+add_dependencies(cicala_ed25519 zephyr_generated_headers)

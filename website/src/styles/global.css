@@ -40,6 +40,9 @@ body {
 }
 
 .wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
   font-family: var(--font-question);
   font-weight: 400;
   font-size: clamp(1.4rem, 4vw, 1.6rem);
@@ -50,6 +53,63 @@ body {
   color: inherit;
   text-decoration: none;
   padding: 0.45rem 0.1rem 0.5rem 0;
+}
+
+.brand-mark {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: none;
+  overflow: visible;
+  animation: brand-arrive 360ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.brand-wing {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transform-box: fill-box;
+  transition: transform 180ms ease;
+}
+
+.brand-wing--left {
+  transform-origin: right center;
+}
+
+.brand-wing--right {
+  transform-origin: left center;
+}
+
+.brand-body {
+  fill: currentColor;
+}
+
+.wordmark:hover .brand-wing--left,
+.wordmark:focus-visible .brand-wing--left {
+  transform: rotate(-5deg) translateX(-0.5px);
+}
+
+.wordmark:hover .brand-wing--right,
+.wordmark:focus-visible .brand-wing--right {
+  transform: rotate(5deg) translateX(0.5px);
+}
+
+@keyframes brand-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark {
+    animation: none;
+  }
+
+  .brand-wing {
+    transition: none;
+  }
 }
 
 .site-nav {

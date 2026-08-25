@@ -5,7 +5,7 @@
 	(uuid "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc")
 	(paper "A4")
 	(title_block
-		(title "Kveld Rev A schematic overview")
+		(title "Cicala Rev A schematic overview")
 		(rev "Rev A")
 	)
 	(lib_symbols)
@@ -48,7 +48,7 @@
 			)
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc"
 					(page "3")
 				)
@@ -94,7 +94,7 @@
 			)
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc"
 					(page "2")
 				)
@@ -140,7 +140,7 @@
 			)
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc"
 					(page "4")
 				)

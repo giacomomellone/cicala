@@ -1,6 +1,6 @@
 # Case — Rev A
 
-`kveld_enclosure.scad` is the canonical Rev A enclosure source. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+`cicala_enclosure.scad` is the canonical Rev A enclosure source. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
 The model includes the top shell, base, display retainer, two cap geometries, optional steel skin, light pipe, PCB/cell/antenna reference volumes, gasket and drain intent, USB opening, feet, and four fit coupons. The coordinate and validation contract is in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md).
 
@@ -14,7 +14,7 @@ The checked tool version is OpenSCAD 2026.06.12. Older releases may open the sou
 
 ```sh
 openscad --hardwarnings -D 'part="top_shell"' \
-  -o top_shell.3mf hardware/case/kveld_enclosure.scad
+  -o top_shell.3mf hardware/case/cicala_enclosure.scad
 ```
 
 Selectors are `assembly`, `exploded`, `section`, `top_shell`, `base`, `retainer`, `category_cap`, `next_cap`, `lens`, `steel_skin`, `light_pipe`, `pcb_reference`, `coupon_buttons`, `coupon_buttons_assembly`, `coupon_usb`, `coupon_lens`, and `coupon_boss`. In the GUI, open **Window → Customizer**, choose a `part`, then press F5 for a preview or F6 for a full render. The `section` selector exposes axis, percentage-position, and retained-side controls for an interactive cutaway; it is an inspection view, not an export part. `coupon_buttons` is the printable gauge plate. Print `category_cap` and `next_cap` separately, or select `coupon_buttons_assembly` to preview the three parts in their fitted positions.
@@ -24,11 +24,11 @@ Regenerate the documentation renders at 3200 × 2200 px with:
 ```sh
 openscad --hardwarnings --render --imgsize=3200,2200 --projection=perspective \
   --camera=42,28,7.92,55,0,25,195 --colorscheme='Tomorrow Night' \
-  -D 'part="assembly"' -o assembly.png hardware/case/kveld_enclosure.scad
+  -D 'part="assembly"' -o assembly.png hardware/case/cicala_enclosure.scad
 
 openscad --hardwarnings --render --imgsize=3200,2200 --projection=perspective \
   --camera=42,28,15,55,0,25,255 --colorscheme='Tomorrow Night' \
-  -D 'part="exploded"' -o exploded.png hardware/case/kveld_enclosure.scad
+  -D 'part="exploded"' -o exploded.png hardware/case/cicala_enclosure.scad
 ```
 
 The checked STL and 3MF files under `exports/rev_a/` are convenience exports. Regenerate them after changing the source. Do not scale them in a slicer.
