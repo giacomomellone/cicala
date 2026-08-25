@@ -24,8 +24,9 @@ if [[ $(uname -s) == Darwin && $(uname -m) == arm64 ]] && \
 fi
 
 parts=(
-    assembly exploded top_shell base retainer category_cap next_cap lens steel_skin
-    light_pipe pcb_reference coupon_buttons coupon_usb coupon_lens coupon_boss
+    assembly exploded section top_shell base retainer category_cap next_cap lens steel_skin
+    light_pipe pcb_reference coupon_buttons coupon_buttons_assembly coupon_usb coupon_lens
+    coupon_boss
 )
 
 for part_name in "${parts[@]}"; do

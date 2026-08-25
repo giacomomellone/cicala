@@ -82,12 +82,12 @@ The category line needs tested fonts, right-to-left layout, and enough width for
 
 Rev A must provide:
 
-- ESP32-S3-WROOM-1U-N16 baseline, or a WROOM-1-N16 placement that closes the display/antenna conflict, plus the GDEY0213B74 e-paper circuit;
+- ESP32-S3-WROOM-1-N16 preferred for close-range use, with WROOM-1U-N16 as the placement/RF fallback, plus the GDEY0213B74 e-paper circuit;
 - one Category wake input and one independent Next wake input;
 - retained category state with a defined New People cold default;
-- an integrated charging power path or a validated load-sharing circuit;
+- a BQ25185 charging power path set for a 500 mA input limit and 250 mA charge current;
 - USB-C input and ESD protection, VBUS detection, and switched battery sensing;
-- a protected 503035 cell with charge current set from its data sheet;
+- a protected 500 mAh 503035-class cell with PCM and 10 kΩ NTC, after its exact drawing closes the enclosure fit;
 - e-paper power gating and a measured whole-device sleep budget below 30 µA;
 - antenna keep-out clear of the display, battery, button hardware, and copper;
 - hidden development pads, with no extra user-facing controls.
@@ -99,7 +99,7 @@ Bench results add these constraints:
 - No always-on indicator. DevKitC indicators prevent a useful sleep-current measurement; rev A must expose the whole-device current without a permanent LED load.
 - Use a switched 1 MΩ/470 kΩ battery divider. Its unswitched draw is about 2.9 µA, and switching removes that sleep load.
 - Sense VBUS from the USB rail. Firmware uses it for the sync window, charging wake policy, and the status LED.
-- Prefer a charger with charge-state outputs. The BQ25185 IC provides STAT1 and STAT2, but the current bench breakout does not expose them to firmware, so that rig can only infer a full cell from voltage.
+- Connect BQ25185 STAT1 and STAT2 to firmware on Rev A. The current bench breakout does not expose them, so the rig still infers a full cell from voltage.
 
 The question bundle stores each question once with a six-bit deck mask and depth metadata. Normal playback excludes depth 3. See [sync_protocol.md](sync_protocol.md).
 

@@ -1,25 +1,25 @@
 net_name,gpio,direction,active_state,schematic_sheet,sleep_requirement,notes
 VBAT_SENSE,1,input,analog,battery_charger,divider_off,1 MΩ over 470 kΩ divider
 VBAT_SENSE_EN,2,output,high,battery_charger,low,Switch the complete divider
-BOOT_IO0,0,input,low,programming_test,pulled_high,Concealed recovery pad
-BTN_CATEGORY,4,input,low,controls_status,RTC wake,Preserve firmware mapping
+BOOT_IO0,0,input,low,esp32_core,pulled_high,Concealed recovery pad
+BTN_CATEGORY,4,input,low,esp32_core,RTC wake,Preserve firmware mapping
 EPD_PWR_EN,5,output,high,epaper,low,Panel and boost off between refreshes
-CHG_STAT1,6,input,charger-defined,battery_charger,input,Truth table from BQ25185 sheet
-CHG_STAT2,7,input,charger-defined,battery_charger,input,Truth table from BQ25185 sheet
+CHG_STAT1,6,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT2
+CHG_STAT2,7,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT1
 EPD_RESET,8,output,low,epaper,inactive,Preserve firmware mapping
 EPD_BUSY,9,input,panel-defined,epaper,input,Preserve firmware mapping
 EPD_CS,10,output,low,epaper,high,Preserve firmware mapping
 EPD_MOSI,11,output,high,epaper,inactive,Preserve firmware mapping
 EPD_CLK,12,output,high,epaper,inactive,Preserve firmware mapping
-CHG_ENABLE,14,output,charger-defined,battery_charger,defined,Polarity fixed during capture
-STATUS_RED,15,output,high,controls_status,low,Both status outputs low means off
-STATUS_GREEN,16,output,high,controls_status,low,Both status outputs low means off
-BTN_NEXT,17,input,low,controls_status,RTC wake,Preserve firmware mapping
+CHG_ENABLE,14,output,low,battery_charger,low,Low enables BQ25185 charging; 100 kΩ pull-down enables by default
+STATUS_RED,15,output,high,esp32_core,low,Both status outputs low means off
+STATUS_GREEN,16,output,high,esp32_core,low,Both status outputs low means off
+BTN_NEXT,17,input,low,esp32_core,RTC wake,Preserve firmware mapping
 EPD_DC,18,output,high,epaper,inactive,Preserve firmware mapping
-USB_DN,19,bidirectional,USB,usb_protection,USB-defined,Native USB Serial/JTAG
-USB_DP,20,bidirectional,USB,usb_protection,USB-defined,Native USB Serial/JTAG
-VBUS_SENSE,21,input,high,usb_protection,input,Boot and polling path; optional EXT0 measurement
-FACTORY_RESET_OD,38,open-drain,low,programming_test,released,Final factory use remains gated
-UART0_TX,43,output,high,programming_test,inactive,Underside test pad
-UART0_RX,44,input,high,programming_test,input,Underside test pad
-CHIP_EN,EN,input,low,programming_test,pulled_high,Concealed reset and recovery pad
+USB_DN,19,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
+USB_DP,20,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
+VBUS_SENSE,21,input,high,battery_charger,input,Boot and polling path; optional EXT0 measurement
+FACTORY_RESET_OD,38,open-drain,low,esp32_core,released,Final factory use remains gated
+UART0_TX,43,output,high,esp32_core,inactive,Underside test pad
+UART0_RX,44,input,high,esp32_core,input,Underside test pad
+CHIP_EN,EN,input,low,esp32_core,pulled_high,Concealed reset and recovery pad

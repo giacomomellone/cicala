@@ -1,14 +1,15 @@
-# PCB — Rev A foundation
+# PCB — Rev A schematic baseline
 
-The KiCad 10 project is under `kveld_rev_a/`. It contains a validated mechanical board and empty hierarchical schematic sheets. It is a capture starting point, not a circuit or fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+The KiCad 10 project is under `kveld_rev_a/`. It contains the first complete hierarchical schematic and a validated mechanical constraint board. The schematic is an electrical review baseline, not a fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-The shared coordinate, stack-up, pin and validation contracts are in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` is the planning list for parts that will populate the hierarchy.
+The shared coordinate, stack-up, pin and validation contracts are in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` records the selected parts and the gates that remain before an assembly quote.
 
 ## What exists
 
 - `kveld_rev_a.kicad_pro`: KiCad project metadata;
-- `kveld_rev_a.kicad_sch`: root hierarchy with seven subsystem sheets;
+- `kveld_rev_a.kicad_sch`: root hierarchy with three functional sheets;
 - `kveld_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
+- `kveld_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library;
 - `pin_contract.csv`: firmware-to-schematic signal allocation;
 - `renders/constraint_map.svg`: vector plot of mechanical datums and keep-outs;
 - `renders/board_top.png`: empty-board 3D check;
@@ -20,22 +21,20 @@ All component outlines are mechanical datums. They are deliberately not electric
 
 ## Hierarchy
 
-| Sheet                | First capture pass                                                           |
-| -------------------- | ---------------------------------------------------------------------------- |
-| USB and protection   | receptacle, CC pull-downs, ESD, VBUS input and sense                         |
-| Battery charger      | BQ25185 candidate, cell connector, NTC, limits, STAT1/2                      |
-| 3V3 regulation       | XC6220, rail measurement link and decoupling                                 |
-| ESP32-S3 core        | WROOM-1U baseline or gated WROOM-1 option, EN, IO0, native USB and strapping |
-| E-paper interface    | FPC, SSD1680 boost network, power gate and discharge state                   |
-| Controls and status  | KSC321G switches, side-fire bi-colour LED and leakage rules                  |
-| Programming and test | IO0/EN, UART0, rails, display bus and current links                          |
+| Sheet                   | Captured circuit                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------- |
+| Power and USB           | USB-C protection and sensing, BQ25185 charger, protected cell path and TPS63802 |
+| Controller and user I/O | ESP32-S3, EN/IO0, buttons, status LED, recovery header and production test pads |
+| E-paper display         | GDEY0213B74 FPC, SSD1680 boost network and switched panel power                  |
+
+Short local connections are drawn directly. Named global labels are reserved for sheet boundaries, controller or connector fan-out, shared rails and production test access.
 
 Start capture from the power tree and recovery path. A battery-powered USB device needs both IO0 and EN access: plugging USB into a running unit is not a reliable reset action. Keep these pads concealed from normal use and reachable with the enclosure open.
 
 ## Layout constraints
 
 - Retain the current firmware pins recorded in `docs/hardware_rev_a.md`.
-- Treat the full WROOM-1 rectangle as a conflict study, not an accepted placement. Its PCB-antenna clearance overlaps the current display envelope. WROOM-1U is the baseline after its external antenna, connector and cable route are qualified. WROOM-1 stays open only for a placement that clears copper, display, cell, button hardware and enclosure metal by the module guidance.
+- Prefer WROOM-1 for the close-range captive-portal use case if placement clears the module antenna keep-out. Keep WROOM-1U as the assembly fallback if the display, cell, buttons, copper or enclosure metal prevent that placement. Either variant requires assembled radio testing.
 - Keep the steel ballast, cell, display and button hardware out of the antenna volume. Test the final assembled radio; a drawing cannot qualify it.
 - Route GPIO19/20 as native USB over continuous ground. Set impedance from the selected four-layer fabricator stack before routing.
 - Keep charger, cell and e-paper boost current loops short. Do not route their switching returns through the USB or antenna reference path.
@@ -45,7 +44,7 @@ Start capture from the power tree and recovery path. A battery-powered USB devic
 
 ## Validation
 
-KiCad 10.0.5 currently reports zero ERC violations, zero PCB DRC violations, zero unconnected items, and zero schematic-parity issues. Those results mean the hierarchy and constraint board are structurally valid. The empty sheets do not prove an electrical design.
+KiCad 10.0.5 currently reports zero schematic ERC violations and zero constraint-board DRC violations. STEP export also succeeds. Schematic-to-PCB parity is deliberately excluded until the open footprints are reviewed and components are placed; the current board contains only mechanical datums.
 
 Run the same checks with:
 
@@ -53,4 +52,4 @@ Run the same checks with:
 just hw-pcb-check
 ```
 
-Do not produce Gerbers until the schematic, reviewed footprints, routed board, manufacturer stack, BOM, assembly drawing and enclosure interference check all pass their gates.
+Do not produce Gerbers until the schematic review, custom footprints, routed board, manufacturer stack, BOM, assembly drawing and enclosure interference check all pass their gates.

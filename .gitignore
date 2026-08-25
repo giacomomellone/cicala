@@ -40,6 +40,8 @@ site/
 *-backups/
 *.kicad_sch-bak
 *.kicad_pcb-bak
+# KiCad "Local History" plugin keeps its own nested git repo; never commit it
+.history/
 
 # vendored docs dependency, fetched by `just docs-deps` (pinned there).
 # Not committed, for the same reason node_modules/ is not.

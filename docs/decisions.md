@@ -775,6 +775,28 @@ The first overlay also rejects WROOM-1 as the default. Its required PCB-antenna 
 
 Accepted cost: OpenSCAD is less convenient than a direct-modeling tool for hand-shaped surfaces. Rev A keeps simple drafted solids and explicit parameters until fit, ingress and interaction tests justify a more complex surface model.
 
+## 2026-08-18: Rev A captures the power tree and keeps both antenna variants open
+
+The three functional KiCad sheets now contain the first complete circuit baseline. One USB-C port supplies 5 V and uses the ESP32-S3 native USB Serial/JTAG block for flashing, console and debugging; there is no USB-PD controller or USB-to-UART bridge. USBLC6-2SC6 protects the data pair, and IO0 plus EN remain reachable on concealed recovery pads.
+
+BQ25185 is no longer an open charger candidate. Rev A sets it for a 4.2 V cell, 500 mA input limit and 250 mA charge, with STAT1/STAT2 connected to firmware. The product-cell specification is a protected 500 mAh 503035-class pack with a 10 kΩ, B=3435 K NTC. The supplier remains open because the current 35 × 30 mm CAD keep-out is narrower than at least one published protected LP503035 drawing; the exact pack and enclosure must close together.
+
+TPS63802 replaces XC6220 on the 3.3 V rail. A linear 3.3 V regulator would enter dropout through a useful part of a single LiPo discharge; the buck-boost keeps the rail regulated above and below 3.3 V. TPS22917 switches the full battery divider and separately gates the e-paper rail.
+
+The expected captive-portal interaction is at close range, so WROOM-1 becomes the preferred assembly and avoids an antenna cable and connector. WROOM-1U stays open as the fallback if board placement cannot satisfy the WROOM-1 antenna keep-out around the display, cell, buttons, copper and enclosure metal. Both choices still require an assembled radio test; close range does not qualify a blocked antenna.
+
+The schematic passes ERC. It is not a fabrication release: the regulator, two inductors, switches and side-view LED still need reviewed land patterns, all components need placement and routing, and schematic-to-PCB parity stays disabled until that work exists.
+
+## 2026-08-19: Rev A footprints assigned and two circuit errors corrected
+
+Every symbol now carries a footprint. Parts with a suitable KiCad library land use it, including the KSC6xxG land for the KSC321G switches, whose 3.1 × 1.0 mm pads match the C&K KSC drawing. Four parts had no library match and get project land patterns in `hardware/pcb/kveld_rev_a/kveld.pretty`: `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm`, `L_Coilcraft_XFL4015`, `L_TDK_VLS4012` and the preliminary `LED_Kingbright_APBA2006SURKCGKC`. These are review drafts, not qualified lands.
+
+The TPS63802 DLA0010A symbol keeps ten pins with no exposed thermal pad. The DLA package is a HotRod VSON-HR with only ten perimeter leads; heat leaves through the AGND and GND pins, so the land carries no centre pad.
+
+The APBA2006 is two independent diodes, not an internally common-cathode part. The board ties both cathodes to GND, which is the intended common-cathode use. The generic `LED_Dual_AAKK` symbol numbers its pins A1 A2 K1 K2, which does not match the datasheet pin order, so the project footprint places pads to match the symbol and records the mapping in its description; a later revision should move D4 to a symbol that matches the datasheet.
+
+Two wiring errors were found and corrected. The TPS63802 feedback divider was shorted: a single wire ran FB straight to VOUT and bypassed R14, which would have driven the 3.3 V rail down to the 0.5 V reference. It is now VOUT → R14 → FB node → R15 → GND. The BQ25185 TS/MR pin and the pack NTC wire were both tied to VBAT, which the charger reads as out-of-range temperature and suspends charging. TS/MR is now a separate `BATT_NTC` net that carries only the pack NTC wire (J3.2); BAT stays on VBAT. The BQ25185 sources ~38 µA into TS, so the 10 kΩ B=3435 pack thermistor to GND needs no external resistors and gives roughly a 1.5 °C cold and 59 °C hot window; verify on hardware. TS/MR also doubles as the manual-reset input, so keep it reachable if a ship-mode reset is wanted.
+
 ## 2026-08-18: Texture without session state, and Work leaves the device cycle
 
 The bag now prefers a question whose depth band and form differ from the one just shown, on the device and the web player. A candidate scores one point for repeating the last depth band and one for sharing a form tag; the draw is uniform within the cheapest class and relaxes toward uniform when the pool offers nothing cheaper, mirroring how the recent ring already relaxes. The intent is decorrelation — uniform randomness can serve three reflective questions in a row — not progression.

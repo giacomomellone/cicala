@@ -17,7 +17,7 @@ openscad --hardwarnings -D 'part="top_shell"' \
   -o top_shell.3mf hardware/case/kveld_enclosure.scad
 ```
 
-Selectors are `assembly`, `exploded`, `top_shell`, `base`, `retainer`, `category_cap`, `next_cap`, `lens`, `steel_skin`, `light_pipe`, `pcb_reference`, `coupon_buttons`, `coupon_usb`, `coupon_lens`, and `coupon_boss`.
+Selectors are `assembly`, `exploded`, `section`, `top_shell`, `base`, `retainer`, `category_cap`, `next_cap`, `lens`, `steel_skin`, `light_pipe`, `pcb_reference`, `coupon_buttons`, `coupon_buttons_assembly`, `coupon_usb`, `coupon_lens`, and `coupon_boss`. In the GUI, open **Window → Customizer**, choose a `part`, then press F5 for a preview or F6 for a full render. The `section` selector exposes axis, percentage-position, and retained-side controls for an interactive cutaway; it is an inspection view, not an export part. `coupon_buttons` is the printable gauge plate. Print `category_cap` and `next_cap` separately, or select `coupon_buttons_assembly` to preview the three parts in their fitted positions.
 
 Regenerate the documentation renders at 3200 × 2200 px with:
 
