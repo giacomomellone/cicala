@@ -46,6 +46,8 @@ These apply in both repositories.
 
 `just` is the single entry point; run `just` to list everything. Recipes call `.venv/bin/python` directly, so only `just`, `python3` and `npm` need to be on PATH.
 
+**Host toolchain.** Every recipe has to work against system-installed tools, on macOS and Linux alike: that is what CONTRIBUTING promises outside contributors, and CI installs Python and Node with `setup-python` / `setup-node` and never uses Nix. `flake.nix` and `.envrc` add an optional Nix dev shell for machines that have Nix, and it stays additive — no recipe, workflow or doc may require it, and `.envrc` no-ops with a one-line notice when Nix is absent. Never let that shell decide anything about the host it runs on: its environment is computed once and then cached by nix-direnv, so a hook that detects a serial port hands `just fw-flash` an answer from minutes ago (an early version of it produced `esptool --port ''`). Leave such variables unset and let the tool do its own probing.
+
 **Commits.** Conventional commits, enforced by `.githooks/commit-msg` (enabled by `just setup` or `just hooks`). Types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope lowercase (`site`, `questions`, `tools`, `ci`, `fw`, `hw`, `docs`).
 
 **Docs.** Filenames in `docs/` are snake_case; root `README.md` / `CONTRIBUTING.md` / `CODE_OF_CONDUCT.md` keep their conventional names. `mkdocs.yml` runs in strict mode, so a broken internal link fails `just docs-build`. New docs pages need a `nav:` entry.
