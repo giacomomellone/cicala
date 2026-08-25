@@ -41,6 +41,8 @@ just docs      # live-preview the docs (mkdocs)
 
 Requires `just`, Python 3.11+ and Node 20+. `just setup` creates the venv (`.venv/`) from [requirements.txt](requirements.txt).
 
+On a machine with [Nix](https://nixos.org), `nix develop` (or `direnv allow`, using the committed `.envrc`) provides those tools at the versions CI uses, without installing anything system-wide. It is optional and no recipe depends on it; `flake.nix` says what it deliberately leaves to upstream installers, the Zephyr SDK included.
+
 ## Documentation
 
 - [docs/design.md](docs/design.md): product and UX rationale

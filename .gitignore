@@ -47,6 +47,10 @@ site/
 # Not committed, for the same reason node_modules/ is not.
 docs/assets/javascripts/mermaid.min.js
 
+# direnv's cached dev shell (.envrc / flake.nix are committed; this is local
+# state, and it pins store paths a `nix flake update` invalidates)
+.direnv/
+
 # os
 .DS_Store
 
