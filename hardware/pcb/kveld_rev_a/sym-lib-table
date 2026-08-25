@@ -1,4 +1,0 @@
-(sym_lib_table
-	(version 7)
-	(lib (name "Kveld") (type "KiCad") (uri "${KIPRJMOD}/kveld_rev_a.kicad_sym") (options "") (descr "Kveld Rev A custom IC symbols"))
-)

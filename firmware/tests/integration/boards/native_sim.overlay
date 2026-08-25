@@ -5,10 +5,10 @@
 
 / {
     aliases {
-        kveld-category = &kveld_category;
-        kveld-next = &kveld_next;
-        kveld-led-red = &led_red;
-        kveld-led-green = &led_green;
+        cicala-category = &cicala_category;
+        cicala-next = &cicala_next;
+        cicala-led-red = &led_red;
+        cicala-led-green = &led_green;
     };
 
     adc0: adc {
@@ -31,23 +31,23 @@
 
     zephyr,user {
         io-channels = <&adc0 0>;
-        kveld-vbus-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+        cicala-vbus-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
     };
 
-    kveld_leds: kveld-leds {
+    cicala_leds: cicala-leds {
         compatible = "gpio-leds";
         led_red: red { gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>; label = "status red"; };
         led_green: green { gpios = <&gpio0 9 GPIO_ACTIVE_HIGH>; label = "status green"; };
     };
 
-    kveld_buttons: kveld-buttons {
+    cicala_buttons: cicala-buttons {
         compatible = "gpio-keys";
         debounce-interval-ms = <30>;
-        kveld_category: category { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_MENU>; label = "category"; };
-        kveld_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
+        cicala_category: category { gpios = <&gpio0 0 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_MENU>; label = "category"; };
+        cicala_next: next { gpios = <&gpio0 6 GPIO_ACTIVE_LOW>; zephyr,code = <INPUT_KEY_ENTER>; label = "next"; };
     };
 
-    kveld_dummy: dummy_dc {
+    cicala_dummy: dummy_dc {
         compatible = "zephyr,dummy-dc";
         width = <250>;
         height = <122>;
@@ -55,7 +55,7 @@
     };
 
     chosen {
-        zephyr,display = &kveld_dummy;
+        zephyr,display = &cicala_dummy;
     };
 
 };

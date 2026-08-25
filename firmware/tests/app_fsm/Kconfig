@@ -1,6 +1,6 @@
 # Use the application refresh timeout in boundary tests.
 
-mainmenu "kveld app_fsm tests"
+mainmenu "cicala app_fsm tests"
 
 rsource "../../Kconfig.policy"
 

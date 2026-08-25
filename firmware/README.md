@@ -1,6 +1,6 @@
 # Firmware
 
-Zephyr firmware for the ESP32-S3 Kveld device. The breadboard rig runs the
+Zephyr firmware for the ESP32-S3 Cicala device. The breadboard rig runs the
 tabletop loop, deep sleep, setup portal, signed bundle sync, signed firmware
 updates, battery monitoring, and the two status LEDs. Whole-device sleep current
 still needs measurement on rev A because the DevKitC indicators exceed the

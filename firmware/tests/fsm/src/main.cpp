@@ -3,7 +3,7 @@
 
 #include "fsm.hpp"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -68,16 +68,16 @@ TestFsm::TestFsm() : Fsm(_transitions, ARRAY_SIZE(_transitions), STATE(IDLE)) {}
 
 } // namespace
 
-ZTEST_SUITE(kveld_fsm, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_fsm, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_fsm, test_starts_in_initial_state)
+ZTEST(cicala_fsm, test_starts_in_initial_state)
 {
     TestFsm fsm;
 
     zassert_equal(fsm.get_current_state(), STATE(IDLE));
 }
 
-ZTEST(kveld_fsm, test_enters_initial_state_on_first_tick)
+ZTEST(cicala_fsm, test_enters_initial_state_on_first_tick)
 {
     TestFsm fsm;
 
@@ -88,7 +88,7 @@ ZTEST(kveld_fsm, test_enters_initial_state_on_first_tick)
     zassert_equal(fsm.last_entered, STATE(IDLE));
 }
 
-ZTEST(kveld_fsm, test_continue_moves_to_next_state)
+ZTEST(cicala_fsm, test_continue_moves_to_next_state)
 {
     TestFsm fsm;
 
@@ -100,7 +100,7 @@ ZTEST(kveld_fsm, test_continue_moves_to_next_state)
     zassert_equal(fsm.last_entered, STATE(WORKING));
 }
 
-ZTEST(kveld_fsm, test_repeat_stays_without_re_entering)
+ZTEST(cicala_fsm, test_repeat_stays_without_re_entering)
 {
     TestFsm fsm;
 
@@ -115,7 +115,7 @@ ZTEST(kveld_fsm, test_repeat_stays_without_re_entering)
     zassert_equal(fsm.exit_count, 0, "self-loop exited the state");
 }
 
-ZTEST(kveld_fsm, test_repeat_does_not_restart_the_timeout_clock)
+ZTEST(cicala_fsm, test_repeat_does_not_restart_the_timeout_clock)
 {
     TestFsm fsm;
 
@@ -132,7 +132,7 @@ ZTEST(kveld_fsm, test_repeat_does_not_restart_the_timeout_clock)
     zassert_equal(fsm.get_current_state(), STATE(WORKING));
 }
 
-ZTEST(kveld_fsm, test_self_loop_times_out_to_fail_state)
+ZTEST(cicala_fsm, test_self_loop_times_out_to_fail_state)
 {
     TestFsm fsm;
 
@@ -149,7 +149,7 @@ ZTEST(kveld_fsm, test_self_loop_times_out_to_fail_state)
     zassert_equal(fsm.get_current_state(), STATE(FAILED));
 }
 
-ZTEST(kveld_fsm, test_leaving_transition_beats_an_expired_timeout)
+ZTEST(cicala_fsm, test_leaving_transition_beats_an_expired_timeout)
 {
     TestFsm fsm;
 
@@ -163,7 +163,7 @@ ZTEST(kveld_fsm, test_leaving_transition_beats_an_expired_timeout)
     zassert_equal(fsm.get_current_state(), STATE(DONE), "expired timeout stole a valid transition");
 }
 
-ZTEST(kveld_fsm, test_undefined_transition_goes_to_fail_state)
+ZTEST(cicala_fsm, test_undefined_transition_goes_to_fail_state)
 {
     TestFsm fsm;
 
@@ -176,7 +176,7 @@ ZTEST(kveld_fsm, test_undefined_transition_goes_to_fail_state)
     zassert_equal(fsm.get_current_state(), STATE(FAILED));
 }
 
-ZTEST(kveld_fsm, test_fail_transition_uses_the_table_not_the_fail_state)
+ZTEST(cicala_fsm, test_fail_transition_uses_the_table_not_the_fail_state)
 {
     TestFsm fsm;
 
@@ -186,7 +186,7 @@ ZTEST(kveld_fsm, test_fail_transition_uses_the_table_not_the_fail_state)
     zassert_equal(fsm.get_current_state(), STATE(FAILED));
 }
 
-ZTEST(kveld_fsm, test_current_state_has_timeout)
+ZTEST(cicala_fsm, test_current_state_has_timeout)
 {
     TestFsm fsm;
 
@@ -198,7 +198,7 @@ ZTEST(kveld_fsm, test_current_state_has_timeout)
     zassert_true(fsm.current_state_has_timeout());
 }
 
-ZTEST(kveld_fsm, test_elapsed_time_resets_on_a_real_transition)
+ZTEST(cicala_fsm, test_elapsed_time_resets_on_a_real_transition)
 {
     TestFsm fsm;
 

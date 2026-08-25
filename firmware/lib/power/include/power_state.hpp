@@ -2,7 +2,7 @@
 
 #pragma once
 
-namespace kveld
+namespace cicala
 {
 
 enum class PowerState {
@@ -20,4 +20,4 @@ enum class PowerState {
     CHARGED,
 };
 
-} // namespace kveld
+} // namespace cicala

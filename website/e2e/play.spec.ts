@@ -4,7 +4,7 @@ import { payload, playable, playReady, schema, seedStorage, smallestDeck } from 
 const questionText = "#q-text";
 
 test.describe("play", () => {
-  test("publishes the live wordmark and PNG identity assets", async ({ page }) => {
+  test("publishes the live lockup and identity assets", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.addInitScript(() => {
       (window as Window & { identityLayoutShift?: number }).identityLayoutShift = 0;
@@ -19,9 +19,11 @@ test.describe("play", () => {
     });
     await page.goto(`/q/${payload("en")[0]!.id}`);
 
-    const wordmark = page.getByRole("link", { name: "Kveld home" });
-    await expect(wordmark).toHaveText("kveld");
+    const wordmark = page.getByRole("link", { name: "Cicala home" });
+    await expect(wordmark).toHaveText("cicala");
     await expect(wordmark).toHaveCSS("font-family", /Literata/);
+    await expect(wordmark.locator(".brand-mark")).toBeVisible();
+    await expect(wordmark.locator(".brand-mark")).toHaveAttribute("viewBox", "0 0 64 64");
     await wordmark.focus();
     await expect(wordmark).toBeFocused();
 
@@ -107,7 +109,7 @@ test.describe("play", () => {
   test("the shuffle bag never repeats before the deck is exhausted", async ({ page }) => {
     const deck = smallestDeck("en");
     const expected = playable("en", deck);
-    await seedStorage(page, { "kveld.deck": deck });
+    await seedStorage(page, { "cicala.deck": deck });
     await page.goto("/");
     await playReady(page);
 
@@ -142,7 +144,9 @@ test.describe("play", () => {
     await category.click(); // close
     await category.click(); // family
     await expect(page.locator(questionText)).toHaveText("family");
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.deck"))).toBe("family");
+    await expect
+      .poll(() => page.evaluate(() => localStorage.getItem("cicala.deck")))
+      .toBe("family");
 
     const eligible = new Set(playable("en", "family").map((q) => q.text));
     for (let i = 0; i < 5; i++) {
@@ -162,7 +166,7 @@ test.describe("play", () => {
     );
     test.skip(tooDeep.size === 0, `no depth-3 question in the ${deck} deck`);
 
-    await seedStorage(page, { "kveld.deck": deck });
+    await seedStorage(page, { "cicala.deck": deck });
     await page.goto("/");
     await playReady(page);
     for (let i = 0; i < playable("en", deck).length; i++) {
@@ -179,7 +183,7 @@ test.describe("play", () => {
 
     await page.locator("#q-fav").click();
     await expect(page.locator("#q-fav")).toHaveAttribute("aria-pressed", "true");
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.favs"))).toContain(id);
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("cicala.favs"))).toContain(id);
 
     await page.goto(`/q/${id}`);
     await expect(page.locator("#q-fav")).toHaveAttribute("aria-pressed", "true");
@@ -211,7 +215,7 @@ test.describe("permalink", () => {
     const question = payload("de")[0]!;
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("kveld.lang"))).toBe("de");
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("cicala.lang"))).toBe("de");
   });
 
   test("next leaves the permalink for normal play", async ({ page }) => {

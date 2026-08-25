@@ -1,8 +1,8 @@
-site_name: kveld
-site_description: Docs for the kveld conversation-question system — database, website, device.
-site_url: https://kveld.pages.dev/docs/
-repo_url: https://github.com/giacomomellone/kveld
-repo_name: giacomomellone/kveld
+site_name: cicala
+site_description: Docs for the cicala conversation-question system — database, website, device.
+site_url: https://cicala.dev/docs/
+repo_url: https://github.com/giacomomellone/cicala
+repo_name: giacomomellone/cicala
 edit_uri: edit/main/docs/
 
 docs_dir: docs

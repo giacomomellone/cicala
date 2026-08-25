@@ -1,4 +1,4 @@
-/* The `kveld` settings subtree: the chosen language, and the installed corpus release. */
+/* The `cicala` settings subtree: the chosen language, and the installed corpus release. */
 
 #include "language.h"
 
@@ -9,19 +9,19 @@
 
 #include "corpus.h"
 
-LOG_MODULE_REGISTER(kveld_language, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_language, LOG_LEVEL_INF);
 
-static char chosen[KVELD_LANGUAGE_LEN] = CONFIG_KVELD_CORPUS_LANGUAGE;
-static char installed[KVELD_CORPUS_VERSION_LEN];
+static char chosen[CICALA_LANGUAGE_LEN] = CONFIG_CICALA_CORPUS_LANGUAGE;
+static char installed[CICALA_CORPUS_VERSION_LEN];
 
-bool kveld_language_available(const char *code)
+bool cicala_language_available(const char *code)
 {
     if (code == NULL) {
         return false;
     }
 
-    for (size_t i = 0; i < kveld_corpus_count(); i++) {
-        if (strcmp(kveld_corpus_language(i), code) == 0) {
+    for (size_t i = 0; i < cicala_corpus_count(); i++) {
+        if (strcmp(cicala_corpus_language(i), code) == 0) {
             return true;
         }
     }
@@ -29,12 +29,12 @@ bool kveld_language_available(const char *code)
     return false;
 }
 
-const char *kveld_language(void)
+const char *cicala_language(void)
 {
     return chosen;
 }
 
-const char *kveld_corpus_version(void)
+const char *cicala_corpus_version(void)
 {
     return installed;
 }
@@ -43,10 +43,10 @@ const char *kveld_corpus_version(void)
 
 #include <zephyr/settings/settings.h>
 
-#define LANGUAGE_KEY "kveld/lang"
-#define VERSION_KEY "kveld/corpus_ver"
+#define LANGUAGE_KEY "cicala/lang"
+#define VERSION_KEY "cicala/corpus_ver"
 
-/* Called by the settings subsystem for each key under `kveld`. */
+/* Called by the settings subsystem for each key under `cicala`. */
 static int language_load(const char *name, size_t len, settings_read_cb read_cb, void *cb_arg)
 {
     if (strcmp(name, "corpus_ver") == 0) {
@@ -71,7 +71,7 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
         return -ENOENT;
     }
 
-    char stored[KVELD_LANGUAGE_LEN] = {0};
+    char stored[CICALA_LANGUAGE_LEN] = {0};
 
     if (len >= sizeof(stored)) {
         LOG_WRN("stored language is %u bytes; ignoring it", (unsigned int) len);
@@ -87,7 +87,7 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
     stored[n] = '\0';
 
     /* Ignore stored languages without a compiled corpus. */
-    if (!kveld_language_available(stored)) {
+    if (!cicala_language_available(stored)) {
         LOG_WRN("stored language %s is not in this image; keeping %s", stored, chosen);
         return 0;
     }
@@ -98,11 +98,11 @@ static int language_load(const char *name, size_t len, settings_read_cb read_cb,
     return 0;
 }
 
-SETTINGS_STATIC_HANDLER_DEFINE(kveld_language, "kveld", NULL, language_load, NULL, NULL);
+SETTINGS_STATIC_HANDLER_DEFINE(cicala_language, "cicala", NULL, language_load, NULL, NULL);
 
-int kveld_language_set(const char *code)
+int cicala_language_set(const char *code)
 {
-    if (!kveld_language_available(code)) {
+    if (!cicala_language_available(code)) {
         LOG_WRN("refusing a language this image does not carry: %s",
                 code != NULL ? code : "(null)");
         return -EINVAL;
@@ -125,7 +125,7 @@ int kveld_language_set(const char *code)
     return 0;
 }
 
-int kveld_corpus_version_set(const char *version)
+int cicala_corpus_version_set(const char *version)
 {
     if (version == NULL || strlen(version) >= sizeof(installed)) {
         return -EINVAL;
@@ -145,14 +145,14 @@ int kveld_corpus_version_set(const char *version)
 
 #else
 
-int kveld_corpus_version_set(const char *version)
+int cicala_corpus_version_set(const char *version)
 {
     ARG_UNUSED(version);
 
     return -ENOTSUP;
 }
 
-int kveld_language_set(const char *code)
+int cicala_language_set(const char *code)
 {
     ARG_UNUSED(code);
 

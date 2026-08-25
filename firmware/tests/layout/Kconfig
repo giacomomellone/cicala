@@ -1,6 +1,6 @@
 # Check the shipped corpus against the application panel and buffer limits.
 
-mainmenu "kveld layout tests"
+mainmenu "cicala layout tests"
 
 rsource "../../Kconfig.policy"
 

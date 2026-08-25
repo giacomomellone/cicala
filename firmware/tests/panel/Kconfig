@@ -1,6 +1,6 @@
 # Use the application panel geometry and refresh interval.
 
-mainmenu "kveld panel tests"
+mainmenu "cicala panel tests"
 
 rsource "../../Kconfig.policy"
 

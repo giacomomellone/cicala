@@ -7,7 +7,7 @@
 
 #include "fsm.hpp"
 
-namespace kveld
+namespace cicala
 {
 
 /** Effects performed by the tabletop state machine. */
@@ -93,4 +93,4 @@ private:
     static const Fsm::StateTransition _transitions[];
 };
 
-} // namespace kveld
+} // namespace cicala

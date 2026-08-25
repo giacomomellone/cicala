@@ -9,26 +9,26 @@
 extern "C" {
 #endif
 
-#ifdef CONFIG_KVELD_NET
+#ifdef CONFIG_CICALA_NET
 
 /** True while anything is on air. */
-bool kveld_net_is_active(void);
+bool cicala_net_is_active(void);
 
 /** The form was posted and the credentials are stored. */
-void kveld_net_notify_credentials(void);
+void cicala_net_notify_credentials(void);
 
 /** Somebody pressed "sync now" in the portal. */
-void kveld_net_notify_sync(void);
+void cicala_net_notify_sync(void);
 
 #else
 
 /** No radio in this image, so nothing is ever on air. */
-static inline bool kveld_net_is_active(void)
+static inline bool cicala_net_is_active(void)
 {
     return false;
 }
 
-#endif /* CONFIG_KVELD_NET */
+#endif /* CONFIG_CICALA_NET */
 
 #ifdef __cplusplus
 }

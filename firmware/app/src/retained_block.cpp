@@ -6,12 +6,12 @@ namespace
 {
 
 #ifdef CONFIG_SOC_SERIES_ESP32S3
-#define KVELD_RTC_NOINIT __attribute__((section(".rtc_noinit")))
+#define CICALA_RTC_NOINIT __attribute__((section(".rtc_noinit")))
 #else
-#define KVELD_RTC_NOINIT
+#define CICALA_RTC_NOINIT
 #endif
 
-KVELD_RTC_NOINIT kveld::Retained block;
+CICALA_RTC_NOINIT cicala::Retained block;
 
 bool checked;
 bool survived;
@@ -23,29 +23,29 @@ void check_once()
     }
 
     checked = true;
-    survived = kveld::retained_load(block);
+    survived = cicala::retained_load(block);
 }
 
 } // namespace
 
-kveld::Retained &kveld_retained()
+cicala::Retained &cicala_retained()
 {
     check_once();
 
     return block;
 }
 
-bool kveld_retained_survived()
+bool cicala_retained_survived()
 {
     check_once();
 
     return survived;
 }
 
-void kveld_retained_seal()
+void cicala_retained_seal()
 {
     /* Validate first even here. */
     check_once();
 
-    kveld::retained_seal(block);
+    cicala::retained_seal(block);
 }

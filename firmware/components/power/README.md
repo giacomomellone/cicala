@@ -6,7 +6,7 @@ and `app/src/status.c` drive the red and green LEDs.
 
 LOW and CRITICAL states refuse e-paper refreshes. External power keeps the
 device awake and opens the sync and update window. Firmware without
-`CONFIG_KVELD_POWER` keeps refreshes enabled.
+`CONFIG_CICALA_POWER` keeps refreshes enabled.
 
 Whole-device sleep current remains unmeasured because the DevKitC indicators
 exceed the 30 µA target. See [hardware wiring](../../../docs/hardware_wiring.md).

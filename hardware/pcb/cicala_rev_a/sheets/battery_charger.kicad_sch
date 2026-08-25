@@ -1382,7 +1382,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Kveld:BQ25185DLH"
+		(symbol "Cicala:BQ25185DLH"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1657,7 +1657,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Kveld:TPS63802DLA"
+		(symbol "Cicala:TPS63802DLA"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -1914,7 +1914,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Kveld:USBLC6-2SC6"
+		(symbol "Cicala:USBLC6-2SC6"
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
@@ -5058,7 +5058,7 @@
 			(uuid "2b4425e7-6176-4fc2-9e49-03eed2c30a7c")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0105")
 					(unit 1)
@@ -5136,7 +5136,7 @@
 			(uuid "0b8ba97d-ea57-4678-b3cf-d995b935c7b7")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0119")
 					(unit 1)
@@ -5238,7 +5238,7 @@
 			(uuid "c3243b59-0fd7-4e96-8cfa-78fd556c87ea")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "U5")
 					(unit 1)
@@ -5316,7 +5316,7 @@
 			(uuid "c46269f3-c50a-4702-9688-a7a8459e9c5b")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0111")
 					(unit 1)
@@ -5394,7 +5394,7 @@
 			(uuid "a597ff4c-7197-47a6-a755-13551a3e4612")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0123")
 					(unit 1)
@@ -5473,7 +5473,7 @@
 			(uuid "66103097-ac33-4b3d-9d29-8c18812f7176")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R6")
 					(unit 1)
@@ -5552,7 +5552,7 @@
 			(uuid "906ebde1-e728-426c-99b3-a69ffa908c91")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C8")
 					(unit 1)
@@ -5630,7 +5630,7 @@
 			(uuid "2503c1d8-e8df-4001-83d1-70ac6968041e")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0130")
 					(unit 1)
@@ -5709,7 +5709,7 @@
 			(uuid "5d753b3d-c902-4467-b4aa-2e2df1cc65b5")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R7")
 					(unit 1)
@@ -5788,7 +5788,7 @@
 			(uuid "dfe4dab4-ae07-4207-9f96-925a63be2c1d")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R4")
 					(unit 1)
@@ -5866,7 +5866,7 @@
 			(uuid "000244b0-64e2-4838-af1b-e00c000b27a6")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0122")
 					(unit 1)
@@ -5942,7 +5942,7 @@
 			(uuid "bd1b60ca-e9ae-4405-855b-e9ceeeca229a")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#FLG0101")
 					(unit 1)
@@ -6021,7 +6021,7 @@
 			(uuid "edd78895-3b48-4671-bd08-ac919f8c23b9")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R3")
 					(unit 1)
@@ -6099,7 +6099,7 @@
 			(uuid "f8a03251-0f95-430c-9c82-1f9fb77184aa")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0115")
 					(unit 1)
@@ -6177,7 +6177,7 @@
 			(uuid "1de83828-1024-45b9-9ee3-9a69ca7882b9")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0116")
 					(unit 1)
@@ -6216,7 +6216,7 @@
 				)
 			)
 		)
-		(property "Footprint" "kveld:L_Coilcraft_XFL4015"
+		(property "Footprint" "cicala:L_Coilcraft_XFL4015"
 			(at 248.92 49.53 0)
 			(hide yes)
 			(show_name no)
@@ -6267,7 +6267,7 @@
 			(uuid "12f9b491-f7c4-4d38-bd51-3fddeda3e483")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "L2")
 					(unit 1)
@@ -6276,7 +6276,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Kveld:TPS63802DLA")
+		(lib_id "Cicala:TPS63802DLA")
 		(at 231.14 60.96 0)
 		(unit 1)
 		(body_style 1)
@@ -6306,7 +6306,7 @@
 				)
 			)
 		)
-		(property "Footprint" "kveld:Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm"
+		(property "Footprint" "cicala:Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm"
 			(at 231.14 60.96 0)
 			(hide yes)
 			(show_name no)
@@ -6381,7 +6381,7 @@
 			(uuid "c4044060-0d46-4a9f-b1df-2e2da98be5d6")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "U3")
 					(unit 1)
@@ -6459,7 +6459,7 @@
 			(uuid "0a9e546b-3730-4f0f-a330-0f35e4c9cf43")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0112")
 					(unit 1)
@@ -6538,7 +6538,7 @@
 			(uuid "47583cd0-49e7-4a1f-b9a2-0550c4320568")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R16")
 					(unit 1)
@@ -6617,7 +6617,7 @@
 			(uuid "8604b624-4a11-4017-90d6-af6230a06c08")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R5")
 					(unit 1)
@@ -6695,7 +6695,7 @@
 			(uuid "c3d4ab5e-27ed-49d3-84f9-ad8d2fc97088")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0121")
 					(unit 1)
@@ -6774,7 +6774,7 @@
 			(uuid "eb309761-caec-4617-ad25-a579fa26192c")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R14")
 					(unit 1)
@@ -6853,7 +6853,7 @@
 			(uuid "a45a2ff7-6c97-4886-aadb-9424566c8eaa")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R12")
 					(unit 1)
@@ -6932,7 +6932,7 @@
 			(uuid "42d935c4-7ac4-49b0-906a-30665e9bcf87")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R13")
 					(unit 1)
@@ -7009,7 +7009,7 @@
 			(uuid "efd1de71-518c-41fe-b13c-ecf33836b6e5")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0101")
 					(unit 1)
@@ -7088,7 +7088,7 @@
 			(uuid "3661207d-a396-424c-8b5a-311e787f4e46")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C5")
 					(unit 1)
@@ -7167,7 +7167,7 @@
 			(uuid "1505d7e7-b90d-477a-a143-f8b8ef333a9b")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R10")
 					(unit 1)
@@ -7246,7 +7246,7 @@
 			(uuid "a50b29df-52a8-4e24-91e9-5346e3706e79")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C4")
 					(unit 1)
@@ -7381,7 +7381,7 @@
 			(uuid "14112f02-98b4-4d63-8e6a-1b635114f81c")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "J1")
 					(unit 1)
@@ -7460,7 +7460,7 @@
 			(uuid "ba5344db-0a15-4443-a368-b7196410e9ec")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C11")
 					(unit 1)
@@ -7553,7 +7553,7 @@
 			(uuid "15f39b6e-bc3b-4ae9-ae74-08280fbdd2b7")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "J3")
 					(unit 1)
@@ -7631,7 +7631,7 @@
 			(uuid "757b98cd-6677-4708-a020-0c285cd2ea2d")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0127")
 					(unit 1)
@@ -7710,7 +7710,7 @@
 			(uuid "d613298e-3505-4884-8f29-dca4b37848f6")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C6")
 					(unit 1)
@@ -7789,7 +7789,7 @@
 			(uuid "e3ec9ceb-6812-420a-8f73-d7b99aa19cc8")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R2")
 					(unit 1)
@@ -7867,7 +7867,7 @@
 			(uuid "86d877a6-3475-4206-8111-b8a9d8a21ef3")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0104")
 					(unit 1)
@@ -7946,7 +7946,7 @@
 			(uuid "6719b4f0-5bf1-4471-a995-76a449b68911")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R1")
 					(unit 1)
@@ -8025,7 +8025,7 @@
 			(uuid "dc29ddcf-ddc0-47f5-bcd1-05338376dbda")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C7")
 					(unit 1)
@@ -8102,7 +8102,7 @@
 			(uuid "5327634d-fb0f-43f0-92e5-22eafb2886a0")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0124")
 					(unit 1)
@@ -8180,7 +8180,7 @@
 			(uuid "27651da7-769f-4b79-93d4-c0077ebbc069")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0125")
 					(unit 1)
@@ -8258,7 +8258,7 @@
 			(uuid "effd2215-6e84-4385-8adc-855b924c688a")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0113")
 					(unit 1)
@@ -8337,7 +8337,7 @@
 			(uuid "63cbde11-5b63-42b7-830e-a9122a206bfe")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C10")
 					(unit 1)
@@ -8416,7 +8416,7 @@
 			(uuid "02b3e119-132b-4903-adfb-41d64d512101")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C3")
 					(unit 1)
@@ -8494,7 +8494,7 @@
 			(uuid "8f88a16d-2a3b-4d1f-b13d-af54f8afda88")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0109")
 					(unit 1)
@@ -8572,7 +8572,7 @@
 			(uuid "cba2d311-beb4-4529-b354-a645b37da01b")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0117")
 					(unit 1)
@@ -8648,7 +8648,7 @@
 			(uuid "49ec3c20-83b9-4e3e-a613-1e09f5864067")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#FLG0103")
 					(unit 1)
@@ -8727,7 +8727,7 @@
 			(uuid "955222fb-f245-4e51-9a3f-2e1c3681ee51")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C9")
 					(unit 1)
@@ -8805,7 +8805,7 @@
 			(uuid "ddf00d28-92ce-441b-a010-b3fb8367fe2c")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0102")
 					(unit 1)
@@ -8884,7 +8884,7 @@
 			(uuid "2a2cd205-c83b-4816-bdbb-333a63188c64")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R8")
 					(unit 1)
@@ -8963,7 +8963,7 @@
 			(uuid "d621aa93-c9b2-41f7-a54d-2d12da11651a")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R15")
 					(unit 1)
@@ -9041,7 +9041,7 @@
 			(uuid "6baa46a6-9cf0-4e5d-b4f6-7cf23115ce76")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0128")
 					(unit 1)
@@ -9119,7 +9119,7 @@
 			(uuid "d65f4955-6842-4ea0-b4c1-d242b6d8ded4")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0129")
 					(unit 1)
@@ -9195,7 +9195,7 @@
 			(uuid "07a0ca2b-fe16-4475-b9dc-ffcc50ea7c94")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#FLG0102")
 					(unit 1)
@@ -9204,7 +9204,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Kveld:USBLC6-2SC6")
+		(lib_id "Cicala:USBLC6-2SC6")
 		(at 91.44 60.96 0)
 		(unit 1)
 		(body_style 1)
@@ -9297,7 +9297,7 @@
 			(uuid "cd4e3227-6913-460b-80d1-db0536f0e4ec")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "U4")
 					(unit 1)
@@ -9375,7 +9375,7 @@
 			(uuid "8686c717-6ebe-452c-afb4-1b68b6964272")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0114")
 					(unit 1)
@@ -9453,7 +9453,7 @@
 			(uuid "bcc8624b-ba05-453b-9315-b3cb59d05d4c")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0103")
 					(unit 1)
@@ -9532,7 +9532,7 @@
 			(uuid "bc757895-77c7-4514-9f37-0ccbfb559aad")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C2")
 					(unit 1)
@@ -9610,7 +9610,7 @@
 			(uuid "ac8fbc8f-a737-4e52-bf9f-df4d7b435ef4")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0106")
 					(unit 1)
@@ -9688,7 +9688,7 @@
 			(uuid "f4929195-200b-4b3c-82de-f958f7a49765")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "#PWR0118")
 					(unit 1)
@@ -9767,7 +9767,7 @@
 			(uuid "b33fec10-1a82-4843-8c66-98136c2f336f")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R9")
 					(unit 1)
@@ -9846,7 +9846,7 @@
 			(uuid "b864eee6-e191-4fa1-a0b2-fef742c94f09")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R11")
 					(unit 1)
@@ -9855,7 +9855,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Kveld:BQ25185DLH")
+		(lib_id "Cicala:BQ25185DLH")
 		(at 76.2 139.7 0)
 		(unit 1)
 		(body_style 1)
@@ -9963,7 +9963,7 @@
 			(uuid "7b5cce4f-2504-43c5-83ed-819ff6bc15f7")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "U2")
 					(unit 1)
@@ -10042,7 +10042,7 @@
 			(uuid "7bb37685-d3e6-40dd-8235-036db0b7ad2d")
 		)
 		(instances
-			(project "kveld_rev_a"
+			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C1")
 					(unit 1)

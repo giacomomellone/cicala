@@ -9,13 +9,13 @@
 #include "input.h"
 #include "update_notice.h"
 
-LOG_MODULE_REGISTER(kveld_main, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_main, LOG_LEVEL_INF);
 
 #ifdef CONFIG_SETTINGS
 
 #include <zephyr/settings/settings.h>
 
-/* Read the `kveld` subtree back out of NVS. */
+/* Read the `cicala` subtree back out of NVS. */
 static int load_settings(void)
 {
     int err = settings_subsys_init();
@@ -85,12 +85,12 @@ static void hold_onboard_led_quiet(void)
 
 int main(void)
 {
-    LOG_INF("kveld on %s", CONFIG_BOARD_TARGET);
+    LOG_INF("cicala on %s", CONFIG_BOARD_TARGET);
 
     log_reset_cause();
     hold_onboard_led_quiet();
 
-    const int ret = kveld_input_init();
+    const int ret = cicala_input_init();
 
     if (ret != 0) {
         LOG_ERR("input init failed: %d", ret);
@@ -98,7 +98,7 @@ int main(void)
     }
 
     /* Publishing a notice requires the app thread to be running. */
-    kveld_update_notice_check();
+    cicala_update_notice_check();
 
     return 0;
 }

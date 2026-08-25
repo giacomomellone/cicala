@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-pcb_dir=$(cd "$(dirname "$0")/kveld_rev_a" && pwd)
-task_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/kveld-pcb-check.XXXXXX")
+pcb_dir=$(cd "$(dirname "$0")/cicala_rev_a" && pwd)
+task_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/cicala-pcb-check.XXXXXX")
 trap 'rm -rf "$task_tmp_dir"' EXIT
 
 if [[ -n "${KICAD_CLI_BIN:-}" ]]; then
@@ -32,24 +32,24 @@ export FONTCONFIG_FILE="$fontconfig_file"
 "$kicad_cli" sch erc \
     --exit-code-violations \
     -o "$task_tmp_dir/erc.rpt" \
-    "$pcb_dir/kveld_rev_a.kicad_sch"
+    "$pcb_dir/cicala_rev_a.kicad_sch"
 
 "$kicad_cli" sch export bom \
     --exclude-dnp \
     --fields "Reference,Value,Footprint,MPN,QUANTITY,DNP" \
     --labels "Refs,Value,Footprint,MPN,Qty,DNP" \
     -o "$task_tmp_dir/bom.csv" \
-    "$pcb_dir/kveld_rev_a.kicad_sch"
+    "$pcb_dir/cicala_rev_a.kicad_sch"
 
 "$kicad_cli" pcb drc \
     --exit-code-violations \
     -o "$task_tmp_dir/drc.rpt" \
-    "$pcb_dir/kveld_rev_a.kicad_pcb"
+    "$pcb_dir/cicala_rev_a.kicad_pcb"
 
-touch "$task_tmp_dir/kveld_rev_a_board.step"
+touch "$task_tmp_dir/cicala_rev_a_board.step"
 "$kicad_cli" pcb export step \
-    -o "$task_tmp_dir/kveld_rev_a_board.step" \
-    "$pcb_dir/kveld_rev_a.kicad_pcb"
+    -o "$task_tmp_dir/cicala_rev_a_board.step" \
+    "$pcb_dir/cicala_rev_a.kicad_pcb"
 
 echo "KiCad: schematic ERC, BOM export, constraint-board DRC and STEP export passed"
 echo "KiCad: schematic-to-PCB parity remains gated until footprints are reviewed and placed"

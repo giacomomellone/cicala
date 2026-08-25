@@ -11,6 +11,7 @@ import "@fontsource/ibm-plex-mono/latin-ext-500.css";
 import literataLatin400 from "@fontsource/literata/files/literata-latin-400-normal.woff2?url";
 import plexLatin400 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url";
 import plexLatin500 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url";
+import BrandMark from "../components/BrandMark.astro";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import { REPO_URL, SITE_URL } from "../config";
@@ -27,7 +28,7 @@ interface Props {
 
 const {
   title,
-  description = "Conversation questions from the open Kveld database — free, no accounts, public domain.",
+  description = "Open conversation questions made to provoke talking, invite reflection, and break the silence.",
   lang = "en",
   seedLang,
 } = Astro.props;
@@ -57,7 +58,7 @@ const byLang = (files: Record<string, string>) =>
     }),
   );
 
-const kveldConfig = {
+const cicalaConfig = {
   langs: languages,
   payloads: byLang(payloadFiles),
   recents: byLang(recentFiles),
@@ -80,22 +81,25 @@ const ogImage = new URL("/og.png", SITE_URL).href;
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
-    <meta property="og:site_name" content="Kveld" />
+    <meta property="og:site_name" content="Cicala" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <link rel="preload" href={literataLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin500} as="font" type="font/woff2" crossorigin />
-    <link rel="icon" href="/favicon-32.png?v=kveld" type="image/png" sizes="32x32" />
-    <link rel="icon" href="/favicon-16.png?v=kveld" type="image/png" sizes="16x16" />
+    <link rel="icon" href="/favicon-32.png?v=cicala" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png?v=cicala" type="image/png" sizes="16x16" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
-    <script type="application/json" id="kveld-config" set:html={JSON.stringify(kveldConfig)} />
+    <script type="application/json" id="cicala-config" set:html={JSON.stringify(cicalaConfig)} />
   </head>
   <body data-seed-lang={seedLang}>
     <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
     <header class="site-header">
-      <a class="wordmark" href="/" aria-label="Kveld home">kveld</a>
+      <a class="wordmark" href="/" aria-label="Cicala home">
+        <BrandMark />
+        <span class="wordmark__name">cicala</span>
+      </a>
       <nav class="site-nav" aria-label="site">
         <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
         <span class="nav-dot" aria-hidden="true">·</span>

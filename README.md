@@ -1,6 +1,9 @@
-# kveld
+# cicala
 
-An open-source system for conversation questions, in three parts sharing one database:
+Cicala is Italian for cicada: the steady voice behind an Italian summer. This is
+an open-source conversation project built to make the first words easier,
+stimulate introspection, and break the silence. Its three parts share one
+database:
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo. The product's core asset. Licensed [CC0](LICENSE-QUESTIONS): every question is dedicated to the public domain.
 2. **[Website](website/)**: a free, static front-end to the database. No accounts. Anyone can play, save favorites, and contribute questions.

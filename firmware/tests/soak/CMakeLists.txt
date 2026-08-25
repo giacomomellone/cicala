@@ -1,32 +1,32 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(kveld_soak LANGUAGES C CXX)
+project(cicala_soak LANGUAGES C CXX)
 
-set(KVELD_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
+set(CICALA_APP ${CMAKE_CURRENT_SOURCE_DIR}/../../app)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm kveld_fsm)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/app_fsm kveld_app_fsm)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb kveld_qdb)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout kveld_layout)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained kveld_retained)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm cicala_fsm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/app_fsm cicala_app_fsm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/qdb cicala_qdb)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/layout cicala_layout)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/retained cicala_retained)
 
 target_sources(app PRIVATE
     src/main.c
-    ${KVELD_APP}/src/app.c
-    ${KVELD_APP}/src/app_logic.cpp
-    ${KVELD_APP}/src/channels.c
-    ${KVELD_APP}/src/corpus.c
-    ${KVELD_APP}/src/display.c
-    ${KVELD_APP}/src/input.c
-    ${KVELD_APP}/src/language.c
-    ${KVELD_APP}/src/panel.cpp
-    ${KVELD_APP}/src/retained_block.cpp
-    ${KVELD_APP}/src/soak.c
+    ${CICALA_APP}/src/app.c
+    ${CICALA_APP}/src/app_logic.cpp
+    ${CICALA_APP}/src/channels.c
+    ${CICALA_APP}/src/corpus.c
+    ${CICALA_APP}/src/display.c
+    ${CICALA_APP}/src/input.c
+    ${CICALA_APP}/src/language.c
+    ${CICALA_APP}/src/panel.cpp
+    ${CICALA_APP}/src/retained_block.cpp
+    ${CICALA_APP}/src/soak.c
 )
 
-target_include_directories(app PRIVATE ${KVELD_APP}/include)
-target_link_libraries(app PRIVATE kveld_fsm kveld_app_fsm kveld_qdb kveld_layout kveld_retained)
+target_include_directories(app PRIVATE ${CICALA_APP}/include)
+target_link_libraries(app PRIVATE cicala_fsm cicala_app_fsm cicala_qdb cicala_layout cicala_retained)
 
 set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
 

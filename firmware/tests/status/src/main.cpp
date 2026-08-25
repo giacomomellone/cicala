@@ -3,7 +3,7 @@
 
 #include "status_led.hpp"
 
-using namespace kveld;
+using namespace cicala;
 
 namespace
 {
@@ -17,9 +17,9 @@ constexpr int64_t after(uint8_t blinks)
 
 } // namespace
 
-ZTEST_SUITE(kveld_status, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_status, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_status, test_a_healthy_cell_with_nothing_happening_is_dark)
+ZTEST(cicala_status, test_a_healthy_cell_with_nothing_happening_is_dark)
 {
     StatusLed led;
 
@@ -32,7 +32,7 @@ ZTEST(kveld_status, test_a_healthy_cell_with_nothing_happening_is_dark)
     zassert_false(led.animating(0));
 }
 
-ZTEST(kveld_status, test_charging_is_red_and_charged_is_green)
+ZTEST(cicala_status, test_charging_is_red_and_charged_is_green)
 {
     StatusLed led;
 
@@ -45,7 +45,7 @@ ZTEST(kveld_status, test_charging_is_red_and_charged_is_green)
     zassert_equal(led.pattern(0).rhythm, Rhythm::STEADY);
 }
 
-ZTEST(kveld_status, test_the_portal_outranks_a_charged_cell)
+ZTEST(cicala_status, test_the_portal_outranks_a_charged_cell)
 {
     StatusLed led;
 
@@ -58,7 +58,7 @@ ZTEST(kveld_status, test_the_portal_outranks_a_charged_cell)
     zassert_equal(led.pattern(0).colour, Colour::GREEN, "and it hands back when it ends");
 }
 
-ZTEST(kveld_status, test_a_transfer_outranks_the_portal_and_hands_back)
+ZTEST(cicala_status, test_a_transfer_outranks_the_portal_and_hands_back)
 {
     StatusLed led;
 
@@ -78,7 +78,7 @@ ZTEST(kveld_status, test_a_transfer_outranks_the_portal_and_hands_back)
     zassert_equal(led.pattern(0).colour, Colour::RED, "back to the charge underneath it all");
 }
 
-ZTEST(kveld_status, test_a_blocked_press_on_a_low_cell_blinks_amber_once)
+ZTEST(cicala_status, test_a_blocked_press_on_a_low_cell_blinks_amber_once)
 {
     StatusLed led;
 
@@ -92,7 +92,7 @@ ZTEST(kveld_status, test_a_blocked_press_on_a_low_cell_blinks_amber_once)
     zassert_equal(led.pattern(after(1)).rhythm, Rhythm::STEADY, "one pair and no more");
 }
 
-ZTEST(kveld_status, test_a_blocked_press_on_a_flat_cell_blinks_red_three_times)
+ZTEST(cicala_status, test_a_blocked_press_on_a_flat_cell_blinks_red_three_times)
 {
     StatusLed led;
 
@@ -108,7 +108,7 @@ ZTEST(kveld_status, test_a_blocked_press_on_a_flat_cell_blinks_red_three_times)
     zassert_equal(done.colour, Colour::OFF, "a flat cell is not worth lighting for");
 }
 
-ZTEST(kveld_status, test_pressing_again_asks_again_and_is_answered_again)
+ZTEST(cicala_status, test_pressing_again_asks_again_and_is_answered_again)
 {
     StatusLed led;
 
@@ -125,7 +125,7 @@ ZTEST(kveld_status, test_pressing_again_asks_again_and_is_answered_again)
     zassert_equal(again.count, 3, "the second press deserves the same answer as the first");
 }
 
-ZTEST(kveld_status, test_a_steady_colour_does_not_blink_at_a_passer_by)
+ZTEST(cicala_status, test_a_steady_colour_does_not_blink_at_a_passer_by)
 {
     StatusLed led;
 
@@ -137,7 +137,7 @@ ZTEST(kveld_status, test_a_steady_colour_does_not_blink_at_a_passer_by)
     }
 }
 
-ZTEST(kveld_status, test_a_blink_and_a_steady_colour_are_told_apart_by_more_than_the_eye)
+ZTEST(cicala_status, test_a_blink_and_a_steady_colour_are_told_apart_by_more_than_the_eye)
 {
     StatusLed blinking;
     StatusLed steady;
@@ -149,7 +149,7 @@ ZTEST(kveld_status, test_a_blink_and_a_steady_colour_are_told_apart_by_more_than
     zassert_not_equal(blinking.pattern(0).rhythm, steady.pattern(0).rhythm);
 }
 
-ZTEST(kveld_status, test_a_blink_is_actually_off_half_the_time)
+ZTEST(cicala_status, test_a_blink_is_actually_off_half_the_time)
 {
     StatusLed led;
 
@@ -163,7 +163,7 @@ ZTEST(kveld_status, test_a_blink_is_actually_off_half_the_time)
     zassert_equal(led.output(after(3)), Colour::OFF, "and dark once the burst has run");
 }
 
-ZTEST(kveld_status, test_a_pulse_is_on_for_half_its_cycle)
+ZTEST(cicala_status, test_a_pulse_is_on_for_half_its_cycle)
 {
     StatusLed led;
 
@@ -175,7 +175,7 @@ ZTEST(kveld_status, test_a_pulse_is_on_for_half_its_cycle)
     zassert_equal(led.output(kStatusPulseMs), Colour::GREEN);
 }
 
-ZTEST(kveld_status, test_only_something_moving_asks_to_be_looked_at_again)
+ZTEST(cicala_status, test_only_something_moving_asks_to_be_looked_at_again)
 {
     StatusLed led;
 

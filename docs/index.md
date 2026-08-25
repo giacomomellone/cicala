@@ -1,6 +1,6 @@
-# kveld docs
+# cicala docs
 
-An open-source system for conversation questions: a community-maintained [question database](https://github.com/giacomomellone/kveld/tree/main/questions), a free static [website](https://kveld.pages.dev), and a pocket-sized e-paper [device](design.md#why-a-device). All three share one database, which lives in the Git repository.
+An open-source system for conversation questions: a community-maintained [question database](https://github.com/giacomomellone/cicala/tree/main/questions), a free static [website](https://cicala.dev), and a pocket-sized e-paper [device](design.md#why-a-device). All three share one database, which lives in the Git repository.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 
@@ -21,8 +21,8 @@ An open-source system for conversation questions: a community-maintained [questi
 
 ## Elsewhere in the repo
 
-- [README](https://github.com/giacomomellone/kveld#readme): project overview and part status.
-- [CONTRIBUTING](https://github.com/giacomomellone/kveld/blob/main/CONTRIBUTING.md): how to add a question (30 seconds, no dev setup) and the CC0 dedication.
+- [README](https://github.com/giacomomellone/cicala#readme): project overview and part status.
+- [CONTRIBUTING](https://github.com/giacomomellone/cicala/blob/main/CONTRIBUTING.md): how to add a question (30 seconds, no dev setup) and the CC0 dedication.
 - Per-language style guides live next to the data: `questions/{lang}/STYLE.md`.
 
 ## Working on the docs

@@ -1,6 +1,6 @@
 // External URLs are defined here so a domain or organization move is atomic.
-export const REPO_URL = "https://github.com/giacomomellone/kveld";
-export const SITE_URL = "https://kveld.pages.dev";
+export const REPO_URL = "https://github.com/giacomomellone/cicala";
+export const SITE_URL = "https://cicala.dev";
 
 // Category cycle order from questions/schema.json.
 export const DECKS = ["new_people", "close", "family", "work", "here", "wild"] as const;

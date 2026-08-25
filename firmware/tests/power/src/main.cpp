@@ -3,7 +3,7 @@
 
 #include "power_fsm.hpp"
 
-using namespace kveld;
+using namespace cicala;
 using State = PowerFsm::State;
 
 namespace
@@ -76,9 +76,9 @@ void boot_to_normal(TestPowerFsm &fsm)
 
 } // namespace
 
-ZTEST_SUITE(kveld_power, NULL, NULL, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_power, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(kveld_power, test_nothing_is_claimed_before_the_first_reading)
+ZTEST(cicala_power, test_nothing_is_claimed_before_the_first_reading)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -89,7 +89,7 @@ ZTEST(kveld_power, test_nothing_is_claimed_before_the_first_reading)
     zassert_equal(fsm.millivolts(), 0);
 }
 
-ZTEST(kveld_power, test_an_unknown_cell_still_lets_the_panel_refresh)
+ZTEST(cicala_power, test_an_unknown_cell_still_lets_the_panel_refresh)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -100,7 +100,7 @@ ZTEST(kveld_power, test_an_unknown_cell_still_lets_the_panel_refresh)
     zassert_true(fsm.refresh_allowed(), "a dead ADC must not stop the device working");
 }
 
-ZTEST(kveld_power, test_one_reading_on_a_flat_cell_walks_the_whole_ladder)
+ZTEST(cicala_power, test_one_reading_on_a_flat_cell_walks_the_whole_ladder)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -111,7 +111,7 @@ ZTEST(kveld_power, test_one_reading_on_a_flat_cell_walks_the_whole_ladder)
     zassert_false(fsm.refresh_allowed());
 }
 
-ZTEST(kveld_power, test_a_reading_too_low_to_be_a_cell_is_not_a_flat_cell)
+ZTEST(cicala_power, test_a_reading_too_low_to_be_a_cell_is_not_a_flat_cell)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -122,7 +122,7 @@ ZTEST(kveld_power, test_a_reading_too_low_to_be_a_cell_is_not_a_flat_cell)
     zassert_true(fsm.refresh_allowed(), "an implausible reading must not blank the panel");
 }
 
-ZTEST(kveld_power, test_the_floor_itself_is_a_cell)
+ZTEST(cicala_power, test_the_floor_itself_is_a_cell)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -133,7 +133,7 @@ ZTEST(kveld_power, test_the_floor_itself_is_a_cell)
     zassert_false(fsm.refresh_allowed());
 }
 
-ZTEST(kveld_power, test_a_cell_that_falls_off_the_bottom_gives_the_panel_back)
+ZTEST(cicala_power, test_a_cell_that_falls_off_the_bottom_gives_the_panel_back)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -149,7 +149,7 @@ ZTEST(kveld_power, test_a_cell_that_falls_off_the_bottom_gives_the_panel_back)
     zassert_equal(fsm.get_current_state(), STATE(NORMAL), "and a real reading is believed again");
 }
 
-ZTEST(kveld_power, test_the_floor_leaves_the_hysteresis_alone)
+ZTEST(cicala_power, test_the_floor_leaves_the_hysteresis_alone)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -166,7 +166,7 @@ ZTEST(kveld_power, test_the_floor_leaves_the_hysteresis_alone)
     zassert_equal(fsm.get_current_state(), STATE(NORMAL));
 }
 
-ZTEST(kveld_power, test_external_power_outranks_the_floor)
+ZTEST(cicala_power, test_external_power_outranks_the_floor)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -178,7 +178,7 @@ ZTEST(kveld_power, test_external_power_outranks_the_floor)
     zassert_equal(io.opens, 1);
 }
 
-ZTEST(kveld_power, test_the_refresh_floor_is_where_low_begins)
+ZTEST(cicala_power, test_the_refresh_floor_is_where_low_begins)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -194,7 +194,7 @@ ZTEST(kveld_power, test_the_refresh_floor_is_where_low_begins)
     zassert_false(fsm.refresh_allowed());
 }
 
-ZTEST(kveld_power, test_a_cell_that_sags_and_recovers_does_not_flap)
+ZTEST(cicala_power, test_a_cell_that_sags_and_recovers_does_not_flap)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -211,7 +211,7 @@ ZTEST(kveld_power, test_a_cell_that_sags_and_recovers_does_not_flap)
     zassert_equal(fsm.get_current_state(), STATE(NORMAL));
 }
 
-ZTEST(kveld_power, test_getting_worse_is_immediate_and_getting_better_is_not)
+ZTEST(cicala_power, test_getting_worse_is_immediate_and_getting_better_is_not)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -229,7 +229,7 @@ ZTEST(kveld_power, test_getting_worse_is_immediate_and_getting_better_is_not)
     zassert_false(fsm.refresh_allowed(), "still under the refresh floor");
 }
 
-ZTEST(kveld_power, test_plugging_in_from_anywhere_reaches_charging)
+ZTEST(cicala_power, test_plugging_in_from_anywhere_reaches_charging)
 {
     const uint16_t from[] = {3800, 3100, 2900};
 
@@ -246,7 +246,7 @@ ZTEST(kveld_power, test_plugging_in_from_anywhere_reaches_charging)
     }
 }
 
-ZTEST(kveld_power, test_a_full_cell_on_the_charger_reads_charged)
+ZTEST(cicala_power, test_a_full_cell_on_the_charger_reads_charged)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -264,7 +264,7 @@ ZTEST(kveld_power, test_a_full_cell_on_the_charger_reads_charged)
     zassert_equal(fsm.get_current_state(), STATE(CHARGING));
 }
 
-ZTEST(kveld_power, test_unplugging_forgets_what_it_thought_it_knew)
+ZTEST(cicala_power, test_unplugging_forgets_what_it_thought_it_knew)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -283,7 +283,7 @@ ZTEST(kveld_power, test_unplugging_forgets_what_it_thought_it_knew)
     zassert_equal(fsm.get_current_state(), STATE(CRITICAL));
 }
 
-ZTEST(kveld_power, test_the_charge_window_opens_once_per_plug_in)
+ZTEST(cicala_power, test_the_charge_window_opens_once_per_plug_in)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -301,7 +301,7 @@ ZTEST(kveld_power, test_the_charge_window_opens_once_per_plug_in)
     zassert_true(fsm.charge_window_open());
 }
 
-ZTEST(kveld_power, test_the_window_closes_on_the_clock_and_stays_closed)
+ZTEST(cicala_power, test_the_window_closes_on_the_clock_and_stays_closed)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -326,7 +326,7 @@ ZTEST(kveld_power, test_the_window_closes_on_the_clock_and_stays_closed)
     zassert_true(fsm.external(), "still on external power, window or no window");
 }
 
-ZTEST(kveld_power, test_a_spent_window_is_not_reopened_by_reaching_charged)
+ZTEST(cicala_power, test_a_spent_window_is_not_reopened_by_reaching_charged)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -343,7 +343,7 @@ ZTEST(kveld_power, test_a_spent_window_is_not_reopened_by_reaching_charged)
     zassert_false(fsm.charge_window_open());
 }
 
-ZTEST(kveld_power, test_unplugging_closes_the_window_early_and_only_once)
+ZTEST(cicala_power, test_unplugging_closes_the_window_early_and_only_once)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -363,7 +363,7 @@ ZTEST(kveld_power, test_unplugging_closes_the_window_early_and_only_once)
     zassert_equal(io.closes, 1);
 }
 
-ZTEST(kveld_power, test_a_second_plug_in_gets_its_own_window)
+ZTEST(cicala_power, test_a_second_plug_in_gets_its_own_window)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -379,7 +379,7 @@ ZTEST(kveld_power, test_a_second_plug_in_gets_its_own_window)
     zassert_true(fsm.charge_window_open());
 }
 
-ZTEST(kveld_power, test_the_usb_pin_is_believed_without_a_reading)
+ZTEST(cicala_power, test_the_usb_pin_is_believed_without_a_reading)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -392,7 +392,7 @@ ZTEST(kveld_power, test_the_usb_pin_is_believed_without_a_reading)
     zassert_equal(io.opens, 1, "and the sync window is the reason it asks");
 }
 
-ZTEST(kveld_power, test_unplugging_is_noticed_after_the_adc_stops_answering)
+ZTEST(cicala_power, test_unplugging_is_noticed_after_the_adc_stops_answering)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -407,7 +407,7 @@ ZTEST(kveld_power, test_unplugging_is_noticed_after_the_adc_stops_answering)
     zassert_equal(io.closes, 1, "and the charge window would never close");
 }
 
-ZTEST(kveld_power, test_the_usb_pin_alone_is_not_a_measurement)
+ZTEST(cicala_power, test_the_usb_pin_alone_is_not_a_measurement)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -420,7 +420,7 @@ ZTEST(kveld_power, test_the_usb_pin_alone_is_not_a_measurement)
     zassert_true(fsm.refresh_allowed());
 }
 
-ZTEST(kveld_power, test_every_state_change_is_published)
+ZTEST(cicala_power, test_every_state_change_is_published)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);
@@ -440,7 +440,7 @@ ZTEST(kveld_power, test_every_state_change_is_published)
     zassert_true(io.last_usb);
 }
 
-ZTEST(kveld_power, test_a_reading_that_has_barely_moved_is_not_published)
+ZTEST(cicala_power, test_a_reading_that_has_barely_moved_is_not_published)
 {
     FakePowerIo io;
     TestPowerFsm fsm(io);

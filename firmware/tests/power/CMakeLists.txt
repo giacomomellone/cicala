@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(kveld_power LANGUAGES C CXX)
+project(cicala_power LANGUAGES C CXX)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm kveld_fsm)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/power kveld_power)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/fsm cicala_fsm)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../../lib/power cicala_power)
 
 target_sources(app PRIVATE src/main.cpp)
 
-target_link_libraries(app PRIVATE kveld_fsm kveld_power)
+target_link_libraries(app PRIVATE cicala_fsm cicala_power)

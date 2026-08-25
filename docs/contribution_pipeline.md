@@ -2,7 +2,7 @@
 
 How a question gets from someone's head into the database, the website and a
 device. Human-facing instructions are in
-[CONTRIBUTING.md](https://github.com/giacomomellone/kveld/blob/main/CONTRIBUTING.md);
+[CONTRIBUTING.md](https://github.com/giacomomellone/cicala/blob/main/CONTRIBUTING.md);
 this page describes the machinery behind them.
 
 There are two entry points and they converge immediately. Most people use the
@@ -61,7 +61,7 @@ advertise, and the list is the reason a human looks at those submissions.
 ## The vocabulary, and why it is single-sourced
 
 Decks, tags and the depth labels live in `questions/schema.json` under
-`x-kveld`. Three consumers restate them:
+`x-cicala`. Three consumers restate them:
 
 - `.github/ISSUE_TEMPLATE/new-question.yml` — the dropdown options.
 - `website/src/config.ts` — so no page parses the schema at runtime.

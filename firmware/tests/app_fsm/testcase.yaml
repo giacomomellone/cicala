@@ -1,10 +1,10 @@
 tests:
-  kveld.app_fsm:
+  cicala.app_fsm:
     platform_allow:
       - qemu_xtensa/dc233c
       - native_sim
     integration_platforms:
       - qemu_xtensa/dc233c
     tags:
-      - kveld
+      - cicala
       - app_fsm

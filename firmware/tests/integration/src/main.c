@@ -12,22 +12,22 @@
 #include "input.h"
 #include "status.h"
 
-static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_category), gpios);
-static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_next), gpios);
+static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_category), gpios);
+static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_next), gpios);
 
-static const struct gpio_dt_spec led_red = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_led_red), gpios);
-static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(kveld_led_green), gpios);
+static const struct gpio_dt_spec led_red = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_led_red), gpios);
+static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_led_green), gpios);
 
 static const struct adc_dt_spec cell = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
 
-static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), kveld_vbus_gpios);
+static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_vbus_gpios);
 
 #define HEALTHY_MV 3900
 /* Clear of the critical and plausible thresholds after ADC rounding. */
 #define FLAT_MV 2800
 
 /* The emulator supplies divider-tap voltage; power.c scales it to pack voltage. */
-#define TAP_MV(pack) ((pack) * CONFIG_KVELD_POWER_DIVIDER_DEN / CONFIG_KVELD_POWER_DIVIDER_NUM)
+#define TAP_MV(pack) ((pack) * CONFIG_CICALA_POWER_DIVIDER_DEN / CONFIG_CICALA_POWER_DIVIDER_NUM)
 
 static int charge_the_cell(void)
 {
@@ -42,41 +42,41 @@ SYS_INIT(charge_the_cell, APPLICATION, 0);
 static void set_cell_mv(uint16_t pack_mv)
 {
     zassert_ok(adc_emul_const_value_set(cell.dev, cell.channel_id, TAP_MV(pack_mv)));
-    k_sleep(K_MSEC(CONFIG_KVELD_POWER_SAMPLE_MS * 3));
+    k_sleep(K_MSEC(CONFIG_CICALA_POWER_SAMPLE_MS * 3));
 }
 
 static void set_vbus(bool plugged)
 {
     zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, plugged ? 1 : 0));
-    k_sleep(K_MSEC(CONFIG_KVELD_POWER_SAMPLE_MS * 3));
+    k_sleep(K_MSEC(CONFIG_CICALA_POWER_SAMPLE_MS * 3));
 }
 
 static void settle_leds(void)
 {
     /* Cases are unordered, so outlast any burst armed by a previous case. */
-    k_sleep(K_MSEC(CONFIG_KVELD_STATUS_LED_BLINK_MS * 8));
+    k_sleep(K_MSEC(CONFIG_CICALA_STATUS_LED_BLINK_MS * 8));
 }
 
 /* Includes gpio-keys debounce and both application threads. */
-#define PRESS_WAIT K_MSEC(CONFIG_KVELD_BUTTON_DEBOUNCE_MS + 300)
+#define PRESS_WAIT K_MSEC(CONFIG_CICALA_BUTTON_DEBOUNCE_MS + 300)
 
-static struct kveld_question_msg last_question;
+static struct cicala_question_msg last_question;
 
-static struct kveld_question_msg first_question;
+static struct cicala_question_msg first_question;
 static bool have_first;
 
 static int questions;
 static int renders;
 static int last_render_result;
 
-static struct kveld_power_msg last_power;
+static struct cicala_power_msg last_power;
 
 static void observe(const struct zbus_channel *chan)
 {
     if (chan == &chan_power) {
-        last_power = *(const struct kveld_power_msg *) zbus_chan_const_msg(chan);
+        last_power = *(const struct cicala_power_msg *) zbus_chan_const_msg(chan);
     } else if (chan == &chan_question) {
-        last_question = *(const struct kveld_question_msg *) zbus_chan_const_msg(chan);
+        last_question = *(const struct cicala_question_msg *) zbus_chan_const_msg(chan);
         questions++;
 
         if (!have_first) {
@@ -84,7 +84,7 @@ static void observe(const struct zbus_channel *chan)
             have_first = true;
         }
     } else if (chan == &chan_render) {
-        const struct kveld_render_msg *msg = zbus_chan_const_msg(chan);
+        const struct cicala_render_msg *msg = zbus_chan_const_msg(chan);
 
         last_render_result = msg->result;
         renders++;
@@ -114,23 +114,23 @@ static void *suite_setup(void)
 
     k_sleep(PRESS_WAIT);
 
-    zassert_ok(kveld_input_init());
+    zassert_ok(cicala_input_init());
     k_sleep(PRESS_WAIT);
 
     return NULL;
 }
 
-ZTEST_SUITE(kveld_integration, NULL, suite_setup, NULL, NULL, NULL);
+ZTEST_SUITE(cicala_integration, NULL, suite_setup, NULL, NULL, NULL);
 
-ZTEST(kveld_integration, test_boot_names_the_remembered_deck)
+ZTEST(cicala_integration, test_boot_names_the_remembered_deck)
 {
     zassert_true(have_first, "boot should have put something on the panel");
-    zassert_equal(first_question.kind, KVELD_CARD_CATEGORY,
+    zassert_equal(first_question.kind, CICALA_CARD_CATEGORY,
                   "and on a cold boot that is a deck name");
     zassert_equal(first_question.deck, 0, "New People is the cold default");
 }
 
-ZTEST(kveld_integration, test_category_advances_and_names_the_deck)
+ZTEST(cicala_integration, test_category_advances_and_names_the_deck)
 {
     const uint8_t before = last_question.deck;
 
@@ -140,8 +140,8 @@ ZTEST(kveld_integration, test_category_advances_and_names_the_deck)
     press(&category);
 
     zassert_equal(questions, 1, "one press is one card");
-    zassert_equal(last_question.kind, KVELD_CARD_CATEGORY, "pressing Category names a deck");
-    zassert_equal(last_question.deck, kveld_deck_cycle_next(before), "and advances by one");
+    zassert_equal(last_question.kind, CICALA_CARD_CATEGORY, "pressing Category names a deck");
+    zassert_equal(last_question.deck, cicala_deck_cycle_next(before), "and advances by one");
     zassert_equal(renders, 1, "the display should have been asked to draw it");
     zassert_equal(last_render_result, 0);
 
@@ -149,10 +149,10 @@ ZTEST(kveld_integration, test_category_advances_and_names_the_deck)
     zassert_equal(questions, 1, "the name waits for a press rather than timing out");
 }
 
-ZTEST(kveld_integration, test_next_turns_the_deck_name_into_a_question)
+ZTEST(cicala_integration, test_next_turns_the_deck_name_into_a_question)
 {
     press(&category);
-    zassert_equal(last_question.kind, KVELD_CARD_CATEGORY);
+    zassert_equal(last_question.kind, CICALA_CARD_CATEGORY);
 
     const uint8_t deck = last_question.deck;
 
@@ -161,19 +161,19 @@ ZTEST(kveld_integration, test_next_turns_the_deck_name_into_a_question)
     press(&next_button);
 
     zassert_equal(questions, 1, "one press is one question");
-    zassert_equal(last_question.kind, KVELD_CARD_QUESTION, "and a press asks for a real question");
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION, "and a press asks for a real question");
     zassert_equal(last_question.deck, deck, "from the deck that was named");
     zassert_true(last_question.len > 0);
 }
 
-ZTEST(kveld_integration, test_next_draws_a_different_question)
+ZTEST(cicala_integration, test_next_draws_a_different_question)
 {
     press(&next_button);
-    zassert_equal(last_question.kind, KVELD_CARD_QUESTION);
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION);
 
     const uint32_t before_seq = last_question.seq;
     const uint16_t before_len = last_question.len;
-    char before_text[CONFIG_KVELD_MAX_QUESTION_BYTES];
+    char before_text[CONFIG_CICALA_MAX_QUESTION_BYTES];
 
     memcpy(before_text, last_question.text, before_len);
 
@@ -190,13 +190,13 @@ ZTEST(kveld_integration, test_next_draws_a_different_question)
     zassert_false(same, "the bag must not hand back the question already on screen");
 }
 
-ZTEST(kveld_integration, test_the_deck_cycle_skips_work_and_wraps)
+ZTEST(cicala_integration, test_the_deck_cycle_skips_work_and_wraps)
 {
     press(&category);
 
     const uint8_t start = last_question.deck;
 
-    for (int i = 0; i < KVELD_DECK_CYCLE_COUNT; i++) {
+    for (int i = 0; i < CICALA_DECK_CYCLE_COUNT; i++) {
         press(&category);
         zassert_not_equal(last_question.deck, 3, "the device does not offer Work");
     }
@@ -204,9 +204,9 @@ ZTEST(kveld_integration, test_the_deck_cycle_skips_work_and_wraps)
     zassert_equal(last_question.deck, start, "five presses is a full turn");
 }
 
-ZTEST(kveld_integration, test_a_deck_returns_only_its_own_questions)
+ZTEST(cicala_integration, test_a_deck_returns_only_its_own_questions)
 {
-    while (last_question.deck != 5 || last_question.kind != KVELD_CARD_CATEGORY) {
+    while (last_question.deck != 5 || last_question.kind != CICALA_CARD_CATEGORY) {
         press(&category);
     }
 
@@ -221,7 +221,7 @@ ZTEST(kveld_integration, test_a_deck_returns_only_its_own_questions)
     }
 }
 
-ZTEST(kveld_integration, test_a_flat_cell_leaves_the_question_on_the_panel)
+ZTEST(cicala_integration, test_a_flat_cell_leaves_the_question_on_the_panel)
 {
     press(&next_button);
 
@@ -241,7 +241,7 @@ ZTEST(kveld_integration, test_a_flat_cell_leaves_the_question_on_the_panel)
     set_cell_mv(HEALTHY_MV);
 }
 
-ZTEST(kveld_integration, test_a_charged_cell_answers_again)
+ZTEST(cicala_integration, test_a_charged_cell_answers_again)
 {
     set_cell_mv(FLAT_MV);
 
@@ -254,11 +254,11 @@ ZTEST(kveld_integration, test_a_charged_cell_answers_again)
     press(&next_button);
 
     zassert_equal(questions, 1, "the press after a recovery is answered");
-    zassert_equal(last_question.kind, KVELD_CARD_QUESTION);
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION);
     zassert_equal(last_render_result, 0);
 }
 
-ZTEST(kveld_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
+ZTEST(cicala_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
 {
     set_cell_mv(FLAT_MV);
 
@@ -272,10 +272,10 @@ ZTEST(kveld_integration, test_a_flat_cell_does_not_burn_a_question_from_the_bag)
     press(&next_button);
 
     zassert_equal(questions, 1, "the bag still had something to give");
-    zassert_equal(last_question.kind, KVELD_CARD_QUESTION);
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION);
 }
 
-ZTEST(kveld_integration, test_the_usb_bit_follows_the_pin)
+ZTEST(cicala_integration, test_the_usb_bit_follows_the_pin)
 {
     set_cell_mv(HEALTHY_MV);
     set_vbus(false);
@@ -285,16 +285,16 @@ ZTEST(kveld_integration, test_the_usb_bit_follows_the_pin)
     set_vbus(true);
 
     zassert_true(last_power.usb, "plugging in has to reach the channel");
-    zassert_equal(last_power.state, KVELD_POWER_CHARGING);
+    zassert_equal(last_power.state, CICALA_POWER_CHARGING);
 
     set_vbus(false);
 
     zassert_false(last_power.usb, "and so does unplugging");
-    zassert_equal(last_power.state, KVELD_POWER_NORMAL,
+    zassert_equal(last_power.state, CICALA_POWER_NORMAL,
                   "unplugging re-derives from the cell rather than trusting where it was");
 }
 
-ZTEST(kveld_integration, test_external_power_answers_a_press_the_cell_would_not)
+ZTEST(cicala_integration, test_external_power_answers_a_press_the_cell_would_not)
 {
     set_cell_mv(FLAT_MV);
 
@@ -308,14 +308,14 @@ ZTEST(kveld_integration, test_external_power_answers_a_press_the_cell_would_not)
     press(&next_button);
 
     zassert_equal(questions, 1, "external power pays for the refresh");
-    zassert_equal(last_question.kind, KVELD_CARD_QUESTION);
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION);
     zassert_equal(last_render_result, 0);
 
     set_cell_mv(HEALTHY_MV);
     set_vbus(false);
 }
 
-ZTEST(kveld_integration, test_a_charge_is_red_until_the_cell_is_full)
+ZTEST(cicala_integration, test_a_charge_is_red_until_the_cell_is_full)
 {
     set_cell_mv(HEALTHY_MV);
     set_vbus(true);
@@ -324,7 +324,7 @@ ZTEST(kveld_integration, test_a_charge_is_red_until_the_cell_is_full)
     zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0, "charging is steady red");
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 
-    set_cell_mv(CONFIG_KVELD_POWER_FULL_MV + 50);
+    set_cell_mv(CONFIG_CICALA_POWER_FULL_MV + 50);
 
     zassert_true(gpio_emul_output_get(led_green.port, led_green.pin) > 0, "and full is green");
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0);
@@ -337,26 +337,26 @@ ZTEST(kveld_integration, test_a_charge_is_red_until_the_cell_is_full)
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 }
 
-ZTEST(kveld_integration, test_the_portal_shows_amber)
+ZTEST(cicala_integration, test_the_portal_shows_amber)
 {
     set_cell_mv(HEALTHY_MV);
     settle_leds();
 
-    kveld_status_set_portal(true);
-    k_sleep(K_MSEC(CONFIG_KVELD_STATUS_LED_BLINK_MS));
+    cicala_status_set_portal(true);
+    k_sleep(K_MSEC(CONFIG_CICALA_STATUS_LED_BLINK_MS));
 
     zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0, "amber is both lit");
     zassert_true(gpio_emul_output_get(led_green.port, led_green.pin) > 0, "amber is both lit");
 
-    kveld_status_set_portal(false);
-    k_sleep(K_MSEC(CONFIG_KVELD_STATUS_LED_BLINK_MS));
+    cicala_status_set_portal(false);
+    k_sleep(K_MSEC(CONFIG_CICALA_STATUS_LED_BLINK_MS));
 
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
                   "and it goes away when the portal does");
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 }
 
-ZTEST(kveld_integration, test_a_refused_press_is_answered_on_the_red_led)
+ZTEST(cicala_integration, test_a_refused_press_is_answered_on_the_red_led)
 {
     set_cell_mv(HEALTHY_MV);
     settle_leds();
@@ -380,7 +380,7 @@ ZTEST(kveld_integration, test_a_refused_press_is_answered_on_the_red_led)
             seen_dark = true;
         }
 
-        k_sleep(K_MSEC(CONFIG_KVELD_STATUS_LED_BLINK_MS / 4));
+        k_sleep(K_MSEC(CONFIG_CICALA_STATUS_LED_BLINK_MS / 4));
     }
 
     zassert_true(seen_lit, "a refused press should say so");
@@ -390,7 +390,7 @@ ZTEST(kveld_integration, test_a_refused_press_is_answered_on_the_red_led)
                   "green means charged, and this cell is the opposite");
 
     set_cell_mv(HEALTHY_MV);
-    k_sleep(K_MSEC(CONFIG_KVELD_STATUS_LED_BLINK_MS * 8));
+    k_sleep(K_MSEC(CONFIG_CICALA_STATUS_LED_BLINK_MS * 8));
 
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0,
                   "and the burst ends rather than running forever");

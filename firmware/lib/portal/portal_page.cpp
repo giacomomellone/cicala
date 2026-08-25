@@ -1,6 +1,6 @@
 #include "portal_page.hpp"
 
-namespace kveld
+namespace cicala
 {
 
 namespace
@@ -112,7 +112,7 @@ private:
 const char *const kHead =
     "<!DOCTYPE html><html lang=\"en\"><head><meta charset=\"utf-8\">"
     "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-    "<title>Kveld setup</title><style>"
+    "<title>Cicala setup</title><style>"
     "*{box-sizing:border-box}body{font:14px/1.55 ui-monospace,SFMono-Regular,Menlo,"
     "Consolas,monospace;margin:0;padding:1.25rem;background:#faf8f2;color:#1f1f1d}"
     "main{max-width:34rem;margin:0 auto}.brand{display:flex;align-items:baseline;"
@@ -144,7 +144,7 @@ const char *const kFoot = "</main></body></html>";
 
 void brand(Writer &w)
 {
-    w.raw("<header class=\"brand\"><span class=\"wordmark\">kveld</span>"
+    w.raw("<header class=\"brand\"><span class=\"wordmark\">cicala</span>"
           "<span class=\"eyebrow\">DEVICE SETUP</span></header>");
 }
 
@@ -309,7 +309,7 @@ int page_notice(char *out, uint16_t out_size, const char *heading, const char *b
     w.raw(kHead);
     brand(w);
     w.raw("<h1>");
-    w.text(heading != nullptr ? heading : "Kveld");
+    w.text(heading != nullptr ? heading : "Cicala");
     w.raw("</h1><p class=\"lede\">");
     w.text(body != nullptr ? body : "Done.");
     w.raw("</p>");
@@ -425,4 +425,4 @@ int page_status(char *out, uint16_t out_size, const PortalStatus &status)
     return w.finish();
 }
 
-} // namespace kveld
+} // namespace cicala

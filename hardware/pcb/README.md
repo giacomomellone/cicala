@@ -1,19 +1,19 @@
 # PCB — Rev A schematic baseline
 
-The KiCad 10 project is under `kveld_rev_a/`. It contains the first complete hierarchical schematic and a validated mechanical constraint board. The schematic is an electrical review baseline, not a fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+The KiCad 10 project is under `cicala_rev_a/`. It contains the first complete hierarchical schematic and a validated mechanical constraint board. The schematic is an electrical review baseline, not a fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
 The shared coordinate, stack-up, pin and validation contracts are in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` records the selected parts and the gates that remain before an assembly quote.
 
 ## What exists
 
-- `kveld_rev_a.kicad_pro`: KiCad project metadata;
-- `kveld_rev_a.kicad_sch`: root hierarchy with three functional sheets;
-- `kveld_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
-- `kveld_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library;
+- `cicala_rev_a.kicad_pro`: KiCad project metadata;
+- `cicala_rev_a.kicad_sch`: root hierarchy with three functional sheets;
+- `cicala_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
+- `cicala_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library;
 - `pin_contract.csv`: firmware-to-schematic signal allocation;
 - `renders/constraint_map.svg`: vector plot of mechanical datums and keep-outs;
 - `renders/board_top.png`: empty-board 3D check;
-- `exports/kveld_rev_a_board.step`: board outline for enclosure fit checks.
+- `exports/cicala_rev_a_board.step`: board outline for enclosure fit checks.
 
 The PCB skeleton carries four Ø2.7 mm mechanical holes, a 2 mm corner radius, and user-layer envelopes for the panel, FPC, USB-C, switches, cap bores, status light, cell, gasket, ESP32-S3 module and service holes. Keep-out zones prohibit all copper and metal below the module antenna and prohibit bottom-side components in the 503035 cell volume.
 

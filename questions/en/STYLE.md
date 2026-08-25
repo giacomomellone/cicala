@@ -1,6 +1,6 @@
 # English style guide
 
-How to write a Kveld question in English. The bar: it fits every selected
+How to write a Cicala question in English. The bar: it fits every selected
 deck, cannot be answered with yes or no, and is specific enough to start a
 story. See [theory](../../docs/theory.md) for the reasoning behind these rules.
 

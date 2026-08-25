@@ -1,4 +1,4 @@
-// Persistent client state uses the `kveld.` localStorage namespace.
+// Persistent client state uses the `cicala.` localStorage namespace.
 
 function read(key: string): string | null {
   try {
@@ -27,28 +27,28 @@ function readJson<T>(key: string, fallback: T): T {
 }
 
 export function getStoredLang(): string | null {
-  return read("kveld.lang");
+  return read("cicala.lang");
 }
 
 export function setStoredLang(lang: string): void {
-  write("kveld.lang", lang);
+  write("cicala.lang", lang);
 }
 
 export function getDeck(): string {
-  return read("kveld.deck") ?? "new_people";
+  return read("cicala.deck") ?? "new_people";
 }
 
 export function setDeck(deck: string): void {
-  write("kveld.deck", deck);
+  write("cicala.deck", deck);
 }
 
 export function getFavs(): string[] {
-  const favs = readJson<string[]>("kveld.favs", []);
+  const favs = readJson<string[]>("cicala.favs", []);
   return Array.isArray(favs) ? favs.filter((x) => typeof x === "string") : [];
 }
 
 export function setFavs(ids: string[]): void {
-  write("kveld.favs", JSON.stringify(ids));
+  write("cicala.favs", JSON.stringify(ids));
 }
 
 export function isFav(id: string): boolean {
@@ -70,11 +70,11 @@ export function toggleFav(id: string): boolean {
 }
 
 export function getLastShown(lang: string): string {
-  return read(`kveld.last.${lang}`) ?? "";
+  return read(`cicala.last.${lang}`) ?? "";
 }
 
 export function setLastShown(lang: string, id: string): void {
-  write(`kveld.last.${lang}`, id);
+  write(`cicala.last.${lang}`, id);
 }
 
 export interface Bag {
@@ -83,7 +83,7 @@ export interface Bag {
 }
 
 export function getBag(lang: string, deck: string): Bag {
-  const bag = readJson<Bag>(`kveld.bag.${lang}.${deck}`, { b: [], r: [] });
+  const bag = readJson<Bag>(`cicala.bag.${lang}.${deck}`, { b: [], r: [] });
   return {
     b: Array.isArray(bag.b) ? bag.b : [],
     r: Array.isArray(bag.r) ? bag.r : [],
@@ -91,5 +91,5 @@ export function getBag(lang: string, deck: string): Bag {
 }
 
 export function setBag(lang: string, deck: string, bag: Bag): void {
-  write(`kveld.bag.${lang}.${deck}`, JSON.stringify(bag));
+  write(`cicala.bag.${lang}.${deck}`, JSON.stringify(bag));
 }

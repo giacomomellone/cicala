@@ -8,41 +8,41 @@
 #include "fsm.hpp"
 #include "power_state.hpp"
 
-namespace kveld
+namespace cicala
 {
 
-#ifdef CONFIG_KVELD_REFRESH_MIN_MV
-constexpr uint16_t kRefreshMinMv = CONFIG_KVELD_REFRESH_MIN_MV;
+#ifdef CONFIG_CICALA_REFRESH_MIN_MV
+constexpr uint16_t kRefreshMinMv = CONFIG_CICALA_REFRESH_MIN_MV;
 #else
 constexpr uint16_t kRefreshMinMv = 3200;
 #endif
 
-#ifdef CONFIG_KVELD_POWER_CRITICAL_MV
-constexpr uint16_t kCriticalMv = CONFIG_KVELD_POWER_CRITICAL_MV;
+#ifdef CONFIG_CICALA_POWER_CRITICAL_MV
+constexpr uint16_t kCriticalMv = CONFIG_CICALA_POWER_CRITICAL_MV;
 #else
 constexpr uint16_t kCriticalMv = 3000;
 #endif
 
-#ifdef CONFIG_KVELD_POWER_PLAUSIBLE_MV
-constexpr uint16_t kPlausibleMv = CONFIG_KVELD_POWER_PLAUSIBLE_MV;
+#ifdef CONFIG_CICALA_POWER_PLAUSIBLE_MV
+constexpr uint16_t kPlausibleMv = CONFIG_CICALA_POWER_PLAUSIBLE_MV;
 #else
 constexpr uint16_t kPlausibleMv = 2500;
 #endif
 
-#ifdef CONFIG_KVELD_POWER_FULL_MV
-constexpr uint16_t kFullMv = CONFIG_KVELD_POWER_FULL_MV;
+#ifdef CONFIG_CICALA_POWER_FULL_MV
+constexpr uint16_t kFullMv = CONFIG_CICALA_POWER_FULL_MV;
 #else
 constexpr uint16_t kFullMv = 4050;
 #endif
 
-#ifdef CONFIG_KVELD_POWER_HYSTERESIS_MV
-constexpr uint16_t kHysteresisMv = CONFIG_KVELD_POWER_HYSTERESIS_MV;
+#ifdef CONFIG_CICALA_POWER_HYSTERESIS_MV
+constexpr uint16_t kHysteresisMv = CONFIG_CICALA_POWER_HYSTERESIS_MV;
 #else
 constexpr uint16_t kHysteresisMv = 120;
 #endif
 
-#ifdef CONFIG_KVELD_POWER_CHARGE_WINDOW_MS
-constexpr int64_t kChargeWindowMs = CONFIG_KVELD_POWER_CHARGE_WINDOW_MS;
+#ifdef CONFIG_CICALA_POWER_CHARGE_WINDOW_MS
+constexpr int64_t kChargeWindowMs = CONFIG_CICALA_POWER_CHARGE_WINDOW_MS;
 #else
 constexpr int64_t kChargeWindowMs = 300000;
 #endif
@@ -144,4 +144,4 @@ private:
     static const Fsm::StateTransition _transitions[];
 };
 
-} // namespace kveld
+} // namespace cicala

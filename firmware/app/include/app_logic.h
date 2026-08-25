@@ -11,40 +11,40 @@ extern "C" {
 #endif
 
 /** Open the selected corpus and bind the bag. Return 0 or `-EINVAL`. */
-int kveld_app_init(void);
+int cicala_app_init(void);
 
 /** One Category press happened: advance to the next deck and name it. */
-void kveld_app_post_category(void);
+void cicala_app_post_category(void);
 
 /** One Next press happened. */
-void kveld_app_post_next(void);
+void cicala_app_post_next(void);
 
 /** Post a render result; stale sequence numbers are ignored. */
-void kveld_app_post_render(bool ok, uint32_t seq);
+void cicala_app_post_render(bool ok, uint32_t seq);
 
 /** Copy a setup-portal card into the state machine. */
-void kveld_app_post_service(const char *text, uint16_t len);
+void cicala_app_post_service(const char *text, uint16_t len);
 
 /** Reopen the selected corpus without changing the current panel. */
-void kveld_app_reload_corpus(void);
+void cicala_app_reload_corpus(void);
 
 /** Tick the state machine until it stops moving. */
-void kveld_app_run(void);
+void cicala_app_run(void);
 
 /** True when the current state has a timeout that has to be honoured. */
-bool kveld_app_needs_timeout(void);
+bool cicala_app_needs_timeout(void);
 
 /** Copy the NUL-terminated corpus version and return its question count. */
-void kveld_app_corpus(char *version, size_t version_size, uint16_t *count);
+void cicala_app_corpus(char *version, size_t version_size, uint16_t *count);
 
 /** Current state, as an AppFsm::State value. */
-int kveld_app_state(void);
+int cicala_app_state(void);
 
 /** True while the panel is refreshing and input will be dropped. */
-bool kveld_app_is_busy(void);
+bool cicala_app_is_busy(void);
 
 /** True when the app can safely enter deep sleep. */
-bool kveld_app_is_settled(void);
+bool cicala_app_is_settled(void);
 
 #ifdef __cplusplus
 }

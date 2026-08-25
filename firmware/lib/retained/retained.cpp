@@ -3,7 +3,7 @@
 #include <stddef.h>
 #include <string.h>
 
-namespace kveld
+namespace cicala
 {
 
 namespace
@@ -65,4 +65,4 @@ void retained_seal(Retained &block)
     block.hash = payload_hash(block);
 }
 
-} // namespace kveld
+} // namespace cicala

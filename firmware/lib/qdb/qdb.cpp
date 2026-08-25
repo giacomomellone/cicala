@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-namespace kveld
+namespace cicala
 {
 
 namespace
@@ -415,4 +415,4 @@ bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index,
     return true;
 }
 
-} // namespace kveld
+} // namespace cicala

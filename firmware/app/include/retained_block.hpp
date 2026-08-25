@@ -5,10 +5,10 @@
 #include "retained.hpp"
 
 /** The block, already validated. */
-kveld::Retained &kveld_retained();
+cicala::Retained &cicala_retained();
 
 /** True when this boot inherited a valid retained block. */
-bool kveld_retained_survived();
+bool cicala_retained_survived();
 
 /** Stamp the block so the next boot accepts it. */
-void kveld_retained_seal();
+void cicala_retained_seal();

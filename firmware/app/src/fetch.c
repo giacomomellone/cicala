@@ -12,16 +12,16 @@
 #include <zephyr/net/http/client.h>
 #include <zephyr/net/socket.h>
 
-LOG_MODULE_REGISTER(kveld_fetch, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(cicala_fetch, LOG_LEVEL_INF);
 
 /* Where the current transfer is going. */
-static const struct kveld_fetch_sink *active_sink;
+static const struct cicala_fetch_sink *active_sink;
 static size_t active_len;
 static int active_err;
 
-int kveld_fetch_mem_write(void *ctx, const uint8_t *data, size_t len)
+int cicala_fetch_mem_write(void *ctx, const uint8_t *data, size_t len)
 {
-    struct kveld_fetch_mem *mem = ctx;
+    struct cicala_fetch_mem *mem = ctx;
 
     if (mem->len + len > mem->capacity) {
         /* Header values must fit in full. */
@@ -74,17 +74,17 @@ static int connect_to_host(void)
 
     char port[8];
 
-    (void) snprintf(port, sizeof(port), "%d", CONFIG_KVELD_SYNC_PORT);
+    (void) snprintf(port, sizeof(port), "%d", CONFIG_CICALA_SYNC_PORT);
 
-    int err = zsock_getaddrinfo(CONFIG_KVELD_SYNC_HOST, port, &hints, &res);
+    int err = zsock_getaddrinfo(CONFIG_CICALA_SYNC_HOST, port, &hints, &res);
 
     if (err != 0 || res == NULL) {
-        LOG_ERR("could not resolve %s: %d", CONFIG_KVELD_SYNC_HOST, err);
+        LOG_ERR("could not resolve %s: %d", CONFIG_CICALA_SYNC_HOST, err);
 
         return -EHOSTUNREACH;
     }
 
-#ifdef CONFIG_KVELD_SYNC_INSECURE
+#ifdef CONFIG_CICALA_SYNC_INSECURE
     const int sock = zsock_socket(res->ai_family, res->ai_socktype, IPPROTO_TCP);
 #else
     const int sock = zsock_socket(res->ai_family, res->ai_socktype, IPPROTO_TLS_1_2);
@@ -97,7 +97,7 @@ static int connect_to_host(void)
         return -errno;
     }
 
-#ifndef CONFIG_KVELD_SYNC_INSECURE
+#ifndef CONFIG_CICALA_SYNC_INSECURE
     /* TLS is transport encryption; signatures authenticate artifacts. */
     const int verify = TLS_PEER_VERIFY_NONE;
 
@@ -110,8 +110,8 @@ static int connect_to_host(void)
     }
 
     /* Shared hosts require the Host header for routing. */
-    if (zsock_setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_KVELD_SYNC_HOST,
-                         sizeof(CONFIG_KVELD_SYNC_HOST)) < 0) {
+    if (zsock_setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_CICALA_SYNC_HOST,
+                         sizeof(CONFIG_CICALA_SYNC_HOST)) < 0) {
         LOG_WRN("could not set the TLS hostname: %d", errno);
     }
 #endif
@@ -121,7 +121,7 @@ static int connect_to_host(void)
     zsock_freeaddrinfo(res);
 
     if (err < 0) {
-        LOG_ERR("could not connect to %s: %d", CONFIG_KVELD_SYNC_HOST, errno);
+        LOG_ERR("could not connect to %s: %d", CONFIG_CICALA_SYNC_HOST, errno);
         (void) zsock_close(sock);
 
         return -ECONNREFUSED;
@@ -130,7 +130,7 @@ static int connect_to_host(void)
     return sock;
 }
 
-int kveld_fetch(const char *path, const struct kveld_fetch_sink *sink, int32_t timeout_ms)
+int cicala_fetch(const char *path, const struct cicala_fetch_sink *sink, int32_t timeout_ms)
 {
     struct http_request req = {0};
     static uint8_t recv_buf[512];
@@ -151,7 +151,7 @@ int kveld_fetch(const char *path, const struct kveld_fetch_sink *sink, int32_t t
 
     req.method = HTTP_GET;
     req.url = path;
-    req.host = CONFIG_KVELD_SYNC_HOST;
+    req.host = CONFIG_CICALA_SYNC_HOST;
     req.protocol = "HTTP/1.1";
     req.response = on_body;
     req.recv_buf = recv_buf;
@@ -184,7 +184,7 @@ int kveld_fetch(const char *path, const struct kveld_fetch_sink *sink, int32_t t
     return (int) active_len;
 }
 
-const char *kveld_fetch_path_of(const char *url)
+const char *cicala_fetch_path_of(const char *url)
 {
     const char *at = strstr(url, "://");
 

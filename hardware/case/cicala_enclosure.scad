@@ -1,5 +1,5 @@
 /*
- * Kveld enclosure, Rev A mechanical contract
+ * Cicala enclosure, Rev A mechanical contract
  *
  * Canonical coordinates are millimetres. X runs left to right, Y runs from
  * rear to front, and Z runs upward from the table. The model is deliberately
@@ -15,7 +15,7 @@ section_axis = "x"; // [x,y,z]
 section_position_percent = 50; // [0:1:100]
 section_keep = "positive"; // [negative,positive]
 
-// Public Kveld finish intent. Physical colour and texture remain sample-gated.
+// Public Cicala finish intent. Physical colour and texture remain sample-gated.
 paper_color = [250 / 255, 248 / 255, 242 / 255];
 paper_raised_color = [1, 1, 254 / 255];
 ink_color = [31 / 255, 31 / 255, 29 / 255];
@@ -492,7 +492,7 @@ module coupon_boss() {
     }
 }
 
-echo(str("KVELD_REV=A; part=", part));
+echo(str("CICALA_REV=A; part=", part));
 echo(str("ENVELOPE_MM=", case_width, "x", case_depth, "x", face_rear_z));
 echo(str("PCB_MM=", pcb_width, "x", pcb_depth, "x", pcb_thickness));
 echo(str("PCB_ORIGIN_MM=", pcb_x, ",", pcb_y, ",", pcb_z));

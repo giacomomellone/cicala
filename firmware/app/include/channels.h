@@ -12,13 +12,13 @@ extern "C" {
 #endif
 
 /** Decks in the bundle mask, in schema order. */
-#define KVELD_DECK_COUNT 6
+#define CICALA_DECK_COUNT 6
 
 /** The device cycles five of the six decks; Work stays on the website. */
-#define KVELD_DECK_CYCLE_COUNT 5
+#define CICALA_DECK_CYCLE_COUNT 5
 
 /** Event channel: one Category press happened. */
-struct kveld_category_msg {
+struct cicala_category_msg {
     /** Uptime at the moment the press started. */
     int64_t timestamp_ms;
     /** Press-to-release duration in milliseconds; telemetry only. */
@@ -26,7 +26,7 @@ struct kveld_category_msg {
 };
 
 /** Event channel: one Next press happened. */
-struct kveld_next_msg {
+struct cicala_next_msg {
     /** Uptime at the moment the press started. */
     int64_t timestamp_ms;
     /** Press-to-release duration in milliseconds; telemetry only. */
@@ -34,40 +34,40 @@ struct kveld_next_msg {
 };
 
 /** What a card on the panel is. */
-enum kveld_card {
+enum cicala_card {
     /** Something drawn from the corpus. */
-    KVELD_CARD_QUESTION = 0,
+    CICALA_CARD_QUESTION = 0,
     /** The name of the deck Category just moved to. */
-    KVELD_CARD_CATEGORY,
+    CICALA_CARD_CATEGORY,
     /** The setup portal, saying which network to join and how it went. */
-    KVELD_CARD_SERVICE,
+    CICALA_CARD_SERVICE,
 };
 
 /** State channel. Text is copied so corpus replacement cannot invalidate it. */
-struct kveld_question_msg {
+struct cicala_question_msg {
     /** Increments per draw, so a stale render can be told from a current one. */
     uint32_t seq;
     uint8_t deck;
-    /** One of `enum kveld_card`, stored as a byte. */
+    /** One of `enum cicala_card`, stored as a byte. */
     uint8_t kind;
     uint16_t len;
-    char text[CONFIG_KVELD_MAX_QUESTION_BYTES];
+    char text[CONFIG_CICALA_MAX_QUESTION_BYTES];
 };
 
 /** Event channel. App converts this to a sequenced `chan_question` card. */
-struct kveld_service_msg {
+struct cicala_service_msg {
     uint16_t len;
-    char text[CONFIG_KVELD_MAX_QUESTION_BYTES];
+    char text[CONFIG_CICALA_MAX_QUESTION_BYTES];
 };
 
 /** Event channel. The new corpus applies on the next draw without a refresh. */
-struct kveld_corpus_msg {
+struct cicala_corpus_msg {
     /** Two-letter code, NUL-terminated. */
     char language[4];
 };
 
 /** Event channel: the display finished with the question it was given. */
-struct kveld_render_msg {
+struct cicala_render_msg {
     /** The `seq` of the question this refers to. */
     uint32_t seq;
     /** 0, or a negative errno from the panel. */
@@ -77,26 +77,26 @@ struct kveld_render_msg {
 };
 
 /** Where power stands. */
-enum kveld_power_state {
+enum cicala_power_state {
     /** No plausible reading. Refreshes remain allowed. */
-    KVELD_POWER_UNKNOWN = 0,
+    CICALA_POWER_UNKNOWN = 0,
     /** On the cell, above the refresh floor. */
-    KVELD_POWER_NORMAL,
-    /** On the cell, under CONFIG_KVELD_REFRESH_MIN_MV. Refreshes are refused. */
-    KVELD_POWER_LOW,
+    CICALA_POWER_NORMAL,
+    /** On the cell, under CONFIG_CICALA_REFRESH_MIN_MV. Refreshes are refused. */
+    CICALA_POWER_LOW,
     /** On the cell, nearly flat. Refreshes are refused. */
-    KVELD_POWER_CRITICAL,
+    CICALA_POWER_CRITICAL,
     /** External power is in. */
-    KVELD_POWER_CHARGING,
+    CICALA_POWER_CHARGING,
     /** External power is in and the cell reads above the full estimate. */
-    KVELD_POWER_CHARGED,
+    CICALA_POWER_CHARGED,
 };
 
 /** State channel for status consumers. Sleep queries power directly. */
-struct kveld_power_msg {
+struct cicala_power_msg {
     /** At the pack, with the divider undone. */
     uint16_t mv;
-    /** One of `enum kveld_power_state`, stored as a byte. */
+    /** One of `enum cicala_power_state`, stored as a byte. */
     uint8_t state;
     /** VBUS. */
     bool usb;
@@ -111,22 +111,22 @@ ZBUS_CHAN_DECLARE(chan_render);
 ZBUS_CHAN_DECLARE(chan_power);
 
 /** Deck id for logs, or `?` when out of range. */
-const char *kveld_deck_name(uint8_t deck);
+const char *cicala_deck_name(uint8_t deck);
 
 /** Card name for logs, or `?` when out of range. */
-const char *kveld_card_name(uint8_t kind);
+const char *cicala_card_name(uint8_t kind);
 
 /** Power-state name for logs, or `?` when out of range. */
-const char *kveld_power_name(uint8_t state);
+const char *cicala_power_name(uint8_t state);
 
 /** English deck label shown on the panel for every corpus language. */
-const char *kveld_deck_label(uint8_t deck);
+const char *cicala_deck_label(uint8_t deck);
 
 /** True when the device offers this deck in the Category cycle. */
-bool kveld_deck_on_device(uint8_t deck);
+bool cicala_deck_on_device(uint8_t deck);
 
 /** The deck one Category press after `deck`; a deck outside the cycle restarts it. */
-uint8_t kveld_deck_cycle_next(uint8_t deck);
+uint8_t cicala_deck_cycle_next(uint8_t deck);
 
 #ifdef __cplusplus
 }
