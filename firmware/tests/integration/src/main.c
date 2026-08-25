@@ -141,7 +141,7 @@ ZTEST(kveld_integration, test_category_advances_and_names_the_deck)
 
     zassert_equal(questions, 1, "one press is one card");
     zassert_equal(last_question.kind, KVELD_CARD_CATEGORY, "pressing Category names a deck");
-    zassert_equal(last_question.deck, (before + 1) % KVELD_DECK_COUNT, "and advances by one");
+    zassert_equal(last_question.deck, kveld_deck_cycle_next(before), "and advances by one");
     zassert_equal(renders, 1, "the display should have been asked to draw it");
     zassert_equal(last_render_result, 0);
 
@@ -190,17 +190,18 @@ ZTEST(kveld_integration, test_next_draws_a_different_question)
     zassert_false(same, "the bag must not hand back the question already on screen");
 }
 
-ZTEST(kveld_integration, test_the_deck_wraps_from_wild_to_new_people)
+ZTEST(kveld_integration, test_the_deck_cycle_skips_work_and_wraps)
 {
     press(&category);
 
     const uint8_t start = last_question.deck;
 
-    for (int i = 0; i < KVELD_DECK_COUNT; i++) {
+    for (int i = 0; i < KVELD_DECK_CYCLE_COUNT; i++) {
         press(&category);
+        zassert_not_equal(last_question.deck, 3, "the device does not offer Work");
     }
 
-    zassert_equal(last_question.deck, start, "six presses is a full turn");
+    zassert_equal(last_question.deck, start, "five presses is a full turn");
 }
 
 ZTEST(kveld_integration, test_a_deck_returns_only_its_own_questions)

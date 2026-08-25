@@ -24,7 +24,7 @@ firmware/
 │   ├── layout/                 UTF-8 layout and accent composition
 │   ├── portal/                 setup protocol and state machine
 │   ├── power/                  battery-state rules
-│   ├── qdb/                    QDB2 reader and shuffle bag
+│   ├── qdb/                    QDB3 reader and shuffle bag
 │   ├── retained/               RTC state block
 │   ├── status/                 LED policy
 │   └── sync/                   manifest parsing
@@ -164,7 +164,7 @@ Each suite under `firmware/tests/` contains its CMake file, configuration,
 suites on `native_sim` in the Zephyr CI container. Both platforms support
 emulated GPIO through a `zephyr,gpio-emul` devicetree node.
 
-The private fixture recipe builds the real question database and copies QDB2
+The private fixture recipe builds the real question database and copies QDB3
 files into `firmware/tests/fixtures/` before application builds and tests.
 
 ## Debugging

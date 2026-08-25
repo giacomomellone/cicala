@@ -1,4 +1,6 @@
 
+#include <string.h>
+
 #include <zephyr/ztest.h>
 
 #include "qdb.hpp"
@@ -16,7 +18,6 @@ const uint8_t de_bundle[] = {
 #include "de_qdb.inc"
 };
 
-constexpr uint8_t kWildDeck = 5;
 constexpr uint8_t kPlaybackDepth = CONFIG_KVELD_PLAYBACK_DEPTH_MAX;
 
 struct Rng {
@@ -95,7 +96,9 @@ ZTEST(kveld_qdb, test_every_question_is_readable_and_within_the_buffer)
                          CONFIG_KVELD_MAX_QUESTION_BYTES);
             zassert_true(q.depth >= 1 && q.depth <= 3, "question %u has depth %u", i, q.depth);
             zassert_true(q.deck_mask != 0, "question %u belongs to no deck", i);
-            zassert_true((q.deck_mask & 0xC0) == 0, "question %u sets a reserved deck bit", i);
+            zassert_equal(q.deck_mask >> kDeckCount, 0, "question %u sets a reserved deck bit", i);
+            zassert_true((q.forms & ~kFormBitsValid) == 0, "question %u sets a reserved form bit",
+                         i);
         }
     }
 }
@@ -115,7 +118,7 @@ ZTEST(kveld_qdb, test_tone_flags_stay_in_the_wild_deck)
             continue;
         }
 
-        zassert_equal(q.deck_mask, 1u << kWildDeck,
+        zassert_equal(q.deck_mask, 1u << kDeckWild,
                       "question %u carries a tone flag outside Wild (mask %02x)", i, q.deck_mask);
     }
 }
@@ -123,10 +126,10 @@ ZTEST(kveld_qdb, test_tone_flags_stay_in_the_wild_deck)
 ZTEST(kveld_qdb, test_the_worked_example_from_the_spec_decodes)
 {
     static const uint8_t bundle[] = {
-        'Q',  'D', 'B', '2',  0x09, '2',  '0',  '2',  '6',  '.', '0', '7', '.', '2',
-        0x02, 'e', 'n', 0x01, 0x00, 0x03, 0x01, 0x20, 0x00, 'W', 'h', 'e', 'n', ' ',
-        'd',  'i', 'd', ' ',  'y',  'o',  'u',  ' ',  'l',  'a', 's', 't', ' ', 's',
-        'i',  'n', 'g', ' ',  'o',  'u',  't',  ' ',  'l',  'o', 'u', 'd', '?',
+        'Q',  'D', 'B', '3',  0x09, '2',  '0',  '2',  '6',  '.',  '0', '7', '.', '2',
+        0x02, 'e', 'n', 0x01, 0x00, 0x03, 0x01, 0x00, 0x20, 0x00, 'W', 'h', 'e', 'n',
+        ' ',  'd', 'i', 'd',  ' ',  'y',  'o',  'u',  ' ',  'l',  'a', 's', 't', ' ',
+        's',  'i', 'n', 'g',  ' ',  'o',  'u',  't',  ' ',  'l',  'o', 'u', 'd', '?',
     };
 
     Qdb qdb;
@@ -140,8 +143,58 @@ ZTEST(kveld_qdb, test_the_worked_example_from_the_spec_decodes)
     zassert_true(text_equals(q, "When did you last sing out loud?"));
     zassert_equal(q.deck_mask, 0x03, "new_people and close");
     zassert_equal(q.depth, 2);
+    zassert_equal(q.forms, 0, "the spec example carries no form tag");
     zassert_false(q.spicy);
     zassert_false(q.dark);
+}
+
+/* A minimal QDB3 writer for corpus-independent bag cases. */
+struct SynQ {
+    uint8_t mask;
+    uint8_t depth;
+    uint8_t forms;
+    const char *text;
+};
+
+static size_t build_synthetic(uint8_t *out, const SynQ *qs, uint16_t n)
+{
+    size_t len = 0;
+    const char *version = "t.1";
+    const char *lang = "en";
+
+    out[len++] = 'Q';
+    out[len++] = 'D';
+    out[len++] = 'B';
+    out[len++] = '3';
+    out[len++] = 3;
+    memcpy(out + len, version, 3);
+    len += 3;
+    out[len++] = 2;
+    memcpy(out + len, lang, 2);
+    len += 2;
+    out[len++] = n & 0xFF;
+    out[len++] = n >> 8;
+
+    for (uint16_t i = 0; i < n; i++) {
+        const uint16_t tl = strlen(qs[i].text);
+
+        out[len++] = qs[i].mask;
+        out[len++] = qs[i].depth - 1;
+        out[len++] = qs[i].forms;
+        out[len++] = tl & 0xFF;
+        out[len++] = tl >> 8;
+        memcpy(out + len, qs[i].text, tl);
+        len += tl;
+    }
+
+    return len;
+}
+
+static uint8_t synthetic_buf[1024];
+
+static void open_synthetic(Qdb &qdb, const SynQ *qs, uint16_t n)
+{
+    zassert_true(qdb.open(synthetic_buf, build_synthetic(synthetic_buf, qs, n)));
 }
 
 ZTEST(kveld_qdb, test_a_damaged_bundle_is_refused)
@@ -267,7 +320,7 @@ ZTEST(kveld_qdb, test_a_new_cycle_starts_once_the_deck_is_used_up)
 
     bag.bind(qdb);
 
-    constexpr uint8_t deck = 3;
+    constexpr uint8_t deck = kDeckWork;
     const uint16_t eligible = qdb.eligible_count(deck, kPlaybackDepth);
 
     for (uint16_t i = 0; i < eligible; i++) {
@@ -297,7 +350,7 @@ ZTEST(kveld_qdb, test_the_smallest_deck_still_draws_despite_the_ring)
 
     bag.bind(qdb);
 
-    constexpr uint8_t here = 4;
+    constexpr uint8_t here = kDeckHere;
 
     zassert_true(qdb.eligible_count(here, kPlaybackDepth) <= kRecentRing,
                  "this case is only interesting while the deck is no bigger than the ring");
@@ -328,7 +381,7 @@ ZTEST(kveld_qdb, test_the_ring_is_shared_across_decks)
     uint8_t recent_len = 0;
 
     for (int i = 0; i < kRecentRing; i++) {
-        const uint8_t deck = (i % 2 == 0) ? 0 : 1;
+        const uint8_t deck = (i % 2 == 0) ? kDeckNewPeople : kDeckClose;
         uint16_t index = 0;
         Question q;
 
@@ -387,4 +440,185 @@ ZTEST(kveld_qdb, test_an_unopened_bundle_draws_nothing)
 
     zassert_true(qdb.open(en_bundle, sizeof(en_bundle)));
     zassert_false(bag.draw(qdb, kDeckCount, kPlaybackDepth, index, q), "there is no seventh deck");
+}
+
+ZTEST(kveld_qdb, test_texture_alternates_depth_bands_when_the_pool_allows)
+{
+    static const SynQ qs[] = {
+        {(1u << kDeckNewPeople), 1, 0, "One?"},   {(1u << kDeckNewPeople), 2, 0, "Two?"},
+        {(1u << kDeckNewPeople), 1, 0, "Three?"}, {(1u << kDeckNewPeople), 2, 0, "Four?"},
+        {(1u << kDeckNewPeople), 1, 0, "Five?"},  {(1u << kDeckNewPeople), 2, 0, "Six?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    bag_state = {};
+    rng = {.state = 17u};
+
+    Bag bag(bag_state, next_random, &rng);
+
+    bag.bind(qdb);
+
+    uint8_t prev_band = 0;
+
+    for (int i = 0; i < 6; i++) {
+        uint16_t index = 0;
+        Question q;
+
+        zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q));
+
+        const uint8_t band = depth_band(q.depth);
+
+        if (prev_band != 0) {
+            zassert_not_equal(band, prev_band, "draw %d repeated the depth band", i);
+        }
+
+        prev_band = band;
+    }
+}
+
+ZTEST(kveld_qdb, test_texture_keeps_form_variety_when_the_band_cannot_change)
+{
+    /* One depth band only; the form preference must survive that relaxation. */
+    static const SynQ qs[] = {
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "One?"},
+        {(1u << kDeckNewPeople), 2, kFormReflective, "Two?"},
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "Three?"},
+        {(1u << kDeckNewPeople), 2, kFormReflective, "Four?"},
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "Five?"},
+        {(1u << kDeckNewPeople), 2, kFormReflective, "Six?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    bag_state = {};
+    rng = {.state = 23u};
+
+    Bag bag(bag_state, next_random, &rng);
+
+    bag.bind(qdb);
+
+    uint8_t prev_forms = 0;
+
+    for (int i = 0; i < 6; i++) {
+        uint16_t index = 0;
+        Question q;
+
+        zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q));
+        zassert_equal(q.forms & prev_forms, 0, "draw %d repeated a form", i);
+        prev_forms = q.forms;
+    }
+}
+
+ZTEST(kveld_qdb, test_texture_relaxes_when_every_candidate_repeats)
+{
+    static const SynQ qs[] = {
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "One?"},
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "Two?"},
+        {(1u << kDeckNewPeople), 2, kFormIcebreaker, "Three?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    bag_state = {};
+    rng = {.state = 31u};
+
+    Bag bag(bag_state, next_random, &rng);
+
+    bag.bind(qdb);
+
+    for (int i = 0; i < 9; i++) {
+        uint16_t index = 0;
+        Question q;
+
+        zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q),
+                     "texture must relax, not starve (draw %d)", i);
+    }
+}
+
+ZTEST(kveld_qdb, test_texture_survives_a_cycle_reset)
+{
+    static const SynQ qs[] = {
+        {(1u << kDeckNewPeople), 1, 0, "One?"},
+        {(1u << kDeckNewPeople), 2, 0, "Two?"},
+        {(1u << kDeckNewPeople), 1, 0, "Three?"},
+        {(1u << kDeckNewPeople), 2, 0, "Four?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    bag_state = {};
+    rng = {.state = 41u};
+
+    Bag bag(bag_state, next_random, &rng);
+
+    bag.bind(qdb);
+
+    uint8_t last_band = 0;
+
+    for (int i = 0; i < 4; i++) {
+        uint16_t index = 0;
+        Question q;
+
+        zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q));
+        last_band = depth_band(q.depth);
+    }
+
+    uint16_t index = 0;
+    Question q;
+
+    zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q), "the bag must refill");
+    zassert_equal(depth_band(q.depth), last_band == 1 ? 2 : 1,
+                  "a new cycle still avoids repeating the last band shown");
+}
+
+ZTEST(kveld_qdb, test_texture_is_shared_across_decks)
+{
+    static const SynQ qs[] = {
+        {(1u << kDeckNewPeople), 1, 0, "New people one?"},
+        {(1u << kDeckClose), 1, 0, "Close one?"},
+        {(1u << kDeckClose), 2, 0, "Close two?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    bag_state = {};
+    rng = {.state = 53u};
+
+    Bag bag(bag_state, next_random, &rng);
+
+    bag.bind(qdb);
+
+    uint16_t index = 0;
+    Question q;
+
+    zassert_true(bag.draw(qdb, 0, kPlaybackDepth, index, q));
+    zassert_equal(index, 0);
+
+    zassert_true(bag.draw(qdb, 1, kPlaybackDepth, index, q));
+    zassert_equal(index, 2, "the table just saw depth 1, so Close should offer depth 2");
+}
+
+ZTEST(kveld_qdb, test_form_bits_decode)
+{
+    /* icebreaker | hypothetical on Here, depth 1. */
+    static const SynQ qs[] = {
+        {(1u << kDeckHere), 1, (kFormIcebreaker | kFormHypothetical),
+         "What can you see from here?"},
+    };
+    Qdb qdb;
+
+    open_synthetic(qdb, qs, ARRAY_SIZE(qs));
+
+    Question q;
+
+    zassert_true(qdb.at(0, q));
+    zassert_equal(q.forms, kFormIcebreaker | kFormHypothetical);
+    zassert_equal(q.depth, 1);
+    zassert_equal(q.deck_mask, 1u << kDeckHere);
 }

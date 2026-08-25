@@ -796,3 +796,23 @@ The TPS63802 DLA0010A symbol keeps ten pins with no exposed thermal pad. The DLA
 The APBA2006 is two independent diodes, not an internally common-cathode part. The board ties both cathodes to GND, which is the intended common-cathode use. The generic `LED_Dual_AAKK` symbol numbers its pins A1 A2 K1 K2, which does not match the datasheet pin order, so the project footprint places pads to match the symbol and records the mapping in its description; a later revision should move D4 to a symbol that matches the datasheet.
 
 Two wiring errors were found and corrected. The TPS63802 feedback divider was shorted: a single wire ran FB straight to VOUT and bypassed R14, which would have driven the 3.3 V rail down to the 0.5 V reference. It is now VOUT → R14 → FB node → R15 → GND. The BQ25185 TS/MR pin and the pack NTC wire were both tied to VBAT, which the charger reads as out-of-range temperature and suspends charging. TS/MR is now a separate `BATT_NTC` net that carries only the pack NTC wire (J3.2); BAT stays on VBAT. The BQ25185 sources ~38 µA into TS, so the 10 kΩ B=3435 pack thermistor to GND needs no external resistors and gives roughly a 1.5 °C cold and 59 °C hot window; verify on hardware. TS/MR also doubles as the manual-reset input, so keep it reachable if a ship-mode reset is wanted.
+
+## 2026-08-18: Texture without session state, and Work leaves the device cycle
+
+The bag now prefers a question whose depth band and form differ from the one just shown, on the device and the web player. A candidate scores one point for repeating the last depth band and one for sharing a form tag; the draw is uniform within the cheapest class and relaxes toward uniform when the pool offers nothing cheaper, mirroring how the recent ring already relaxes. The intent is decorrelation — uniform randomness can serve three reflective questions in a row — not progression.
+
+This extends the 2026-07-26 rejection of ramping and hidden session state rather than reversing it. The only new state is the last-served band and form mask, two bytes in the retained block (retained version 2). It describes the panel, not the table; it claims nothing about readiness; it never raises depth over time. A designed arc would need a session boundary the device does not have, and would guess wrong whenever a sitting does not match it.
+
+QDB2 gains the five form-tag bits as a third per-question byte and becomes QDB3. Writer (`tools/build_bundle.py`), reader (`firmware/lib/qdb/`), the worked example in [sync_protocol.md](sync_protocol.md) and the suites move in one commit, per the 2026-08-04 rule that the two decoders change together. No device or published bundle exists yet, so there is no migration.
+
+The device Category cycle drops Work: five decks on the object, six on the website and in the corpus. The object is built for tables at home; Work's constraint — nothing that can change someone's standing — belongs to a context the object is not in. The bundle mask keeps the `work` bit and the website player keeps the deck; only the offered cycle shrinks.
+
+Accepted cost: the two platforms implement the same rule differently at the margin (refill-time arrangement on the web, draw-time preference in firmware), and the fixture recipe had to stop trusting glob order — `dist/bundles/` accumulates every past build and an older bundle sorted last, so `just fw-test` could silently test a stale corpus.
+
+## 2026-08-19: The web player mirrors the device, decks included
+
+The player now behaves like the object: Category cycles the same five decks in the same order and shows the deck name, and Next draws from the named deck. The six direct deck buttons are gone, and Work leaves the play experience; it remains in the corpus, the browse view, and the contribution vocabulary. The 2026-08-18 entry scoped Work's removal to the device; parity extends it to the player, which matters beyond consistency: the player is the cheapest rig for trying the physical interaction, and it can only serve as that rig if the two match.
+
+Two deliberate differences survive. The web page still opens on a question rather than a deck name — a browser has none of the e-paper's unknown-state problem, and the play page's job is to show a question before anything else. And favorites, share links, and backward history stay web-only, as before: a browser can confirm ownership without adding state to the object.
+
+Accepted cost: a returning visitor whose stored deck is `work` lands on New People, and the corpus vocabulary (six decks) no longer matches what either player offers (five).

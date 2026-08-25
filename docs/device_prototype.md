@@ -15,10 +15,10 @@ Technical CAD images are labelled as models. Photoreal concept renders remain ou
 
 The device has two adjacent buttons:
 
-- **Category** advances through the six categories in a fixed order and shows the selected name on the e-paper;
+- **Category** advances through the five categories in a fixed order and shows the selected name on the e-paper;
 - **Next** draws a question from the category named on the display.
 
-The active category is visible on the e-paper. Reaching a category can take up to five presses, so the physical study must check whether the cycle and refresh delay remain easy to follow. Wi-Fi, language, and maintenance stay in the phone setup flow. Normal playback uses editorial depths 1 and 2.
+The active category is visible on the e-paper. Reaching a category can take up to four presses, so the physical study must check whether the cycle and refresh delay remain easy to follow. Wi-Fi, language, and maintenance stay in the phone setup flow. Normal playback uses editorial depths 1 and 2.
 
 ## Proposed form
 

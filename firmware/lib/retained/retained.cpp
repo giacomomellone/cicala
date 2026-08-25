@@ -13,7 +13,8 @@ namespace
 constexpr uint32_t kMagic = 0x3152'4B54u;
 
 // Bump when the payload layout or field meaning changes.
-constexpr uint16_t kVersion = 1;
+// 2: Bag::State gains the last-served depth band and form mask.
+constexpr uint16_t kVersion = 2;
 
 // FNV-1a detects accidental RTC-memory corruption.
 constexpr uint32_t kFnvOffset = 2166136261u;

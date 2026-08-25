@@ -68,7 +68,8 @@ OpenOCD on port 3333. `just fw-debugserver` starts the server without flashing.
 
 ## Interaction
 
-- Category advances through the six decks and shows the new deck name.
+- Category advances through the five device decks (Work stays on the website)
+  and shows the new deck name.
 - Next draws one question from the active deck.
 - A cold boot starts at New People. RTC memory preserves the active deck,
   shuffle bag, panel state, and partial-refresh count across deep sleep.
@@ -98,14 +99,14 @@ firmware/
 ```
 
 The build creates question fixtures from the real YAML database. Firmware tests
-therefore exercise the same QDB2 bytes compiled into the application.
+therefore exercise the same QDB3 bytes compiled into the application.
 
 ## Hardware checks
 
 The breadboard rig has verified:
 
 - Category and Next from GPIO input through the panel refresh
-- English and German QDB2 bundles and no-repeat draws
+- English and German QDB3 bundles and no-repeat draws
 - every shipped question at the minimum font size
 - partial and full refresh policy on the GDEY0213B74
 - deep-sleep wake and RTC-retained state

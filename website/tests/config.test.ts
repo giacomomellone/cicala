@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECKS, DEPTH_OPTIONS, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
+import { DECKS, DEVICE_DECKS, DEPTH_OPTIONS, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
 import schema from "../../questions/schema.json";
 
 const cfg = schema["x-kveld"];
@@ -7,6 +7,11 @@ const cfg = schema["x-kveld"];
 describe("decks", () => {
   it("keeps the category order from questions/schema.json", () => {
     expect(DECKS).toEqual(["new_people", "close", "family", "work", "here", "wild"]);
+  });
+
+  it("the player offers the device cycle, in order, without work", () => {
+    expect(DEVICE_DECKS).toEqual(["new_people", "close", "family", "here", "wild"]);
+    expect(DEVICE_DECKS.every((deck) => (DECKS as readonly string[]).includes(deck))).toBe(true);
   });
 
   it("keeps depth 3 outside initial playback", () => {

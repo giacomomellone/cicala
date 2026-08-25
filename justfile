@@ -397,12 +397,15 @@ test-e2e *args: data
     cd website && npx playwright test {{ args }}
 
 # copy the real question bundles into firmware/tests/fixtures/
+# dist/bundles accumulates every past build, so copy the newest per language:
+# glob order is alphabetical and a stale build can sort last.
 [private]
 _fw-fixtures: bundle
     mkdir -p firmware/tests/fixtures
-    for f in dist/bundles/bundle-*.qdb; do \
-        lang=$(basename "$f" | cut -d- -f2); \
-        cp "$f" "firmware/tests/fixtures/$lang.qdb"; \
+    for dir in questions/*/; do \
+        lang=$(basename "$dir"); \
+        [ "$lang" = "incubator" ] && continue; \
+        cp "$(ls -t dist/bundles/bundle-"$lang"-*.qdb | head -1)" "firmware/tests/fixtures/$lang.qdb"; \
     done
     @ls -l firmware/tests/fixtures/
 

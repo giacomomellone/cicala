@@ -146,6 +146,16 @@ config KVELD_RECENT_RING
       Shared across categories. When the ring excludes every remaining
       question in a category, the bag relaxes the ring.
 
+config KVELD_TEXTURE
+    bool "Prefer a different depth band and form than the last question"
+    default y
+    help
+      The bag scores each candidate against the question just served — same
+      depth band, same form — and draws uniformly from the cheapest class,
+      relaxing toward uniform when the pool offers nothing cheaper. Texture
+      decorrelates consecutive draws; it is not session state and does not
+      escalate. Disable for A/B studies. See docs/design.md.
+
 config KVELD_MAX_QUESTIONS
     int "Largest corpus the bag can track"
     default 512

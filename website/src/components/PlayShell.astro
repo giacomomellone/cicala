@@ -1,8 +1,8 @@
 ---
-// The play surface, shared by / and /q/[id] (spec §7.4).
-import DeckSelector from "./DeckSelector.astro";
+// The play surface, shared by / and /q/[id] (spec §7.4). Mirrors the device:
+// Category cycles the five decks and names the deck, Next draws from it.
 import type { Deck } from "../config";
-import { t } from "../i18n";
+import { t, type StringKey } from "../i18n";
 import { heartIcon, shareIcon } from "../lib/icons";
 import type { Question } from "../lib/data";
 
@@ -27,6 +27,8 @@ const { question, deck, lang, permalink = false } = Astro.props;
     <div class="q-swap question-wrap" id="q-swap">
       <p class="question" id="q-text" aria-live="polite">{question.text}</p>
       <div class="meta" id="q-meta">
+        <span class="deck-name" id="q-deck-name">{t("en", `deck.${deck}` as StringKey)}</span>
+        <span aria-hidden="true">·</span>
         <button
           type="button"
           class="iconbtn"
@@ -48,10 +50,14 @@ const { question, deck, lang, permalink = false } = Astro.props;
     </div>
   </div>
   <div class="play-controls">
-    <DeckSelector active={deck} />
-    <button type="button" class="btn" id="q-next" data-i18n="play.next">
-      {t("en", "play.next")}
-    </button>
+    <div class="device-controls">
+      <button type="button" class="btn-quiet" id="q-category" data-i18n="play.category">
+        {t("en", "play.category")}
+      </button>
+      <button type="button" class="btn" id="q-next" data-i18n="play.next">
+        {t("en", "play.next")}
+      </button>
+    </div>
     <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
   </div>
 </div>
@@ -66,6 +72,22 @@ const { question, deck, lang, permalink = false } = Astro.props;
   }
   .q-swap.is-fading {
     opacity: 0;
+  }
+  .device-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.6rem;
+  }
+  .deck-name {
+    letter-spacing: 0.04em;
+  }
+  /* The deck-name card: quiet UI type, visibly not a question. */
+  .question.is-name {
+    font-family: var(--font-ui);
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
+    letter-spacing: 0.12em;
+    color: var(--ink-soft);
   }
   @media (prefers-reduced-motion: reduce) {
     .q-swap {
