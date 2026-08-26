@@ -6,10 +6,12 @@ easier, invite reflection, and break silence without becoming the conversation.
 
 ## Mark, wordmark, and type
 
-The identity pairs a lowercase `cicala` wordmark with a minimal top-view cicada.
-The two open wings also read as sound moving away from a central body. Use the
-mark alone for square and very small formats. Use the horizontal lockup when the
-name needs to be learned.
+The identity is a lowercase `cicala` wordmark. The minimal top-view cicada —
+whose two open wings also read as sound moving away from a central body — is the
+square-format mark: it carries the favicon, the avatar, and the Open Graph
+image, where there is no room to read a name. It does not appear beside the
+wordmark. A name and a symbol saying the same thing at the same time is one of
+them too many, and the header has a question to get out of the way of.
 
 The wordmark is Literata at normal weight with optical kerning and restrained
 negative tracking, over a 50% dither rule the width of the lockup. The rule
@@ -25,9 +27,9 @@ The e-paper renders none of them. The panel draws the CFB bitmap fonts
 (10 × 16, 15 × 24, 20 × 32) with a one-pixel overdraw for weight, so the device
 mirrors the website's tone and not its typeface.
 
-Keep clear space around the mark or lockup at least equal to the mark's body
-width. At small sizes, use the mark rather than enlarging the lockup enough to
-compete with a question.
+Keep clear space around the mark or the wordmark at least equal to the mark's
+body width. Where a name will not fit, use the mark; never enlarge the wordmark
+enough to compete with a question.
 
 ## Colour
 
@@ -80,9 +82,7 @@ raster assets from the checked-in mark and font with `npm run brand-assets` in
 - [180 px Apple touch icon](https://github.com/giacomomellone/cicala/blob/main/website/public/apple-touch-icon.png)
 - [1200×630 Open Graph image](https://github.com/giacomomellone/cicala/blob/main/website/public/og.png)
 
-The mark and wordmark remain monochrome. The website may make the two wings
-open by a few degrees on entry or hover. Do not loop the motion: the logo is not
-an activity indicator.
+The mark and wordmark remain monochrome.
 
 ## Device placement
 
@@ -96,7 +96,8 @@ optional small blind emboss on the underside or a concealed lower edge.
 ## Prohibited treatments
 
 Do not add eyes, legs, realistic veining, sound-wave ornaments, a speech bubble,
-or a second symbol to the cicada. Do not introduce a brand colour, add
+or a second symbol to the cicada. Do not set the mark beside the wordmark, put
+the mark in the site header, introduce a brand colour, add
 gradients or glow, round a corner the device could not round, distort the
 letterforms, or make the mark larger than the current question. Do not lay the
 dither under a question at any density. The questions remain visually dominant.

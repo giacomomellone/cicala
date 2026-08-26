@@ -14,7 +14,6 @@ import zillaLatin500 from "@fontsource/zilla-slab/files/zilla-slab-latin-500-nor
 import literataLatin400 from "@fontsource/literata/files/literata-latin-400-normal.woff2?url";
 import plexLatin400 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url";
 import plexLatin500 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url";
-import BrandMark from "../components/BrandMark.astro";
 import "../styles/tokens.css";
 import "../styles/global.css";
 import { REPO_URL, SITE_URL } from "../config";
@@ -100,10 +99,7 @@ const ogImage = new URL("/og.png", SITE_URL).href;
   <body data-seed-lang={seedLang}>
     <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
     <header class="site-header">
-      <a class="wordmark" href="/" aria-label="Cicala home">
-        <BrandMark />
-        <span class="wordmark__name">cicala</span>
-      </a>
+      <a class="wordmark" href="/" aria-label="Cicala home">cicala</a>
       <nav class="site-nav" aria-label="site">
         <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
         <span class="nav-dot" aria-hidden="true">·</span>

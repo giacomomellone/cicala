@@ -22,8 +22,9 @@ test.describe("play", () => {
     const wordmark = page.getByRole("link", { name: "Cicala home" });
     await expect(wordmark).toHaveText("cicala");
     await expect(wordmark).toHaveCSS("font-family", /Literata/);
-    await expect(wordmark.locator(".brand-mark")).toBeVisible();
-    await expect(wordmark.locator(".brand-mark")).toHaveAttribute("viewBox", "0 0 64 64");
+    await expect(wordmark.locator("svg")).toHaveCount(0);
+    // The separators are the first thing a narrow header drops; they must not.
+    await expect(page.locator(".site-nav .nav-dot").first()).toBeVisible();
     await wordmark.focus();
     await expect(wordmark).toBeFocused();
 
