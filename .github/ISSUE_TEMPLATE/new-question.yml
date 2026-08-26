@@ -43,9 +43,9 @@ body:
       label: Depth
       description: Editorial exposure cost, independent of tone. The initial player serves only 1 and 2.
       options:
-        - 1 — little public exposure
-        - 2 — a personal construction
-        - 3 — vulnerability, conflict, fear, loss, or consequential disclosure
+        - 1 - little public exposure
+        - 2 - a personal construction
+        - 3 - vulnerability, conflict, fear, loss, or consequential disclosure
     validations:
       required: true
   - type: input

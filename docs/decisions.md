@@ -826,3 +826,23 @@ The rename includes public copy, repository links, package metadata, storage key
 The lowercase Literata wordmark, paper palette, IBM Plex Mono interface type, and restrained layout remain. A minimal top-view cicada mark supersedes the no-symbol part of the 2026-08-16 identity decision. Its open wings can also read as sound leaving a centre. It appears in the site lockup, favicons, avatar, and social asset; the question and the normal device face remain unbranded.
 
 Accepted cost: existing browser storage and prototype NVS settings do not migrate across the namespace change, and the repository cannot update third-party avatars or configure the purchased domain automatically.
+
+## 2026-08-27: The visual system is one bit deep
+
+The website adopts the e-paper's constraint rather than describing it: two tones, no radius, 1 px rules, and an ordered dither where a tint would otherwise go. There is no accent colour, so `--accent` and the rust `#c24a22` are gone and state is carried by inversion, weight, or dither density. A saved question is a filled heart rather than a red one; a fault is heavier and underlined.
+
+Questions move from Literata to Zilla Slab at weight 500, because slab strokes survive at one bit. The wordmark stays Literata over a 50% dither rule, and IBM Plex Mono keeps controls and metadata. The device renders none of them: the panel draws the CFB bitmap fonts, so it mirrors the website's tone and not its typeface.
+
+The dither is one pattern at four exact fractions of the grid (1/2, 1/4, 1/8, 1/16), sized in multiples of one e-paper pixel so the firmware can draw the same geometry. The website shapes it with a gradient mask; `draw_floor()` in the firmware steps down through the same densities instead, because a one-bit panel cannot fade a pattern.
+
+Accepted cost: the panel floor overlaps the text on part of the corpus. The block is centred and the leading cap pushes it outward, so the median clear space below the last line is 17 rows of 122 and the worst case is 10. At `CICALA_PANEL_FLOOR_PCT` = 12 the ramp reaches 15 rows, putting its top inside the descenders of 86 of the 232 shipped questions, at roughly a quarter of full strength. Reserving rows instead would drop those questions to a smaller font, which costs the thing the panel exists for. None of this is measured on glass yet.
+
+## 2026-08-27: The identity returns to type alone
+
+The minimal cicada mark introduced on 2026-08-25 is removed, restoring and extending the no-symbol part of the 2026-08-16 identity decision. `website/public/brand/cicala-mark.svg` and `BrandMark.astro` are deleted, the site header is the wordmark alone, and the favicon, Apple touch icon, avatar and Open Graph image are drawn from the wordmark's own lowercase `c`.
+
+A name and a picture saying the same thing at once is one of them too many, and the header's job is to get out of the question's way. The square assets are rendered on a canvas rather than as HTML because a lowercase `c` has neither ascender nor descender, so centring its line box leaves it small and low, and only `TextMetrics` reports where the ink is.
+
+Em dashes leave user-facing copy for hyphens, and titles join with the same middle dot the navigation uses, so the home page is `cicala · let's talk`. The depth labels change in `questions/schema.json`, `.github/ISSUE_TEMPLATE/new-question.yml` and `website/src/config.ts` together, because GitHub drops a prefilled dropdown value that does not match its declared options character for character.
+
+Accepted cost: third-party avatars already showing the cicada must be replaced by hand, as with any earlier identity change.

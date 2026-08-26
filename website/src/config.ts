@@ -13,9 +13,9 @@ export const PLAYBACK_DEPTH_MAX = 2;
 
 // GitHub issue-form depth values, in schema order.
 export const DEPTH_OPTIONS = [
-  "1 — little public exposure",
-  "2 — a personal construction",
-  "3 — vulnerability, conflict, fear, loss, or consequential disclosure",
+  "1 - little public exposure",
+  "2 - a personal construction",
+  "3 - vulnerability, conflict, fear, loss, or consequential disclosure",
 ] as const;
 
 export const TAGS = [

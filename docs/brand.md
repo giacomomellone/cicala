@@ -4,14 +4,13 @@ Cicala is Italian for cicada. Cicadas fill Italian summers with a steady
 background sound; the name gives the object a clear job: make a first voice
 easier, invite reflection, and break silence without becoming the conversation.
 
-## Mark, wordmark, and type
+## Wordmark and type
 
-The identity is a lowercase `cicala` wordmark. The minimal top-view cicada —
-whose two open wings also read as sound moving away from a central body — is the
-square-format mark: it carries the favicon, the avatar, and the Open Graph
-image, where there is no room to read a name. It does not appear beside the
-wordmark. A name and a symbol saying the same thing at the same time is one of
-them too many, and the header has a question to get out of the way of.
+The identity is typographic. There is no symbol: the whole of it is the
+lowercase `cicala` wordmark, and where a square is all there is, the wordmark's
+own lowercase `c` stands for it. A name and a picture saying the same thing at
+once is one of them too many, and the header has a question to get out of the
+way of.
 
 The wordmark is Literata at normal weight with optical kerning and restrained
 negative tracking, over a 50% dither rule the width of the lockup. The rule
@@ -27,9 +26,9 @@ The e-paper renders none of them. The panel draws the CFB bitmap fonts
 (10 × 16, 15 × 24, 20 × 32) with a one-pixel overdraw for weight, so the device
 mirrors the website's tone and not its typeface.
 
-Keep clear space around the mark or the wordmark at least equal to the mark's
-body width. Where a name will not fit, use the mark; never enlarge the wordmark
-enough to compete with a question.
+Keep clear space around the wordmark at least equal to the height of its `c`.
+Where a name will not fit, use the `c` alone; never enlarge the wordmark enough
+to compete with a question.
 
 ## Colour
 
@@ -68,12 +67,14 @@ needs it.
 
 ## Assets
 
-The SVG mark is the editable source. The wordmark stays live text on the web;
-PNG lockups exist for services that cannot load the bundled font. Regenerate all
-raster assets from the checked-in mark and font with `npm run brand-assets` in
-`website/`.
+There is no editable logo source, because there is no logo. The wordmark stays
+live text on the web; the PNGs exist only for services that cannot load the
+bundled font. Regenerate every raster asset from that font with
+`npm run brand-assets` in `website/`. The square assets are drawn on a canvas
+rather than laid out as HTML: a lowercase `c` has neither ascender nor
+descender, so centring its line box leaves it small and sitting low, and only
+`TextMetrics` reports where the ink actually is.
 
-- [cicada mark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-mark.svg)
 - [1024 px avatar](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-avatar-1024.png)
 - [dark transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-dark.png)
 - [reversed transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-reversed.png)
@@ -82,7 +83,7 @@ raster assets from the checked-in mark and font with `npm run brand-assets` in
 - [180 px Apple touch icon](https://github.com/giacomomellone/cicala/blob/main/website/public/apple-touch-icon.png)
 - [1200×630 Open Graph image](https://github.com/giacomomellone/cicala/blob/main/website/public/og.png)
 
-The mark and wordmark remain monochrome.
+Every asset is monochrome.
 
 ## Device placement
 
@@ -95,9 +96,9 @@ optional small blind emboss on the underside or a concealed lower edge.
 
 ## Prohibited treatments
 
-Do not add eyes, legs, realistic veining, sound-wave ornaments, a speech bubble,
-or a second symbol to the cicada. Do not set the mark beside the wordmark, put
-the mark in the site header, introduce a brand colour, add
+Do not draw a cicada, a speech bubble, a sound wave, a question mark, or any
+other symbol and set it beside the name. Do not introduce a brand colour, add
 gradients or glow, round a corner the device could not round, distort the
-letterforms, or make the mark larger than the current question. Do not lay the
-dither under a question at any density. The questions remain visually dominant.
+letterforms, or make the wordmark larger than the current question. Do not lay
+the dither under a question at any density. The questions remain visually
+dominant.
