@@ -16,6 +16,15 @@ else
     exit 1
 fi
 
+# Reports normally die with the temp dir. CI sets this so a failing run can
+# publish the ERC and DRC detail instead of only the violation count.
+if [[ -n "${CICALA_PCB_REPORT_DIR:-}" ]]; then
+    mkdir -p "$CICALA_PCB_REPORT_DIR"
+    report_dir=$(cd "$CICALA_PCB_REPORT_DIR" && pwd)
+else
+    report_dir="$task_tmp_dir"
+fi
+
 export XDG_CACHE_HOME="$task_tmp_dir/cache"
 mkdir -p "$XDG_CACHE_HOME"
 fontconfig_file="$task_tmp_dir/fonts.conf"
@@ -31,24 +40,24 @@ export FONTCONFIG_FILE="$fontconfig_file"
 
 "$kicad_cli" sch erc \
     --exit-code-violations \
-    -o "$task_tmp_dir/erc.rpt" \
+    -o "$report_dir/erc.rpt" \
     "$pcb_dir/cicala_rev_a.kicad_sch"
 
 "$kicad_cli" sch export bom \
     --exclude-dnp \
     --fields "Reference,Value,Footprint,MPN,QUANTITY,DNP" \
     --labels "Refs,Value,Footprint,MPN,Qty,DNP" \
-    -o "$task_tmp_dir/bom.csv" \
+    -o "$report_dir/bom.csv" \
     "$pcb_dir/cicala_rev_a.kicad_sch"
 
 "$kicad_cli" pcb drc \
     --exit-code-violations \
-    -o "$task_tmp_dir/drc.rpt" \
+    -o "$report_dir/drc.rpt" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
 
-touch "$task_tmp_dir/cicala_rev_a_board.step"
+touch "$report_dir/cicala_rev_a_board.step"
 "$kicad_cli" pcb export step \
-    -o "$task_tmp_dir/cicala_rev_a_board.step" \
+    -o "$report_dir/cicala_rev_a_board.step" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
 
 echo "KiCad: schematic ERC, BOM export, constraint-board DRC and STEP export passed"

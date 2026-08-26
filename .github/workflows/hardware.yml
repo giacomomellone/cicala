@@ -1,0 +1,39 @@
+name: hardware
+
+# KiCad is pinned to the 10.0 series so ERC and DRC results do not move
+# between runs. The image also carries the symbol and footprint libraries
+# the schematic resolves against.
+on:
+  pull_request:
+    paths:
+      - "hardware/pcb/**"
+      - ".github/workflows/hardware.yml"
+  push:
+    branches: [main]
+    paths:
+      - "hardware/pcb/**"
+      - ".github/workflows/hardware.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  pcb:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/kicad/kicad:10.0
+      # The image runs as the kicad user; checkout needs to own the workspace.
+      options: --user root
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the Rev A schematic and board
+        env:
+          CICALA_PCB_REPORT_DIR: ${{ github.workspace }}/pcb-reports
+        run: hardware/pcb/check_rev_a.sh
+      - name: Upload the ERC and DRC reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rev-a-pcb-reports
+          path: pcb-reports/
+          if-no-files-found: warn
