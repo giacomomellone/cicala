@@ -3867,6 +3867,29 @@
 		)
 		(uuid "ff56bf37-aa8c-4a48-a151-48fe9ab36c09")
 	)
+	(global_label "BATT_NTC"
+		(shape passive)
+		(at 29.21 124.46 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "173064cf-6a23-4a54-944e-e15254f5e144")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 29.21 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
 	(global_label "USB_VBUS"
 		(shape passive)
 		(at 69.85 40.64 90)
@@ -4051,7 +4074,7 @@
 			)
 		)
 	)
-	(global_label "USB_DN"
+	(global_label "USB_DP"
 		(shape passive)
 		(at 102.87 55.88 0)
 		(fields_autoplaced yes)
@@ -4583,7 +4606,7 @@
 			)
 		)
 	)
-	(global_label "USB_DP"
+	(global_label "USB_DN"
 		(shape passive)
 		(at 115.57 50.8 0)
 		(fields_autoplaced yes)

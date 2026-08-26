@@ -3213,6 +3213,52 @@
 		)
 		(uuid "fdc96cfe-5d04-4144-9c10-93af710484d0")
 	)
+	(global_label "BTN_NEXT"
+		(shape passive)
+		(at 110.49 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "2209c348-fd39-4227-bf0d-6d6363bdf863")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 110.49 52.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "BTN_CATEGORY"
+		(shape passive)
+		(at 45.72 62.23 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "94820553-af7d-430b-b47d-67feafe6edff")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 45.72 62.23 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
 	(global_label "EPD_CLK"
 		(shape passive)
 		(at 67.31 82.55 180)

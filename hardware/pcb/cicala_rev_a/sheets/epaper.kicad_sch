@@ -1650,7 +1650,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Transistor_FET:Q_NMOS_SGD"
+			(symbol "Transistor_FET:Q_NMOS_GSD"
 			(pin_names
 				(offset 0)
 				(hide yes)
@@ -1671,7 +1671,7 @@
 					(justify left)
 				)
 			)
-			(property "Value" "Q_NMOS_SGD"
+			(property "Value" "Q_NMOS_GSD"
 				(at 5.08 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1704,7 +1704,7 @@
 					)
 				)
 			)
-			(property "Description" "N-MOSFET transistor, source/gate/drain"
+			(property "Description" "N-MOSFET transistor, gate/source/drain"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1726,7 +1726,7 @@
 					)
 				)
 			)
-			(symbol "Q_NMOS_SGD_0_1"
+			(symbol "Q_NMOS_GSD_0_1"
 				(polyline
 					(pts
 						(xy 0.254 1.905) (xy 0.254 -1.905)
@@ -1893,11 +1893,11 @@
 					)
 				)
 			)
-			(symbol "Q_NMOS_SGD_1_1"
-				(pin passive line
-					(at 2.54 -5.08 90)
+			(symbol "Q_NMOS_GSD_1_1"
+				(pin input line
+					(at -5.08 0 0)
 					(length 2.54)
-					(name "S"
+					(name "G"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1912,10 +1912,10 @@
 						)
 					)
 				)
-				(pin input line
-					(at -5.08 0 0)
-					(length 5.08)
-					(name "G"
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2214,6 +2214,36 @@
 	)
 	(wire
 		(pts
+			(xy 144.78 92.71) (xy 144.78 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8a7f4f86-a4d2-45c5-affc-7e075c091871")
+	)
+	(wire
+		(pts
+			(xy 144.78 92.71) (xy 148.59 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b9ff647d-9c65-4a7a-bcfa-db4402a18c01")
+	)
+	(wire
+		(pts
+			(xy 156.21 92.71) (xy 163.83 92.71)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "68fb29eb-14b3-431d-899a-86030987376a")
+	)
+	(wire
+		(pts
 			(xy 190.5 115.57) (xy 190.5 113.03)
 		)
 		(stroke
@@ -2221,16 +2251,6 @@
 			(type default)
 		)
 		(uuid "032d93d2-48a2-4f25-b685-d63e2ca0ae55")
-	)
-	(wire
-		(pts
-			(xy 144.78 92.71) (xy 144.78 97.79)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0ca342d7-c043-4466-bc8b-54e40c14e774")
 	)
 	(wire
 		(pts
@@ -2854,16 +2874,6 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 105.41) (xy 144.78 109.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ee553750-eccc-465a-8bce-a0cd00593291")
-	)
-	(wire
-		(pts
 			(xy 149.86 57.15) (xy 152.4 57.15)
 		)
 		(stroke
@@ -2894,16 +2904,6 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 92.71) (xy 149.86 92.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fb015bb1-9b42-403f-b87e-de321801bdc6")
-	)
-	(wire
-		(pts
 			(xy 62.23 55.88) (xy 62.23 58.42)
 		)
 		(stroke
@@ -2911,6 +2911,29 @@
 			(type default)
 		)
 		(uuid "fd672d41-a291-4c8b-8706-a42480ae217b")
+	)
+	(global_label "EPD_PUMP"
+		(shape passive)
+		(at 144.78 104.14 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "80b00701-ee3b-46c9-9127-efa6ac4944df")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 144.78 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
 	)
 	(global_label "EPD_BUSY"
 		(shape passive)
@@ -3283,7 +3306,7 @@
 	)
 	(global_label "EPD_PREVGL"
 		(shape passive)
-		(at 149.86 92.71 0)
+		(at 163.83 92.71 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3293,7 +3316,7 @@
 		)
 		(uuid "6a27151a-3b4c-46f4-a847-8d8ed16a8c42")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 149.86 92.71 0)
+			(at 163.83 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4082,7 +4105,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Transistor_FET:Q_NMOS_SGD")
+		(lib_id "Transistor_FET:Q_NMOS_GSD")
 		(at 109.22 83.82 0)
 		(unit 1)
 		(body_style 1)
@@ -5239,7 +5262,7 @@
 				)
 			)
 		)
-		(property "Value" "1nF 25V"
+		(property "Value" "1uF 25V"
 			(at 199.136 149.86 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5457,7 +5480,7 @@
 	)
 	(symbol
 		(lib_id "Device:D_Schottky")
-		(at 144.78 101.6 90)
+		(at 152.4 92.71 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -5467,7 +5490,7 @@
 		(dnp no)
 		(uuid "7551bba0-e744-4b01-a3f6-b63e6dffe683")
 		(property "Reference" "D1"
-			(at 138.938 102.616 0)
+			(at 152.4 96.52 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5477,7 +5500,7 @@
 			)
 		)
 		(property "Value" "MBR0530"
-			(at 141.478 102.616 0)
+			(at 152.4 99.06 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5487,7 +5510,7 @@
 			)
 		)
 		(property "Footprint" "Diode_SMD:D_SOD-123"
-			(at 144.78 101.6 0)
+			(at 152.4 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5498,7 +5521,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 144.78 101.6 0)
+			(at 152.4 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5509,7 +5532,7 @@
 			)
 		)
 		(property "Description" "Schottky diode"
-			(at 144.78 101.6 0)
+			(at 152.4 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5520,7 +5543,7 @@
 			)
 		)
 		(property "MPN" "MBR0530"
-			(at 144.78 101.6 0)
+			(at 152.4 92.71 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)

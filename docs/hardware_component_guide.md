@@ -6,9 +6,10 @@ role of every component, not just the ICs. The selected part numbers and
 sourcing notes are in [hardware/pcb/BOM.md](https://github.com/giacomomellone/cicala/blob/main/hardware/pcb/BOM.md);
 the coordinate, pin and validation contracts are in [rev A hardware](hardware_rev_a.md).
 
-This is an electrical-review baseline, not a fabrication release. Two data-path
-wiring errors are still open; they are listed under [Known wiring issues](#known-wiring-issues)
-and called out again where the affected parts appear.
+This is an electrical-review baseline, not a fabrication release. The wiring
+errors found so far are fixed and recorded under
+[Wiring errors found and fixed](#wiring-errors-found-and-fixed); none of them
+were visible to ERC.
 
 Values quoted are the schematic values. Voltage rating, tolerance and dielectric
 still have to be pinned when each line gets an ordered manufacturer part.
@@ -34,10 +35,10 @@ reversible cable can land the source's CC on either pin.
 | Ref | Value       | Role                                                                                                                          |
 | --- | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | U4  | USBLC6-2SC6 | Low-capacitance ESD/TVS array on the D+/D− pair, placed at the connector so a discharge is clamped before it reaches the MCU. |
-| R3  | 22 Ω        | Series resistor on D+ between the TVS and the ESP32-S3, for impedance matching and edge control.                              |
-| R4  | 22 Ω        | Series resistor on D−, same purpose.                                                                                          |
-| C1  | 3 pF, DNP   | Optional D+ shunt for extra edge slowing. Not populated; a footprint kept for tuning.                                         |
-| C2  | 3 pF, DNP   | Optional D− shunt, same.                                                                                                      |
+| R3  | 22 Ω        | Series resistor on D− between the TVS and the ESP32-S3, for impedance matching and edge control.                              |
+| R4  | 22 Ω        | Series resistor on D+, same purpose.                                                                                          |
+| C1  | 3 pF, DNP   | Optional D− shunt for extra edge slowing. Not populated; a footprint kept for tuning.                                         |
+| C2  | 3 pF, DNP   | Optional D+ shunt, same.                                                                                                      |
 
 The 22 Ω series parts sit between the TVS and the MCU so the clamp is closest to
 the connector. The native USB pins (GPIO19/20) are the ESP32-S3 USB-Serial/JTAG
@@ -208,11 +209,11 @@ the CT slew limits inrush and the QOD resistor guarantees a clean rail collapse.
 | Q1  | Si1308EDL       | Switching MOSFET driven by the SSD1680 gate-driver output (EPD_GDR).                       |
 | R20 | 2.2 Ω           | Boost current-sense resistor at the RESE pin, setting the switch current.                  |
 | R19 | 1 MΩ            | Gate pull-down on EPD_GDR, keeping the MOSFET defined and off when the driver is inactive. |
-| D1  | MBR0530         | Schottky rectifier in the negative (VGL) charge pump. **See the wiring issue below.**      |
-| D2  | MBR0530         | Schottky in the VGL pump, referenced to GND.                                               |
+| D1  | MBR0530         | Output diode of the negative (VGL) pump: cathode on EPD_PUMP, anode on EPD_PREVGL.         |
+| D2  | MBR0530         | Clamp diode of the VGL pump: anode on EPD_PUMP, cathode to GND.                            |
 | D3  | MBR0530         | Schottky in the positive (VGH) charge pump from the switch node.                           |
 | C15 | 4.7 µF 25 V     | Boost/panel reservoir on EPD_3V3.                                                          |
-| C16 | 4.7 µF 25 V     | Flying capacitor between the switch node and the VGL pump.                                 |
+| C16 | 4.7 µF 25 V     | Flying capacitor between the switch node and the pump node EPD_PUMP.                       |
 
 Schottky diodes are used for their low forward drop and fast recovery, which the
 charge pumps need to reach the panel's ±15 V-class rails efficiently.
@@ -237,22 +238,31 @@ through a refresh.
 The 25 V rating on the pump and rail capacitors is deliberate: the charge-pump
 nodes swing well above 3.3 V.
 
-## Known wiring issues
+## Wiring errors found and fixed
 
-Two data-path shorts remain in the captured schematic. ERC passes because both
-are electrically valid connections that are simply wrong, so they need a manual
-fix before layout.
+Four errors reached the captured schematic and all four passed ERC, because each
+was an electrically valid connection that was simply wrong. They are fixed; the
+list is kept so the same checks get repeated on the next capture.
 
-- **USB-C D+/D− shorted (critical).** J1's D+ (A6/B6), D− (A7/B7) and CC2 (B5)
-  currently sit on one net, tied to both USBLC6 line pins, because the CC2
-  pull-down column is routed through the data-pin stubs. As drawn, USB data —
-  and therefore native flashing, serial console and JTAG — cannot work. The fix
-  is to separate three nets: D+ = {A6, B6} to U4 pin 1, D− = {A7, B7} to U4
-  pin 3, and CC2 = {B5} to R2 only.
-- **D1 shorted.** Both terminals of the VGL-pump diode D1 sit on EPD_PREVGL, so
-  the diode does nothing. One terminal has to move to its intended node
-  (the VGL output rail per the SSD1680 reference) for the negative pump to work.
+- **USB-C D+/D− shorted, then crossed (critical).** J1's D+ (A6/B6), D− (A7/B7)
+  and CC2 (B5) first sat on one net tied to both USBLC6 line pins. Separating
+  them left the pair crossed: the connector's D− reached GPIO20 (USB_D+) and D+
+  reached GPIO19 (USB_D−). D− now runs J1 → U4 I/O1 → R3 → USB_DN → GPIO19 and
+  D+ runs J1 → U4 I/O2 → R4 → USB_DP → GPIO20.
+- **Q1 gate and source swapped.** The capture used `Q_NMOS_SGD`, but the
+  Si1308EDL in SOT-323 is pin 1 = G, 2 = S, 3 = D. The symbol is now
+  `Q_NMOS_GSD`, so EPD_GDR lands on the gate and EPD_RESE on the source.
+- **D1 shorted, then D2 on the wrong node.** Both D1 terminals sat on
+  EPD_PREVGL. Freeing D1 left D2's anode on EPD_PREVGL instead of the pump node,
+  which gave the flying capacitor no charging path. D1's cathode, D2's anode and
+  C16 now meet at EPD_PUMP, matching the GDEY0213B74 reference circuit.
+- **C21 was 1 nF.** VSH1 is a driving rail and the reference gives it 1 µF/25 V,
+  as every other panel rail here already had.
 
-Two earlier errors from the same review are already fixed: the TPS63802 feedback
-divider (FB had been shorted to VOUT, bypassing R14) and the BQ25185 TS/MR path
-(now the `BATT_NTC` net). See [decisions](decisions.md) for the record.
+Three net names were also lost in a sheet re-layout and restored: `BATT_NTC`,
+`BTN_CATEGORY` and `BTN_NEXT`, all of which `pin_contract.csv` refers to.
+
+Two earlier errors from the same review were fixed before these: the TPS63802
+feedback divider (FB had been shorted to VOUT, bypassing R14) and the BQ25185
+TS/MR path (now the `BATT_NTC` net). See [decisions](decisions.md) for the
+record.
