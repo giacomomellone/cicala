@@ -2210,16 +2210,6 @@
 		)
 		(uuid "792216da-a062-424d-a4f4-ce19d0b901f0")
 	)
-	(text "NEXT Button\n"
-		(exclude_from_sim no)
-		(at 138.684 50.8 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "7da7cd23-877b-474c-b793-bcf29c875369")
-	)
 	(text "WROOM-1 is preferred; WROOM-1U remains the placement/RF fallback. USB is the normal debug path."
 		(exclude_from_sim no)
 		(at 24.384 22.606 0)
@@ -2242,16 +2232,6 @@
 			(justify left bottom)
 		)
 		(uuid "9c082743-35e2-439a-979f-9e2ac678c556")
-	)
-	(text "CATEGORY Button\n"
-		(exclude_from_sim no)
-		(at 54.102 60.706 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "ae04da39-64ee-40bc-a51a-471987078f9f")
 	)
 	(text "Production test points"
 		(exclude_from_sim no)
@@ -3213,52 +3193,6 @@
 		)
 		(uuid "fdc96cfe-5d04-4144-9c10-93af710484d0")
 	)
-	(global_label "BTN_NEXT"
-		(shape passive)
-		(at 110.49 52.07 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "2209c348-fd39-4227-bf0d-6d6363bdf863")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 110.49 52.07 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "BTN_CATEGORY"
-		(shape passive)
-		(at 45.72 62.23 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "94820553-af7d-430b-b47d-67feafe6edff")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 45.72 62.23 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
 	(global_label "EPD_CLK"
 		(shape passive)
 		(at 67.31 82.55 180)
@@ -3410,6 +3344,29 @@
 		(uuid "1d0333c7-bb1e-4eaf-99e6-8671a42f1b8e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 102.87 49.53 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "BTN_NEXT"
+		(shape passive)
+		(at 102.87 52.07 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "2209c348-fd39-4227-bf0d-6d6363bdf863")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 102.87 52.07 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3986,6 +3943,29 @@
 		(uuid "93fee69e-6c33-4bb9-b3de-5c8a2f6e4825")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
 			(at 35.56 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "BTN_CATEGORY"
+		(shape passive)
+		(at 57.15 62.23 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "94820553-af7d-430b-b47d-67feafe6edff")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 57.15 62.23 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
