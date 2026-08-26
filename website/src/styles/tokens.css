@@ -1,15 +1,26 @@
-/* Shared colour, type, radius, and measure values. */
+/* Shared colour, type, dither, and measure values.
+
+   The panel is one bit deep, so the website is too: two tones and an ordered
+   dither instead of tints. Densities are exact fractions of the 1-bit grid, so
+   the same pattern can be drawn on the e-paper without approximation. */
 :root {
-  --paper: #faf8f2; /* warm page background */
-  --paper-raised: #fffffe; /* raised surfaces */
-  --ink: #1f1f1d; /* primary text */
-  --ink-soft: #5f5e5a; /* secondary text */
-  --ink-faint: #b0ad9f; /* hints and disabled text */
-  --line: #e3e0d6; /* 1 px borders */
-  --accent: #c24a22; /* hearts and active states */
-  --font-question: "Literata", Georgia, serif;
+  --paper: #dedad2; /* page background */
+  --panel: #ebeae4; /* the question surface, the e-paper analogue */
+  --ink: #100f0e; /* primary text and every rule */
+  --ink-soft: #4c4a45; /* secondary text */
+  --ink-faint: #8f8c85; /* separators and hints */
+  --line: #100f0e; /* 1 px borders; the panel has no lighter rule */
+
+  --font-question: "Zilla Slab", Georgia, serif;
+  --font-brand: "Literata", Georgia, serif;
   --font-ui: "IBM Plex Mono", ui-monospace, monospace;
-  --radius-pill: 999px;
-  --radius-card: 10px;
+
+  /* One panel pixel. Everything in the dither system is a multiple of it. */
+  --dither-px: 2px;
+  /* Floor ramp height, as a share of the surface it sits on. */
+  --floor-end: 30%;
+
+  --radius-pill: 0;
+  --radius-card: 0;
   --measure: 22ch; /* question line length */
 }

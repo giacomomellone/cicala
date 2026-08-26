@@ -4,10 +4,13 @@ import "@fontsource/literata/latin-400.css";
 import "@fontsource/literata/latin-ext-400.css";
 import "@fontsource/literata/latin-400-italic.css";
 import "@fontsource/literata/latin-ext-400-italic.css";
+import "@fontsource/zilla-slab/latin-500.css";
+import "@fontsource/zilla-slab/latin-ext-500.css";
 import "@fontsource/ibm-plex-mono/latin-400.css";
 import "@fontsource/ibm-plex-mono/latin-ext-400.css";
 import "@fontsource/ibm-plex-mono/latin-500.css";
 import "@fontsource/ibm-plex-mono/latin-ext-500.css";
+import zillaLatin500 from "@fontsource/zilla-slab/files/zilla-slab-latin-500-normal.woff2?url";
 import literataLatin400 from "@fontsource/literata/files/literata-latin-400-normal.woff2?url";
 import plexLatin400 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url";
 import plexLatin500 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url";
@@ -75,7 +78,7 @@ const ogImage = new URL("/og.png", SITE_URL).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#FAF8F2" />
+    <meta name="theme-color" content="#DEDAD2" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
@@ -85,6 +88,7 @@ const ogImage = new URL("/og.png", SITE_URL).href;
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
+    <link rel="preload" href={zillaLatin500} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={literataLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin500} as="font" type="font/woff2" crossorigin />

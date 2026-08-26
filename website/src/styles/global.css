@@ -11,6 +11,31 @@
   display: none !important;
 }
 
+/* ---------------------------------------------------------------- dither */
+
+/* One ordered pattern at four exact densities: 1/2, 1/4, 1/8, 1/16 of the
+   grid. `--dither-px` is one e-paper pixel, so the geometry drawn here is the
+   geometry the firmware can draw on the panel without approximation. */
+.dither {
+  background-image: radial-gradient(
+    var(--ink) calc(var(--dither-px) * 0.5),
+    transparent calc(var(--dither-px) * 0.58)
+  );
+  background-size: calc(var(--dither-px) * 2) calc(var(--dither-px) * 2);
+}
+
+.dither--50 {
+  background-image: repeating-conic-gradient(var(--ink) 0 25%, transparent 0 50%);
+}
+
+.dither--12 {
+  background-size: calc(var(--dither-px) * 2) calc(var(--dither-px) * 4);
+}
+
+.dither--06 {
+  background-size: calc(var(--dither-px) * 4) calc(var(--dither-px) * 4);
+}
+
 html {
   background: var(--paper);
   color: var(--ink);
@@ -40,10 +65,12 @@ body {
 }
 
 .wordmark {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.42rem;
-  font-family: var(--font-question);
+  /* The wordmark keeps Literata; only the questions moved to the slab. */
+  font-family: var(--font-brand);
   font-weight: 400;
   font-size: clamp(1.4rem, 4vw, 1.6rem);
   font-kerning: normal;
@@ -53,6 +80,18 @@ body {
   color: inherit;
   text-decoration: none;
   padding: 0.45rem 0.1rem 0.5rem 0;
+}
+
+/* The rule, not the letterforms, gives the wordmark its weight. */
+.wordmark::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0.1rem;
+  bottom: 0.15rem;
+  height: 2px;
+  background-image: repeating-conic-gradient(var(--ink) 0 25%, transparent 0 50%);
+  background-size: calc(var(--dither-px) * 2) calc(var(--dither-px) * 2);
 }
 
 .brand-mark {
@@ -276,7 +315,7 @@ a {
   font-family: var(--font-ui);
   font-size: 0.875rem;
   color: var(--ink);
-  background: transparent;
+  background: var(--panel);
   border: 1px solid var(--ink);
   border-radius: var(--radius-pill);
   padding: 0.85rem 1.6rem;
@@ -347,12 +386,13 @@ a {
   fill: none;
 }
 
+/* One bit has no second colour: saved is a filled heart, not a red one. */
 .iconbtn[aria-pressed="true"] {
-  color: var(--accent);
+  color: var(--ink);
 }
 
 .iconbtn[aria-pressed="true"] .heart-shape {
-  fill: var(--accent);
+  fill: var(--ink);
 }
 
 /* ---------------------------------------------------------------- play */
@@ -378,9 +418,9 @@ a {
 
 .question {
   font-family: var(--font-question);
-  font-weight: 400;
+  font-weight: 500;
   font-size: clamp(1.6rem, 6vw, 2.6rem);
-  line-height: 1.45;
+  line-height: 1.25;
   max-width: var(--measure);
   color: var(--ink);
   text-wrap: balance;
@@ -409,15 +449,7 @@ a {
   color: var(--ink);
 }
 .meta .iconbtn[aria-pressed="true"] {
-  color: var(--accent);
-}
-
-.play-controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.25rem;
-  padding-bottom: 0.5rem;
+  color: var(--ink);
 }
 
 /* --------------------------------------------------------------- browse */
@@ -452,7 +484,7 @@ textarea {
   font-family: var(--font-ui);
   font-size: 0.875rem;
   color: var(--ink);
-  background: var(--paper-raised);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   padding: 0.7rem 0.85rem;
@@ -488,7 +520,7 @@ select {
 }
 
 .row:hover {
-  background: var(--paper-raised);
+  background: var(--panel);
 }
 
 .row-main {
@@ -534,7 +566,7 @@ select {
 }
 
 .empty-state a {
-  color: var(--accent);
+  color: var(--ink);
 }
 
 /* ---------------------------------------------------------------- forms */
@@ -576,7 +608,7 @@ select {
 input[type="checkbox"] {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: var(--accent);
+  accent-color: var(--ink);
   cursor: pointer;
 }
 
@@ -584,9 +616,13 @@ input[type="checkbox"] {
   font-variant-numeric: tabular-nums;
 }
 
+/* One bit has no warning colour: a fault is heavier and underlined. */
 .counter.is-bad,
 .rule-hint.is-bad {
-  color: var(--accent);
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 /* --------------------------------------------------------------- tables */
@@ -627,7 +663,7 @@ input[type="checkbox"] {
   position: absolute;
   left: -9999px;
   top: 0.5rem;
-  background: var(--paper-raised);
+  background: var(--panel);
   border: 1px solid var(--ink);
   border-radius: var(--radius-pill);
   padding: 0.6rem 1rem;
@@ -641,7 +677,7 @@ input[type="checkbox"] {
 /* ------------------------------------------------------------ focus/a11y */
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
   border-radius: 4px;
 }

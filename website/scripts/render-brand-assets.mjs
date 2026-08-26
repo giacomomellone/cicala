@@ -11,10 +11,10 @@ const font = await readFile(
 );
 const sourceMark = await readFile(join(publicDir, "brand/cicala-mark.svg"), "utf8");
 const mark = (colour) =>
-  sourceMark.replace("<title>Cicala cicada mark</title>", "").replaceAll("#1f1f1d", colour);
+  sourceMark.replace("<title>Cicala cicada mark</title>", "").replaceAll("#100f0e", colour);
 
-const paper = "#faf8f2";
-const ink = "#1f1f1d";
+const paper = "#dedad2";
+const ink = "#100f0e";
 
 const browser = await chromium.launch();
 

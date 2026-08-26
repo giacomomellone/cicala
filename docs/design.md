@@ -129,16 +129,20 @@ Navigation is play / browse / contribute / device.
 Favorites remain on the website because a browser can show confirmation and
 ownership without changing the physical object's interaction.
 
-The visual language is warm paper, Literata questions and wordmark, IBM Plex
-Mono controls, and one functional rust accent. Motion is limited to the 120 ms
-question fade and the category change. The [brand guide](brand.md) defines the
-identity without changing this interaction hierarchy.
+The visual language obeys the panel's constraint: two tones, no radius, 1 px
+rules, and an ordered dither where a tint would otherwise go. Questions are
+Zilla Slab, the wordmark stays Literata over a dither rule, and IBM Plex Mono
+carries controls and metadata. There is no accent colour — state is inversion,
+weight, or density. Motion is limited to the 120 ms question fade and the
+category change. The [brand guide](brand.md) defines the identity without
+changing this interaction hierarchy.
 
 ## Deferred work
 
 - Anonymous submissions through a small backend.
 - Anonymous “sparked a good conversation” voting; see [votes.md](votes.md).
-- A token-swap dark theme.
+- A token-swap dark theme. Inversion already exists as a state, so the tokens
+  are close to swappable.
 - A depth-boundary physical study. A slider is reconsidered only if people use
   it publicly and unprompted.
 - Curating the deck from the setup portal: browsing the questions on a phone,
