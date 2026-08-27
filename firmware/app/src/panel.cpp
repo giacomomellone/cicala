@@ -92,6 +92,55 @@ int draw_dot(int x, int y, int w, int h)
     return 0;
 }
 
+/* Rows of ordered dither rising from the bottom edge. */
+constexpr uint16_t kFloorRows = kPanelHeight * CONFIG_CICALA_PANEL_FLOOR_PCT / 100;
+
+BUILD_ASSERT(kFloorRows * 2 < kPanelHeight, "the floor dither would reach the middle of the panel");
+
+/* The floor the website draws with a gradient mask. A one-bit panel cannot
+   fade a pattern, so it thins one instead: the ramp steps down through the
+   same three densities the stylesheet uses, 1/4 then 1/8 then 1/16 of the
+   grid. Periods are powers of two and indexed off absolute coordinates, so
+   the pattern stays phase-locked to the panel and never shifts between
+   refreshes — an unchanged pixel costs a partial refresh nothing. */
+int draw_floor(void)
+{
+    if (kFloorRows == 0) {
+        return 0;
+    }
+
+    const uint16_t step = MAX(kFloorRows / 3, 1);
+
+    for (int16_t y = kPanelHeight - kFloorRows; y < static_cast<int16_t>(kPanelHeight); y++) {
+        const uint16_t above_edge = static_cast<uint16_t>(kPanelHeight - 1 - y);
+
+        uint8_t x_period = 4;
+        uint8_t y_period = 4;
+
+        if (above_edge < step) {
+            x_period = 2;
+            y_period = 2;
+        } else if (above_edge < 2 * step) {
+            x_period = 2;
+            y_period = 4;
+        }
+
+        if (y % y_period != 0) {
+            continue;
+        }
+
+        for (int16_t x = 0; x < static_cast<int16_t>(kPanelWidth); x += x_period) {
+            const int err = draw_dot(x, y, 1, 1);
+
+            if (err != 0) {
+                return err;
+            }
+        }
+    }
+
+    return 0;
+}
+
 /* Draw the diacritic for one cell. */
 int draw_mark(const Font &font, cicala::Mark mark, int16_t x, int16_t y, char base)
 {
@@ -341,6 +390,14 @@ int cicala_panel_render(const char *text, uint16_t len)
     err = cfb_framebuffer_clear(display, false);
 
     if (err != 0) {
+        return err;
+    }
+
+    /* Before the glyphs, so the question is drawn over the floor. */
+    err = draw_floor();
+
+    if (err != 0) {
+        LOG_ERR("floor: %d", err);
         return err;
     }
 

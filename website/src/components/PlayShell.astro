@@ -23,65 +23,176 @@ const { question, deck, lang, permalink = false } = Astro.props;
   data-seed-deck={deck}
   data-permalink={permalink ? "1" : "0"}
 >
-  <div class="q-zone">
-    <div class="q-swap question-wrap" id="q-swap">
-      <p class="question" id="q-text" aria-live="polite">{question.text}</p>
-      <div class="meta" id="q-meta">
-        <span class="deck-name" id="q-deck-name">{t("en", `deck.${deck}` as StringKey)}</span>
-        <span aria-hidden="true">·</span>
-        <button
-          type="button"
-          class="iconbtn"
-          id="q-fav"
-          aria-pressed="false"
-          set:html={heartIcon +
-            `<span id="q-fav-label" data-i18n="play.save">${t("en", "play.save")}</span>`}
-        />
-        <span aria-hidden="true">·</span>
-        <button
-          type="button"
-          class="iconbtn"
-          id="q-share"
-          set:html={shareIcon +
-            `<span id="q-share-label" data-i18n="play.share">${t("en", "play.share")}</span>`}
-        />
-        <span data-vote-slot hidden></span>
+  <div class="panel">
+    <i class="panel__floor dither" aria-hidden="true"></i>
+    <span class="panel__deck" id="q-deck-name">{t("en", `deck.${deck}` as StringKey)}</span>
+    <div class="meta panel__acts" id="q-meta">
+      <button
+        type="button"
+        class="iconbtn"
+        id="q-fav"
+        aria-pressed="false"
+        set:html={heartIcon +
+          `<span id="q-fav-label" data-i18n="play.save">${t("en", "play.save")}</span>`}
+      />
+      <span aria-hidden="true">·</span>
+      <button
+        type="button"
+        class="iconbtn"
+        id="q-share"
+        set:html={shareIcon +
+          `<span id="q-share-label" data-i18n="play.share">${t("en", "play.share")}</span>`}
+      />
+      <span data-vote-slot hidden></span>
+    </div>
+    <div class="q-zone">
+      <div class="q-swap question-wrap" id="q-swap">
+        <p class="question" id="q-text" aria-live="polite">{question.text}</p>
       </div>
     </div>
   </div>
-  <div class="play-controls">
-    <div class="device-controls">
-      <button type="button" class="btn-quiet" id="q-category" data-i18n="play.category">
-        {t("en", "play.category")}
-      </button>
-      <button type="button" class="btn" id="q-next" data-i18n="play.next">
-        {t("en", "play.next")}
-      </button>
-    </div>
-    <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
+  <div class="device-controls">
+    <button type="button" class="key" id="q-category" data-i18n="play.category">
+      {t("en", "play.category")}
+    </button>
+    <button type="button" class="key" id="q-next" data-i18n="play.next">
+      {t("en", "play.next")}
+    </button>
   </div>
+  <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
 </div>
 
 <style>
+  /* The panel is the e-paper analogue: one enclosed surface, a 1 px rule, and
+     no radius, because the device cannot round a corner. */
+  .panel {
+    position: relative;
+    overflow: hidden;
+    flex: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: clamp(2rem, 8vw, 3.5rem) clamp(1.1rem, 5vw, 2.5rem);
+  }
+
+  /* The dither ramps up from the bottom edge and is gone by --floor-end, so it
+     never reaches the question. */
+  .panel__floor {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(
+      0deg,
+      #000 0%,
+      rgb(0 0 0 / 40%) calc(var(--floor-end) * 0.45),
+      transparent var(--floor-end)
+    );
+    mask-image: linear-gradient(
+      0deg,
+      #000 0%,
+      rgb(0 0 0 / 40%) calc(var(--floor-end) * 0.45),
+      transparent var(--floor-end)
+    );
+  }
+
+  /* Both corners are chrome, so the centre line belongs to the question
+     alone: the deck names the panel on the left, the actions own the right. */
+  .panel__deck,
+  .panel__acts {
+    position: absolute;
+    z-index: 1;
+    top: clamp(0.55rem, 2.4vw, 0.9rem);
+    transition: opacity 120ms ease;
+  }
+
+  .panel__deck {
+    left: clamp(0.8rem, 3.5vw, 1.3rem);
+    font-family: var(--font-ui);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    /* Sit on the actions' optical centre, which carries 44 px of touch target. */
+    margin-top: clamp(0.5rem, 2vw, 0.75rem);
+  }
+
+  .panel__acts {
+    right: clamp(0.5rem, 2.6vw, 1rem);
+    justify-content: flex-end;
+  }
+
+  /* Chrome follows the question through the swap rather than jumping. */
+  .panel:has(.q-swap.is-fading) .panel__deck,
+  .panel:has(.q-swap.is-fading) .panel__acts {
+    opacity: 0;
+  }
+
+  /* The deck-name card already names the deck in full. */
+  .panel:has(.question.is-name) .panel__deck {
+    visibility: hidden;
+  }
+
+  .q-zone {
+    position: relative;
+    z-index: 1;
+  }
+
   .q-swap {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1.4rem;
     transition: opacity 120ms ease;
   }
+
   .q-swap.is-fading {
     opacity: 0;
   }
+
+  /* Category and Next share a rule with the panel and with each other, and are
+     sized in the proportion of the two buttons on the device. */
   .device-controls {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.6rem;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    width: 100%;
+    margin-top: -1px;
   }
-  .deck-name {
-    letter-spacing: 0.04em;
+
+  .key {
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--ink);
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 0.95rem 0.5rem;
+    min-height: 48px;
+    cursor: pointer;
+    text-align: center;
+    /* Steps, not a fade: the panel inverts, it does not dissolve. */
+    transition:
+      background-color 90ms steps(1),
+      color 90ms steps(1);
   }
+
+  .key + .key {
+    border-left: none;
+  }
+
+  .key:hover,
+  .key:active {
+    background: var(--ink);
+    color: var(--panel);
+  }
+
+  .hint {
+    margin-top: 0.9rem;
+    text-align: center;
+  }
+
   /* The deck-name card: quiet UI type, visibly not a question. */
   .question.is-name {
     font-family: var(--font-ui);
@@ -89,8 +200,12 @@ const { question, deck, lang, permalink = false } = Astro.props;
     letter-spacing: 0.12em;
     color: var(--ink-soft);
   }
+
   @media (prefers-reduced-motion: reduce) {
-    .q-swap {
+    .q-swap,
+    .key,
+    .panel__deck,
+    .panel__acts {
       transition: none;
     }
   }

@@ -100,10 +100,10 @@ keygen *args:
 
 # ----------------------------------------------------------------- website
 
-# run the website dev server (rebuilds data payloads first)
+# run the website dev server on the local network (rebuilds data payloads first)
 [group('website')]
 website: data
-    cd website && npm run dev
+    cd website && npm run dev -- --host
 
 # production build of the website into website/dist
 [group('website')]

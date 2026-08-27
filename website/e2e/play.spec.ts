@@ -22,10 +22,13 @@ test.describe("play", () => {
     const wordmark = page.getByRole("link", { name: "Cicala home" });
     await expect(wordmark).toHaveText("cicala");
     await expect(wordmark).toHaveCSS("font-family", /Literata/);
-    await expect(wordmark.locator(".brand-mark")).toBeVisible();
-    await expect(wordmark.locator(".brand-mark")).toHaveAttribute("viewBox", "0 0 64 64");
+    await expect(wordmark.locator("svg")).toHaveCount(0);
+    // The separators are the first thing a narrow header drops; they must not.
+    await expect(page.locator(".site-nav .nav-dot").first()).toBeVisible();
     await wordmark.focus();
     await expect(wordmark).toBeFocused();
+
+    await expect(page.locator("#q-text")).toHaveCSS("font-family", /Zilla Slab/);
 
     const iconHrefs = await page
       .locator('link[rel="icon"]')
@@ -65,12 +68,14 @@ test.describe("play", () => {
         .map((url) => url.href);
       return {
         literata: document.fonts.check("16px Literata"),
+        zilla: document.fonts.check('16px "Zilla Slab"'),
         plex: document.fonts.check('16px "IBM Plex Mono"'),
         externalResources,
         layoutShift: (window as Window & { identityLayoutShift?: number }).identityLayoutShift ?? 0,
       };
     });
     expect(fontState.literata).toBe(true);
+    expect(fontState.zilla).toBe(true);
     expect(fontState.plex).toBe(true);
     expect(fontState.externalResources).toEqual([]);
     expect(fontState.layoutShift).toBeLessThan(0.01);

@@ -67,9 +67,9 @@
     "decks": ["new_people", "close", "family", "work", "here", "wild"],
     "playbackDepthMax": 2,
     "depthLabels": [
-      "1 — little public exposure",
-      "2 — a personal construction",
-      "3 — vulnerability, conflict, fear, loss, or consequential disclosure"
+      "1 - little public exposure",
+      "2 - a personal construction",
+      "3 - vulnerability, conflict, fear, loss, or consequential disclosure"
     ],
     "tags": ["icebreaker", "reflective", "spicy", "dark", "hypothetical", "memory", "wouldyourather"],
     "keyOrder": ["id", "text", "decks", "depth", "tags", "origin", "author", "added"],

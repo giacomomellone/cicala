@@ -21,6 +21,18 @@ config CICALA_PANEL_MARGIN_PX
     help
       Ten pixels equals one cfb_font_1016 character cell.
 
+config CICALA_PANEL_FLOOR_PCT
+    int "Height of the floor dither, as a percentage of the panel"
+    default 12
+    range 0 40
+    help
+      Ordered dither rising from the bottom edge, matching the website. Twelve
+      percent is 15 of 122 rows. The text block is centred and the leading cap
+      pushes it outward, so across the shipped corpus the median clear space
+      below the last line is 17 rows and the worst case is 10: 86 of 232
+      questions have the top of the ramp inside their descenders, where it is
+      down to about a quarter of full strength. Set 0 to draw no floor.
+
 config CICALA_PANEL_COLUMNS
     int "Characters per line the panel fits"
     default 23
