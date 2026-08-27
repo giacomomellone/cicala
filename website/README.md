@@ -4,7 +4,7 @@ Astro 5, static output, vanilla TypeScript islands. No UI framework, no Tailwind
 
 ## Develop
 
-From the repo root: `just website` (dev server), `just website-build`, `just test-website`. Or directly in this directory:
+From the repo root: `just website` (dev server, available on the local network), `just website-build`, `just test-website`. Astro prints the network URL to open on a phone connected to the same network. Or directly in this directory:
 
 ```sh
 npm run data   # regenerate src/data/*.json from the question database
