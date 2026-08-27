@@ -35,7 +35,8 @@ just fw-unpatch    # restore the pinned Zephyr tree
 ```
 
 `just fw-init` applies patches after `west update`. Run `just fw-patch` again
-after later updates.
+after later updates. Both commands are safe to repeat when the tracked patch is
+already applied.
 
 `fw-unpatch` runs west's clean operation inside `deps/zephyr`. It discards every
 local change and untracked file in that checkout. Files in the Cicala repo

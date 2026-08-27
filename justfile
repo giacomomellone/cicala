@@ -124,12 +124,17 @@ fw-init:
     just fw-patch
     just _west-build-dir build/esp32s3
     @echo
-    @echo "workspace ready. next: install the Zephyr SDK, then `just fw-doctor`"
+    @echo 'workspace ready. next: install the Zephyr SDK, then `just fw-doctor`'
 
 # reapply the local Zephyr patches (run after any `west update`)
 [group('firmware')]
 fw-patch:
-    {{ west }} patch -b patches -l patches.yml apply
+    @patch="{{ justfile_directory() }}/firmware/patches/zephyr/ssd16xx-preserve-image-on-init.patch"; \
+     if git -C deps/zephyr apply --reverse --check "$patch" 2>/dev/null; then \
+         echo "firmware patches already applied"; \
+     else \
+         {{ west }} patch -b patches -l patches.yml apply; \
+     fi
 
 # drop patches and local edits from the gitignored Zephyr tree
 [group('firmware')]
