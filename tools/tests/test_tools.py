@@ -9,6 +9,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -23,6 +24,7 @@ sys.path.insert(0, str(TOOLS))
 import build_bundle  # noqa: E402
 import build_firmware_manifest  # noqa: E402
 import build_site_data  # noqa: E402
+import check_release  # noqa: E402
 import promote_issue  # noqa: E402
 import validate  # noqa: E402
 import yaml  # noqa: E402
@@ -738,3 +740,126 @@ class TestCheckSubmission(PromoteCase):
         self.assertEqual(code, 0, err)
         self.assertIn("passes every automatic check", out)
         self.assertEqual((REPO / "questions" / "en" / "questions.yaml").read_bytes(), before)
+
+
+# ------------------------------------------------------- release publication
+
+
+class TestCheckRelease(unittest.TestCase):
+    """check_release.py is the last gate before a manifest is attached to a
+    release. The failures it must catch are the ones a public repository makes
+    easy to introduce: a null signature, the reserved development host, and
+    the pre-split website host whose redirects a device cannot follow."""
+
+    BASE = "http://device.cicala.dev/device"
+
+    def setUp(self):
+        self.dir = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.dir)
+
+    def write(self, manifest, name="manifest.json"):
+        path = self.dir / name
+        path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        return path
+
+    def bundle(self, **overrides):
+        entry = {
+            "url": f"{self.BASE}/bundle-en-2026.08.2.qdb",
+            "size": 100,
+            "sha256": "0" * 64,
+            "sig": "c2lnbmF0dXJl",
+            "count": 1,
+        }
+        entry.update(overrides)
+        return {
+            "schema": 3,
+            "version": "2026.08.2",
+            "min_fw": "0.1.0",
+            "languages": {"en": entry},
+        }
+
+    def firmware(self, **overrides):
+        manifest = {
+            "schema": 1,
+            "version": "0.1.0",
+            "url": f"{self.BASE}/cicala-0.1.0.bin",
+            "size": 100,
+            "sha256": "0" * 64,
+            "sig": "c2lnbmF0dXJl",
+        }
+        manifest.update(overrides)
+        return manifest
+
+    def check(self, path):
+        return run_quiet(check_release.main, [str(path)])
+
+    def test_a_production_bundle_manifest_passes(self):
+        code, out, err = self.check(self.write(self.bundle()))
+        self.assertEqual(code, 0, err)
+
+    def test_a_production_firmware_manifest_passes(self):
+        code, out, err = self.check(self.write(self.firmware()))
+        self.assertEqual(code, 0, err)
+
+    def test_a_null_signature_is_refused(self):
+        code, _, err = self.check(self.write(self.bundle(sig=None)))
+        self.assertEqual(code, 1)
+        self.assertIn("sig is null", err)
+
+    def test_the_development_host_is_refused(self):
+        path = self.write(self.bundle(url="http://cicala.invalid/device/bundle-en-1.qdb", sig="x"))
+        code, _, err = self.check(path)
+        self.assertEqual(code, 1)
+        self.assertIn("cicala.invalid", err)
+
+    def test_a_pages_dev_host_is_refused(self):
+        for host in ("tischkarte.pages.dev", "cicala.pages.dev"):
+            with self.subTest(host=host):
+                path = self.write(
+                    self.bundle(url=f"https://{host}/device/bundle-en-1.qdb", sig="x")
+                )
+                code, _, err = self.check(path)
+                self.assertEqual(code, 1)
+                self.assertIn("pages.dev", err)
+
+    def test_a_url_outside_the_endpoint_is_refused(self):
+        path = self.write(self.bundle(url="http://device.cicala.dev/other/bundle-en-1.qdb"))
+        code, _, err = self.check(path)
+        self.assertEqual(code, 1)
+        self.assertIn("expected under", err)
+
+    def test_a_missing_manifest_is_refused(self):
+        code, _, err = self.check(self.dir / "nope.json")
+        self.assertEqual(code, 1)
+        self.assertIn("nope.json", err)
+
+    def test_a_manifest_without_languages_is_refused(self):
+        code, _, err = self.check(self.write({"schema": 3, "languages": {}}))
+        self.assertEqual(code, 1)
+        self.assertIn("no languages", err)
+
+    def test_an_unknown_schema_is_refused(self):
+        code, _, err = self.check(self.write({"schema": 99, "sig": "x"}))
+        self.assertEqual(code, 1)
+        self.assertIn("unknown schema", err)
+
+
+class TestProductionEndpoint(unittest.TestCase):
+    """Release firmware compiles the sync and OTA endpoints from Kconfig.policy
+    defaults, and the tag workflows pass the same base URL to the manifest
+    tools and to check_release. These places must not drift apart."""
+
+    def kconfig_default(self, symbol):
+        text = (REPO / "firmware" / "Kconfig.policy").read_text(encoding="utf-8")
+        m = re.search(rf'config {symbol}\n(?:    [^\n]*\n)*?    default "([^"]+)"', text)
+        self.assertIsNotNone(m, f"{symbol} has no string default")
+        return m.group(1)
+
+    def test_kconfig_defaults_point_at_the_device_endpoint(self):
+        host = self.kconfig_default("CICALA_SYNC_HOST")
+        base = f"http://{host}/device"
+
+        self.assertEqual(host, "device.cicala.dev")
+        self.assertEqual(self.kconfig_default("CICALA_SYNC_BASE_URL"), base)
+        self.assertEqual(self.kconfig_default("CICALA_OTA_BASE_URL"), base)
+        self.assertEqual(check_release.DEFAULT_BASE_URL, base)
