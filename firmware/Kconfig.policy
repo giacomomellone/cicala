@@ -221,18 +221,19 @@ config CICALA_SYNC
 
 config CICALA_SYNC_BASE_URL
     string "Where the manifest and bundles are served from"
-    default "http://cicala.invalid/device"
+    default "http://device.cicala.dev/device"
     depends on CICALA_SYNC
     help
       Base URL for manifest.json and bundle URLs. Redirects are unsupported;
-      the default .invalid host cannot resolve.
+      the default is the production artifact host, which answers on port 80.
 
 config CICALA_SYNC_HOST
     string "Host name to connect to and resolve"
-    default "cicala.invalid"
+    default "device.cicala.dev"
     depends on CICALA_SYNC
     help
-      Host used for DNS and TLS SNI.
+      The production artifact host, an S3 static-website endpoint behind a
+      DNS-only CNAME. Bench builds override this explicitly.
 
 config CICALA_SYNC_PORT
     int "Port"
@@ -266,7 +267,7 @@ config CICALA_OTA
 
 config CICALA_OTA_BASE_URL
     string "Where the firmware manifest and images are served from"
-    default "http://cicala.invalid/device"
+    default "http://device.cicala.dev/device"
     depends on CICALA_OTA
     help
       Base URL for firmware.json and image URLs. It may differ from the bundle
