@@ -32,7 +32,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.DEVICE_BUCKET_SECRET }}
       AWS_DEFAULT_REGION: ${{ secrets.DEVICE_BUCKET_REGION }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
@@ -58,23 +58,32 @@ jobs:
           echo "version=$version" >> "$GITHUB_ENV"
 
       # A tag build keeps the production endpoints from board configuration.
-      - name: Point this build at the bench, if it is one
-        if: github.event_name == 'workflow_dispatch' && inputs.sync_host != ''
+      - name: Work out the base URL devices will fetch from
+        env:
+          SYNC_HOST: ${{ inputs.sync_host }}
+          SYNC_PORT: ${{ inputs.sync_port }}
         run: |
-          host="${{ inputs.sync_host }}"
-          port="${{ inputs.sync_port }}"
-          base="http://$host:$port"
+          if [ "$GITHUB_EVENT_NAME" = "push" ] || [ -z "$SYNC_HOST" ]; then
+            base="http://device.cicala.dev/device"
+            release=true
+          else
+            base="http://$SYNC_HOST:$SYNC_PORT"
+            release=false
+            {
+              echo "### Bench build"
+              echo "This image fetches from \`$base\` and is **not** a release."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "bench_args=-DCONFIG_CICALA_SYNC_HOST=\"$SYNC_HOST\" -DCONFIG_CICALA_SYNC_PORT=$SYNC_PORT -DCONFIG_CICALA_SYNC_BASE_URL=\"$base\" -DCONFIG_CICALA_OTA_BASE_URL=\"$base\"" \
+              >> "$GITHUB_ENV"
+          fi
 
           {
-            echo "bench_args=-DCONFIG_CICALA_SYNC_HOST=\"$host\" -DCONFIG_CICALA_SYNC_PORT=$port -DCONFIG_CICALA_SYNC_BASE_URL=\"$base\" -DCONFIG_CICALA_OTA_BASE_URL=\"$base\""
+            echo "release=$release"
             echo "base_url=$base"
           } >> "$GITHUB_ENV"
 
-          echo "### Bench build" >> "$GITHUB_STEP_SUMMARY"
-          echo "This image fetches from \`$base\` and is **not** a release." >> "$GITHUB_STEP_SUMMARY"
-
       - name: Set up Zephyr and west
-        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1
         with:
           app-path: firmware
           toolchains: xtensa-espressif_esp32s3_zephyr-elf
@@ -110,6 +119,9 @@ jobs:
           if [ -n "$FIRMWARE_SIGNING_KEY" ]; then
             printf '%s' "$FIRMWARE_SIGNING_KEY" > firmware/keys/firmware-signing-dev.pem
             echo "signing with the release key"
+          elif [ "$release" = "true" ]; then
+            echo "::error::FIRMWARE_SIGNING_KEY is not set — a release cannot be signed with the committed development key, whose private half is public"
+            exit 1
           else
             echo "::warning::FIRMWARE_SIGNING_KEY is not set — signing with the committed development key, whose private half is public"
           fi
@@ -144,18 +156,25 @@ jobs:
             python3 tools/build_firmware_manifest.py \
               build/esp32s3/app/zephyr/zephyr.signed.bin \
               --version "$version" --sign-key signing_key.pem \
-              ${base_url:+--base-url "$base_url"}
+              --base-url "$base_url"
             rm -f signing_key.pem
+          elif [ "$release" = "true" ]; then
+            echo "::error::BUNDLE_SIGNING_KEY is not set — the manifest would be unsigned and every device will refuse it"
+            exit 1
           else
             echo "::warning::BUNDLE_SIGNING_KEY is not set — the manifest will be UNSIGNED and every device will refuse it"
             python3 tools/build_firmware_manifest.py \
-              build/esp32s3/app/zephyr/zephyr.signed.bin --version "$version" \
-              ${base_url:+--base-url "$base_url"}
+              build/esp32s3/app/zephyr/zephyr.signed.bin \
+              --version "$version" --base-url "$base_url"
           fi
 
       # Wired flashing needs the bootloader that trusts this image's key.
       - name: Put the matching bootloader beside the image
         run: cp build/esp32s3/mcuboot/zephyr/zephyr.bin dist/firmware/mcuboot-${version}.bin
+
+      - name: Check the manifest devices will fetch
+        if: github.event_name == 'push' || inputs.sync_host == ''
+        run: python3 tools/check_release.py dist/firmware/firmware.json
 
       - name: Attach the image, the manifest and the bootloader to a Release
         if: github.event_name == 'push' || inputs.sync_host == ''
@@ -185,7 +204,7 @@ jobs:
       # Bench manifests contain a private host and stay as workflow artifacts.
       - name: Keep the bench build as an artifact instead
         if: github.event_name == 'workflow_dispatch' && inputs.sync_host != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: firmware-${{ env.version }}-bench
           path: dist/firmware/

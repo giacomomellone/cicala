@@ -25,7 +25,7 @@ jobs:
       # The image runs as the kicad user; checkout needs to own the workspace.
       options: --user root
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - name: Configure the stock KiCad libraries for the CI user
         run: |
           mkdir -p "$HOME/.config/kicad/10.0"
@@ -37,7 +37,7 @@ jobs:
         run: hardware/pcb/check_rev_a.sh
       - name: Upload the ERC and DRC reports
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: rev-a-pcb-reports
           path: pcb-reports/

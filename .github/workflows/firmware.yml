@@ -28,11 +28,11 @@ jobs:
     name: suites (native_sim)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       # Keep deps/ inside the checkout, as used by local builds.
       - name: Set up Zephyr and west
-        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1
         with:
           app-path: firmware
           toolchains: x86_64-zephyr-elf
@@ -57,7 +57,7 @@ jobs:
 
       - name: Keep the twister report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: twister-report
           path: build/twister/twister.xml
@@ -67,10 +67,10 @@ jobs:
     name: image (esp32s3)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Set up Zephyr and west
-        uses: zephyrproject-rtos/action-zephyr-setup@v1
+        uses: zephyrproject-rtos/action-zephyr-setup@be8136a8bba01580485d98b7ad2d32477c36a49a # v1
         with:
           app-path: firmware
           toolchains: xtensa-espressif_esp32s3_zephyr-elf
