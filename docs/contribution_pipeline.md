@@ -8,9 +8,12 @@ Runtime setup is in [native submission setup](native_submission_setup.md).
 ## Entry points
 
 The native path asks for a question, language, optional public credit and CC0
-consent. It does not require an account. The browser validates the text and
-checks the active language's corpus for duplicates, then posts to the
-same-origin `/api/suggestions` Pages Function. That function verifies
+consent. It does not require an account. The box starts empty and offers no
+example of its own; above it, one of the five question-writing tips from the
+README appears with a weak and a stronger version of the same question, and two
+arrows move through the rest. The browser validates the text and checks the
+active language's corpus for duplicates, then posts to the same-origin
+`/api/suggestions` Pages Function. That function verifies
 Turnstile and opens a public issue through the repository-scoped `cicala-bot`
 GitHub App.
 
@@ -28,6 +31,21 @@ Contextual links all open the same native sheet:
 
 `source` is operational context, not analytics. It is written into the issue's
 machine-readable marker and no visitor profile is created.
+
+## Editorial hints
+
+Once the text passes the mechanical rules, the form may add one advisory hint:
+a superlative frame, two questions in one entry, or length past the 95-character
+target. Hints name the pattern and stop. They never propose wording, because
+questions here are written by people, and they never gate the submit button,
+because the same wordlists also match questions maintainers have accepted.
+`website/src/lib/style-hints.ts` holds them, separate from the validator mirror
+in `rules.ts`.
+
+Tip rules are translated like any other interface string. The example questions
+are not: they are quoted from [theory](theory.md) and the language's style
+guide, and a language carries a pair only once a fluent maintainer has written
+one.
 
 ## The path
 
@@ -169,5 +187,10 @@ never write one. An id remains stable through later text, deck or depth edits.
 - `website/tests/suggestions-api.test.ts`: origin checks, Turnstile, GitHub App
   authentication boundary and rendered issue body.
 - `website/tests/rules.test.ts`: browser/server text normalization and duplicates.
-- `website/e2e/suggest.spec.ts`: the built native sheet, contextual prefill,
-  submission receipt, retry state and legacy redirect.
+- `website/tests/style-hints.test.ts`: which patterns earn a hint, and the
+  two-part shape that is exempt.
+- `website/tests/tips.test.ts`: rotation in both directions, and a translated
+  rule for every tip in every shipped language.
+- `website/e2e/suggest.spec.ts`: the built native sheet, the empty box, tip
+  rotation, an advisory hint that leaves submission enabled, contextual
+  prefill, submission receipt, retry state and legacy redirect.

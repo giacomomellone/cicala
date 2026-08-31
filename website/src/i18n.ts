@@ -66,9 +66,21 @@ const en = {
   // native suggestion
   "suggest.title": "suggest a question",
   "suggest.pitch": "Write a question you would be willing to answer yourself.",
+  "suggest.tips.eyebrow": "tip",
+  "suggest.tips.prev": "previous tip",
+  "suggest.tips.next": "next tip",
+  "suggest.tip.build":
+    "Make people build an answer instead of repeating one. If the answer is already finished in their head, the question is boring.",
+  "suggest.tip.rankings":
+    "Avoid rankings and superlatives: best, favourite, top, most. Ask only what you would answer yourself, at that table.",
+  "suggest.tip.concrete":
+    "Ask about one concrete thing, not a whole subject or a principle. A scene gives the table people, places and choices to ask about next.",
+  "suggest.tip.assumptions":
+    "Do not invent someone's life. Keep the assumption that helps and drop the details you cannot know about their family, work, health or history.",
+  "suggest.tip.onejob":
+    "Give the question one job, and keep it short. Leave the follow-up to the people at the table.",
   "suggest.lang": "language",
   "suggest.question": "your question",
-  "suggest.placeholder": "Which ordinary day would you happily live again?",
   "suggest.question.hint": "10–140 characters, one question, ends with ?",
   "suggest.rule.short": "a bit longer: at least 10 characters",
   "suggest.rule.long": "too long: 140 characters max",
@@ -77,6 +89,11 @@ const en = {
   "suggest.rule.duplicate": "this question is already in the database",
   "suggest.rule.duplicate.link": "read the one we have →",
   "suggest.rule.ok": "looks good",
+  "suggest.style.ranking":
+    "“best” and “favourite” ask for a ranking, which turns a memory into a contest. What did you notice instead?",
+  "suggest.style.stacked":
+    "one question per entry. Leave the follow-up to the people at the table.",
+  "suggest.style.long": "under 95 characters reads better out loud",
   "suggest.review":
     "Questions are reviewed before they are added. Editors assign decks, depth, and tags.",
   "suggest.name": "name for public credit (optional)",
@@ -211,9 +228,21 @@ const de: Record<StringKey, string> = {
 
   "suggest.title": "frage vorschlagen",
   "suggest.pitch": "Schreib eine Frage, die du selbst beantworten würdest.",
+  "suggest.tips.eyebrow": "tipp",
+  "suggest.tips.prev": "vorheriger tipp",
+  "suggest.tips.next": "nächster tipp",
+  "suggest.tip.build":
+    "Stelle eine Frage, deren Antwort nicht schon fertig im Kopf liegt. Liegt sie fertig da, ist die Frage langweilig.",
+  "suggest.tip.rankings":
+    "Meide Superlative wie beste, schlimmste und meiste; sie machen aus Erinnerung eine Rangliste. Frage nur, was du selbst am Tisch beantworten würdest.",
+  "suggest.tip.concrete":
+    "Konkret schlägt abstrakt: frage nach einer Situation, nicht nach einer Haltung.",
+  "suggest.tip.assumptions":
+    "Erfinde niemandes Leben. Behalte die Annahme, die hilft, und lass die Details weg, die du nicht wissen kannst.",
+  "suggest.tip.onejob":
+    "Eine Frage pro Eintrag, kurz gehalten. Die Anschlussfrage stellen die Leute am Tisch.",
   "suggest.lang": "sprache",
   "suggest.question": "deine frage",
-  "suggest.placeholder": "Welchen gewöhnlichen Tag würdest du gern noch einmal erleben?",
   "suggest.question.hint": "10–140 zeichen, eine frage, endet mit ?",
   "suggest.rule.short": "etwas länger: mindestens 10 zeichen",
   "suggest.rule.long": "zu lang: höchstens 140 zeichen",
@@ -222,6 +251,10 @@ const de: Record<StringKey, string> = {
   "suggest.rule.duplicate": "diese frage steht schon in der datenbank",
   "suggest.rule.duplicate.link": "die vorhandene ansehen →",
   "suggest.rule.ok": "sieht gut aus",
+  "suggest.style.ranking":
+    "„beste“ und „schlimmste“ verlangen eine Rangliste. Was ist dir stattdessen aufgefallen?",
+  "suggest.style.stacked": "eine frage pro eintrag. Die Anschlussfrage stellen die Leute am Tisch.",
+  "suggest.style.long": "unter 95 zeichen liest sich besser vor",
   "suggest.review":
     "Fragen werden vor der Aufnahme geprüft. Decks, Tiefe und Schlagwörter ordnet die Redaktion zu.",
   "suggest.name": "name für die öffentliche nennung (optional)",

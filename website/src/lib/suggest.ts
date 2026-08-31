@@ -1,7 +1,11 @@
-import { tr } from "./apply-i18n";
+import type { Lang } from "../i18n";
+import { isLang, tr } from "./apply-i18n";
 import { detectLang, loadPayload, siteConfig } from "./data";
 import { buildTextIndex, collapse, duplicateOf, questionTextIssue, TEXT_MAX } from "./rules";
+import { getTipsSeen, setTipsSeen } from "./store";
+import { styleHint } from "./style-hints";
 import { CC0_CONSENT_VERSION, isSuggestionSource, type SuggestionSource } from "./submission";
+import { TIPS, tipAt, tipExample, tipIndex } from "./tips";
 
 interface SuggestionConfig {
   available: boolean;
@@ -51,11 +55,61 @@ function loadTurnstile(): Promise<TurnstileApi> {
   });
 }
 
+/* One tip at a time above the form. The stored count moves forward once per
+   visit, so a returning contributor opens on a tip they have not read; the
+   arrows move within the list without changing it. */
+function initTips(lang: Lang): void {
+  const ruleEl = document.getElementById("s-tip-rule")!;
+  const pairEl = document.getElementById("s-tip-pair")!;
+  const countEl = document.getElementById("s-tip-count")!;
+  const prevEl = document.getElementById("s-tip-prev")!;
+  const nextEl = document.getElementById("s-tip-next")!;
+  const steps = [...document.querySelectorAll<HTMLElement>("#s-tip-steps span")];
+
+  let cursor = getTipsSeen();
+  setTipsSeen(cursor + 1);
+
+  function render(): void {
+    const position = tipIndex(cursor);
+    const tip = tipAt(cursor);
+    ruleEl.textContent = tr(lang, tip.rule);
+    countEl.textContent = `${position + 1}/${TIPS.length}`;
+    steps.forEach((step, i) => {
+      step.dataset.on = String(i === position);
+    });
+
+    pairEl.textContent = "";
+    const example = tipExample(tip, lang);
+    if (!example) return;
+    for (const [kind, text] of [
+      ["weak", example.weak],
+      ["better", example.better],
+    ] as const) {
+      const line = document.createElement("span");
+      line.className = `suggest-tip-q is-${kind}`;
+      line.textContent = text;
+      pairEl.append(line);
+    }
+  }
+
+  prevEl.addEventListener("click", () => {
+    cursor -= 1;
+    render();
+  });
+  nextEl.addEventListener("click", () => {
+    cursor += 1;
+    render();
+  });
+  render();
+}
+
 export async function initSuggest(): Promise<void> {
   const form = document.getElementById("s-form") as HTMLFormElement | null;
   if (!form) return;
   const lang = detectLang();
+  const uiLang: Lang = isLang(lang) ? lang : "en";
   const cfg = siteConfig();
+  initTips(uiLang);
   const langEl = document.getElementById("s-lang") as HTMLSelectElement;
   const textEl = document.getElementById("s-text") as HTMLTextAreaElement;
   const nameEl = document.getElementById("s-name") as HTMLInputElement;
@@ -63,6 +117,7 @@ export async function initSuggest(): Promise<void> {
   const cc0El = document.getElementById("s-cc0") as HTMLInputElement;
   const ruleEl = document.getElementById("s-rule")!;
   const counterEl = document.getElementById("s-counter")!;
+  const styleEl = document.getElementById("s-style")!;
   const dupeEl = document.getElementById("s-dupe")!;
   const dupeLink = document.getElementById("s-dupe-link") as HTMLAnchorElement;
   const submitEl = document.getElementById("s-submit") as HTMLButtonElement;
@@ -123,6 +178,14 @@ export async function initSuggest(): Promise<void> {
     ruleEl.textContent = tr(lang, key);
     const ok = issue === null && duplicate === null;
     ruleEl.classList.toggle("is-bad", question.length > 0 && !ok);
+
+    /* Editorial hints read the question's language, not the interface
+       language, and are advisory: they never touch `ok`. */
+    const hintLang: Lang = isLang(langEl.value) ? langEl.value : uiLang;
+    const hint = ok ? styleHint(question, hintLang) : null;
+    styleEl.hidden = hint === null;
+    if (hint) styleEl.textContent = tr(lang, `suggest.style.${hint}`);
+
     return { ok, question };
   }
 

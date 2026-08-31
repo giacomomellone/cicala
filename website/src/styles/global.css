@@ -677,9 +677,111 @@ input[type="checkbox"] {
   background: var(--paper);
 }
 
-.suggest-question::placeholder {
+/* -------------------------------------------------------- suggest tips */
+
+.suggest-tip {
+  max-width: 38rem;
+  margin-top: 1.6rem;
+  padding: 0.9rem 1rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.suggest-tip-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--ink-faint);
-  opacity: 1;
+}
+
+.suggest-tip-rule {
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+.suggest-tip-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.suggest-tip-q {
+  font-family: var(--font-question);
+  font-size: 1rem;
+  line-height: 1.35;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--ink);
+}
+
+/* One bit has no second colour, so the weaker version is struck through. */
+.suggest-tip-q.is-weak {
+  color: var(--ink-soft);
+  border-left-color: var(--ink-faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.suggest-tip-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+/* Position squares, not dots: the panel is a pixel grid. */
+.suggest-tip-steps {
+  display: flex;
+  gap: var(--dither-px);
+}
+
+.suggest-tip-steps span {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--ink-soft);
+}
+
+.suggest-tip-steps span[data-on="true"] {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.suggest-tip-arrows {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.suggest-tip-arrow {
+  display: inline-flex;
+  justify-content: center;
+  /* .iconbtn sits in text rows and pulls itself up; this one is a control. */
+  margin: 0;
+  min-width: 44px;
+  min-height: 44px;
+  font-size: 0.9375rem;
+  color: var(--ink-soft);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.suggest-tip-arrow:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.suggest-style {
+  margin-top: 0.6rem;
+  padding-left: 0.7rem;
+  border-left: 2px solid var(--ink);
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  line-height: 1.5;
 }
 
 .suggest-ruleline {

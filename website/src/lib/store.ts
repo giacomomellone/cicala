@@ -93,3 +93,15 @@ export function getBag(lang: string, deck: string): Bag {
 export function setBag(lang: string, deck: string, bag: Bag): void {
   write(`cicala.bag.${lang}.${deck}`, JSON.stringify(bag));
 }
+
+/* How many tips the suggestion form has already shown this visitor. The count
+   only ever moves forward, so a returning contributor opens on a tip they have
+   not read; the arrows move within the list without touching it. */
+export function getTipsSeen(): number {
+  const n = Number.parseInt(read("cicala.tips") ?? "", 10);
+  return Number.isInteger(n) && n >= 0 ? n : 0;
+}
+
+export function setTipsSeen(count: number): void {
+  write("cicala.tips", String(count));
+}

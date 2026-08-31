@@ -2,12 +2,57 @@
 import { REPO_URL } from "../config";
 import { t } from "../i18n";
 import Base from "../layouts/Base.astro";
+import { TIPS, tipExample } from "../lib/tips";
+
+/* The first tip is rendered here so the card still says something without
+   scripting; initSuggest takes over the rotation. */
+const tip = TIPS[0]!;
+const example = tipExample(tip, "en");
 ---
 
 <Base title="suggest a question · cicala" lang="en">
   <section class="suggest-intro" id="s-intro">
     <h1 data-i18n="suggest.title">suggest a question</h1>
     <p data-i18n="suggest.pitch">{t("en", "suggest.pitch")}</p>
+  </section>
+
+  <section class="suggest-tip" id="s-tip">
+    <div class="suggest-tip-head">
+      <span data-i18n="suggest.tips.eyebrow">{t("en", "suggest.tips.eyebrow")}</span>
+      <span class="counter" id="s-tip-count">1/{TIPS.length}</span>
+    </div>
+    <p class="suggest-tip-rule" id="s-tip-rule">{t("en", tip.rule)}</p>
+    <div class="suggest-tip-pair" id="s-tip-pair">
+      {
+        example && (
+          <Fragment>
+            <span class="suggest-tip-q is-weak">{example.weak}</span>
+            <span class="suggest-tip-q is-better">{example.better}</span>
+          </Fragment>
+        )
+      }
+    </div>
+    <div class="suggest-tip-nav">
+      <div class="suggest-tip-steps" id="s-tip-steps" aria-hidden="true">
+        {TIPS.map((_, i) => <span data-on={i === 0 ? "true" : "false"} />)}
+      </div>
+      <div class="suggest-tip-arrows">
+        <button
+          type="button"
+          class="iconbtn suggest-tip-arrow"
+          id="s-tip-prev"
+          aria-label={t("en", "suggest.tips.prev")}
+          data-i18n-aria="suggest.tips.prev">←</button
+        >
+        <button
+          type="button"
+          class="iconbtn suggest-tip-arrow"
+          id="s-tip-next"
+          aria-label={t("en", "suggest.tips.next")}
+          data-i18n-aria="suggest.tips.next">→</button
+        >
+      </div>
+    </div>
   </section>
 
   <form id="s-form" class="suggest-form" novalidate>
@@ -19,19 +64,14 @@ import Base from "../layouts/Base.astro";
       </label>
     </div>
 
-    <textarea
-      id="s-text"
-      class="suggest-question"
-      rows="5"
-      maxlength="200"
-      placeholder={t("en", "suggest.placeholder")}
-      data-i18n-placeholder="suggest.placeholder"></textarea>
+    <textarea id="s-text" class="suggest-question" rows="5" maxlength="200"></textarea>
     <div class="suggest-ruleline">
       <span class="rule-hint" id="s-rule" data-i18n="suggest.question.hint">
         {t("en", "suggest.question.hint")}
       </span>
       <span class="counter" id="s-counter">0/140</span>
     </div>
+    <p class="suggest-style" id="s-style" hidden></p>
     <p class="sub" id="s-dupe" hidden>
       <span data-i18n="suggest.rule.duplicate">{t("en", "suggest.rule.duplicate")}</span>
       · <a id="s-dupe-link" href="/browse" data-i18n="suggest.rule.duplicate.link">
