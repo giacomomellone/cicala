@@ -4,7 +4,7 @@
 Checks every questions/{lang}/questions.yaml (shipped and incubator) against
 questions/schema.json plus the rules JSON Schema cannot express: id format and
 global uniqueness, per-language dedup on normalized text, per-language
-denylist, terminator rules, deck/tone invariants, and origin references.
+denylist, terminator rules, deck/tone invariants, and translation lineage.
 
 With --fix, assigns missing ids and added dates and rewrites every clean corpus
 with stable formatting. New ids hash `lang|normalized text`; existing ids stay
@@ -198,7 +198,7 @@ def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
                 rendered = "[" + ", ".join(value) + "]"
             elif key == "depth":
                 rendered = str(value)
-            elif key in ("id", "origin"):
+            elif key in ("id", "origin", "translated_by"):
                 rendered = str(value)
             else:
                 rendered = _render_scalar(value)
@@ -229,11 +229,24 @@ def main(argv=None) -> int:
     decks = cfg["decks"]
     question_file = cfg.get("questionFile", "questions.yaml")
     key_order = cfg.get(
-        "keyOrder", ["id", "text", "decks", "depth", "tags", "origin", "author", "added"]
+        "keyOrder",
+        [
+            "id",
+            "text",
+            "decks",
+            "depth",
+            "tags",
+            "origin",
+            "translated_by",
+            "author",
+            "added",
+        ],
     )
     entry_validator = Draft202012Validator(schema["items"])
     today = dt.date.today().isoformat()
     all_ids: dict[str, str] = {}
+    id_entries: dict[str, dict] = {}
+    id_languages: dict[str, str] = {}
     origin_refs: list[tuple] = []
     total = 0
 
@@ -269,6 +282,7 @@ def main(argv=None) -> int:
 
         file_error_count = len(rep.errors)
         seen_texts: dict[str, str] = {}
+        seen_machine_origins: dict[str, str] = {}
         coverage = {deck: 0 for deck in decks}
 
         for entry in entries:
@@ -313,8 +327,21 @@ def main(argv=None) -> int:
                     rep.error(rpath, line, f"duplicate id {qid} (first seen at {all_ids[qid]})")
                 else:
                     all_ids[qid] = f"{rpath}:{line}"
+                    id_entries[qid] = entry
+                    id_languages[qid] = lang
             if "origin" in entry:
-                origin_refs.append((rpath, line, entry["origin"]))
+                origin = entry["origin"]
+                origin_refs.append((rpath, line, lang, origin, entry.get("translated_by")))
+                if entry.get("translated_by"):
+                    if origin in seen_machine_origins:
+                        rep.error(
+                            rpath,
+                            line,
+                            f"duplicate machine translation of {origin} "
+                            f"(first seen at {seen_machine_origins[origin]})",
+                        )
+                    else:
+                        seen_machine_origins[origin] = f"{rpath}:{line}"
 
         minimum = 1 if incubator else 10
         for deck, count in coverage.items():
@@ -329,9 +356,21 @@ def main(argv=None) -> int:
                 path.write_text(formatted, encoding="utf-8")
                 print(f"fixed: {rpath}")
 
-    for rpath, line, origin in origin_refs:
+    for rpath, line, language, origin, translated_by in origin_refs:
         if origin not in all_ids:
-            rep.warn(rpath, line, f"origin {origin} is missing from the database")
+            (rep.error if translated_by else rep.warn)(
+                rpath, line, f"origin {origin} is missing from the database"
+            )
+        elif id_languages[origin] == language:
+            rep.error(rpath, line, f"origin {origin} must refer to another language")
+        elif translated_by and (
+            id_entries[origin].get("translated_by") or id_entries[origin].get("origin")
+        ):
+            rep.error(
+                rpath,
+                line,
+                f"machine translation source {origin} is not a human-written original",
+            )
 
     for warning in rep.warnings:
         print(warning, file=sys.stderr)

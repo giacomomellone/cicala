@@ -8,6 +8,8 @@ export interface Question {
   decks: string[];
   depth: number;
   tags: string[];
+  origin?: string;
+  translated_by?: "google";
 }
 
 export interface Payload {

@@ -16,17 +16,24 @@ An open-source system for conversation questions. Its parts share one database:
 
 The governing product principle (docs/design.md): minimize time-to-question, maximize time-in-conversation. Features that increase engagement with the product rather than between people are rejected.
 
+## AI policy
+
+The authoritative AI policy is in [README.md](README.md#ai-policy). Read and
+follow it before working with question text. AI must not originate, rewrite,
+expand, or propose original questions. AI translation and metadata suggestions
+are allowed only under the reviewed translation rules in the README and
+[docs/languages.md](docs/languages.md): start from an accepted human-written
+original, never another translation, record `origin` and
+`translated_by: google`, and never merge it without review from a fluent
+maintainer for the target language.
+
 ## Repository boundary
 
 This is the public product and engineering repository. It owns the public website, firmware, hardware design sources, reproducible BOMs, protocols, technical documentation, build instructions, the public roadmap, contribution guidance, licenses, and public-facing project assets.
 
-It must not contain GTM plans, pricing strategy, margins, detailed internal COGS analysis, supplier quotes or contacts, cash planning, private brand research, unpublished product concepts, customer identities, raw research data, participant consent records, or private compliance and manufacturing operations. Content in those categories belongs in the sibling `../cicala-internal` repository.
-
-Component price indications in `hardware/pcb/BOM.md` and `docs/prototype_bom.md` are reproduction aids for makers and stay here. A price appearing in a document is not by itself a reason to move it.
-
 The contributor-facing version of this boundary, with the routing procedure and the reason `.gitignore` does not enforce it, is [docs/publication_policy.md](docs/publication_policy.md).
 
-Never copy content from the private repository into this one without explicit publication approval.
+Never copy content from the internal repository into this one without explicit publication approval.
 
 If `../cicala-internal` is unavailable, stop and ask rather than putting private material here.
 
@@ -63,10 +70,6 @@ These apply in both repositories.
 Write a comment only when the code cannot state the rule clearly on its own.
 Useful comments explain a constraint, side effect, unit, ownership rule,
 hardware fact, protocol requirement, or non-obvious failure mode.
-
-Keep comments short and local. Use plain English and describe the current
-behaviour directly. Prefer `// GPIO32 starts gpio1, so subtract 32.` to a
-paragraph about how the pin was once calculated incorrectly.
 
 Delete comments that:
 

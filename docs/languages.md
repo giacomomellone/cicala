@@ -1,14 +1,29 @@
 # Languages
 
-## The model: independent corpora, not translations
+## The model: independent corpora with reviewed translations
 
-**There is no canonical language and no translation-completeness goal.** Every language is its own corpus of natively written questions. Rationale:
+**There is no canonical language and no translation-completeness goal.** Every
+language remains its own editorial corpus. A human-written original in any
+supported language may seed machine-translation candidates for other languages,
+but those candidates are optional and do not merge without fluent review.
 
-- A master/translation model creates an N×M sync debt: every new English question becomes N "missing translation" tasks, forever.
-- Translations drift when originals are edited; independent corpora mean nothing needs syncing, so nothing can drift.
-- Conversation questions are register-sensitive (du/Sie, tu/vous) and culturally loaded; translation produces stilted prompts. A smaller native corpus beats a large stilted one for this product.
+- Translation must not create an N×M backlog. Automation targets only shipped
+  languages whose active maintainer has opted in, and a missing translation is
+  not a defect.
+- Translations can drift when originals are edited. Lineage makes that drift
+  visible without requiring every target corpus to follow the source.
+- Conversation questions are register-sensitive (du/Sie, tu/vous) and
+  culturally loaded. A fluent maintainer may edit or reject a translation that
+  does not sound natural or changes the original question's meaning.
 
-The optional `origin` field on a question declares "this is an adaptation of that question in another language." It provides lineage and enables coverage views ("translate-me" lists for contributors) without any coupling. It is never required, and a removed origin only produces a validator warning.
+The optional `origin` field on a question declares "this is an adaptation of
+that question in another language." Machine translations set it to the
+human-written source question and also keep `translated_by: google`. These fields
+provide lineage without making coverage mandatory. A removed origin currently
+produces a validator warning for a human adaptation. The validator rejects a
+machine translation whose origin is absent or missing, an origin in the same
+language, more than one machine descendant of the same original in a language,
+or a machine-translation chain.
 
 **The scaling constraint is moderation, not storage.** For reference: 2,000 questions are about 160 KB of YAML, 50 KB gzipped, so twenty languages fit in a few MB. What does not scale for free is fluent human review of every submission, which is why everything below revolves around named maintainers.
 
@@ -24,9 +39,50 @@ A language **graduates** (its directory moves to `questions/{lang}/` in a review
 
 A shipped language whose maintainer steps down gets a `maintainer-wanted` notice here, never removal.
 
-## Machine translation: drafts only
+## Machine translation: optional reviewed drafts
 
-LLM-translated batches may be submitted as PRs tagged `needs-native-review`. **Nothing merges without approval from a fluent speaker.** Machine output is a scaffold for a native rewrite, not a shortcut past one.
+The source question is Human Reserved: a person conceives, writes, and submits
+it, and a maintainer accepts it before translation begins. The
+`google-translate.yml` workflow runs only after that original reaches `main`.
+It compares the before and after commits, selects new or materially edited
+entries with neither `origin` nor `translated_by`, and sends new or changed text to the
+[Google Cloud Translation Basic v2 API](https://cloud.google.com/translate/docs/basic/translating-text).
+Question submissions and pull requests from forks never receive the Google API key.
+
+Each draft must:
+
+- be translated directly from the human-written original, never through another
+  translation;
+- preserve the original meaning, assumptions, tone, and range of plausible
+  answers;
+- set `origin` to the source question, keep `translated_by: google`, and be
+  submitted in a pull request tagged `needs-native-review`;
+- pass the target language's validator, denylist, and style guide; and
+- receive approval from a fluent maintainer before merge.
+
+The workflow copies the reviewed decks, depth, and tags from the source as a
+starting point. The target maintainer owns the final wording and classification
+and may edit or reject the draft. It groups pending work into one bot branch and
+one pull request per target language, rather than opening a pull request per
+question. A source wording change requests a fresh translation; a metadata-only
+edit updates the linked classification without spending translation quota or
+replacing reviewed target wording.
+
+Opt-in lives in `questions/schema.json`. A shipped language participates only
+when its `x-cicala.languages.<code>.google` block declares Google source and
+target codes. Remove that block when the fluent maintainer steps down. Enabling
+a language affects future merges and edits; it does not backfill the corpus or
+create a translation-completeness queue. The workflow expects a repository
+Actions secret named `GOOGLE_TRANSLATE_API_KEY`. It sends the key in Google's
+documented `X-Goog-Api-Key` header rather than placing it in the request URL.
+Restrict the key to the Cloud Translation API, lower the project's daily
+character quota, and add a billing alert before enabling the workflow. Google
+Cloud Translation has no formality control, so target-language style and
+register are part of fluent review.
+
+After a reviewed translation merges, `build_site_data.py` carries its provenance
+to the website. Browse labels it as a human-reviewed Google translation and links
+back to the original question.
 
 ## Per-language moderation
 

@@ -35,6 +35,21 @@ describe("rowHtml", () => {
     expect(container.textContent).toContain("nachdenklich");
   });
 
+  it("marks a Google descendant and links to its human original", () => {
+    const translated = {
+      q: {
+        ...item.q,
+        origin: "q-12345678",
+        translated_by: "google" as const,
+      },
+    };
+    const container = document.createElement("ul");
+    container.innerHTML = rowHtml(translated, "en");
+    const provenance = [...container.querySelectorAll(".row-meta a")].at(-1)!;
+    expect(provenance.textContent).toBe("Google translation · human-reviewed");
+    expect(provenance.getAttribute("href")).toBe("/q/q-12345678");
+  });
+
   it("renders the heart pressed when the question is a favorite", () => {
     setFavs(["q-8f3a2c1d"]);
     const container = document.createElement("ul");

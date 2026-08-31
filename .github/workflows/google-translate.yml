@@ -1,0 +1,128 @@
+name: Google Cloud translation drafts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "questions/*/questions.yaml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: google-translation-drafts
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      targets: ${{ steps.plan.outputs.targets }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - name: Find target languages
+        id: plan
+        env:
+          BEFORE_REF: ${{ github.event.before }}
+          AFTER_REF: ${{ github.sha }}
+        run: |
+          targets="$(python tools/translate_question.py plan \
+            --before-ref "$BEFORE_REF" --after-ref "$AFTER_REF")"
+          echo "targets=$targets" >> "$GITHUB_OUTPUT"
+
+  translate:
+    needs: plan
+    if: needs.plan.outputs.targets != '[]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(needs.plan.outputs.targets) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml jsonschema
+      - name: Create or update translation drafts
+        id: draft
+        env:
+          AFTER_REF: ${{ github.sha }}
+          BEFORE_REF: ${{ github.event.before }}
+          GOOGLE_TRANSLATE_API_KEY: ${{ secrets.GOOGLE_TRANSLATE_API_KEY }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          if [ -z "$GOOGLE_TRANSLATE_API_KEY" ]; then
+            echo "GOOGLE_TRANSLATE_API_KEY is not configured as a repository secret" >&2
+            exit 1
+          fi
+
+          branch="translation/google-$TARGET"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if git ls-remote --exit-code --heads origin "$branch" >/dev/null 2>&1; then
+            git fetch origin "$branch:refs/remotes/origin/$branch"
+            git checkout -B "$branch" "origin/$branch"
+            git rebase "$AFTER_REF"
+          else
+            git checkout -b "$branch" "$AFTER_REF"
+          fi
+
+          python tools/translate_question.py apply \
+            --before-ref "$BEFORE_REF" --after-ref "$AFTER_REF" --target "$TARGET"
+          python tools/validate.py --fix
+          python tools/validate.py
+
+          git add "questions/$TARGET/questions.yaml"
+          if git diff --cached --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git commit -m "question($TARGET): update Google translation drafts"
+          git push --force-with-lease --set-upstream origin "$branch"
+          echo "branch=$branch" >> "$GITHUB_OUTPUT"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Open or refresh the review pull request
+        if: steps.draft.outputs.changed == 'true'
+        env:
+          AFTER_REF: ${{ github.sha }}
+          BRANCH: ${{ steps.draft.outputs.branch }}
+          GH_TOKEN: ${{ github.token }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          gh label create needs-native-review \
+            --color C5DEF5 \
+            --description "Machine translation awaiting a fluent human reviewer" \
+            --force
+
+          body="Google Cloud-generated translation drafts for **$TARGET**, refreshed from human originals at \`$AFTER_REF\`.
+
+          A fluent maintainer must compare every draft with its linked \`origin\`, edit it for meaning and natural language, and approve it before merge. Keep \`translated_by: google\` after review so the provenance remains visible. Reject or remove any draft that does not belong in this corpus."
+
+          number="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --body "$body" --add-label needs-native-review
+          else
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title "question($TARGET): review Google translation drafts" \
+              --body "$body" \
+              --label needs-native-review
+          fi

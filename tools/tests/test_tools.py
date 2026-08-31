@@ -11,9 +11,11 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
+import urllib.error
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
@@ -26,6 +28,7 @@ import build_firmware_manifest  # noqa: E402
 import build_site_data  # noqa: E402
 import check_release  # noqa: E402
 import promote_issue  # noqa: E402
+import translate_question  # noqa: E402
 import validate  # noqa: E402
 import yaml  # noqa: E402
 
@@ -213,6 +216,321 @@ class TestOrigin(TmpDb):
         self.assertIn("q-deadbeef", err)
         self.assertIn("warning", err)
 
+    def test_machine_translation_requires_an_origin(self):
+        self.write(
+            "questions/en/questions.yaml",
+            self.question(
+                "What belief have you outgrown lately?",
+                "[close]",
+                2,
+                "  translated_by: google\n",
+            ),
+        )
+        code, _, err = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
+        self.assertEqual(code, 1)
+        self.assertIn("origin", err)
+
+    def test_machine_translation_requires_an_existing_origin(self):
+        self.write(
+            "questions/en/questions.yaml",
+            self.question(
+                "What belief have you outgrown lately?",
+                "[close]",
+                2,
+                "  origin: q-deadbeef\n  translated_by: google\n",
+            ),
+        )
+        code, _, err = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
+        self.assertEqual(code, 1)
+        self.assertIn("missing from the database", err)
+
+    def test_origin_must_point_to_another_language(self):
+        self.write(
+            "questions/en/questions.yaml",
+            "- id: q-11111111\n"
+            '  text: "What belief have you outgrown lately?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            '  added: "2026-01-01"\n'
+            "- id: q-22222222\n"
+            '  text: "What idea have you stopped believing?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            "  origin: q-11111111\n"
+            '  added: "2026-01-01"\n',
+        )
+        code, _, err = run_quiet(validate.main, ["--root", str(self.tmp)])
+        self.assertEqual(code, 1)
+        self.assertIn("another language", err)
+
+    def test_machine_translation_cannot_use_an_adaptation_as_its_source(self):
+        self.write(
+            "questions/en/questions.yaml",
+            "- id: q-11111111\n"
+            '  text: "What belief have you outgrown lately?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            "  origin: q-00000000\n"
+            '  added: "2026-01-01"\n',
+        )
+        (self.tmp / "questions/de").mkdir()
+        (self.tmp / "questions/de/STYLE.md").write_text("# stil\n")
+        (self.tmp / "questions/de/denylist.txt").write_text("# list\n")
+        self.write(
+            "questions/de/questions.yaml",
+            "- id: q-22222222\n"
+            '  text: "Welche Überzeugung hast du in letzter Zeit abgelegt?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            "  origin: q-11111111\n"
+            "  translated_by: google\n"
+            '  added: "2026-01-01"\n',
+        )
+        code, _, err = run_quiet(validate.main, ["--root", str(self.tmp)])
+        self.assertEqual(code, 1)
+        self.assertIn("not a human-written original", err)
+
+
+class TestTranslationPlanning(unittest.TestCase):
+    def question(self, qid, text, **extra):
+        entry = {"id": qid, "text": text, "decks": ["close"], "depth": 2}
+        entry.update(extra)
+        return entry
+
+    def test_only_new_or_materially_edited_human_originals_are_selected(self):
+        original = self.question("q-11111111", "What changed your mind?")
+        machine = self.question(
+            "q-22222222",
+            "Was hat deine Meinung geändert?",
+            origin="q-11111111",
+            translated_by="google",
+        )
+        adaptation = self.question("q-33333333", "What made you reconsider?", origin="q-11111111")
+        before = {"en": [original, machine, adaptation]}
+        after = {
+            "en": [
+                {**original, "text": "What changed your mind most recently?"},
+                {**machine, "text": "Was änderte deine Meinung?"},
+                {**adaptation, "text": "What made you reconsider recently?"},
+                self.question("q-44444444", "What did you learn today?"),
+            ]
+        }
+
+        selected = translate_question.changed_originals(before, after)
+
+        self.assertEqual([item.entry["id"] for item in selected], ["q-11111111", "q-44444444"])
+
+    def test_author_only_edits_do_not_spend_translation_quota(self):
+        original = self.question("q-11111111", "What changed your mind?", author="A")
+        selected = translate_question.changed_originals(
+            {"en": [original]}, {"en": [{**original, "author": "Ada"}]}
+        )
+        self.assertEqual(selected, [])
+
+    def test_editorial_edit_updates_descendants_without_retranslating_text(self):
+        original = self.question("q-11111111", "What changed your mind?")
+        selected = translate_question.changed_originals(
+            {"en": [original]}, {"en": [{**original, "tags": ["reflective"]}]}
+        )
+        self.assertEqual(len(selected), 1)
+        self.assertFalse(selected[0].text_changed)
+
+    def test_plan_uses_only_opted_in_targets_and_respects_human_adaptations(self):
+        source = translate_question.SourceQuestion(
+            "en", self.question("q-11111111", "What changed your mind?")
+        )
+        config = {
+            "languages": {
+                "en": {"google": {"source": "en", "target": "en"}},
+                "de": {"google": {"source": "de", "target": "de"}},
+                "fr": {},
+            }
+        }
+        plan = translate_question.translation_plan([source], {"de": [], "fr": []}, config)
+        self.assertEqual(list(plan), ["de"])
+
+        human_adaptation = self.question(
+            "q-22222222", "Was hat deine Meinung geändert?", origin="q-11111111"
+        )
+        plan = translate_question.translation_plan(
+            [source], {"de": [human_adaptation], "fr": []}, config
+        )
+        self.assertEqual(plan, {})
+
+    def test_apply_adds_provenance_and_copies_editorial_metadata(self):
+        source = translate_question.SourceQuestion(
+            "en",
+            self.question(
+                "q-11111111",
+                "What changed your mind?",
+                decks=["new_people", "close"],
+                depth=1,
+                tags=["reflective"],
+                author="Ada",
+            ),
+        )
+        target = []
+
+        count = translate_question.apply_translations(
+            target, [source], ["Was hat deine Meinung geändert?"]
+        )
+
+        self.assertEqual(count, 1)
+        self.assertEqual(
+            target,
+            [
+                {
+                    "text": "Was hat deine Meinung geändert?",
+                    "decks": ["new_people", "close"],
+                    "depth": 1,
+                    "tags": ["reflective"],
+                    "origin": "q-11111111",
+                    "translated_by": "google",
+                }
+            ],
+        )
+
+    def test_apply_updates_a_google_descendant_without_replacing_its_id(self):
+        source = translate_question.SourceQuestion(
+            "en", self.question("q-11111111", "What changed your mind?", tags=[])
+        )
+        target = [
+            self.question(
+                "q-22222222",
+                "Was hat deine Meinung geändert?",
+                origin="q-11111111",
+                translated_by="google",
+                tags=["reflective"],
+                added="2026-01-01",
+            )
+        ]
+
+        count = translate_question.apply_translations(
+            target, [source], ["Was hat dich umgestimmt?"]
+        )
+
+        self.assertEqual(count, 1)
+        self.assertEqual(target[0]["id"], "q-22222222")
+        self.assertEqual(target[0]["added"], "2026-01-01")
+        self.assertEqual(target[0]["text"], "Was hat dich umgestimmt?")
+        self.assertNotIn("tags", target[0])
+
+    def test_build_plan_reads_the_exact_git_push_range(self):
+        with tempfile.TemporaryDirectory() as tmp_name:
+            root = Path(tmp_name)
+            (root / "questions/en").mkdir(parents=True)
+            (root / "questions/de").mkdir(parents=True)
+            shutil.copy(REPO / "questions/schema.json", root / "questions/schema.json")
+            (root / "questions/de/questions.yaml").write_text("", encoding="utf-8")
+            corpus = root / "questions/en/questions.yaml"
+            corpus.write_text(
+                "- id: q-11111111\n"
+                '  text: "What changed your mind most recently?"\n'
+                "  decks: [close]\n"
+                "  depth: 2\n"
+                '  added: "2026-01-01"\n',
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "config", "user.name", "test"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True
+            )
+            subprocess.run(["git", "add", "questions"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "before"], cwd=root, check=True)
+            before = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+            ).stdout.strip()
+
+            with corpus.open("a", encoding="utf-8") as handle:
+                handle.write(
+                    "- id: q-22222222\n"
+                    '  text: "What did you learn today?"\n'
+                    "  decks: [close]\n"
+                    "  depth: 1\n"
+                    '  added: "2026-01-02"\n'
+                )
+            subprocess.run(["git", "add", "questions/en/questions.yaml"], cwd=root, check=True)
+            subprocess.run(["git", "commit", "-qm", "after"], cwd=root, check=True)
+            after = subprocess.run(
+                ["git", "rev-parse", "HEAD"], cwd=root, check=True, capture_output=True, text=True
+            ).stdout.strip()
+
+            plan = translate_question.build_plan(
+                root, before, after, translate_question.load_config(root)
+            )
+
+            self.assertEqual([source.entry["id"] for source in plan["de"]], ["q-22222222"])
+
+
+class TestGoogleTranslateClient(unittest.TestCase):
+    def response(self, texts):
+        payload = {"data": {"translations": [{"translatedText": text} for text in texts]}}
+        return io.BytesIO(json.dumps(payload).encode())
+
+    def test_sends_documented_json_and_keeps_key_out_of_url(self):
+        captured = {}
+
+        def opener(request, timeout):
+            captured["request"] = request
+            captured["timeout"] = timeout
+            return self.response([" Was hat dich umgestimmt?\n"])
+
+        client = translate_question.GoogleTranslateClient("secret", opener=opener)
+        source = "What changed your mind?"
+        result = client.translate([source], "en", "de")
+
+        request = captured["request"]
+        payload = json.loads(request.data)
+        self.assertEqual(
+            request.full_url, "https://translation.googleapis.com/language/translate/v2"
+        )
+        self.assertNotIn("secret", request.full_url)
+        self.assertEqual(request.get_header("X-goog-api-key"), "secret")
+        self.assertEqual(captured["timeout"], 30)
+        self.assertEqual(payload["q"], [source])
+        self.assertEqual(payload["source"], "en")
+        self.assertEqual(payload["target"], "de")
+        self.assertEqual(payload["format"], "text")
+        self.assertEqual(payload["model"], "nmt")
+        self.assertEqual(result, ["Was hat dich umgestimmt?"])
+        self.assertEqual(client.characters_sent, len(source))
+
+    def test_endpoint_can_be_overridden_for_local_testing(self):
+        client = translate_question.GoogleTranslateClient(
+            "secret", api_url="http://127.0.0.1:8080/translate"
+        )
+        self.assertEqual(client.endpoint, "http://127.0.0.1:8080/translate")
+
+    def test_retryable_status_uses_exponential_backoff(self):
+        calls = []
+        sleeps = []
+
+        def opener(request, timeout):
+            calls.append(request)
+            if len(calls) == 1:
+                raise urllib.error.HTTPError(request.full_url, 429, "busy", {}, None)
+            return self.response(["Übersetzung?"])
+
+        client = translate_question.GoogleTranslateClient(
+            "secret", opener=opener, sleeper=sleeps.append
+        )
+        self.assertEqual(client.translate(["Question?"], "en", "de"), ["Übersetzung?"])
+        self.assertEqual(sleeps, [1])
+
+    def test_quota_error_is_clear_and_does_not_expose_the_key(self):
+        def opener(request, timeout):
+            raise urllib.error.HTTPError(request.full_url, 429, "quota", {}, None)
+
+        client = translate_question.GoogleTranslateClient(
+            "very-secret", opener=opener, sleeper=lambda _: None
+        )
+        with self.assertRaisesRegex(
+            translate_question.TranslationError, "quota or rate limit"
+        ) as ctx:
+            client.translate(["Question?"], "en", "de")
+        self.assertNotIn("very-secret", str(ctx.exception))
+
 
 class TestSiteData(TmpDb):
     def test_incubator_excluded_and_fields_stripped(self):
@@ -242,10 +560,39 @@ class TestSiteData(TmpDb):
         entry = payload["questions"][0]
         self.assertEqual(
             set(entry), {"id", "text", "decks", "depth", "tags"}
-        )  # author/added/origin stripped
+        )  # author/added omitted; this human original has no provenance
         self.assertFalse((out / "recent.en.json").exists())
         index = json.loads((out / "index.json").read_text())
         self.assertEqual(list(index.values()), ["en"])
+
+    def test_translation_provenance_reaches_the_site_payload(self):
+        (self.tmp / "questions/de").mkdir()
+        (self.tmp / "questions/de/STYLE.md").write_text("# stil\n")
+        (self.tmp / "questions/de/denylist.txt").write_text("# list\n")
+        self.write(
+            "questions/en/questions.yaml",
+            "- id: q-deadbeef\n"
+            '  text: "What belief have you outgrown lately?"\n'
+            "  decks: [close]\n"
+            "  depth: 2\n"
+            '  added: "2026-01-01"\n',
+        )
+        self.write(
+            "questions/de/questions.yaml",
+            self.question(
+                "Welche Überzeugung hast du in letzter Zeit abgelegt?",
+                "[close]",
+                2,
+                "  origin: q-deadbeef\n  translated_by: google\n",
+            ),
+        )
+        run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
+        out = self.tmp / "site_data"
+        code, _, _ = run_quiet(build_site_data.main, ["--root", str(self.tmp), "--out", str(out)])
+        self.assertEqual(code, 0)
+        entry = json.loads((out / "questions.de.json").read_text())["questions"][0]
+        self.assertEqual(entry["origin"], "q-deadbeef")
+        self.assertEqual(entry["translated_by"], "google")
 
 
 class TestBundle(unittest.TestCase):

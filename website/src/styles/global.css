@@ -530,6 +530,12 @@ select {
   flex-wrap: wrap;
 }
 
+.row-meta a {
+  position: relative;
+  z-index: 1;
+  color: inherit;
+}
+
 .row .iconbtn {
   position: relative;
   z-index: 1;

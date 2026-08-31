@@ -8,6 +8,9 @@
     "type": "object",
     "additionalProperties": false,
     "required": ["id", "text", "decks", "depth", "added"],
+    "dependentRequired": {
+      "translated_by": ["origin"]
+    },
     "properties": {
       "id": {
         "description": "q- + first 8 hex chars of SHA-256 of `lang|normalized text`. Assigned by validate.py --fix, never hand-written. Stable forever once assigned; later edits do not change it.",
@@ -57,6 +60,10 @@
         "type": "string",
         "pattern": "^q-[0-9a-f]{8}$"
       },
+      "translated_by": {
+        "description": "Machine-translation provenance. `google` marks a Google Cloud Translation draft or a reviewed descendant of one; it requires `origin` and is never a source for another machine translation.",
+        "enum": ["google"]
+      },
       "author": {
         "description": "Optional free-text credit. Courtesy only, no legal claim; all questions are CC0.",
         "type": "string",
@@ -88,12 +95,20 @@
       "memory",
       "wouldyourather"
     ],
-    "keyOrder": ["id", "text", "decks", "depth", "tags", "origin", "author", "added"],
+    "keyOrder": ["id", "text", "decks", "depth", "tags", "origin", "translated_by", "author", "added"],
     "defaultTerminators": ["?"],
     "closingCharacters": ["\"", "'", "”", "’", "»", "«", ")", "]"],
     "languages": {
-      "en": { "name": "English", "terminators": ["?"] },
-      "de": { "name": "Deutsch", "terminators": ["?"] }
+      "en": {
+        "name": "English",
+        "terminators": ["?"],
+        "google": { "source": "en", "target": "en" }
+      },
+      "de": {
+        "name": "Deutsch",
+        "terminators": ["?"],
+        "google": { "source": "de", "target": "de" }
+      }
     }
   }
 }

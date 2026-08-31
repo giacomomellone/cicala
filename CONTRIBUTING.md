@@ -26,7 +26,22 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 
 ### Adding a new language
 
-Languages are independent corpora, not translations (see [docs/languages.md](docs/languages.md)). New languages start in `questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥ 20 eligible for each deck), a named fluent maintainer, a `STYLE.md`, and a `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory directly.
+Languages are independent editorial corpora; reviewed machine translations are
+optional and never create a completeness requirement (see
+[docs/languages.md](docs/languages.md)). New languages start in
+`questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥
+20 eligible for each deck), a named fluent maintainer, a `STYLE.md`, and a
+`denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory
+directly.
+
+## Editing an existing question
+
+Open the question's permalink and select **suggest an edit**, or use the
+[question-edit form](../../issues/new?template=edit-question.yml). A GitHub
+account is required because edits need a discussion attached to the existing
+question. Proposed wording must be written by a person and dedicated to CC0.
+A fluent maintainer applies accepted wording or metadata changes in a normal
+pull request while preserving the question's `id` and `added` values.
 
 ## Editing question files directly (developers)
 
@@ -54,6 +69,11 @@ no duplicates within a language, one or more known decks, depth 1–3,
 Wild-only dark/spicy tone, per-language denylist, controlled tags, and origin
 references. Never hand-write or edit an `id`. Once assigned, IDs stay stable
 through text, deck, and depth edits.
+
+To edit an existing question, change its text or editorial metadata in a normal
+pull request and keep its `id` and `added` values. Only a person may make that
+edit. Once it merges, the Google Cloud Translation workflow refreshes any opted-in machine
+translations in review pull requests; it does not overwrite a human adaptation.
 
 ## Website development
 

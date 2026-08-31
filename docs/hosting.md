@@ -56,6 +56,32 @@ The Pages project therefore has two credential boundaries:
 Never pass the runtime secrets through the Astro build or expose them through
 the public `GET /api/suggestions` configuration response.
 
+## Credential lifecycle
+
+All long-lived deployment and runtime secrets follow the same rule. Replace a
+credential after suspected exposure, when its owner or required permissions
+change, when the provider expires it, or when project policy requires it. This
+project does not impose calendar rotation merely for the sake of rotation.
+
+Create the replacement with the same or narrower scope, update the consuming
+GitHub or Cloudflare secret, verify the affected workflow, then revoke the old
+credential. Use an overlap when the provider supports one. Account IDs, App IDs,
+installation IDs, bucket names, regions, and Turnstile site keys are identifiers,
+not secrets, and do not need rotation.
+
+Provider-specific procedures:
+
+- GitHub App and Turnstile credentials are covered in
+  [native submission setup](native_submission_setup.md#credential-lifecycle).
+- Roll or replace `CLOUDFLARE_API_TOKEN`, update the GitHub secret, verify a
+  Pages deployment, then revoke the prior token.
+- For the S3 publisher, create a second access key, update
+  `DEVICE_BUCKET_KEY_ID` and `DEVICE_BUCKET_SECRET` together, verify an upload,
+  then deactivate and delete the prior key.
+- Bundle and firmware signing keys have device compatibility consequences; use
+  the procedures in [sync protocol](sync_protocol.md#keys) and
+  [firmware update](firmware_update.md), not a generic secret swap.
+
 ## Device endpoint on S3
 
 An S3 static-website endpoint serves plain HTTP on port 80 without redirecting.

@@ -32,15 +32,19 @@ const en = {
   "tag.memory": "memory",
   "tag.wouldyourather": "would you rather",
 
+  // question provenance
+  "question.google": "Google translation · human-reviewed",
+  "question.edit": "suggest an edit →",
+
   // play
   "play.next": "next question →",
   "play.category": "category",
   "play.hint": "space for next, c for category",
   "play.skip": "not every question is for every moment. feel free to skip.",
   "play.disclaimer":
-    "Currently, these questions are AI-generated. Eventually they will be substituted with a human-curated list.",
+    "Original questions are written by people. Machine translations are marked and reviewed by a fluent editor before publication.",
   /* The phone shows the stamp instead; only one of the two is ever displayed. */
-  "play.disclaimer.short": "ai-generated · placeholder set",
+  "play.disclaimer.short": "human originals · reviewed translations",
   "play.save": "save",
   "play.saved": "saved",
   "play.share": "share",
@@ -178,13 +182,16 @@ const de: Record<StringKey, string> = {
   "tag.memory": "erinnerung",
   "tag.wouldyourather": "entweder oder",
 
+  "question.google": "Google-Übersetzung · von Menschen geprüft",
+  "question.edit": "änderung vorschlagen →",
+
   "play.next": "nächste frage →",
   "play.category": "kategorie",
   "play.hint": "leertaste für nächste, c für kategorie",
   "play.skip": "nicht jede frage passt zu jedem moment. überspring sie ruhig.",
   "play.disclaimer":
-    "Diese Fragen sind derzeit KI-generiert. Später werden sie durch eine von Menschen kuratierte Liste ersetzt.",
-  "play.disclaimer.short": "ki-generiert · platzhalter",
+    "Originalfragen werden von Menschen geschrieben. Maschinelle Übersetzungen werden gekennzeichnet und vor der Veröffentlichung von einer sprachkundigen Person geprüft.",
+  "play.disclaimer.short": "menschliche Originale · geprüfte Übersetzungen",
   "play.save": "merken",
   "play.saved": "gemerkt",
   "play.share": "teilen",

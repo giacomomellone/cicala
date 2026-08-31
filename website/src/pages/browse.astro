@@ -66,6 +66,11 @@ const firstPage = newestFirst.slice(0, 100);
               {q.tags.map((tag) => (
                 <span data-i18n={`tag.${tag}`}>{t("en", `tag.${tag}` as StringKey)}</span>
               ))}
+              {q.translated_by === "google" && q.origin && (
+                <a href={`/q/${q.origin}`} data-i18n="question.google">
+                  {t("en", "question.google")}
+                </a>
+              )}
             </div>
           </div>
           <button

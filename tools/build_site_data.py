@@ -3,12 +3,12 @@
 
 Emits into website/src/data/ (override with --out):
 
-  questions.{lang}.json   {"version", "generated", "questions": [{id,text,decks,depth,tags}]}
+  questions.{lang}.json   question playback data plus translation provenance
   languages.json          shipped languages with names and question counts
   index.json              id -> lang, for permalinks and cross-language links
 
 Only shipped languages are built — the incubator is excluded by design
-(docs/languages.md). Strips author/added/origin from the main payloads.
+(docs/languages.md). Strips author and added from the main payloads.
 Fails if any single language payload exceeds 2 MB.
 """
 
@@ -94,6 +94,10 @@ def main(argv=None) -> int:
                 "depth": entry["depth"],
                 "tags": entry.get("tags", []),
             }
+            if entry.get("origin"):
+                question["origin"] = entry["origin"]
+            if entry.get("translated_by"):
+                question["translated_by"] = entry["translated_by"]
             payload["questions"].append(question)
             index[entry["id"]] = lang
         count = len(entries)

@@ -41,6 +41,10 @@ flowchart TD
     A2[GitHub issue form] --> F2[contributor-owned question-submission issue]
     F --> G{promote_issue.py check}
     F2 --> G
+    A3[question permalink edit link] --> E3[human edit request]
+    E3 --> J3[fluent maintainer review]
+    J3 --> M3[normal pull request preserving the id]
+    M3 --> O
     G -->|problems| H[comment + needs-changes label]
     G -->|clean native text| I[maintainer classifies with deck, depth and tag labels]
     G -->|clean GitHub form| J[maintainer review]
@@ -51,6 +55,9 @@ flowchart TD
     L -->|error| N[comment + approved label removed]
     N --> J
     M -->|CODEOWNERS review, merge| O[(questions/lang/questions.yaml)]
+    O --> T{new or edited human original?}
+    T -->|yes, target opted in| U[Google translation draft PR per target language]
+    U -->|fluent review, edit or reject| O
     O --> P[build_site_data.py]
     O --> Q[build_bundle.py]
     P --> R[website]
@@ -60,6 +67,13 @@ flowchart TD
 The App token only creates the issue. The `promote-question` workflow uses its
 normal short-lived `GITHUB_TOKEN` to comment, apply labels, create the branch
 and open the pull request.
+
+Existing-question edits take a deliberately smaller path. The permalink opens
+the `edit-question.yml` issue form with the question ID in the title. The
+request is not handled by `promote-question.yml`: a fluent maintainer discusses
+it, applies accepted changes in a normal pull request, and preserves the ID and
+added date. Once merged, a wording or editorial change can refresh linked
+Google Cloud translation drafts through the post-merge path above.
 
 ## Native issue contract
 

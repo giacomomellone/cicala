@@ -1,0 +1,63 @@
+name: Edit an existing question
+description: Propose human-written wording or editorial changes to a question already in Cicala.
+title: "question edit: "
+labels: ["question-edit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a question already in the database. Original question writing and rewriting
+        are Human Reserved: propose the change in your own words. A maintainer who speaks the language
+        reviews the request and opens or updates the pull request. Existing IDs never change.
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - English (en)
+        - Deutsch (de)
+    validations:
+      required: true
+  - type: input
+    id: question-id
+    attributes:
+      label: Question ID
+      description: The `q-xxxxxxxx` value in the question URL or YAML entry.
+      placeholder: q-12345678
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-wording
+    attributes:
+      label: Proposed wording (optional)
+      description: Leave this empty for a metadata-only change. Otherwise write one 10–140 character question ending in `?`.
+  - type: checkboxes
+    id: metadata
+    attributes:
+      label: Metadata to reconsider (optional)
+      options:
+        - label: Deck eligibility
+        - label: Depth
+        - label: Tags
+        - label: Translation provenance or origin
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why should it change?
+      description: Explain the flaw, changed meaning, unnatural translation, or classification problem.
+    validations:
+      required: true
+  - type: checkboxes
+    id: human-reserved
+    attributes:
+      label: Human Reserved confirmation
+      options:
+        - label: I wrote any proposed wording myself and did not use generative AI to create or rewrite the question.
+          required: true
+  - type: checkboxes
+    id: cc0
+    attributes:
+      label: Public domain dedication
+      options:
+        - label: I dedicate any wording I contribute in this edit to the public domain (CC0-1.0).
+          required: true

@@ -71,8 +71,9 @@ repository secret: GitHub Actions does not need this key.
 
 GitHub App installation tokens expire after one hour. The function creates a
 short-lived token for each accepted request and does not store it. The private
-key itself does not expire; rotate it deliberately and revoke a compromised or
-retired key. GitHub documents
+key itself does not expire. Replace it after suspected exposure, when project
+policy requires it, or when retiring its owner; there is no calendar rotation
+schedule in this project. GitHub documents
 [installation tokens](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app)
 and
 [private-key rotation](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/managing-private-keys-for-github-apps).
@@ -87,6 +88,7 @@ Create these labels in the repository if they do not exist:
 
 ```text
 question-submission
+question-edit
 approved
 needs-changes
 
@@ -166,6 +168,30 @@ and are separate from these function-runtime settings.
 
 Do not configure the GitHub App credentials in preview unless preview
 deployments are intentionally allowed to create real public issues.
+
+## Credential lifecycle
+
+These secrets follow the repository-wide policy in
+[hosting](hosting.md#credential-lifecycle); the translation key and deployment
+credentials are not exceptions.
+
+- To replace `GITHUB_APP_PRIVATE_KEY`, generate an additional App key, update
+  the encrypted Cloudflare value, redeploy and verify one readiness request,
+  then delete the old App key. GitHub permits overlapping keys so this can avoid
+  downtime.
+- To replace `TURNSTILE_SECRET`, use **Rotate Secret Key** for the widget, update
+  the encrypted Cloudflare value and redeploy during Cloudflare's two-hour
+  overlap, then verify a submission challenge.
+- To replace `CLOUDFLARE_API_TOKEN`, create or roll a token with the same narrow
+  Pages permission, update the GitHub repository secret and verify a deployment
+  before revoking any still-valid predecessor.
+
+Rotate immediately after suspected exposure. Otherwise rotate only when an
+owner or permission boundary changes, a provider expires a credential, or
+project policy sets a schedule. The corresponding provider procedures are
+[GitHub App private keys](https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/managing-private-keys-for-github-apps),
+[Turnstile secret rotation](https://developers.cloudflare.com/turnstile/troubleshooting/rotate-secret-key/),
+and [Cloudflare token rolling](https://developers.cloudflare.com/fundamentals/api/how-to/roll-token/).
 
 ## 6. Deploy the Function
 

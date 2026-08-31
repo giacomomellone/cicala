@@ -866,3 +866,30 @@ So the tag jobs now fail when `BUNDLE_SIGNING_KEY` or `FIRMWARE_SIGNING_KEY` is 
 Bench builds keep the development-key path deliberately: a workflow dispatch with a bench host signs with the committed key and is marked as not a release in the step summary, and `just fw-build bench <host>` overrides the endpoint locally. The unsigned development build remains available by omitting `--sign-key`, which is what a local `just bundle` does.
 
 Accepted cost: a missing secret now stops a release instead of producing a broken one, which is the point but is also a new way for a tag job to fail. And the checker accepts no base URL but the production one, so a second device host would need the checker taught about it first.
+
+## 2026-08-31: Google Cloud creates reviewed descendants, never questions
+
+Question authorship stays Human Reserved. Once a new or materially edited
+human original reaches `main`, a trusted push workflow may send its text
+directly to Google Cloud Translation and update a single review pull request for each opted-in
+target language. It never runs on an unaccepted submission, translates an
+adaptation, or exposes the API key to pull-request code.
+
+Machine descendants keep both `origin` and `translated_by: google` after fluent
+review. The validator rejects missing provenance, duplicate machine descendants
+inside one target corpus, and translation chains. Human adaptations with an
+`origin` remain independent and are never overwritten. A normal human edit
+keeps the source ID stable, so the same lineage also lets the workflow refresh
+the corresponding Google Cloud draft.
+
+Each target language opts in through its Google source and target codes in
+`questions/schema.json`. Work is grouped into one long-lived bot branch and
+pull request per target, and opting in does not backfill old questions. This
+keeps review bounded by new merges rather than creating a completeness queue.
+Workflow runs use GitHub's queued concurrency so rapid consecutive merges keep
+their individual before/after ranges while bot branches remain single-writer.
+The client uses the standard library, so no runtime dependency was added.
+
+Accepted cost: translations can remain missing or stale when a language opts
+out, a maintainer rejects a draft, or an older question is never edited. That
+is preferable to an unreviewed backlog or an implied promise of corpus parity.

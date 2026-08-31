@@ -10,7 +10,13 @@ der [Theorie](../../docs/theory.md).
 - Sprich eine Person direkt an: **du**, immer klein geschrieben, niemals "Sie" oder "man".
 - **Keine Anglizismen in Fragen.** Schreibe "Verabredung", nicht "Date". Die
   Deck-Schlüssel und die Beschriftung des ersten Prototyps bleiben englisch.
-- Deutsche Fragen sind **eigenständige Fragen, keine Übersetzungen**. Eine gute deutsche Frage klingt, als hätte sie jemand am Küchentisch gestellt. Wenn du eine englische Frage adaptierst, verlinke sie über `origin`, aber nur, wenn sie sich wirklich natürlich anfühlt.
+- Eine gute deutsche Frage klingt, als hätte sie jemand am Küchentisch
+  gestellt, unabhängig davon, ob sie auf Deutsch verfasst oder aus einer anderen
+  Sprache übersetzt wurde.
+- Maschinelle Übersetzungen sind Entwürfe. Sie müssen Sinn, Annahmen, Ton und
+  mögliche Antworten des von einem Menschen verfassten Originals bewahren und
+  das Original über `origin` verlinken. Klingt ein Entwurf nicht natürlich,
+  überarbeite oder verwerfe ihn.
 - Ein Fragezeichen, keine Ausrufezeichen, genau eine Frage pro Eintrag.
 
 ## Form
