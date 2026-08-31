@@ -2,10 +2,10 @@
 
 The website and device artifacts use separate hosts:
 
-| Host            | Serves                                  | Protocol   |
-| --------------- | --------------------------------------- | ---------- |
-| Website         | question browser and docs               | HTTPS      |
-| Device endpoint | manifests, bundles, and firmware images | plain HTTP |
+| Host            | Serves                                    | Protocol   |
+| --------------- | ----------------------------------------- | ---------- |
+| Website         | question browser, submission API and docs | HTTPS      |
+| Device endpoint | manifests, bundles, and firmware images   | plain HTTP |
 
 The device has no trusted wall clock for certificate validation. It verifies
 downloaded artifacts with Ed25519 signatures instead. Its HTTP client does not
@@ -37,9 +37,24 @@ that cannot be reached later by cable.
    ```
 
 4. Add the website hostname under the Pages project's custom domains.
+5. Configure the GitHub App and Turnstile runtime values from
+   [native submission setup](native_submission_setup.md).
 
 `.github/workflows/site.yml` deploys the site on pushes to `main` when both
-secrets exist.
+deployment secrets exist. Astro still emits static pages. Wrangler also
+deploys `website/functions/api/suggestions.ts` for `/api/suggestions`; the
+checked-in `_routes.json` keeps every other request on Cloudflare's static
+asset path.
+
+The Pages project therefore has two credential boundaries:
+
+| Location                          | Credentials                                     | Purpose                      |
+| --------------------------------- | ----------------------------------------------- | ---------------------------- |
+| GitHub Actions repository secrets | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | Upload a deployment          |
+| Cloudflare Pages runtime secrets  | `GITHUB_APP_PRIVATE_KEY`, `TURNSTILE_SECRET`    | Handle a question submission |
+
+Never pass the runtime secrets through the Astro build or expose them through
+the public `GET /api/suggestions` configuration response.
 
 ## Device endpoint on S3
 

@@ -1,6 +1,6 @@
 # cicala website
 
-Astro 5, static output, vanilla TypeScript islands. No UI framework, no Tailwind, no third-party scripts. See spec §7 and [docs/design.md](../docs/design.md).
+Astro 5, static output, vanilla TypeScript islands, and one Cloudflare Pages Function at `/api/suggestions`. No UI framework or Tailwind. Play and browse load no third-party scripts; the suggestion page loads Cloudflare Turnstile. See [docs/design.md](../docs/design.md) and [native submission setup](../docs/native_submission_setup.md).
 
 ## Develop
 
@@ -23,8 +23,9 @@ npm test       # vitest suite in tests/
 
 ## Structure
 
-- `src/pages/`: play (`index`, `q/[id]`), `browse`, `contribute`, `device`, `deck`, `404`
-- `src/lib/`: client islands (play/browse/contribute/deck controllers, storage, data loading)
+- `src/pages/`: play (`index`, `q/[id]`), `browse`, `suggest`, `device`, `deck`, `404`
+- `src/lib/`: client islands (play/browse/suggest/deck controllers, storage, data loading)
+- `functions/api/suggestions.ts`: same-origin submission API, Turnstile verification, and GitHub App client
 - `src/i18n.ts`: all UI strings, one object per shipped language
 - `src/styles/tokens.css`: the design tokens (DECIDED in spec §7.2; dark mode lands here in v2)
 - `src/config.ts`: repo/site URLs (placeholder org, renamed in one commit later)

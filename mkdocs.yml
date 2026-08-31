@@ -24,6 +24,7 @@ nav:
   - patching zephyr: firmware_patches.md
   - decisions: decisions.md
   - contribution pipeline: contribution_pipeline.md
+  - native submission setup: native_submission_setup.md
   - publication policy: publication_policy.md
   - languages: languages.md
   - sync protocol: sync_protocol.md

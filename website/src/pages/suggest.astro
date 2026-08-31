@@ -1,0 +1,100 @@
+---
+import { REPO_URL } from "../config";
+import { t } from "../i18n";
+import Base from "../layouts/Base.astro";
+---
+
+<Base title="suggest a question · cicala" lang="en">
+  <section class="suggest-intro" id="s-intro">
+    <h1 data-i18n="suggest.title">suggest a question</h1>
+    <p data-i18n="suggest.pitch">{t("en", "suggest.pitch")}</p>
+  </section>
+
+  <form id="s-form" class="suggest-form" novalidate>
+    <div class="suggest-heading">
+      <label for="s-text" data-i18n="suggest.question">your question</label>
+      <label class="suggest-language" for="s-lang">
+        <span data-i18n="suggest.lang">language</span>
+        <select id="s-lang" aria-label={t("en", "suggest.lang")}></select>
+      </label>
+    </div>
+
+    <textarea
+      id="s-text"
+      class="suggest-question"
+      rows="5"
+      maxlength="200"
+      placeholder={t("en", "suggest.placeholder")}
+      data-i18n-placeholder="suggest.placeholder"></textarea>
+    <div class="suggest-ruleline">
+      <span class="rule-hint" id="s-rule" data-i18n="suggest.question.hint">
+        {t("en", "suggest.question.hint")}
+      </span>
+      <span class="counter" id="s-counter">0/140</span>
+    </div>
+    <p class="sub" id="s-dupe" hidden>
+      <span data-i18n="suggest.rule.duplicate">{t("en", "suggest.rule.duplicate")}</span>
+      · <a id="s-dupe-link" href="/browse" data-i18n="suggest.rule.duplicate.link">
+        {t("en", "suggest.rule.duplicate.link")}
+      </a>
+    </p>
+
+    <p class="suggest-review" data-i18n="suggest.review">{t("en", "suggest.review")}</p>
+
+    <div class="field">
+      <label for="s-name" data-i18n="suggest.name">name for public credit (optional)</label>
+      <input type="text" id="s-name" maxlength="40" autocomplete="name" />
+    </div>
+
+    <div class="field suggest-honeypot" aria-hidden="true">
+      <label for="s-website">website</label>
+      <input type="text" id="s-website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="field">
+      <label class="checks suggest-consent">
+        <input type="checkbox" id="s-cc0" />
+        <span>
+          <span data-i18n="suggest.cc0">{t("en", "suggest.cc0")}</span>
+          <a
+            href={`${REPO_URL}/blob/main/LICENSE-QUESTIONS`}
+            rel="external"
+            data-i18n="suggest.cc0.link">{t("en", "suggest.cc0.link")}</a
+          >
+        </span>
+      </label>
+    </div>
+
+    <div id="s-turnstile" class="suggest-turnstile"></div>
+    <button type="submit" class="btn" id="s-submit" disabled data-i18n="suggest.submit">
+      {t("en", "suggest.submit")}
+    </button>
+    <p class="hint suggest-status" id="s-status" role="status" aria-live="polite"></p>
+    <noscript>
+      <p class="hint">
+        JavaScript is required for native submission. You can still
+        <a href={`${REPO_URL}/issues/new?template=new-question.yml`} rel="external"
+          >submit on GitHub</a
+        >.
+      </p>
+    </noscript>
+  </form>
+
+  <section class="suggest-received" id="s-received" hidden aria-live="polite">
+    <h2 data-i18n="suggest.received">question received</h2>
+    <p class="question" id="s-received-question"></p>
+    <p data-i18n="suggest.received.body">{t("en", "suggest.received.body")}</p>
+    <p class="hint" id="s-reference"></p>
+    <div class="suggest-received-actions">
+      <a class="btn" href="/browse" data-i18n="suggest.return">{t("en", "suggest.return")}</a>
+      <button type="button" class="btn-quiet" id="s-again" data-i18n="suggest.again">
+        {t("en", "suggest.again")}
+      </button>
+    </div>
+  </section>
+
+  <script>
+    import { initSuggest } from "../lib/suggest";
+    initSuggest();
+  </script>
+</Base>

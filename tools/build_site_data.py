@@ -6,7 +6,6 @@ Emits into website/src/data/ (override with --out):
   questions.{lang}.json   {"version", "generated", "questions": [{id,text,decks,depth,tags}]}
   languages.json          shipped languages with names and question counts
   index.json              id -> lang, for permalinks and cross-language links
-  recent.{lang}.json      newest 10 questions incl. added dates (contribute page)
 
 Only shipped languages are built — the incubator is excluded by design
 (docs/languages.md). Strips author/added/origin from the main payloads.
@@ -76,13 +75,12 @@ def main(argv=None) -> int:
         if incubator:
             continue
         payload = {"version": version, "generated": generated, "questions": []}
-        recent = []
         path = lang_dir / cfg.get("questionFile", "questions.yaml")
         entries = validate.parse_file(path, rep) if path.exists() else []
         if entries is None:
             failed = True
             continue
-        for pos, entry in enumerate(entries):
+        for entry in entries:
             entry.pop("__line__", None)
             if "id" not in entry:
                 print(
@@ -98,13 +96,6 @@ def main(argv=None) -> int:
             }
             payload["questions"].append(question)
             index[entry["id"]] = lang
-            recent.append(
-                {
-                    **question,
-                    "added": entry.get("added", ""),
-                    "_pos": pos,
-                }
-            )
         count = len(entries)
 
         blob = dump(payload)
@@ -115,11 +106,6 @@ def main(argv=None) -> int:
             )
             return 1
         (out_dir / f"questions.{lang}.json").write_text(blob, encoding="utf-8")
-
-        recent.sort(key=lambda r: (r["added"], r["_pos"]), reverse=True)
-        for r in recent:
-            del r["_pos"]
-        (out_dir / f"recent.{lang}.json").write_text(dump(recent[:10]), encoding="utf-8")
 
         languages.append({"code": lang, "name": lang_names.get(lang, lang), "count": count})
         print(f"questions.{lang}.json: {count} questions")

@@ -89,6 +89,41 @@ test.describe("play", () => {
     await context.close();
   });
 
+  test("keeps the suggestion entry point outside the panel controls", async ({ page }) => {
+    await page.goto("/");
+    const link = page.locator('a[href="/suggest?source=play"]');
+    await expect(link).toBeVisible();
+    await expect(page.locator('.panel a[href="/suggest?source=play"]')).toHaveCount(0);
+    await expect(page.locator('.device-controls a[href="/suggest?source=play"]')).toHaveCount(0);
+  });
+
+  test("the phone trades the sentence and the labels for a full-bleed sheet", async ({ page }) => {
+    await page.goto("/");
+    const panel = page.locator(".panel");
+    const stamp = page.locator(".panel__stamp");
+    const sentence = page.locator(".disclaimer");
+    const skipNote = page.locator(".skip-note");
+    const language = page.locator("#lang-switch button").first();
+
+    // Exactly one form of the provenance note is ever displayed.
+    await expect(sentence).toBeVisible();
+    await expect(skipNote).toContainText(/feel free to skip/i);
+    await expect(stamp).toBeHidden();
+    await expect(panel).toHaveCSS("border-left-width", "1px");
+    await expect(page.locator("#q-fav-label")).toBeVisible();
+    await expect(language.locator(".lang-full")).toBeVisible();
+    await expect(language.locator(".lang-code")).toBeHidden();
+
+    await page.setViewportSize({ width: 375, height: 812 });
+
+    await expect(stamp).toBeVisible();
+    await expect(sentence).toBeHidden();
+    await expect(skipNote).toBeVisible();
+    await expect(panel).toHaveCSS("border-left-width", "0px");
+    await expect(language.locator(".lang-full")).toBeHidden();
+    await expect(language.locator(".lang-code")).toBeVisible();
+  });
+
   test("next draws a different question", async ({ page }) => {
     await page.goto("/");
     await playReady(page);

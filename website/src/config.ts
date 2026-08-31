@@ -2,6 +2,13 @@
 export const REPO_URL = "https://github.com/giacomomellone/cicala";
 export const SITE_URL = "https://cicala.dev";
 
+// Shipped languages from questions/schema.json. Generated payloads add counts,
+// while the submission endpoint needs this stable name/code pair.
+export const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "de", name: "Deutsch" },
+] as const;
+
 // Category cycle order from questions/schema.json.
 export const DECKS = ["new_people", "close", "family", "work", "here", "wild"] as const;
 export type Deck = (typeof DECKS)[number];
@@ -10,13 +17,6 @@ export type Deck = (typeof DECKS)[number];
 // cycle (firmware/app/src/channels.c). Work stays in the corpus and browse.
 export const DEVICE_DECKS = ["new_people", "close", "family", "here", "wild"] as const;
 export const PLAYBACK_DEPTH_MAX = 2;
-
-// GitHub issue-form depth values, in schema order.
-export const DEPTH_OPTIONS = [
-  "1 - little public exposure",
-  "2 - a personal construction",
-  "3 - vulnerability, conflict, fear, loss, or consequential disclosure",
-] as const;
 
 export const TAGS = [
   "icebreaker",

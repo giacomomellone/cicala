@@ -24,6 +24,7 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
         run: python3 tools/promote_issue.py parse
       - name: Add lang label
         if: steps.parse.outputs.lang != ''
@@ -60,6 +61,7 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
         run: |
           set -o pipefail
           python tools/promote_issue.py check 2>&1 | tee check-output.txt
@@ -68,11 +70,15 @@ jobs:
         env:
           PASSED: ${{ steps.check.outcome == 'success' }}
           FIRST_LOOK: ${{ github.event.action == 'opened' }}
+          NATIVE: ${{ steps.check.outputs.native }}
+          CLASSIFIED: ${{ steps.check.outputs.classified }}
         with:
           script: |
             const fs = require('fs');
             const passed = process.env.PASSED === 'true';
             const firstLook = process.env.FIRST_LOOK === 'true';
+            const native = process.env.NATIVE === 'true';
+            const classified = process.env.CLASSIFIED === 'true';
 
             // A passing edit needs no comment — the label coming off says it.
             if (passed && !firstLook) {
@@ -88,24 +94,36 @@ jobs:
 
             let output = '';
             try { output = fs.readFileSync('check-output.txt', 'utf8'); } catch {}
-            const body = passed
-              ? [
-                  'Thanks! This passes every automatic check — the text rules, the',
-                  'deck and tone rules, the per-language denylist, and a check that',
-                  'the question is not already in the database.',
-                  '',
-                  'A maintainer who speaks your language reviews it from here.',
-                ].join('\n')
-              : [
-                  '**This submission cannot be merged as written.**',
-                  '',
-                  '```',
-                  output.slice(-4000) || '(no output captured — see the workflow log)',
-                  '```',
-                  'Edit the issue above and the check runs again. The rules are in',
-                  '[CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) and in your',
-                  "language's style guide.",
-                ].join('\n');
+            let body;
+            if (passed && native && !classified) {
+              body = [
+                'The question passes the text, duplicate, and per-language denylist checks.',
+                '',
+                'A language maintainer assigns its decks, depth, and optional tags before approval.',
+              ].join('\n');
+            } else if (passed) {
+              body = [
+                'Thanks! This passes every automatic check — the text rules, the',
+                'deck and tone rules, the per-language denylist, and a check that',
+                'the question is not already in the database.',
+                '',
+                'A maintainer who speaks your language reviews it from here.',
+              ].join('\n');
+            } else {
+              const next = native
+                ? 'A language maintainer will review or close this native suggestion.'
+                : 'Edit the issue above and the check runs again.';
+              body = [
+                '**This submission cannot be merged as written.**',
+                '',
+                '```',
+                output.slice(-4000) || '(no output captured — see the workflow log)',
+                '```',
+                next,
+                'The rules are in [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md)',
+                "and in the language's style guide.",
+              ].join('\n');
+            }
 
             await github.rest.issues.createComment({
               ...context.repo,
@@ -141,6 +159,7 @@ jobs:
         env:
           ISSUE_BODY: ${{ github.event.issue.body }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_LABELS: ${{ toJSON(github.event.issue.labels.*.name) }}
         run: |
           set -o pipefail
           python tools/promote_issue.py apply 2>&1 | tee promote-output.txt

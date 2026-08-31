@@ -50,6 +50,9 @@ const { question, deck, lang, permalink = false } = Astro.props;
         <p class="question" id="q-text" aria-live="polite">{question.text}</p>
       </div>
     </div>
+    <p class="panel__stamp" data-i18n="play.disclaimer.short">
+      {t("en", "play.disclaimer.short")}
+    </p>
   </div>
   <div class="device-controls">
     <button type="button" class="key" id="q-category" data-i18n="play.category">
@@ -60,6 +63,11 @@ const { question, deck, lang, permalink = false } = Astro.props;
     </button>
   </div>
   <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
+  <p class="skip-note" data-i18n="play.skip">{t("en", "play.skip")}</p>
+  <p class="disclaimer" data-i18n="play.disclaimer">{t("en", "play.disclaimer")}</p>
+  <p class="suggest-context">
+    <a href="/suggest?source=play" data-i18n="play.suggest">{t("en", "play.suggest")}</a>
+  </p>
 </div>
 
 <style>
@@ -191,6 +199,114 @@ const { question, deck, lang, permalink = false } = Astro.props;
   .hint {
     margin-top: 0.9rem;
     text-align: center;
+  }
+
+  /* Touch has no keyboard, so the shortcut line is noise there. */
+  @media (hover: none) and (pointer: coarse) {
+    .hint {
+      display: none;
+    }
+  }
+
+  .disclaimer {
+    margin-top: 0.9rem;
+  }
+
+  .skip-note {
+    max-width: 32rem;
+    margin: 0.35rem auto 0;
+    color: var(--ink-soft);
+    font-size: 0.75rem;
+    text-align: center;
+    text-wrap: balance;
+  }
+
+  .skip-note + .disclaimer {
+    margin-top: 0.45rem;
+  }
+
+  .suggest-context {
+    margin-top: 0.45rem;
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+  }
+
+  .suggest-context a {
+    text-underline-offset: 3px;
+  }
+
+  /* Provenance printed on the sheet itself, under a tear line drawn from the
+     same dither grid. The phone shows this; wider screens show the sentence
+     under the keys instead, and never both. */
+  .panel__stamp {
+    position: relative;
+    z-index: 1;
+    display: none;
+    align-self: stretch;
+    margin-top: auto;
+    padding-top: 0.7rem;
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    border-top: var(--dither-px) solid transparent;
+    border-image: repeating-linear-gradient(
+        90deg,
+        var(--ink-faint) 0 var(--dither-px),
+        transparent var(--dither-px) calc(var(--dither-px) * 2)
+      )
+      2;
+  }
+
+  /* The phone becomes the panel: the sheet runs edge to edge and the header
+     rule serves as its top border. */
+  @media (max-width: 30rem) {
+    /* The tear line above the stamp is the bottom edge here, so the ramp would
+       only sit under the text and swallow it. */
+    .panel__floor {
+      display: none;
+    }
+
+    .panel {
+      border-top: none;
+      border-inline: none;
+      padding: 2.1rem 1.25rem 1.15rem;
+    }
+
+    .panel__deck {
+      position: static;
+      margin-top: 0;
+      letter-spacing: 0.3em;
+    }
+
+    .panel__acts {
+      top: 0.55rem;
+      right: 0.55rem;
+    }
+
+    .panel__stamp {
+      display: block;
+    }
+
+    /* Thumb-sized, like the two keys on the device. */
+    .key {
+      border-inline: none;
+      min-height: 62px;
+      padding-block: 1.3rem;
+    }
+
+    .key + .key {
+      border-left: 1px solid var(--line);
+    }
+
+    .disclaimer {
+      display: none;
+    }
+
+    .skip-note {
+      margin-top: 0.9rem;
+    }
   }
 
   /* The deck-name card: quiet UI type, visibly not a question. */

@@ -22,6 +22,7 @@ export async function initBrowse(): Promise<void> {
   const sortEl = document.getElementById("b-sort") as HTMLSelectElement;
   const moreBtn = document.getElementById("b-more") as HTMLButtonElement;
   const emptyEl = document.getElementById("b-empty")!;
+  const emptySuggest = document.getElementById("b-suggest-empty") as HTMLAnchorElement;
   const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#browse-chips .chip"));
 
   const lang = detectLang();
@@ -65,6 +66,10 @@ export async function initBrowse(): Promise<void> {
       .join("");
     moreBtn.hidden = items.length <= shown;
     emptyEl.hidden = items.length > 0;
+    const suggestion = new URL("/suggest", location.origin);
+    suggestion.searchParams.set("source", "browse-empty");
+    if (query.trim()) suggestion.searchParams.set("text", query.trim());
+    emptySuggest.href = `${suggestion.pathname}${suggestion.search}`;
   }
 
   setActiveChip();

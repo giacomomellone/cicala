@@ -22,19 +22,9 @@ export interface LangInfo {
   count: number;
 }
 
-export interface RecentItem {
-  id: string;
-  text: string;
-  decks: string[];
-  depth: number;
-  tags: string[];
-  added: string;
-}
-
 export interface SiteConfig {
   langs: LangInfo[];
   payloads: Record<string, string>;
-  recents: Record<string, string>;
   index: string;
 }
 
@@ -48,7 +38,6 @@ export function siteConfig(): SiteConfig {
       : {
           langs: [],
           payloads: {},
-          recents: {},
           index: "",
         };
   }
@@ -95,12 +84,6 @@ export function loadIndex(): Promise<Record<string, string>> {
     indexCache = fetch(siteConfig().index).then((r) => r.json() as Promise<Record<string, string>>);
   }
   return indexCache;
-}
-
-export function loadRecent(lang: string): Promise<RecentItem[]> {
-  const url = siteConfig().recents[lang];
-  if (!url) return Promise.resolve([]);
-  return fetch(url).then((r) => r.json() as Promise<RecentItem[]>);
 }
 
 export function allQuestions(payload: Payload): Question[] {

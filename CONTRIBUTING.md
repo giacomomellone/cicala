@@ -4,10 +4,10 @@
 
 This is the contribution that matters most. Two ways, both take about 30 seconds:
 
-1. **Website:** the [contribute page](https://cicala.dev/contribute) has a form that pre-fills everything for you.
+1. **Website:** [suggest a question](https://cicala.dev/suggest) without an account. Enter the question and language, optionally add a credit, and confirm the public-domain dedication. A maintainer assigns decks, depth, and tags.
 2. **GitHub:** open a [new-question issue](../../issues/new?template=new-question.yml) directly.
 
-Either way you'll need a free GitHub account. Within a minute of opening the issue, a bot comments to say whether your question passes the automatic checks — length, the question mark, the deck and tone rules, the per-language word list, and whether the database already has it. If something is off, edit the issue and the check runs again. A maintainer who speaks your language reviews every submission that passes; once approved, an automated workflow turns the issue into a pull request and your question ships to the website (within minutes of merge) and to every device (with the next database release). [docs/contribution_pipeline.md](docs/contribution_pipeline.md) describes the whole path.
+The website submits through the repository's narrowly scoped GitHub App, so the resulting issue is opened by `cicala-bot` without exposing a contributor account. Direct GitHub submissions require a free GitHub account and ask the contributor to choose editorial metadata. Within a minute of opening either kind of issue, an automated check covers the applicable text, deck, tone, denylist, and duplicate rules. A maintainer who speaks the language reviews every submission; once approved, another workflow turns the issue into a pull request. The question ships to the website within minutes of merge and to devices with the next database release. [docs/contribution_pipeline.md](docs/contribution_pipeline.md) describes the path.
 
 ### The public domain dedication (please read)
 
@@ -63,7 +63,7 @@ just test-website   # vitest suite
 just test-e2e       # playwright: builds the site and drives it in a browser
 ```
 
-Ground rules (from [docs/design.md](docs/design.md)): no UI frameworks, no Tailwind, no third-party scripts, no analytics, no accounts. Performance budget: ≤ 60 KB gzipped JS per page, Lighthouse mobile ≥ 95 on the play page. Every new dependency needs a one-line justification in [docs/decisions.md](docs/decisions.md).
+Ground rules (from [docs/design.md](docs/design.md)): no UI frameworks, no Tailwind, no analytics, no accounts. The play and browse surfaces load no third-party scripts; the suggestion page loads Cloudflare Turnstile for abuse prevention. Performance budget: ≤ 60 KB gzipped JS per page, Lighthouse mobile ≥ 95 on the play page. Every new dependency needs a one-line justification in [docs/decisions.md](docs/decisions.md).
 
 ## Firmware / hardware
 
@@ -74,6 +74,10 @@ Structure and interface docs live in [`firmware/`](firmware/) and [`hardware/`](
 Conventional commits, small PR-sized changes: `feat(site): …`, `feat(questions): …`, `fix(tools): …`, `chore(ci): …`, `docs: …`.
 
 The format is enforced locally by a zero-dependency `commit-msg` hook in [`.githooks/`](.githooks/). Enable it with `just hooks` (also part of `just setup`); it runs `git config core.hooksPath .githooks`. Allowed types: `feat fix docs test chore refactor ci build perf style revert`; header ≤ 72 chars; scope optional and lowercase.
+
+## Security
+
+Do not open a public issue or pull request for anything security-sensitive — in the website, tools, firmware, hardware, or the release process. Report it privately instead: [SECURITY.md](SECURITY.md).
 
 ## Code of conduct
 

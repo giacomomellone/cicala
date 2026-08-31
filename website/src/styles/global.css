@@ -135,9 +135,26 @@ main {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 0.15rem 0.75rem;
   font-size: 0.75rem;
   color: var(--ink-soft);
+}
+
+.footer-links {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.footer-links .nav-dot {
+  color: var(--ink-faint);
+  user-select: none;
+}
+
+/* Its own row, so the licence never wraps into the links beside it. */
+.footer-license {
+  flex-basis: 100%;
+  color: var(--ink-faint);
 }
 
 .site-footer a {
@@ -152,7 +169,7 @@ main {
 .lang-switch {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.6rem;
 }
 
 .lang-switch button {
@@ -171,6 +188,10 @@ main {
   color: var(--ink);
   text-decoration: none;
   cursor: default;
+}
+
+.lang-code {
+  display: none;
 }
 
 /* ----------------------------------------------------------------- type */
@@ -216,6 +237,15 @@ a {
 .hint {
   color: var(--ink-faint);
   font-size: 0.75rem;
+}
+
+.disclaimer {
+  max-width: 34rem;
+  margin-inline: auto;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  text-align: center;
+  text-wrap: balance;
 }
 
 /* ----------------------------------------------------------------- chips */
@@ -448,6 +478,11 @@ select {
   cursor: pointer;
 }
 
+.browse-disclaimer {
+  margin: 0.85rem auto 0.35rem;
+  text-align: left;
+}
+
 .rows {
   list-style: none;
 }
@@ -512,6 +547,17 @@ select {
   color: var(--ink);
 }
 
+.browse-suggest {
+  margin-top: 0.75rem;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.browse-suggest a {
+  text-underline-offset: 3px;
+}
+
 /* ---------------------------------------------------------------- forms */
 
 .field {
@@ -566,6 +612,170 @@ input[type="checkbox"] {
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+
+/* ------------------------------------------------------------- suggest */
+
+.suggest-intro {
+  max-width: 38rem;
+}
+
+.suggest-intro p {
+  color: var(--ink-soft);
+}
+
+.suggest-form {
+  margin-top: 2rem;
+  max-width: 38rem;
+  animation: sheet-in 180ms ease-out both;
+}
+
+.suggest-heading,
+.suggest-ruleline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.suggest-heading {
+  margin-bottom: 0.5rem;
+  font-size: 0.8125rem;
+}
+
+.suggest-language {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--ink-faint);
+}
+
+.suggest-language select {
+  min-height: 36px;
+  padding: 0.4rem 0.55rem;
+}
+
+.suggest-question {
+  min-height: 13rem;
+  padding: clamp(1.1rem, 5vw, 2rem);
+  font-family: var(--font-question);
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  font-weight: 500;
+  line-height: 1.35;
+  background: var(--panel);
+  border-color: var(--ink);
+  transition: background-color 90ms steps(1);
+}
+
+.suggest-question:focus {
+  background: var(--paper);
+}
+
+.suggest-question::placeholder {
+  color: var(--ink-faint);
+  opacity: 1;
+}
+
+.suggest-ruleline {
+  margin-top: 0.4rem;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+}
+
+.suggest-form > .sub {
+  display: block;
+  color: var(--ink-faint);
+  font-size: 0.75rem;
+  margin-top: 0.35rem;
+}
+
+.suggest-review {
+  margin: 1.8rem 0 1.4rem;
+  padding: 0.85rem 0;
+  border-block: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.suggest-form input[type="text"] {
+  width: 100%;
+}
+
+.suggest-consent {
+  align-items: flex-start;
+  gap: 0.7rem;
+}
+
+.suggest-consent input {
+  flex: none;
+  margin-top: 0.25rem;
+}
+
+.suggest-consent a {
+  display: inline-block;
+  margin-left: 0.35rem;
+  text-underline-offset: 3px;
+}
+
+.suggest-honeypot {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.suggest-turnstile {
+  max-width: 19rem;
+  margin-bottom: 1rem;
+}
+
+.suggest-status {
+  min-height: 1.3rem;
+  margin-top: 0.65rem;
+}
+
+.suggest-received {
+  max-width: 38rem;
+  padding-top: 1rem;
+  animation: refresh-in 180ms steps(2, end) both;
+}
+
+.suggest-received h2 {
+  margin-top: 0;
+  text-transform: lowercase;
+}
+
+.suggest-received .question {
+  max-width: 24ch;
+  margin: 2.5rem 0;
+  text-align: left;
+  text-wrap: balance;
+}
+
+.suggest-received > p:not(.question, .hint) {
+  color: var(--ink-soft);
+  max-width: 34rem;
+}
+
+.suggest-received-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.8rem;
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+@keyframes refresh-in {
+  from {
+    opacity: 0;
+  }
 }
 
 /* --------------------------------------------------------------- tables */
@@ -653,10 +863,101 @@ input[type="checkbox"] {
   .site-nav a {
     padding-inline: 0.3rem;
   }
+
+  .site-footer {
+    justify-content: center;
+    text-align: center;
+    padding-inline: 0.75rem;
+    gap: 0.5rem 1.1rem;
+  }
+
+  /* A bordered two-state switch, so the languages stop reading as more
+     underlined links next to "your deck · source". The counts are a
+     desktop luxury. */
+  .lang-switch {
+    gap: 0;
+    border: 1px solid var(--line);
+  }
+
+  .lang-switch button {
+    padding: 0.35rem 0.65rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .lang-switch button + button {
+    border-left: 1px solid var(--line);
+  }
+
+  .lang-switch button[aria-pressed="true"] {
+    background: var(--ink);
+    color: var(--panel);
+  }
+
+  .lang-code {
+    display: inline;
+  }
+
+  .lang-full {
+    display: none;
+  }
+
+  /* The play surface goes full-bleed; every other page keeps its margin. */
+  main:has(#play-root) {
+    padding: 0;
+  }
+
+  .question {
+    font-size: 1.875rem;
+  }
+
+  /* Two icons and no words: the panel corners stop competing with the
+     question. The labels stay in the accessibility tree because they are the
+     buttons' only accessible name. Injected at runtime, so not scopable. */
+  #q-fav-label,
+  #q-share-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  #q-meta > span[aria-hidden="true"] {
+    display: none;
+  }
+
+  #q-meta {
+    gap: 0.9rem;
+  }
+
+  .suggest-heading {
+    align-items: flex-start;
+  }
+
+  .suggest-language {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+  }
+
+  .suggest-question {
+    min-height: 15rem;
+  }
+
+  .suggest-received-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .question {
+  .question,
+  .suggest-form,
+  .suggest-received {
     transition: none;
+    animation: none;
   }
 }

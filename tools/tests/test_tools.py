@@ -241,9 +241,7 @@ class TestSiteData(TmpDb):
         self.assertEqual(
             set(entry), {"id", "text", "decks", "depth", "tags"}
         )  # author/added/origin stripped
-        recent = json.loads((out / "recent.en.json").read_text())
-        self.assertEqual(recent[0]["decks"], ["new_people", "close"])
-        self.assertEqual(recent[0]["depth"], 2)
+        self.assertFalse((out / "recent.en.json").exists())
         index = json.loads((out / "index.json").read_text())
         self.assertEqual(list(index.values()), ["en"])
 
@@ -482,6 +480,22 @@ def rendered_issue(
     )
 
 
+def rendered_native_issue(
+    language="English (en)",
+    question="Which ordinary day would you happily live again?",
+    credit="_No response_",
+    cc0="- [x] I dedicate this question to the public domain (CC0-1.0).",
+):
+    return (
+        f"### Language\n\n{language}\n\n"
+        f"### Question\n\n> {question}\n\n"
+        f"### Name for credit (optional)\n\n{credit}\n\n"
+        f"### Public domain dedication\n\n{cc0}\n\n"
+        "### Submission channel\n\ncicala.dev\n\n"
+        "<!-- cicala-native:v1 -->\n"
+    )
+
+
 class PromoteCase(TmpDb):
     """A temp database plus a way to run promote_issue.py against it."""
 
@@ -491,8 +505,12 @@ class PromoteCase(TmpDb):
         promote_issue.ROOT = self.tmp
         self.write("questions/en/questions.yaml", "")
 
-    def promote(self, body, mode="apply", issue="7"):
-        env = {"ISSUE_BODY": body, "ISSUE_NUMBER": issue}
+    def promote(self, body, mode="apply", issue="7", labels=()):
+        env = {
+            "ISSUE_BODY": body,
+            "ISSUE_NUMBER": issue,
+            "ISSUE_LABELS": json.dumps(list(labels)),
+        }
         old = {k: os.environ.get(k) for k in env}
         os.environ.update(env)
         os.environ.pop("GITHUB_OUTPUT", None)
@@ -590,6 +608,55 @@ class TestPromoteIssue(PromoteCase):
         self.assertIn("lang: en", out)
         self.assertEqual(self.corpus(), None)
 
+    def test_a_native_suggestion_takes_editorial_metadata_from_labels(self):
+        code, _, err = self.promote(
+            rendered_native_issue(credit="Ada"),
+            labels=("question-submission", "deck:close", "deck:family", "depth:2", "tag:memory"),
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            self.corpus()[0],
+            {
+                "text": "Which ordinary day would you happily live again?",
+                "decks": ["close", "family"],
+                "depth": 2,
+                "tags": ["memory"],
+                "author": "Ada",
+            },
+        )
+
+    def test_a_native_suggestion_must_be_classified_before_approval(self):
+        code, _, err = self.promote(rendered_native_issue())
+        self.assertEqual(code, 1)
+        self.assertIn("classify", err)
+        self.assertEqual(self.corpus(), None)
+
+    def test_a_native_suggestion_rejects_multiple_depth_labels(self):
+        code, _, err = self.promote(
+            rendered_native_issue(), labels=("deck:close", "depth:1", "depth:2")
+        )
+        self.assertEqual(code, 1)
+        self.assertIn("exactly one", err)
+
+    def test_a_native_suggestion_rejects_unknown_editorial_labels(self):
+        code, _, err = self.promote(rendered_native_issue(), labels=("deck:close", "depth:medium"))
+        self.assertEqual(code, 1)
+        self.assertIn("unknown editorial label", err)
+
+    def test_native_html_escaping_is_reversed_before_storage(self):
+        code, _, err = self.promote(
+            rendered_native_issue(
+                question="Who made you think &#64;home was better than &lt;away&gt;?",
+                credit="A &amp; B",
+            ),
+            labels=("deck:close", "depth:2"),
+        )
+        self.assertEqual(code, 0, err)
+        self.assertEqual(
+            self.corpus()[0]["text"], "Who made you think @home was better than <away>?"
+        )
+        self.assertEqual(self.corpus()[0]["author"], "A & B")
+
 
 class TestCheckSubmission(PromoteCase):
     """`check` mode answers the submitter while the issue is still open, using
@@ -599,6 +666,13 @@ class TestCheckSubmission(PromoteCase):
         code, out, _ = self.promote(rendered_issue(), mode="check")
         self.assertEqual(code, 0)
         self.assertIn("passes every automatic check", out)
+        self.assertEqual(self.corpus(), None)
+
+    def test_an_unclassified_native_suggestion_gets_text_checks(self):
+        code, out, err = self.promote(rendered_native_issue(), mode="check")
+        self.assertEqual(code, 0, err)
+        self.assertIn("passes every automatic check", out)
+        self.assertIn("classified: false", out)
         self.assertEqual(self.corpus(), None)
 
     def test_a_duplicate_is_caught_before_a_maintainer_reads_it(self):

@@ -6,7 +6,7 @@ stimulate introspection, and break the silence. Its three parts share one
 database:
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo. The product's core asset. Licensed [CC0](LICENSE-QUESTIONS): every question is dedicated to the public domain.
-2. **[Website](website/)**: a free, static front-end to the database. No accounts. Anyone can play, save favorites, and contribute questions.
+2. **[Website](website/)**: a free, static front-end to the database with one serverless submission endpoint. No accounts. Anyone can play, save favorites, and suggest questions.
 3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Category and Next buttons.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
@@ -23,7 +23,7 @@ database:
 
 ## Contributing a question
 
-You don't need to be a developer. Open a [new-question issue](../../issues/new?template=new-question.yml) or use the form on the website's contribute page. A maintainer who speaks your language reviews it, and once merged it ships to the site and every device. All questions are dedicated to the public domain (CC0); see [CONTRIBUTING.md](CONTRIBUTING.md).
+You don't need to be a developer or have an account. Use [suggest a question](https://cicala.dev/suggest), or open a [new-question issue](../../issues/new?template=new-question.yml) directly on GitHub. A maintainer who speaks your language reviews it, and once merged it ships to the site and every device. All questions are dedicated to the public domain (CC0); see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 Want to add a whole language? Read [docs/languages.md](docs/languages.md). New languages start in the incubator.
 

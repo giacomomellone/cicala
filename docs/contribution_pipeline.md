@@ -2,105 +2,158 @@
 
 How a question gets from someone's head into the database, the website and a
 device. Human-facing instructions are in
-[CONTRIBUTING.md](https://github.com/giacomomellone/cicala/blob/main/CONTRIBUTING.md);
-this page describes the machinery behind them.
+[CONTRIBUTING.md](https://github.com/giacomomellone/cicala/blob/main/CONTRIBUTING.md).
+Runtime setup is in [native submission setup](native_submission_setup.md).
 
-There are two entry points and they converge immediately. Most people use the
-website form, which is a styled thin client of the GitHub issue form: it
-validates locally, then opens the issue prefilled. Developers editing
-`questions/{lang}/questions.yaml` directly skip to the pull-request half.
+## Entry points
+
+The native path asks for a question, language, optional public credit and CC0
+consent. It does not require an account. The browser validates the text and
+checks the active language's corpus for duplicates, then posts to the
+same-origin `/api/suggestions` Pages Function. That function verifies
+Turnstile and opens a public issue through the repository-scoped `cicala-bot`
+GitHub App.
+
+The direct GitHub issue form remains available. It asks the contributor for
+decks, depth and optional tags because a GitHub contributor owns and can edit
+that issue. Developers editing `questions/{lang}/questions.yaml` directly
+skip to the pull-request half.
+
+Contextual links all open the same native sheet:
+
+- an empty browse search carries its query in `?text=`;
+- the bottom of Browse uses `source=browse`;
+- Play uses `source=play`, outside the panel and device controls;
+- the site navigation uses `source=suggest` implicitly.
+
+`source` is operational context, not analytics. It is written into the issue's
+machine-readable marker and no visitor profile is created.
 
 ## The path
 
 ```mermaid
 flowchart TD
-    A[contribute page] -->|prefilled issue URL| B[GitHub issue form]
-    A2[GitHub issue form directly] --> B
-    B -->|issues.opened / edited| C{promote_issue.py check}
-    C -->|problems| D[comment + needs-changes label]
-    D -->|contributor edits the issue| C
-    C -->|clean| E[comment: passes every check]
-    E --> F[maintainer review]
-    F -->|approved label| G{promote_issue.py apply}
-    G --> H[validate.py --fix, then validate.py]
-    H -->|clean| I[branch + commit + pull request]
-    H -->|error| J[comment + approved label removed]
-    J --> F
-    I -->|CODEOWNERS review, merge| K[(questions/lang/questions.yaml)]
-    K --> L[build_site_data.py — website payloads]
-    K --> M[build_bundle.py — device bundles]
-    L --> N[website, within minutes]
-    M --> O[devices, at the next database release]
+    A[suggest page] --> B{browser text and duplicate checks}
+    B -->|clean| C[POST /api/suggestions]
+    C --> D{origin, request, CC0 and Turnstile checks}
+    D -->|clean| E[GitHub App installation token]
+    E --> F[cicala-bot opens question-submission issue]
+    A2[GitHub issue form] --> F2[contributor-owned question-submission issue]
+    F --> G{promote_issue.py check}
+    F2 --> G
+    G -->|problems| H[comment + needs-changes label]
+    G -->|clean native text| I[maintainer classifies with deck, depth and tag labels]
+    G -->|clean GitHub form| J[maintainer review]
+    I --> J
+    J -->|approved label| K{promote_issue.py apply}
+    K --> L[validate.py --fix, then validate.py]
+    L -->|clean| M[branch + commit + pull request]
+    L -->|error| N[comment + approved label removed]
+    N --> J
+    M -->|CODEOWNERS review, merge| O[(questions/lang/questions.yaml)]
+    O --> P[build_site_data.py]
+    O --> Q[build_bundle.py]
+    P --> R[website]
+    Q --> S[device database release]
 ```
 
-Every gate on that path runs the same rules, because every gate runs
-`validate.py`. The check job appends the parsed entry to a temp copy of the
-database and validates that; the promotion job appends it for real and
-validates that. Neither reimplements a rule.
+The App token only creates the issue. The `promote-question` workflow uses its
+normal short-lived `GITHUB_TOKEN` to comment, apply labels, create the branch
+and open the pull request.
+
+## Native issue contract
+
+The Pages Function creates the same stable headings that
+`tools/promote_issue.py` parses:
+
+```markdown
+### Language
+
+English (en)
+
+### Question
+
+> Which ordinary day would you happily live again?
+
+### Name for credit (optional)
+
+_No response_
+
+### Public domain dedication
+
+- [x] I dedicate this question to the public domain (CC0-1.0). …
+
+### Submission channel
+
+Submitted through cicala.dev at 2026-08-31T12:00:00.000Z.
+
+<!-- cicala-native:v1 submission:<uuid> source:suggest consent:cc0-1.0-2026-08-31 -->
+```
+
+The endpoint HTML-escapes text that GitHub could interpret as markup or a
+mention. The parser restores those entities before writing YAML. The marker
+selects the native parsing path and records the consent-copy version without
+putting a secret in the issue.
+
+## Editorial classification
+
+A native suggestion carries no contributor-selected decks, depth or tags. A
+language maintainer adds:
+
+- one or more `deck:<name>` labels;
+- exactly one of `depth:1`, `depth:2`, or `depth:3`;
+- zero or more `tag:<name>` labels.
+
+The `approved` label comes last. `promote_issue.py apply` refuses an
+unclassified native issue, more than one depth, unknown values, or a dark or
+spicy question outside Wild. Direct GitHub form issues continue to read this
+metadata from their body, so existing submissions do not need label migration.
 
 ## Where each rule is enforced
 
-A contributor can hit the same rule at three distances, and the cost of being
-told rises with each one. The design goal is to move every rejection as far
-left as it will go.
+| Rule                                             | Browser | Pages Function | Open issue  | Approval / merge |
+| ------------------------------------------------ | ------- | -------------- | ----------- | ---------------- |
+| 10–140 characters, ends with `?`, one line       | yes     | yes            | yes         | yes              |
+| Already in this language's corpus                | yes     | no             | yes         | yes              |
+| Shipped language                                 | yes     | yes            | yes         | yes              |
+| Explicit, current CC0 consent                    | yes     | yes            | yes         | yes              |
+| Same-origin request and Turnstile                | —       | yes            | —           | —                |
+| At least one deck and exactly one depth          | —       | —              | direct form | yes              |
+| Dark/spicy only in Wild                          | —       | —              | direct form | yes              |
+| Per-language denylist                            | no      | no             | yes         | yes              |
+| Style guide, tone, whether it is a good question | no      | no             | no          | maintainer       |
 
-| Rule                                               | Website form | Issue check | Merge      |
-| -------------------------------------------------- | ------------ | ----------- | ---------- |
-| 10–140 characters, ends with `?`, one line         | yes          | yes         | yes        |
-| At least one deck; dark/spicy only in `wild`       | yes          | yes         | yes        |
-| Already in this language's corpus                  | yes          | yes         | yes        |
-| Per-language denylist                              | no           | yes         | yes        |
-| Shipped language (not the incubator)               | yes          | yes         | yes        |
-| CC0 box ticked                                     | yes          | yes         | —          |
-| Style guide, tone, whether it is a _good_ question | no           | no          | maintainer |
+The denylist stays server-side. Publishing it in the website payload would
+publish the list it is meant to flag for human review.
 
-The website form cannot check the denylist: shipping the list to the browser
-would publish exactly the list of words the project would rather not
-advertise, and the list is the reason a human looks at those submissions.
-
-## The vocabulary, and why it is single-sourced
-
-Decks, tags and the depth labels live in `questions/schema.json` under
-`x-cicala`. Three consumers restate them:
-
-- `.github/ISSUE_TEMPLATE/new-question.yml` — the dropdown options.
-- `website/src/config.ts` — so no page parses the schema at runtime.
-- `tools/validate.py` — reads the schema directly.
-
-The website prefills the issue form's dropdowns **by option string**, and
-GitHub silently drops a value that is not one of the declared options, leaving
-a required field blank. So the strings have to agree character for character,
-and two tests hold them together: `TestIssueFormVocabulary` in
-`tools/tests/test_tools.py` for the issue template, and `config.test.ts` for
-the website constants.
+An unclassified native issue is checked with temporary neutral metadata so
+the validator can run its text, duplicate and denylist rules without writing
+anything. Real editorial metadata is mandatory before approval.
 
 ## Text normalization
 
-One definition of "the same question", applied in three languages:
+One definition of "the same question" is applied at each boundary:
 
-- `tools/validate.py` `normalize_text` — NFC, lowercased, whitespace collapsed.
-- `tools/promote_issue.py` — collapses whitespace before writing the entry.
-- `website/src/lib/rules.ts` `collapse` / `normalizeQuestion` — the same, so
-  the form measures and compares what the database would store rather than the
-  raw textarea contents.
+- `tools/validate.py` `normalize_text`: NFC, lowercased, whitespace collapsed;
+- `tools/promote_issue.py`: restores escaped native text, then collapses whitespace;
+- `website/src/lib/rules.ts`: the same collapse and comparison in the browser and Pages Function.
 
-A question that differs only in case, padding, internal spacing, or Unicode
+A question that differs only in case, padding, internal spacing or Unicode
 composition is a duplicate.
 
 ## Ids
 
-`validate.py --fix` assigns `q-` plus the first 8 hex characters of
-SHA-256 over `lang|normalized text`. Contributors never write one, and an id
-never changes after assignment — later edits to text, decks or depth keep it,
-which is what makes a permalink and a saved deck durable.
+`validate.py --fix` assigns `q-` plus the first eight hex characters of
+SHA-256 over `lang|normalized text`. Contributors and the submission endpoint
+never write one. An id remains stable through later text, deck or depth edits.
 
 ## Testing this pipeline
 
-- `tools/tests/test_tools.py` — `TestIssueFormVocabulary` (the forms agree with
-  the schema), `TestPromoteIssue` (what an approved issue becomes, and what is
-  refused), `TestCheckSubmission` (what the open-issue check catches, and that
-  it writes nothing).
-- `website/tests/rules.test.ts` — the form's mirror of the validator's text and
-  duplicate rules.
-- `website/e2e/contribute.spec.ts` — the built form in a browser, including
-  that every value it prefills is one the issue template declares.
+- `tools/tests/test_tools.py`: direct-form parsing, native issue parsing,
+  editorial labels, CC0, validator checks and promotion.
+- `website/tests/submission.test.ts`: the untrusted request contract.
+- `website/tests/suggestions-api.test.ts`: origin checks, Turnstile, GitHub App
+  authentication boundary and rendered issue body.
+- `website/tests/rules.test.ts`: browser/server text normalization and duplicates.
+- `website/e2e/suggest.spec.ts`: the built native sheet, contextual prefill,
+  submission receipt, retry state and legacy redirect.

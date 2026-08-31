@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DECKS, DEVICE_DECKS, DEPTH_OPTIONS, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
+import { DECKS, DEVICE_DECKS, LANGUAGES, PLAYBACK_DEPTH_MAX, TAGS } from "../src/config";
 import schema from "../../questions/schema.json";
 
 const cfg = schema["x-cicala"];
@@ -33,13 +33,9 @@ describe("the schema is the source of truth", () => {
     expect(PLAYBACK_DEPTH_MAX).toBe(cfg.playbackDepthMax);
   });
 
-  it("agrees on the issue form's depth options", () => {
-    expect([...DEPTH_OPTIONS]).toEqual(cfg.depthLabels);
-  });
-
-  it("has one depth option per allowed depth", () => {
-    expect(DEPTH_OPTIONS).toHaveLength(3);
-    for (const [i, label] of DEPTH_OPTIONS.entries())
-      expect(label.startsWith(String(i + 1))).toBe(true);
+  it("agrees on the shipped language names", () => {
+    expect(LANGUAGES).toEqual(
+      Object.entries(cfg.languages).map(([code, language]) => ({ code, name: language.name })),
+    );
   });
 });

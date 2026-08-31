@@ -846,3 +846,13 @@ A name and a picture saying the same thing at once is one of them too many, and 
 Em dashes leave user-facing copy for hyphens, and titles join with the same middle dot the navigation uses, so the home page is `cicala · let's talk`. The depth labels change in `questions/schema.json`, `.github/ISSUE_TEMPLATE/new-question.yml` and `website/src/config.ts` together, because GitHub drops a prefilled dropdown value that does not match its declared options character for character.
 
 Accepted cost: third-party avatars already showing the cicada must be replaced by hand, as with any earlier identity change.
+
+## 2026-08-31: Native suggestions use a repository-scoped GitHub App
+
+The website now accepts a question without sending its author to GitHub or requiring an account. `/suggest` asks for the question, language, optional credit and explicit CC0 dedication. Browse and Play link into that same sheet with a source marker; an empty Browse result also carries the search text as a prefill. Decks, depth and tags leave the public form because they are editorial classification, not facts the contributor should have to understand.
+
+A same-origin Cloudflare Pages Function verifies the request and a Turnstile token, creates a short-lived installation token from an encrypted GitHub App private key, and opens a public `question-submission` issue as the App bot. The App is installed only on this repository with `Issues: write`. It cannot read or change contents, workflows, pull requests, organization settings or user accounts. Ordinary website requests stay static through `_routes.json`; Turnstile loads only on the suggestion page.
+
+Native issues carry a versioned marker and the exact affirmative CC0 record. Maintainers classify them with one or more `deck:*` labels, exactly one `depth:*` label and optional `tag:*` labels before applying `approved`. `promote_issue.py` keeps parsing contributor-owned GitHub issue forms from their body and parses only marked native issues from labels. This supersedes the website-handoff parts of the 2026-07-24 and 2026-08-14 contribution decisions; the direct GitHub issue form remains supported.
+
+Accepted cost: the website now has one server-side route, two runtime secrets, a third-party abuse check on one page and a GitHub App that must be installed and rotated. Bot-authored issues cannot be edited by anonymous contributors, so validation happens before issue creation where possible and a maintainer owns any denylist or editorial correction after creation.

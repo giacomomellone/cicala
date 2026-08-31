@@ -8,7 +8,9 @@ its generated id and date. Exit 78 identifies a new-language request.
 
 from __future__ import annotations
 
+import html
 import io
+import json
 import os
 import re
 import shutil
@@ -22,12 +24,19 @@ ROOT = Path(__file__).resolve().parent.parent
 SECTION_RE = re.compile(r"^### (.+?)\s*$", re.M)
 NO_RESPONSE = "_No response_"
 DECK_VOCAB = ("new_people", "close", "family", "work", "here", "wild")
-TAG_VOCAB = frozenset(
-    {"icebreaker", "reflective", "spicy", "dark", "hypothetical", "memory", "wouldyourather"}
+TAG_VOCAB = (
+    "icebreaker",
+    "reflective",
+    "spicy",
+    "dark",
+    "hypothetical",
+    "memory",
+    "wouldyourather",
 )
 CREDIT_MAX = 40
 
 NEW_LANGUAGE = 78
+NATIVE_MARKER = "cicala-native:v1"
 
 
 class Rejected(Exception):
@@ -52,7 +61,25 @@ def emit(key: str, value: str):
     print(f"{key}: {value}")
 
 
-def parse_issue(body: str) -> dict:
+def issue_labels() -> set[str]:
+    raw = os.environ.get("ISSUE_LABELS", "")
+    if not raw:
+        return set()
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError:
+        parsed = raw.split(",")
+    if not isinstance(parsed, list):
+        return set()
+    return {str(label).strip() for label in parsed if str(label).strip()}
+
+
+def native_value(value: str) -> str:
+    """Restore text escaped by the native website submission endpoint."""
+    return html.unescape(value.removeprefix("> "))
+
+
+def parse_issue(body: str, *, allow_unclassified_native: bool = False) -> dict:
     """The submission as a database entry, or Rejected with the reason.
 
     Raises SystemExit(NEW_LANGUAGE) for "other / new language", which is a
@@ -62,6 +89,8 @@ def parse_issue(body: str) -> dict:
         raise Rejected("the issue body is empty")
 
     s = parse_sections(body)
+    native = NATIVE_MARKER in body
+    labels = issue_labels() if native else set()
 
     lang_raw = s.get("language", "")
     m = re.search(r"\(([a-z]{2,3})\)", lang_raw)
@@ -71,31 +100,63 @@ def parse_issue(body: str) -> dict:
         sys.exit(NEW_LANGUAGE)
     lang = m.group(1)
 
-    decks_raw = s.get("decks", "")
-    decks = [deck for deck in DECK_VOCAB if re.search(rf"\b{deck}\b", decks_raw)]
-    if not decks:
-        raise Rejected("choose at least one deck")
+    if native:
+        editorial_labels = {
+            *(f"deck:{deck}" for deck in DECK_VOCAB),
+            *(f"depth:{depth}" for depth in (1, 2, 3)),
+            *(f"tag:{tag}" for tag in TAG_VOCAB),
+        }
+        unknown = sorted(
+            label
+            for label in labels
+            if label.startswith(("deck:", "depth:", "tag:")) and label not in editorial_labels
+        )
+        if unknown:
+            raise Rejected(f"unknown editorial label(s): {', '.join(unknown)}")
+        decks = [deck for deck in DECK_VOCAB if f"deck:{deck}" in labels]
+        depth_labels = [depth for depth in (1, 2, 3) if f"depth:{depth}" in labels]
+        if len(depth_labels) > 1:
+            raise Rejected("choose exactly one editorial depth label")
+        depth = depth_labels[0] if depth_labels else None
+        classified = bool(decks and depth is not None)
+        if not classified and not allow_unclassified_native:
+            raise Rejected(
+                "classify the suggestion with at least one deck:<name> label and exactly one "
+                "depth:<1-3> label before approval"
+            )
+    else:
+        decks_raw = s.get("decks", "")
+        decks = [deck for deck in DECK_VOCAB if re.search(rf"\b{deck}\b", decks_raw)]
+        if not decks:
+            raise Rejected("choose at least one deck")
 
-    depth_raw = s.get("depth", "")
-    match = re.match(r"\s*([123])\b", depth_raw)
-    if not match:
-        raise Rejected(f"the depth field reads {depth_raw!r}; pick one of the three options")
-    depth = int(match.group(1))
+        depth_raw = s.get("depth", "")
+        match = re.match(r"\s*([123])\b", depth_raw)
+        if not match:
+            raise Rejected(f"the depth field reads {depth_raw!r}; pick one of the three options")
+        depth = int(match.group(1))
+        classified = True
 
-    text = " ".join(s.get("question", "").split())
+    text_raw = s.get("question", "")
+    text = " ".join((native_value(text_raw) if native else text_raw).split())
     if not text or text == NO_RESPONSE:
         raise Rejected("the question field is empty")
 
-    tags_raw = s.get("tags (optional)", s.get("tags", ""))
-    tags = []
-    if tags_raw and tags_raw != NO_RESPONSE:
-        tags = [t.strip() for t in tags_raw.split(",") if t.strip() in TAG_VOCAB]
-    if {"spicy", "dark"}.intersection(tags) and decks != ["wild"]:
+    if native:
+        tags = [tag for tag in TAG_VOCAB if f"tag:{tag}" in labels]
+    else:
+        tags_raw = s.get("tags (optional)", s.get("tags", ""))
+        tags = []
+        if tags_raw and tags_raw != NO_RESPONSE:
+            tags = [t.strip() for t in tags_raw.split(",") if t.strip() in TAG_VOCAB]
+    if classified and {"spicy", "dark"}.intersection(tags) and decks != ["wild"]:
         raise Rejected("dark and spicy questions must use only the wild deck")
 
     credit = s.get("name for credit (optional)", s.get("name for credit", ""))
     if credit == NO_RESPONSE:
         credit = ""
+    if native:
+        credit = native_value(credit)
     credit = " ".join(credit.split())[:CREDIT_MAX]
 
     cc0 = s.get("public domain dedication", "")
@@ -112,6 +173,8 @@ def parse_issue(body: str) -> dict:
         "depth": depth,
         "tags": tags,
         "credit": credit,
+        "native": native,
+        "classified": classified,
     }
 
 
@@ -166,7 +229,10 @@ def check_entry(entry: dict) -> list[str]:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
         shutil.copytree(ROOT / "questions", root / "questions")
-        append_entry(root / "questions" / entry["lang"] / "questions.yaml", entry)
+        candidate = entry
+        if not entry["classified"]:
+            candidate = {**entry, "decks": ["new_people"], "depth": 1, "tags": []}
+        append_entry(root / "questions" / entry["lang"] / "questions.yaml", candidate)
 
         err = io.StringIO()
         with redirect_stdout(io.StringIO()), redirect_stderr(err):
@@ -189,9 +255,12 @@ def main() -> int:
     issue = os.environ.get("ISSUE_NUMBER", "0")
 
     try:
-        entry = parse_issue(body)
+        native = NATIVE_MARKER in body
+        emit("native", str(native).lower())
+        entry = parse_issue(body, allow_unclassified_native=native and mode in {"parse", "check"})
 
         emit("lang", entry["lang"])
+        emit("classified", str(entry["classified"]).lower())
         first_words = " ".join(entry["text"].split()[:6])
         emit("pr_title", f"question({entry['lang']}): {first_words}… (#{issue})")
         if mode == "parse":

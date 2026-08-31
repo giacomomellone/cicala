@@ -46,6 +46,10 @@ const firstPage = newestFirst.slice(0, 100);
     <Chips id="browse-chips" />
   </div>
 
+  <p class="disclaimer browse-disclaimer" data-i18n="play.disclaimer">
+    {t("en", "play.disclaimer")}
+  </p>
+
   <ul class="rows" id="rows">
     {
       firstPage.map(({ q }) => (
@@ -79,7 +83,11 @@ const firstPage = newestFirst.slice(0, 100);
 
   <div class="empty-state" id="b-empty" hidden>
     <p data-i18n="browse.empty">{t("en", "browse.empty")}</p>
-    <p><a href="/contribute" data-i18n="browse.empty.cta">{t("en", "browse.empty.cta")}</a></p>
+    <p>
+      <a href="/suggest?source=browse-empty" id="b-suggest-empty" data-i18n="browse.empty.cta">
+        {t("en", "browse.empty.cta")}
+      </a>
+    </p>
   </div>
 
   <p style="text-align:center; padding:1.5rem 0">
@@ -90,6 +98,10 @@ const firstPage = newestFirst.slice(0, 100);
       hidden={newestFirst.length <= 100}
       data-i18n="browse.more">{t("en", "browse.more")}</button
     >
+  </p>
+
+  <p class="browse-suggest">
+    <a href="/suggest?source=browse" data-i18n="browse.suggest">{t("en", "browse.suggest")}</a>
   </p>
 
   <script>

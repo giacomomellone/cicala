@@ -1,6 +1,6 @@
 # cicala docs
 
-An open-source system for conversation questions: a community-maintained [question database](https://github.com/giacomomellone/cicala/tree/main/questions), a free static [website](https://cicala.dev), and a pocket-sized e-paper [device](design.md#why-a-device). All three share one database, which lives in the Git repository.
+An open-source system for conversation questions: a community-maintained [question database](https://github.com/giacomomellone/cicala/tree/main/questions), a free static-first [website](https://cicala.dev) with one submission endpoint, and a pocket-sized e-paper [device](design.md#why-a-device). All three share one database, which lives in the Git repository.
 
 > **Design principle:** minimize time-to-question, maximize time-in-conversation. The product succeeds when people stop looking at it.
 
@@ -14,6 +14,7 @@ An open-source system for conversation questions: a community-maintained [questi
 - **[firmware architecture](firmware_architecture.md)**: threads, the messages between them, and which modules depend on Zephyr.
 - **[decisions](decisions.md)**: append-only decision log (ADR-lite), including every dependency justification.
 - **[contribution pipeline](contribution_pipeline.md)**: how a question gets from a form into the database, the site and a device — the labels, the automatic checks, and which rule is enforced where.
+- **[native submission setup](native_submission_setup.md)**: GitHub App, Turnstile, Cloudflare Pages Function, runtime secrets, editorial labels, and verification.
 - **[publication policy](publication_policy.md)**: what belongs in this public repository, what belongs in the private sibling, and how to route a change.
 - **[languages](languages.md)**: multilingual policy. Independent corpora, the incubator, maintainers.
 - **[sync protocol](sync_protocol.md)**: device sync flow and the `.qdb.gz` bundle format, byte by byte.

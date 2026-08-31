@@ -33,14 +33,15 @@ test.describe("browse", () => {
     await expect(page.locator("#b-more")).toBeHidden();
   });
 
-  test("a query that matches nothing shows the contribute prompt", async ({ page }) => {
+  test("a query that matches nothing opens a prefilled suggestion", async ({ page }) => {
     await page.goto("/browse");
     await islandReady(page);
     await page.locator("#b-search").fill("zzzzzzq-no-such-question");
     await expect(page.locator("#b-empty")).toBeVisible();
     await expect(page.locator(rows)).toHaveCount(0);
-    await page.locator("#b-empty a").click();
-    await expect.poll(() => new URL(page.url()).pathname).toBe("/contribute");
+    const link = page.locator("#b-empty a");
+    await expect(link).toHaveAttribute("href", /source=browse-empty/);
+    await expect(link).toHaveAttribute("href", /text=zzzzzzq-no-such-question/);
   });
 
   test("a deck chip narrows the list to that deck", async ({ page }) => {
