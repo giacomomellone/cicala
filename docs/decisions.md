@@ -893,3 +893,38 @@ The client uses the standard library, so no runtime dependency was added.
 Accepted cost: translations can remain missing or stale when a language opts
 out, a maintainer rejects a draft, or an older question is never edited. That
 is preferable to an unreviewed backlog or an implied promise of corpus parity.
+
+## 2026-09-01: Question edits use the same native path as suggestions
+
+`/q/<id>` sent every correction to the GitHub issue form, so proposing a
+change required an account while proposing a whole new question did not. The
+permalink now links to `/edit?q=<id>`, a native form served by a second Pages
+Function at `/api/edits`. The GitHub issue form stays, and remains the better
+route for anyone who wants to follow the discussion, because an issue opened
+by the bot cannot be edited by the person who asked for it.
+
+The GitHub App and Turnstile plumbing moved out of the suggestion endpoint
+into `src/lib/github-app.ts`, `src/lib/turnstile.ts` and
+`src/lib/turnstile-widget.ts`, so both endpoints share one implementation of
+JWT minting, installation tokens, issue creation, Siteverify and widget
+loading. The edit form asserts Turnstile action `suggest-edit` against the
+suggestion form's `suggest-question`, and each endpoint requires its own, so a
+token minted on one form cannot open the other's issue.
+
+An edit may propose wording, editorial metadata, or both, and always requires
+an explanation. Consent is asked for only when wording is contributed: a
+metadata-only request donates no text, so there is nothing to dedicate under
+CC0 and no original writing to attest to. The issue body reproduces the
+section headings of `.github/ISSUE_TEMPLATE/edit-question.yml` so both routes
+produce one shape for a maintainer, and for anything that parses these issues
+later.
+
+Edits are deliberately not promoted automatically. `promote-question.yml`
+gates every job on `question-submission` and stays that way: an edit changes a
+question people already read, and `docs/languages.md` asks a fluent maintainer
+to compare wording against the original.
+
+Accepted cost: a second public endpoint and a second abuse surface, and the
+2026-08-31 limitation now applies to edits too — an anonymous contributor
+cannot revise the issue after it is filed, so the form validates hard before
+submitting and a maintainer owns every correction afterwards.

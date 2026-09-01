@@ -112,6 +112,39 @@ const en = {
   "suggest.return": "return to questions",
   "suggest.again": "suggest another",
 
+  // question edit
+  "edit.title": "suggest an edit",
+  "edit.pitch":
+    "Propose a change to a question already in the database. Rewriting is Human Reserved: use your own words.",
+  "edit.current": "the question today",
+  "edit.notfound": "that question is not in the database",
+  "edit.wording": "proposed wording (optional)",
+  "edit.wording.hint": "leave empty for a metadata-only change",
+  "edit.metadata": "metadata to reconsider (optional)",
+  "edit.metadata.decks": "deck eligibility",
+  "edit.metadata.depth": "depth",
+  "edit.metadata.tags": "tags",
+  "edit.metadata.translation": "translation provenance or origin",
+  "edit.reason": "why should it change?",
+  "edit.reason.hint":
+    "explain the flaw, changed meaning, unnatural translation, or classification problem",
+  "edit.reason.short": "a bit longer: at least 10 characters",
+  "edit.reason.long": "too long: 1000 characters max",
+  "edit.nothing": "propose wording or tick at least one box above",
+  "edit.same": "that is the current wording",
+  "edit.human":
+    "I wrote this wording myself and did not use generative AI to create or rewrite it.",
+  "edit.cc0": "I dedicate any wording I contribute here to the public domain (CC0-1.0).",
+  "edit.review":
+    "A maintainer who speaks the language reviews every request. Existing question IDs never change.",
+  "edit.submit": "send edit →",
+  "edit.unavailable": "native edits are temporarily unavailable",
+  "edit.failed": "the edit could not be sent; please try again",
+  "edit.received": "edit received",
+  "edit.received.body":
+    "A language maintainer will compare it with the current wording and decide. Nothing changes on the site until they do.",
+  "edit.github": "prefer GitHub? open the issue form →",
+
   // deck
   "deck.title": "your deck",
   "deck.shared.title": "a shared deck",
@@ -272,6 +305,38 @@ const de: Record<StringKey, string> = {
   "suggest.reference": "referenz",
   "suggest.return": "zurück zu den fragen",
   "suggest.again": "noch eine vorschlagen",
+
+  "edit.title": "änderung vorschlagen",
+  "edit.pitch":
+    "Schlage eine Änderung an einer Frage vor, die bereits in der Datenbank steht. Umformulieren bleibt Menschen vorbehalten: nutze deine eigenen Worte.",
+  "edit.current": "die frage heute",
+  "edit.notfound": "diese frage steht nicht in der datenbank",
+  "edit.wording": "vorgeschlagener wortlaut (optional)",
+  "edit.wording.hint": "leer lassen, wenn sich nur die metadaten ändern sollen",
+  "edit.metadata": "metadaten zum überdenken (optional)",
+  "edit.metadata.decks": "deck-zuordnung",
+  "edit.metadata.depth": "tiefe",
+  "edit.metadata.tags": "schlagwörter",
+  "edit.metadata.translation": "übersetzungsherkunft oder original",
+  "edit.reason": "warum sollte sich das ändern?",
+  "edit.reason.hint":
+    "erkläre den fehler, die verschobene bedeutung, die unnatürliche übersetzung oder das einordnungsproblem",
+  "edit.reason.short": "etwas länger: mindestens 10 zeichen",
+  "edit.reason.long": "zu lang: höchstens 1000 zeichen",
+  "edit.nothing": "schlage einen wortlaut vor oder wähle oben mindestens ein feld",
+  "edit.same": "das ist der aktuelle wortlaut",
+  "edit.human":
+    "Ich habe diesen Wortlaut selbst geschrieben und keine generative KI dafür verwendet.",
+  "edit.cc0": "Ich gebe jeden Wortlaut, den ich hier beitrage, gemeinfrei frei (CC0-1.0).",
+  "edit.review":
+    "Eine Betreuungsperson für diese Sprache prüft jede Anfrage. Bestehende Fragen-IDs ändern sich nie.",
+  "edit.submit": "änderung senden →",
+  "edit.unavailable": "direkte änderungen sind vorübergehend nicht verfügbar",
+  "edit.failed": "die änderung konnte nicht gesendet werden; bitte versuch es erneut",
+  "edit.received": "änderung erhalten",
+  "edit.received.body":
+    "Eine Betreuungsperson für diese Sprache vergleicht sie mit dem aktuellen Wortlaut und entscheidet. Bis dahin ändert sich auf der Website nichts.",
+  "edit.github": "lieber auf GitHub? formular dort öffnen →",
 
   "deck.title": "dein deck",
   "deck.shared.title": "ein geteiltes deck",

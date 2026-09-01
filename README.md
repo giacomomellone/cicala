@@ -51,9 +51,11 @@ More on the reasoning behind these points: [docs/theory.md](docs/theory.md). Eve
 
 You don't need to be a developer or have an account. Use [suggest a question](https://cicala.dev/suggest), or open a [new-question issue](../../issues/new?template=new-question.yml) directly on GitHub. A maintainer who speaks your language reviews it, and once merged it ships to the site and every device. All questions are dedicated to the public domain (CC0); see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-To correct an existing question, use **suggest an edit** on its permalink or
-open the [question-edit form](../../issues/new?template=edit-question.yml).
-Question rewrites remain Human Reserved; accepted edits keep the existing ID.
+To correct an existing question, use **suggest an edit** on its permalink. That
+form needs no account either; the
+[question-edit form](../../issues/new?template=edit-question.yml) on GitHub
+stays available. Question rewrites remain Human Reserved; accepted edits keep
+the existing ID.
 
 Want to add a whole language? Read [docs/languages.md](docs/languages.md).
 

@@ -33,9 +33,9 @@ interface Props {
   lang: string;
 }
 const { q, deck, lang } = Astro.props;
-const editUrl = `${REPO_URL}/issues/new?template=edit-question.yml&title=${encodeURIComponent(
-  `question edit: ${q.id}`,
-)}`;
+/* The native form needs no GitHub account; it carries the id and resolves the
+   question client-side. The issue template stays reachable from there. */
+const editUrl = `/edit?q=${q.id}`;
 ---
 
 <Base
@@ -46,7 +46,7 @@ const editUrl = `${REPO_URL}/issues/new?template=edit-question.yml&title=${encod
 >
   <PlayShell question={q} deck={deck as Deck} lang={lang} permalink />
   <p class="question-edit">
-    <a href={editUrl} rel="external" data-i18n="question.edit">
+    <a href={editUrl} data-i18n="question.edit">
       {t(lang as Lang, "question.edit")}
     </a>
   </p>

@@ -1,0 +1,167 @@
+---
+import { REPO_URL } from "../config";
+import { t } from "../i18n";
+import Base from "../layouts/Base.astro";
+import { EDIT_ASPECTS } from "../lib/edit";
+
+/* The question itself is resolved on the client from `?q=<id>`: a static page
+   per question would duplicate every permalink for a rarely used form. */
+const githubForm = `${REPO_URL}/issues/new?template=edit-question.yml`;
+
+const ASPECT_KEYS = {
+  decks: "edit.metadata.decks",
+  depth: "edit.metadata.depth",
+  tags: "edit.metadata.tags",
+  translation: "edit.metadata.translation",
+} as const;
+---
+
+<Base title="suggest an edit · cicala" lang="en">
+  <section class="suggest-intro">
+    <h1 data-i18n="edit.title">suggest an edit</h1>
+    <p data-i18n="edit.pitch">{t("en", "edit.pitch")}</p>
+  </section>
+
+  <section class="edit-notfound" id="e-notfound" hidden>
+    <p data-i18n="edit.notfound">{t("en", "edit.notfound")}</p>
+    <a class="btn" href="/browse" data-i18n="suggest.return">{t("en", "suggest.return")}</a>
+  </section>
+
+  <form id="e-form" class="suggest-form" novalidate>
+    <div class="edit-current">
+      <span class="edit-current-label" data-i18n="edit.current">{t("en", "edit.current")}</span>
+      <p class="question" id="e-current"></p>
+      <span class="hint" id="e-meta"></span>
+    </div>
+
+    <div class="suggest-heading">
+      <label for="e-text" data-i18n="edit.wording">proposed wording (optional)</label>
+    </div>
+    <textarea id="e-text" class="suggest-question" rows="4" maxlength="200"></textarea>
+    <div class="suggest-ruleline">
+      <span class="rule-hint" id="e-rule" data-i18n="edit.wording.hint">
+        {t("en", "edit.wording.hint")}
+      </span>
+      <span class="counter" id="e-counter">0/140</span>
+    </div>
+    <p class="suggest-style" id="e-style" hidden></p>
+    <p class="sub" id="e-dupe" hidden>
+      <span data-i18n="suggest.rule.duplicate">{t("en", "suggest.rule.duplicate")}</span>
+      · <a id="e-dupe-link" href="/browse" data-i18n="suggest.rule.duplicate.link">
+        {t("en", "suggest.rule.duplicate.link")}
+      </a>
+    </p>
+
+    <div class="field">
+      <label data-i18n="edit.metadata">metadata to reconsider (optional)</label>
+      <div class="checks">
+        {
+          EDIT_ASPECTS.map((aspect) => (
+            <label>
+              <input type="checkbox" id={`e-aspect-${aspect}`} />
+              <span data-i18n={ASPECT_KEYS[aspect]}>{t("en", ASPECT_KEYS[aspect])}</span>
+            </label>
+          ))
+        }
+      </div>
+    </div>
+
+    <p class="rule-hint" id="e-nothing" hidden data-i18n="edit.nothing">
+      {t("en", "edit.nothing")}
+    </p>
+
+    <div class="field">
+      <label for="e-reason" data-i18n="edit.reason">why should it change?</label>
+      <textarea id="e-reason" class="suggest-question" rows="4" maxlength="1200"></textarea>
+      <div class="suggest-ruleline">
+        <span class="rule-hint" id="e-reason-rule" data-i18n="edit.reason.hint">
+          {t("en", "edit.reason.hint")}
+        </span>
+        <span class="counter" id="e-reason-counter">0/1000</span>
+      </div>
+    </div>
+
+    <p class="suggest-review" data-i18n="edit.review">{t("en", "edit.review")}</p>
+
+    <div class="field suggest-honeypot" aria-hidden="true">
+      <label for="e-website">website</label>
+      <input type="text" id="e-website" tabindex="-1" autocomplete="off" />
+    </div>
+
+    <div class="field" id="e-consent" hidden>
+      <label class="checks suggest-consent">
+        <input type="checkbox" id="e-human" />
+        <span data-i18n="edit.human">{t("en", "edit.human")}</span>
+      </label>
+      <label class="checks suggest-consent">
+        <input type="checkbox" id="e-cc0" />
+        <span>
+          <span data-i18n="edit.cc0">{t("en", "edit.cc0")}</span>
+          <a
+            href={`${REPO_URL}/blob/main/LICENSE-QUESTIONS`}
+            rel="external"
+            data-i18n="suggest.cc0.link">{t("en", "suggest.cc0.link")}</a
+          >
+        </span>
+      </label>
+    </div>
+
+    <div id="e-turnstile" class="suggest-turnstile"></div>
+    <button type="submit" class="btn" id="e-submit" disabled data-i18n="edit.submit">
+      {t("en", "edit.submit")}
+    </button>
+    <p class="hint suggest-status" id="e-status" role="status" aria-live="polite"></p>
+    <p class="hint">
+      <a href={githubForm} rel="external" data-i18n="edit.github">{t("en", "edit.github")}</a>
+    </p>
+    <noscript>
+      <p class="hint">
+        JavaScript is required for native edits. You can still
+        <a href={githubForm} rel="external">open the form on GitHub</a>.
+      </p>
+    </noscript>
+  </form>
+
+  <section class="suggest-received" id="e-received" hidden aria-live="polite">
+    <h2 data-i18n="edit.received">edit received</h2>
+    <p data-i18n="edit.received.body">{t("en", "edit.received.body")}</p>
+    <p class="hint" id="e-reference"></p>
+    <div class="suggest-received-actions">
+      <a class="btn" href="/browse" data-i18n="suggest.return">{t("en", "suggest.return")}</a>
+    </div>
+  </section>
+
+  <script>
+    import { initEditForm } from "../lib/edit-form";
+    initEditForm();
+  </script>
+</Base>
+
+<style>
+  .edit-current {
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius, 4px);
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .edit-current-label {
+    font-size: 0.7rem;
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+
+  .edit-current .question {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .edit-notfound {
+    display: grid;
+    gap: 0.9rem;
+    justify-items: start;
+  }
+</style>

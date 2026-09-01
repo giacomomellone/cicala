@@ -1,11 +1,7 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
-import {
-  createGithubJwt,
-  handleSuggestionPost,
-  nativeIssueBody,
-  onRequestGet,
-} from "../functions/api/suggestions";
+import { handleSuggestionPost, nativeIssueBody, onRequestGet } from "../functions/api/suggestions";
+import { createGithubJwt } from "../src/lib/github-app";
 import { CC0_CONSENT_VERSION, type ValidSuggestion } from "../src/lib/submission";
 
 let privateKey = "";

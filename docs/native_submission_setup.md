@@ -1,8 +1,10 @@
 # Native question submission setup
 
-The `/suggest` page submits without a user account. A Cloudflare Pages
-Function verifies the request, authenticates as a repository-scoped GitHub App
-and opens the issue that the existing review workflow promotes.
+The `/suggest` and `/edit` pages submit without a user account. A Cloudflare
+Pages Function verifies the request, authenticates as a repository-scoped
+GitHub App and opens an issue: `question-submission` for a new question, which
+the review workflow promotes, or `question-edit` for a change to an existing
+one, which a maintainer handles by hand.
 
 This setup creates credentials in GitHub and Cloudflare. Never put their
 values in this repository, an issue, a shell command, or documentation.
@@ -15,12 +17,14 @@ flowchart LR
     F -->|secret key signs JWT| A[GitHub App API]
     A -->|one-hour installation token| F
     F -->|Issues: write| I[question-submission issue]
+    F -->|Issues: write| E[question-edit issue]
     I --> W[GitHub Actions review and promotion]
+    E --> M[Maintainer review]
 ```
 
 The private key exists only as an encrypted Cloudflare runtime secret. The
-browser receives the public Turnstile site key from `GET /api/suggestions` and
-never receives a GitHub credential. The function does not use a personal
+browser receives the public Turnstile site key from `GET /api/suggestions` or
+`GET /api/edits` and never receives a GitHub credential. The function does not use a personal
 access token, OAuth client secret, user token or webhook secret.
 
 The App needs `Issues: write` on one repository. It does not need Contents,
@@ -135,8 +139,12 @@ Use:
 Record the site key and secret key. The site key is public. The secret key is
 used only by the Pages Function to call Siteverify.
 
-The client sends action `suggest-question`; the function requires the same
-action and the exact `SUBMISSION_HOSTNAME`. Turnstile tokens are short-lived
+One widget serves both forms. The suggestion page sends action
+`suggest-question` and the edit page sends `suggest-edit`; each function
+requires its own action and the exact `SUBMISSION_HOSTNAME`, so a token minted
+on one form is refused by the other endpoint. Actions are asserted by the
+client and checked by the server, not registered in the dashboard, so adding
+the second form needs no Turnstile change. Turnstile tokens are short-lived
 and single-use. Client rendering alone is not a
 security check; the server-side Siteverify call is mandatory. See Cloudflare's
 [server-side validation guide](https://developers.cloudflare.com/turnstile/get-started/server-side-validation/).
@@ -214,9 +222,11 @@ Check configuration readiness:
 
 ```sh
 curl -sS https://cicala.dev/api/suggestions
+curl -sS https://cicala.dev/api/edits
 ```
 
-Expected shape:
+Expected shape, with `turnstileAction` reading `suggest-question` and
+`suggest-edit` respectively:
 
 ```json
 {
@@ -240,7 +250,14 @@ Open `https://cicala.dev/suggest` and verify:
 6. the check workflow comments with the native text-check result;
 7. adding deck and depth labels followed by `approved` opens a valid pull request.
 
-Close the test issue or pull request without merging its fixture question.
+Then open a question permalink, select **suggest an edit**, and verify:
+
+8. the current wording appears and an unknown `?q=` value is refused;
+9. the consent boxes appear only once wording is proposed;
+10. a deliberate test edit creates one `question-edit` issue authored by the
+    App bot, whose body carries the same headings as the GitHub issue form.
+
+Close the test issues or pull request without merging their fixture content.
 
 Events created with a GitHub App installation token can trigger the repository
 workflow. GitHub suppresses recursive events created with a workflow's own

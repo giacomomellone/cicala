@@ -6,53 +6,13 @@ import { getTipsSeen, setTipsSeen } from "./store";
 import { styleHint } from "./style-hints";
 import { CC0_CONSENT_VERSION, isSuggestionSource, type SuggestionSource } from "./submission";
 import { TIPS, tipAt, tipExample, tipIndex } from "./tips";
+import { loadTurnstile } from "./turnstile-widget";
 
 interface SuggestionConfig {
   available: boolean;
   turnstileRequired: boolean;
   turnstileSiteKey: string;
   turnstileAction: string;
-}
-
-interface TurnstileApi {
-  render(
-    target: HTMLElement,
-    options: {
-      sitekey: string;
-      action: string;
-      appearance: "interaction-only";
-      size: "flexible";
-      callback: (token: string) => void;
-      "expired-callback": () => void;
-      "error-callback": () => void;
-    },
-  ): string;
-  reset(widget: string): void;
-}
-
-declare global {
-  interface Window {
-    turnstile?: TurnstileApi;
-  }
-}
-
-function loadTurnstile(): Promise<TurnstileApi> {
-  if (window.turnstile) return Promise.resolve(window.turnstile);
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>("script[data-cicala-turnstile]");
-    const script = existing ?? document.createElement("script");
-    const ready = () =>
-      window.turnstile ? resolve(window.turnstile) : reject(new Error("missing API"));
-    script.addEventListener("load", ready, { once: true });
-    script.addEventListener("error", () => reject(new Error("failed to load")), { once: true });
-    if (!existing) {
-      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-      script.async = true;
-      script.defer = true;
-      script.dataset.cicalaTurnstile = "";
-      document.head.append(script);
-    }
-  });
 }
 
 /* One tip at a time above the form. The stored count moves forward once per

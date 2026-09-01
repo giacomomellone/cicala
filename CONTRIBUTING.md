@@ -36,12 +36,20 @@ directly.
 
 ## Editing an existing question
 
-Open the question's permalink and select **suggest an edit**, or use the
-[question-edit form](../../issues/new?template=edit-question.yml). A GitHub
-account is required because edits need a discussion attached to the existing
-question. Proposed wording must be written by a person and dedicated to CC0.
-A fluent maintainer applies accepted wording or metadata changes in a normal
-pull request while preserving the question's `id` and `added` values.
+Open the question's permalink and select **suggest an edit**. Like the
+suggestion form, it needs no GitHub account: the site opens the
+`question-edit` issue for you. The
+[question-edit form](../../issues/new?template=edit-question.yml) on GitHub
+stays available, and is the better route when you want to follow the
+discussion yourself — an issue opened by the bot cannot be edited by the
+person who asked for it.
+
+Propose wording in your own words, or leave the wording empty and tick the
+metadata you want reconsidered: deck eligibility, depth, tags, or translation
+provenance. Either way an explanation is required. Proposed wording must be
+written by a person and dedicated to CC0. A fluent maintainer applies accepted
+wording or metadata changes in a normal pull request while preserving the
+question's `id` and `added` values.
 
 ## Editing question files directly (developers)
 
