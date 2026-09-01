@@ -26,7 +26,7 @@ export function rowHtml(item: RowItem, lang: string): string {
     .join("");
   const provenance =
     item.q.translated_by === "google" && item.q.origin
-      ? `<a href="/q/${escapeHtml(item.q.origin)}">${escapeHtml(tr(lang, "question.google"))}</a>`
+      ? `<a href="/q/${escapeHtml(item.q.origin)}">${escapeHtml(tr(lang, "question.translated"))}</a>`
       : "";
   const saved = isFav(item.q.id);
   return `<li class="row" data-id="${item.q.id}">

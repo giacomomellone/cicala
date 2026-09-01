@@ -81,8 +81,11 @@ Cloud Translation has no formality control, so target-language style and
 register are part of fluent review.
 
 After a reviewed translation merges, `build_site_data.py` carries its provenance
-to the website. Browse labels it as a human-reviewed Google translation and links
-back to the original question.
+to the website. Browse and the play surface label it as an automatically
+translated, human-reviewed question and link back to the original. The label
+does not name the translation vendor: a reader needs to know the text was
+machine-translated and checked, not which service produced it. The vendor stays
+recorded in `translated_by`.
 
 ## Per-language moderation
 

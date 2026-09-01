@@ -26,6 +26,14 @@ const { question, deck, lang, permalink = false } = Astro.props;
   <div class="panel">
     <i class="panel__floor dither" aria-hidden="true"></i>
     <span class="panel__deck" id="q-deck-name">{t("en", `deck.${deck}` as StringKey)}</span>
+    <a
+      class="panel__origin"
+      id="q-origin"
+      href={question.origin ? `/q/${question.origin}` : "#"}
+      data-i18n="question.translated"
+      hidden={!(question.translated_by === "google" && question.origin)}
+      >{t("en", "question.translated")}</a
+    >
     <div class="meta panel__acts" id="q-meta">
       <button
         type="button"
@@ -50,23 +58,32 @@ const { question, deck, lang, permalink = false } = Astro.props;
         <p class="question" id="q-text" aria-live="polite">{question.text}</p>
       </div>
     </div>
-    <p class="panel__stamp" data-i18n="play.disclaimer.short">
-      {t("en", "play.disclaimer.short")}
-    </p>
   </div>
   <div class="device-controls">
-    <button type="button" class="key" id="q-category" data-i18n="play.category">
-      {t("en", "play.category")}
+    <button type="button" class="key" id="q-category">
+      <span data-i18n="play.category">{t("en", "play.category")}</span>
+      <span class="key__kbd" aria-hidden="true">c</span>
     </button>
-    <button type="button" class="key" id="q-next" data-i18n="play.next">
-      {t("en", "play.next")}
+    <button type="button" class="key" id="q-next">
+      <span data-i18n="play.next">{t("en", "play.next")}</span>
+      <span class="key__kbd" aria-hidden="true">space</span>
     </button>
   </div>
-  <p class="hint" data-i18n="play.hint">{t("en", "play.hint")}</p>
   <p class="skip-note" data-i18n="play.skip">{t("en", "play.skip")}</p>
-  <p class="disclaimer" data-i18n="play.disclaimer">{t("en", "play.disclaimer")}</p>
-  <p class="suggest-context">
+  <p class="card-links">
     <a href="/suggest?source=play" data-i18n="play.suggest">{t("en", "play.suggest")}</a>
+    {
+      permalink && (
+        <span id="q-edit">
+          <span class="card-links__dot" aria-hidden="true">
+            ·
+          </span>
+          <a href={`/edit?q=${question.id}`} data-i18n="question.edit">
+            {t("en", "question.edit")}
+          </a>
+        </span>
+      )
+    }
   </p>
 </div>
 
@@ -86,11 +103,14 @@ const { question, deck, lang, permalink = false } = Astro.props;
   }
 
   /* The dither ramps up from the bottom edge and is gone by --floor-end, so it
-     never reaches the question. */
+     never reaches the question. The tile grid is anchored to the bottom so the
+     row meeting that edge is whole; the partial row lands at the top, where
+     the mask has already faded it out. */
   .panel__floor {
     position: absolute;
     inset: 0;
     pointer-events: none;
+    background-position: 0 100%;
     -webkit-mask-image: linear-gradient(
       0deg,
       #000 0%,
@@ -115,6 +135,24 @@ const { question, deck, lang, permalink = false } = Astro.props;
     transition: opacity 120ms ease;
   }
 
+  .panel__origin {
+    position: absolute;
+    z-index: 1;
+    /* Under the deck name, in the chrome corner. Never over .panel__floor:
+       the ramp is densest at the bottom and eats small type there. */
+    top: calc(clamp(0.55rem, 2.4vw, 0.9rem) + clamp(1.3rem, 4.4vw, 1.7rem));
+    left: clamp(0.8rem, 3.5vw, 1.3rem);
+    max-width: 12ch;
+    font-family: var(--font-ui);
+    font-size: 0.5625rem;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-underline-offset: 2px;
+  }
+
   .panel__deck {
     left: clamp(0.8rem, 3.5vw, 1.3rem);
     font-family: var(--font-ui);
@@ -134,12 +172,14 @@ const { question, deck, lang, permalink = false } = Astro.props;
 
   /* Chrome follows the question through the swap rather than jumping. */
   .panel:has(.q-swap.is-fading) .panel__deck,
+  .panel:has(.q-swap.is-fading) .panel__origin,
   .panel:has(.q-swap.is-fading) .panel__acts {
     opacity: 0;
   }
 
   /* The deck-name card already names the deck in full. */
-  .panel:has(.question.is-name) .panel__deck {
+  .panel:has(.question.is-name) .panel__deck,
+  .panel:has(.question.is-name) .panel__origin {
     visibility: hidden;
   }
 
@@ -169,6 +209,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
   }
 
   .key {
+    position: relative;
     font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
@@ -196,78 +237,54 @@ const { question, deck, lang, permalink = false } = Astro.props;
     color: var(--panel);
   }
 
-  .hint {
-    margin-top: 0.9rem;
-    text-align: center;
+  /* The shortcut is engraved in the corner so the label keeps the key's
+     centre. currentColor makes it invert with the key, with no second rule. */
+  .key__kbd {
+    position: absolute;
+    left: 0.5rem;
+    bottom: 0.34rem;
+    font-size: 0.5rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    text-transform: lowercase;
+    color: currentColor;
+    opacity: 0.42;
   }
 
-  /* Touch has no keyboard, so the shortcut line is noise there. */
+  /* Touch has no keyboard, so the shortcut is noise there. */
   @media (hover: none) and (pointer: coarse) {
-    .hint {
+    .key__kbd {
       display: none;
     }
   }
 
-  .disclaimer {
-    margin-top: 0.9rem;
-  }
-
   .skip-note {
     max-width: 32rem;
-    margin: 0.35rem auto 0;
+    margin: 0.9rem auto 0;
     color: var(--ink-soft);
     font-size: 0.75rem;
     text-align: center;
     text-wrap: balance;
   }
 
-  .skip-note + .disclaimer {
-    margin-top: 0.45rem;
-  }
-
-  .suggest-context {
+  .card-links {
     margin-top: 0.45rem;
     font-size: 0.75rem;
     color: var(--ink-faint);
+    text-align: center;
   }
 
-  .suggest-context a {
+  .card-links a {
     text-underline-offset: 3px;
   }
 
-  /* Provenance printed on the sheet itself, under a tear line drawn from the
-     same dither grid. The phone shows this; wider screens show the sentence
-     under the keys instead, and never both. */
-  .panel__stamp {
-    position: relative;
-    z-index: 1;
-    display: none;
-    align-self: stretch;
-    margin-top: auto;
-    padding-top: 0.7rem;
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--ink-faint);
-    border-top: var(--dither-px) solid transparent;
-    border-image: repeating-linear-gradient(
-        90deg,
-        var(--ink-faint) 0 var(--dither-px),
-        transparent var(--dither-px) calc(var(--dither-px) * 2)
-      )
-      2;
+  .card-links__dot {
+    padding-inline: 0.4rem;
   }
 
   /* The phone becomes the panel: the sheet runs edge to edge and the header
      rule serves as its top border. */
   @media (max-width: 30rem) {
-    /* The tear line above the stamp is the bottom edge here, so the ramp would
-       only sit under the text and swallow it. */
-    .panel__floor {
-      display: none;
-    }
-
     .panel {
       border-top: none;
       border-inline: none;
@@ -280,13 +297,15 @@ const { question, deck, lang, permalink = false } = Astro.props;
       letter-spacing: 0.3em;
     }
 
+    .panel__origin {
+      position: static;
+      max-width: none;
+      margin-top: 0.2rem;
+    }
+
     .panel__acts {
       top: 0.55rem;
       right: 0.55rem;
-    }
-
-    .panel__stamp {
-      display: block;
     }
 
     /* Thumb-sized, like the two keys on the device. */
@@ -298,14 +317,6 @@ const { question, deck, lang, permalink = false } = Astro.props;
 
     .key + .key {
       border-left: 1px solid var(--line);
-    }
-
-    .disclaimer {
-      display: none;
-    }
-
-    .skip-note {
-      margin-top: 0.9rem;
     }
   }
 
@@ -321,6 +332,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
     .q-swap,
     .key,
     .panel__deck,
+    .panel__origin,
     .panel__acts {
       transition: none;
     }

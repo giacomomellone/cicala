@@ -28,7 +28,7 @@ test.describe("native edit form", () => {
     const question = target();
     await mockEditApi(page);
     await page.goto(`/q/${question.id}`);
-    await page.locator(".question-edit a").click();
+    await page.locator("#q-edit a").click();
 
     await expect(page).toHaveURL(new RegExp(`/edit\\?q=${question.id}$`));
     await expect(page.locator("#e-current")).toHaveText(question.text);

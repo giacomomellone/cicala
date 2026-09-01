@@ -1,8 +1,7 @@
 ---
 // Static question permalinks include the question title and language.
 import PlayShell from "../../components/PlayShell.astro";
-import { REPO_URL, type Deck } from "../../config";
-import { t, type Lang } from "../../i18n";
+import type { Deck } from "../../config";
 import Base from "../../layouts/Base.astro";
 import type { Question } from "../../lib/data";
 
@@ -33,9 +32,6 @@ interface Props {
   lang: string;
 }
 const { q, deck, lang } = Astro.props;
-/* The native form needs no GitHub account; it carries the id and resolves the
-   question client-side. The issue template stays reachable from there. */
-const editUrl = `/edit?q=${q.id}`;
 ---
 
 <Base
@@ -45,18 +41,4 @@ const editUrl = `/edit?q=${q.id}`;
   seedLang={lang}
 >
   <PlayShell question={q} deck={deck as Deck} lang={lang} permalink />
-  <p class="question-edit">
-    <a href={editUrl} data-i18n="question.edit">
-      {t(lang as Lang, "question.edit")}
-    </a>
-  </p>
 </Base>
-
-<style>
-  .question-edit {
-    margin-top: 0.75rem;
-    text-align: center;
-    font-size: 0.75rem;
-    color: var(--ink-faint);
-  }
-</style>

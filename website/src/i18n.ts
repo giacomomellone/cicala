@@ -33,18 +33,15 @@ const en = {
   "tag.wouldyourather": "would you rather",
 
   // question provenance
-  "question.google": "Google translation · human-reviewed",
+  "question.translated": "automatically translated · human-reviewed",
   "question.edit": "suggest an edit →",
 
   // play
   "play.next": "next question →",
   "play.category": "category",
-  "play.hint": "space for next, c for category",
   "play.skip": "not every question is for every moment. feel free to skip.",
   "play.disclaimer":
     "Original questions are written by people. Machine translations are marked and reviewed by a fluent editor before publication.",
-  /* The phone shows the stamp instead; only one of the two is ever displayed. */
-  "play.disclaimer.short": "human originals · reviewed translations",
   "play.save": "save",
   "play.saved": "saved",
   "play.share": "share",
@@ -200,6 +197,7 @@ const en = {
 
   // footer
   "footer.questions": "questions",
+  "footer.provenance": "human originals · reviewed translations",
   "footer.license": "questions are public domain (CC0)",
   "footer.source": "source",
 } as const;
@@ -232,16 +230,14 @@ const de: Record<StringKey, string> = {
   "tag.memory": "erinnerung",
   "tag.wouldyourather": "entweder oder",
 
-  "question.google": "Google-Übersetzung · von Menschen geprüft",
+  "question.translated": "automatisch übersetzt · von Menschen geprüft",
   "question.edit": "änderung vorschlagen →",
 
   "play.next": "nächste frage →",
   "play.category": "kategorie",
-  "play.hint": "leertaste für nächste, c für kategorie",
   "play.skip": "nicht jede frage passt zu jedem moment. überspring sie ruhig.",
   "play.disclaimer":
     "Originalfragen werden von Menschen geschrieben. Maschinelle Übersetzungen werden gekennzeichnet und vor der Veröffentlichung von einer sprachkundigen Person geprüft.",
-  "play.disclaimer.short": "menschliche Originale · geprüfte Übersetzungen",
   "play.save": "merken",
   "play.saved": "gemerkt",
   "play.share": "teilen",
@@ -389,6 +385,7 @@ const de: Record<StringKey, string> = {
   "notfound.home": "bring mich heim →",
 
   "footer.questions": "fragen",
+  "footer.provenance": "menschliche Originale · geprüfte Übersetzungen",
   "footer.license": "alle fragen sind gemeinfrei (CC0)",
   "footer.source": "quellcode",
 };

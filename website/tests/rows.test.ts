@@ -35,7 +35,7 @@ describe("rowHtml", () => {
     expect(container.textContent).toContain("nachdenklich");
   });
 
-  it("marks a Google descendant and links to its human original", () => {
+  it("marks a machine translation and links to its human original", () => {
     const translated = {
       q: {
         ...item.q,
@@ -46,7 +46,7 @@ describe("rowHtml", () => {
     const container = document.createElement("ul");
     container.innerHTML = rowHtml(translated, "en");
     const provenance = [...container.querySelectorAll(".row-meta a")].at(-1)!;
-    expect(provenance.textContent).toBe("Google translation · human-reviewed");
+    expect(provenance.textContent).toBe("automatically translated · human-reviewed");
     expect(provenance.getAttribute("href")).toBe("/q/q-12345678");
   });
 

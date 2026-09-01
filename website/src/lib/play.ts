@@ -34,6 +34,8 @@ export async function initPlay(): Promise<void> {
   const qSwap = document.getElementById("q-swap")!;
   const qMeta = document.getElementById("q-meta")!;
   const deckName = document.getElementById("q-deck-name")!;
+  const originLink = document.getElementById("q-origin") as HTMLAnchorElement;
+  const editLink = document.getElementById("q-edit");
   const favBtn = document.getElementById("q-fav") as HTMLButtonElement;
   const favLabel = document.getElementById("q-fav-label")!;
   const shareBtn = document.getElementById("q-share") as HTMLButtonElement;
@@ -99,12 +101,21 @@ export async function initPlay(): Promise<void> {
     favLabel.textContent = tr(lang, saved ? "play.saved" : "play.save");
   }
 
+  /* Provenance belongs to the question on screen, not to the page: it appears
+     only on a machine translation, and links to the human-written original. */
+  function renderOrigin(entry: Shown): void {
+    const origin = entry.q.translated_by === "google" ? entry.q.origin : undefined;
+    originLink.hidden = !origin;
+    if (origin) originLink.href = `/q/${origin}`;
+  }
+
   function renderQuestion(entry: Shown): void {
     qText.classList.remove("is-name");
     qMeta.style.visibility = "";
     qText.textContent = entry.q.text;
     deck = playDeck(entry.deck);
     deckName.textContent = deckLabel(deck);
+    renderOrigin(entry);
     renderMeta(entry);
     document.documentElement.lang = lang;
   }
@@ -134,7 +145,9 @@ export async function initPlay(): Promise<void> {
 
   // Replace the permalink entry when normal play begins.
   function leavePermalink(): void {
-    if (location.pathname.startsWith("/q/")) window.history.replaceState({}, "", "/");
+    if (!location.pathname.startsWith("/q/")) return;
+    window.history.replaceState({}, "", "/");
+    editLink?.remove();
   }
 
   async function next(): Promise<void> {

@@ -125,7 +125,11 @@ const ogImage = new URL("/og.png", SITE_URL).href;
         <span class="nav-dot" aria-hidden="true">·</span>
         <a href={REPO_URL} rel="external" data-i18n="footer.source">source</a>
       </div>
-      <p class="footer-license" data-i18n="footer.license">questions are public domain (CC0)</p>
+      <p class="footer-license">
+        <span data-i18n="footer.provenance">human originals · reviewed translations</span>
+        <span class="nav-dot" aria-hidden="true">·</span>
+        <span data-i18n="footer.license">questions are public domain (CC0)</span>
+      </p>
     </footer>
     <script>
       import { applyI18n } from "../lib/apply-i18n";

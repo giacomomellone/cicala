@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { devices, expect, test } from "@playwright/test";
 import { payload, playable, playReady, schema, seedStorage, smallestDeck } from "./fixtures";
 
 const questionText = "#q-text";
@@ -97,18 +97,13 @@ test.describe("play", () => {
     await expect(page.locator('.device-controls a[href="/suggest?source=play"]')).toHaveCount(0);
   });
 
-  test("the phone trades the sentence and the labels for a full-bleed sheet", async ({ page }) => {
+  test("the phone trades the labels for a full-bleed sheet", async ({ page }) => {
     await page.goto("/");
     const panel = page.locator(".panel");
-    const stamp = page.locator(".panel__stamp");
-    const sentence = page.locator(".disclaimer");
     const skipNote = page.locator(".skip-note");
     const language = page.locator("#lang-switch button").first();
 
-    // Exactly one form of the provenance note is ever displayed.
-    await expect(sentence).toBeVisible();
     await expect(skipNote).toContainText(/feel free to skip/i);
-    await expect(stamp).toBeHidden();
     await expect(panel).toHaveCSS("border-left-width", "1px");
     await expect(page.locator("#q-fav-label")).toBeVisible();
     await expect(language.locator(".lang-full")).toBeVisible();
@@ -116,12 +111,47 @@ test.describe("play", () => {
 
     await page.setViewportSize({ width: 375, height: 812 });
 
-    await expect(stamp).toBeVisible();
-    await expect(sentence).toBeHidden();
     await expect(skipNote).toBeVisible();
     await expect(panel).toHaveCSS("border-left-width", "0px");
     await expect(language.locator(".lang-full")).toBeHidden();
     await expect(language.locator(".lang-code")).toBeVisible();
+  });
+
+  test("the card carries no blanket provenance note, only the footer", async ({ page }) => {
+    await page.goto("/");
+    await playReady(page);
+
+    await expect(page.locator(".panel__stamp")).toHaveCount(0);
+    await expect(page.locator(".play .disclaimer")).toHaveCount(0);
+    await expect(page.locator(".play .hint")).toHaveCount(0);
+    await expect(page.locator(".footer-license")).toContainText(/human originals/i);
+
+    // Every shipped question is human-written today, so nothing is marked.
+    await expect(page.locator("#q-origin")).toBeHidden();
+  });
+
+  test("the shortcut rides its key and leaves the label centred", async ({ page }) => {
+    await page.goto("/");
+    const next = page.locator("#q-next");
+
+    await expect(next.locator(".key__kbd")).toHaveText("space");
+    await expect(page.locator("#q-category .key__kbd")).toHaveText("c");
+
+    // Absolute, so the label keeps the key's centre rather than shifting up.
+    await expect(next.locator(".key__kbd")).toHaveCSS("position", "absolute");
+  });
+
+  /* The shortcut hides on `pointer: coarse`, which a resized desktop viewport
+     does not report — it needs a touch context. */
+  test("a touch device is not offered a keyboard shortcut", async ({ browser }) => {
+    const context = await browser.newContext({ ...devices["Pixel 5"] });
+    const page = await context.newPage();
+    await page.goto("/");
+
+    await expect(page.locator("#q-next .key__kbd")).toBeHidden();
+    await expect(page.locator("#q-next")).toContainText(/next question/i);
+
+    await context.close();
   });
 
   test("next draws a different question", async ({ page }) => {
