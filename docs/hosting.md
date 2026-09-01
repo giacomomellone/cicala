@@ -27,17 +27,24 @@ that cannot be reached later by cable.
 ## Website on Cloudflare Pages
 
 1. Create a Cloudflare Pages project named `cicala` using **Upload assets**.
-   CI deploys with Wrangler, so no Git connection is needed.
-2. Create an API token with `Account · Cloudflare Pages · Edit` permission.
-3. Add these GitHub repository secrets:
+   CI deploys with Wrangler, so no Git connection is needed. Give it a
+   production branch that is never pushed, so no deploy can reach the public
+   hostname before launch.
+2. Turn on the project's access policy, which puts preview deployments behind
+   Cloudflare Access. It does not cover the production hostname or a custom
+   domain; those need their own Zero Trust application.
+3. Create an API token with `Account · Cloudflare Pages · Edit` permission.
+4. Add these GitHub repository secrets:
 
    ```text
    CLOUDFLARE_API_TOKEN
    CLOUDFLARE_ACCOUNT_ID
    ```
 
-4. Add the website hostname under the Pages project's custom domains.
-5. Configure the GitHub App and Turnstile runtime values from
+At launch, and not before:
+
+5. Add the website hostname under the Pages project's custom domains.
+6. Configure the GitHub App and Turnstile runtime values from
    [native submission setup](native_submission_setup.md).
 
 `.github/workflows/site.yml` deploys the site on pushes to `main` when both
@@ -45,6 +52,16 @@ deployment secrets exist. Astro still emits static pages. Wrangler also
 deploys `website/functions/api/suggestions.ts` for `/api/suggestions`; the
 checked-in `_routes.json` keeps every other request on Cloudflare's static
 asset path.
+
+The deploy passes `--branch=staging`. A deployment is a production one only
+when its branch matches the project's production branch, so every run
+publishes a preview reachable through Access at `staging.cicala.pages.dev`.
+Preview and production carry separate environment variables. With none set on
+preview, `GET /api/suggestions` reports `available: false` and the form
+declines submissions; the browser suite covers that flow against mocks.
+
+Going public means three changes together: point the production branch at
+`main`, drop `--branch` from the deploy step, and complete steps 5 and 6.
 
 The Pages project therefore has two credential boundaries:
 

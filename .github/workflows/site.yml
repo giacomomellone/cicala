@@ -141,7 +141,10 @@ jobs:
 
           echo "published to s3://$DEVICE_BUCKET/device/"
 
+      # --branch must not match the project's production branch, or the deploy
+      # lands on the public *.pages.dev hostname. Preview deployments are the
+      # only ones the project's Access policy covers. See docs/hosting.md.
       - name: Deploy to Cloudflare Pages
         if: github.event_name == 'push' && env.CLOUDFLARE_API_TOKEN != ''
         working-directory: website
-        run: npx wrangler pages deploy dist --project-name=cicala
+        run: npx wrangler pages deploy dist --project-name=cicala --branch=staging
