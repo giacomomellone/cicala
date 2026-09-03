@@ -54,8 +54,44 @@ question's `id` and `added` values.
 ## Editing question files directly (developers)
 
 One corpus file per language: `questions/{lang}/questions.yaml`. Store a
-question once and list every deck where it is eligible. Append the entry
-**without an `id` and without `added`**; CI assigns both:
+question once and list every deck where it is eligible.
+
+### Writing a batch
+
+A draft file states the editorial metadata once per group and lists the
+questions under it, which is the cheaper way to write a deck in one sitting:
+
+```text
+# decks: new_people, close · depth: 1 · tags: icebreaker
+What's the most spontaneous thing you've ever done?
+Which song gets you on the dance floor every single time?
+
+# decks: family · depth: 2
+What did you believe about your parents that turned out to be wrong?
+```
+
+```sh
+just draft en drafts/en.txt              # append them to questions/en/
+just draft en drafts/en.txt --dry-run    # show what it would append, write nothing
+```
+
+Fields are separated by `·` or `|`. A header replaces the previous one outright,
+so a group with no `tags` field has no tags. A `#` line that does not open with
+`decks:`, `depth:`, `tags:` or `author:` is a comment. A question may wrap over
+several lines and closes on the line that ends with `?`.
+
+The import applies the validator's own rules before it writes anything: a draft
+that breaks one leaves the corpus untouched and names the line to fix. Questions
+already in the corpus are reported and skipped, so re-running a draft you have
+edited in part is safe. It finishes by running the fix pass, so ids and dates
+are already assigned when it returns.
+
+`drafts/` is gitignored. The draft is your working copy; the corpus is the
+database.
+
+### Writing one
+
+Append the entry **without an `id` and without `added`**; CI assigns both:
 
 ```yaml
 - text: "When did you last change your mind about something important?"
