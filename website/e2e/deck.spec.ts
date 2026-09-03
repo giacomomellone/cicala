@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { payload, seedStorage } from "./fixtures";
+import { payload, seedStorage, skipWithoutQuestions } from "./fixtures";
 
 test.describe("your deck", () => {
   test("an empty deck explains itself and disables the actions", async ({ page }) => {
@@ -10,6 +10,7 @@ test.describe("your deck", () => {
   });
 
   test("saved questions appear and the deck chips filter them", async ({ page }) => {
+    skipWithoutQuestions("en");
     const questions = payload("en");
     const work = questions.find((q) => q.decks.includes("work"))!;
     const notWork = questions.find((q) => !q.decks.includes("work"))!;
@@ -26,6 +27,7 @@ test.describe("your deck", () => {
   });
 
   test("share copies a link that reproduces the deck", async ({ page }) => {
+    skipWithoutQuestions("en");
     const ids = payload("en")
       .slice(0, 3)
       .map((q) => q.id);
@@ -42,6 +44,7 @@ test.describe("your deck", () => {
   });
 
   test("a shared deck is read-only and offers to save all", async ({ page }) => {
+    skipWithoutQuestions("en");
     const ids = payload("en")
       .slice(0, 2)
       .map((q) => q.id);
@@ -61,6 +64,7 @@ test.describe("your deck", () => {
   });
 
   test("a shared deck resolves ids across languages", async ({ page }) => {
+    skipWithoutQuestions("en", "de");
     const english = payload("en")[0]!;
     const german = payload("de")[0]!;
     await page.goto(`/deck#ids=${english.id},${german.id}`);
@@ -68,6 +72,7 @@ test.describe("your deck", () => {
   });
 
   test("unknown ids in a shared link are skipped", async ({ page }) => {
+    skipWithoutQuestions("en");
     const known = payload("en")[0]!;
     await page.goto(`/deck#ids=q-00000000,${known.id},not-an-id`);
     await expect(page.locator("#d-rows .row")).toHaveCount(1);
@@ -75,6 +80,7 @@ test.describe("your deck", () => {
   });
 
   test("export writes the deck as json", async ({ page }) => {
+    skipWithoutQuestions("en");
     const ids = payload("en")
       .slice(0, 2)
       .map((q) => q.id);
@@ -91,6 +97,7 @@ test.describe("your deck", () => {
 
 test.describe("language", () => {
   test("switching language reloads into the other corpus", async ({ page }) => {
+    skipWithoutQuestions("en", "de");
     await page.goto("/browse");
     await page.locator('#lang-switch button[data-lang="de"]').click();
 

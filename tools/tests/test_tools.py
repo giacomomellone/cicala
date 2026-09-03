@@ -420,7 +420,22 @@ class TestTranslationPlanning(unittest.TestCase):
             root = Path(tmp_name)
             (root / "questions/en").mkdir(parents=True)
             (root / "questions/de").mkdir(parents=True)
-            shutil.copy(REPO / "questions/schema.json", root / "questions/schema.json")
+            # A fixture rather than the repo schema: this test is about the commit
+            # range, and the shipped languages opt into translation independently.
+            (root / "questions/schema.json").write_text(
+                json.dumps(
+                    {
+                        "x-cicala": {
+                            "questionFile": "questions.yaml",
+                            "languages": {
+                                "en": {"google": {"source": "en", "target": "en"}},
+                                "de": {"google": {"source": "de", "target": "de"}},
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
             (root / "questions/de/questions.yaml").write_text("", encoding="utf-8")
             corpus = root / "questions/en/questions.yaml"
             corpus.write_text(
@@ -1210,3 +1225,4 @@ class TestProductionEndpoint(unittest.TestCase):
         self.assertEqual(self.kconfig_default("CICALA_SYNC_BASE_URL"), base)
         self.assertEqual(self.kconfig_default("CICALA_OTA_BASE_URL"), base)
         self.assertEqual(check_release.DEFAULT_BASE_URL, base)
+

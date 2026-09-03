@@ -1,6 +1,6 @@
 // All UI strings, one object per shipped language (spec §7.3).
 
-export type Lang = "en" | "de";
+export type Lang = "en" | "de" | "it";
 
 const en = {
   // header / nav
@@ -390,7 +390,196 @@ const de: Record<StringKey, string> = {
   "footer.source": "quellcode",
 };
 
-export const strings: Record<Lang, Record<StringKey, string>> = { en, de };
+const it: Record<StringKey, string> = {
+  "nav.browse": "sfoglia",
+  "nav.suggest": "proponi",
+  "nav.device": "dispositivo",
+  "nav.skip": "vai al contenuto",
+
+  "deck.all": "tutti",
+  "deck.new_people": "new people",
+  "deck.close": "close",
+  "deck.family": "family",
+  "deck.work": "work",
+  "deck.here": "here",
+  "deck.wild": "wild",
+
+  "depth.1": "profondità 1",
+  "depth.2": "profondità 2",
+  "depth.3": "profondità 3",
+
+  "tag.icebreaker": "rompighiaccio",
+  "tag.reflective": "riflessiva",
+  "tag.spicy": "audace",
+  "tag.dark": "cupa",
+  "tag.hypothetical": "e se",
+  "tag.memory": "ricordo",
+  "tag.wouldyourather": "preferiresti",
+
+  "question.translated": "tradotta automaticamente · verificata da una persona",
+  "question.edit": "proponi una modifica →",
+
+  "play.next": "prossima domanda →",
+  "play.category": "categoria",
+  "play.skip": "non ogni domanda va bene in ogni momento. saltala pure.",
+  "play.disclaimer":
+    "Le domande originali le scrivono le persone. Le traduzioni automatiche sono segnalate e verificate da chi conosce la lingua prima della pubblicazione.",
+  "play.save": "salva",
+  "play.saved": "salvata",
+  "play.share": "condividi",
+  "play.copied": "copiato",
+  "play.empty": "in questo mazzo non ci sono ancora domande.",
+  "play.suggest": "ne hai una che vale la pena? proponi una domanda →",
+
+  "browse.title": "sfoglia",
+  "browse.search": "cerca fra le domande…",
+  "browse.alltags": "tutte le etichette",
+  "browse.sort.newest": "più recenti",
+  "browse.sort.random": "casuale",
+  "browse.more": "mostra altre",
+  "browse.empty": "Nessuna domanda corrisponde. Forse manca la tua?",
+  "browse.empty.cta": "proponila →",
+  "browse.suggest": "manca qualcosa? proponi una domanda →",
+
+  "suggest.title": "proponi una domanda",
+  "suggest.pitch": "Scrivi una domanda a cui risponderesti anche tu.",
+  "suggest.tips.eyebrow": "consiglio",
+  "suggest.tips.prev": "consiglio precedente",
+  "suggest.tips.next": "consiglio successivo",
+  "suggest.tip.build":
+    "Fai costruire una risposta invece di farne ripetere una. Se la risposta è già pronta in testa, la domanda è noiosa.",
+  "suggest.tip.rankings":
+    "Evita classifiche e superlativi: migliore, preferito, massimo, di più. Chiedi solo ciò a cui risponderesti tu, a quel tavolo.",
+  "suggest.tip.concrete":
+    "Chiedi di una cosa concreta, non di un tema intero o di un principio. Una scena dà al tavolo persone, luoghi e scelte su cui continuare.",
+  "suggest.tip.assumptions":
+    "Non inventare la vita di nessuno. Tieni il presupposto che serve e lascia perdere i dettagli che non puoi sapere su famiglia, lavoro, salute o passato.",
+  "suggest.tip.onejob":
+    "Dai alla domanda un compito solo, e tienila corta. La domanda successiva lasciala alle persone al tavolo.",
+  "suggest.lang": "lingua",
+  "suggest.question": "la tua domanda",
+  "suggest.question.hint": "10–140 caratteri, una sola domanda, finisce con ?",
+  "suggest.rule.short": "un po' più lunga: almeno 10 caratteri",
+  "suggest.rule.long": "troppo lunga: massimo 140 caratteri",
+  "suggest.rule.mark": "deve finire con ?",
+  "suggest.rule.multiline": "una domanda per voce, su una riga sola",
+  "suggest.rule.duplicate": "questa domanda è già nel database",
+  "suggest.rule.duplicate.link": "leggi quella che abbiamo →",
+  "suggest.rule.ok": "va bene",
+  "suggest.style.ranking":
+    "«migliore» e «preferito» chiedono una classifica, e trasformano un ricordo in una gara. Che cosa hai notato, invece?",
+  "suggest.style.stacked":
+    "una domanda per voce. La domanda successiva lasciala alle persone al tavolo.",
+  "suggest.style.long": "sotto i 95 caratteri si legge meglio ad alta voce",
+  "suggest.review":
+    "Le domande sono esaminate prima di essere aggiunte. Chi cura la lingua assegna mazzi, profondità ed etichette.",
+  "suggest.name": "nome per il credito pubblico (facoltativo)",
+  "suggest.cc0":
+    "Dedico questa domanda al pubblico dominio (CC0). Chiunque può usarla per qualsiasi scopo, per sempre, senza attribuzione.",
+  "suggest.cc0.link": "che cosa significa CC0",
+  "suggest.submit": "invia la domanda →",
+  "suggest.sending": "invio in corso…",
+  "suggest.unavailable": "gli invii dal sito sono temporaneamente non disponibili",
+  "suggest.verification.error": "verifica non riuscita; riprova",
+  "suggest.failed": "non è stato possibile inviare la domanda; riprova",
+  "suggest.received": "domanda ricevuta",
+  "suggest.received.body":
+    "Chi cura la lingua la esaminerà. Se accettata, comparirà sul sito e in un futuro aggiornamento del dispositivo.",
+  "suggest.reference": "riferimento",
+  "suggest.return": "torna alle domande",
+  "suggest.again": "proponine un'altra",
+
+  "edit.title": "proponi una modifica",
+  "edit.pitch":
+    "Proponi un cambiamento a una domanda già nel database. La riscrittura è riservata alle persone: usa parole tue.",
+  "edit.current": "la domanda oggi",
+  "edit.notfound": "quella domanda non è nel database",
+  "edit.wording": "formulazione proposta (facoltativa)",
+  "edit.wording.hint": "lascia vuoto per una modifica ai soli metadati",
+  "edit.metadata": "metadati da riconsiderare (facoltativo)",
+  "edit.metadata.decks": "mazzi ammessi",
+  "edit.metadata.depth": "profondità",
+  "edit.metadata.tags": "etichette",
+  "edit.metadata.translation": "provenienza della traduzione o origine",
+  "edit.reason": "perché dovrebbe cambiare?",
+  "edit.reason.hint":
+    "spiega il difetto, il senso cambiato, la traduzione poco naturale o il problema di classificazione",
+  "edit.reason.short": "un po' più lungo: almeno 10 caratteri",
+  "edit.reason.long": "troppo lungo: massimo 1000 caratteri",
+  "edit.nothing": "proponi una formulazione o spunta almeno una casella qui sopra",
+  "edit.same": "è la formulazione attuale",
+  "edit.human":
+    "Ho scritto io questa formulazione e non ho usato IA generativa per crearla o riscriverla.",
+  "edit.cc0": "Dedico al pubblico dominio (CC0-1.0) ogni formulazione che contribuisco qui.",
+  "edit.review":
+    "Ogni richiesta è esaminata da chi cura quella lingua. Gli ID delle domande non cambiano mai.",
+  "edit.submit": "invia la modifica →",
+  "edit.unavailable": "le modifiche dal sito sono temporaneamente non disponibili",
+  "edit.failed": "non è stato possibile inviare la modifica; riprova",
+  "edit.received": "modifica ricevuta",
+  "edit.received.body":
+    "Chi cura la lingua la confronterà con la formulazione attuale e deciderà. Fino ad allora sul sito non cambia nulla.",
+  "edit.github": "preferisci GitHub? apri il modulo →",
+
+  "deck.title": "il tuo mazzo",
+  "deck.shared.title": "un mazzo condiviso",
+  "deck.empty": "Il tuo mazzo è vuoto. Metti un cuore alle domande mentre giochi.",
+  "deck.share": "condividi il mazzo",
+  "deck.share.copied": "link copiato",
+  "deck.share.truncated": "mazzo troppo grande da condividere, il link porta le prime 150",
+  "deck.export": "esporta",
+  "deck.import": "importa",
+  "deck.saveall": "salva tutte nel mio mazzo",
+  "deck.saved": "salvate nel tuo mazzo",
+  "deck.count": "domande",
+
+  "device.title": "il dispositivo",
+  "device.p1":
+    "Un oggetto tascabile per il centro del tavolo: un display e-paper, un piccolo tasto Category e un tasto Next più grande. Il display mostra la categoria attiva e una domanda.",
+  "device.p2":
+    "La categoria e la domanda restano sull'e-paper mentre il dispositivo dorme. Non ci sono menu, modalità, notifiche né stato di sessione nascosto.",
+  "device.p3":
+    "I sei mazzi sono new people, close, family, work, here e wild. Una domanda può appartenere a più mazzi. Wild è una scelta di tono per le domande cupe, audaci o assurde; non è un livello di profondità.",
+  "device.how": "come funziona",
+  "device.t.input": "comando",
+  "device.t.action": "effetto",
+  "device.t.feedback": "riscontro",
+  "device.t.r1a": "premi Category",
+  "device.t.r1b": "passa alla categoria successiva",
+  "device.t.r1c":
+    "l'e-paper mostra il nome della categoria; alla quinta pressione si torna alla prima",
+  "device.t.r2a": "premi Next",
+  "device.t.r2b": "estrai un'altra domanda",
+  "device.t.r2c":
+    "un solo aggiornamento dell'e-paper; una pressione lunga fa esattamente lo stesso",
+  "device.t.r3a": "tieni premuti Category e Next all'accensione",
+  "device.t.r3b": "apri la configurazione di servizio",
+  "device.t.r3c": "Wi-Fi e lingua si impostano dal telefono; nessun menu sul tavolo",
+  "device.t.r4a": "mani lontane",
+  "device.t.r4b": "sonno",
+  "device.t.r4c": "categoria e domanda restano leggibili con il display a consumo zero",
+  "device.build": "costruiscine uno",
+  "device.build.text":
+    "L'hardware (CERN-OHL-S) e il firmware (MIT) stanno in questo repository. Il firmware su breadboard funziona; i file di PCB e scocca sono contratti di progetto, non file di produzione.",
+  "device.link.firmware": "sorgenti del firmware",
+  "device.link.hardware": "hardware / PCB",
+  "device.link.guide": "guida alla costruzione",
+  "device.link.releases": "rilasci",
+  "device.sync": "sincronizzazione",
+  "device.sync.text":
+    "Il dispositivo scarica pacchetti di domande firmati, uno per lingua, costruiti da questo stesso repository: sito e dispositivo usano lo stesso rilascio. Scarica solo le lingue che ci tieni sopra.",
+  "device.sync.link": "come funziona la sincronizzazione",
+  "notfound.q": "Dove vai quando non sai dove stai andando?",
+  "notfound.meta": "#404 · perso",
+  "notfound.home": "riportami a casa →",
+
+  "footer.questions": "domande",
+  "footer.provenance": "originali umani · traduzioni verificate",
+  "footer.license": "tutte le domande sono di pubblico dominio (CC0)",
+  "footer.source": "codice sorgente",
+};
+
+export const strings: Record<Lang, Record<StringKey, string>> = { en, de, it };
 
 export function t(lang: Lang, key: StringKey): string {
   return strings[lang]?.[key] ?? en[key];

@@ -19,6 +19,7 @@ body:
       options:
         - English (en)
         - Deutsch (de)
+        - Italiano (it)
         - other / new language
     validations:
       required: true

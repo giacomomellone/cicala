@@ -1,10 +1,19 @@
 import { devices, expect, test } from "@playwright/test";
-import { payload, playable, playReady, schema, seedStorage, smallestDeck } from "./fixtures";
+import {
+  payload,
+  playable,
+  playReady,
+  schema,
+  seedStorage,
+  skipWithoutQuestions,
+  smallestDeck,
+} from "./fixtures";
 
 const questionText = "#q-text";
 
 test.describe("play", () => {
   test("publishes the live lockup and identity assets", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.setViewportSize({ width: 375, height: 812 });
     await page.addInitScript(() => {
       (window as Window & { identityLayoutShift?: number }).identityLayoutShift = 0;
@@ -118,6 +127,7 @@ test.describe("play", () => {
   });
 
   test("the card carries no blanket provenance note, only the footer", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
 
@@ -155,6 +165,7 @@ test.describe("play", () => {
   });
 
   test("next draws a different question", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const first = await page.locator(questionText).innerText();
@@ -163,6 +174,7 @@ test.describe("play", () => {
   });
 
   test("space advances and arrow-left walks back through history", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const first = await page.locator(questionText).innerText();
@@ -177,6 +189,7 @@ test.describe("play", () => {
   });
 
   test("the shuffle bag never repeats before the deck is exhausted", async ({ page }) => {
+    skipWithoutQuestions("en");
     const deck = smallestDeck("en");
     const expected = playable("en", deck);
     await seedStorage(page, { "cicala.deck": deck });
@@ -196,6 +209,7 @@ test.describe("play", () => {
   });
 
   test("the category button cycles the five decks, skipping work, and wraps", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const category = page.getByRole("button", { name: /^category$/i });
@@ -208,6 +222,7 @@ test.describe("play", () => {
   });
 
   test("a category choice sticks and only serves that deck", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const category = page.getByRole("button", { name: /^category$/i });
@@ -246,6 +261,7 @@ test.describe("play", () => {
   });
 
   test("saving a question stores it and survives a reload", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const shown = await page.locator(questionText).innerText();
@@ -260,6 +276,7 @@ test.describe("play", () => {
   });
 
   test("share copies the permalink of the question on screen", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
     const shown = await page.locator(questionText).innerText();
@@ -282,6 +299,7 @@ test.describe("play", () => {
 
 test.describe("permalink", () => {
   test("renders the question it names and adopts its language", async ({ page }) => {
+    skipWithoutQuestions("de");
     const question = payload("de")[0]!;
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);
@@ -289,6 +307,7 @@ test.describe("permalink", () => {
   });
 
   test("next leaves the permalink for normal play", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = payload("en")[0]!;
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);

@@ -10,7 +10,7 @@ const deck: Deck = "new_people";
 const all = (payload.questions as Question[]).filter(
   (q) => q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(deck),
 );
-const seed = all[Math.floor(Math.random() * all.length)]!;
+const seed = all[Math.floor(Math.random() * all.length)];
 ---
 
 <Base title="cicala · let's talk" lang="en">

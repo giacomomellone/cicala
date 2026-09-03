@@ -16,6 +16,7 @@ body:
       options:
         - English (en)
         - Deutsch (de)
+        - Italiano (it)
     validations:
       required: true
   - type: input

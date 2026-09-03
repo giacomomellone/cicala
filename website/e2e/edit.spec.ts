@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
-import { payload } from "./fixtures";
+import { payload, skipWithoutQuestions } from "./fixtures";
 
 const target = () => payload("en")[0]!;
 /* Mechanically valid, absent from the database, and not the target's wording. */
@@ -25,6 +25,7 @@ async function mockEditApi(page: Page, post?: (route: Route) => Promise<void>) {
 
 test.describe("native edit form", () => {
   test("reaches the form from a permalink without leaving the site", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = target();
     await mockEditApi(page);
     await page.goto(`/q/${question.id}`);
@@ -42,6 +43,7 @@ test.describe("native edit form", () => {
   });
 
   test("needs a reason plus either wording or a metadata box", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = target();
     await mockEditApi(page);
     await page.goto(`/edit?q=${question.id}`);
@@ -56,6 +58,7 @@ test.describe("native edit form", () => {
   });
 
   test("asks for consent only once wording is proposed", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = target();
     await mockEditApi(page);
     await page.goto(`/edit?q=${question.id}`);
@@ -72,6 +75,7 @@ test.describe("native edit form", () => {
   });
 
   test("flags wording that is unchanged or already in the database", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = target();
     const other = payload("en")[1]!;
     await mockEditApi(page);
@@ -89,6 +93,7 @@ test.describe("native edit form", () => {
   });
 
   test("posts the edit and replaces the form with a receipt", async ({ page }) => {
+    skipWithoutQuestions("en");
     const question = target();
     let submitted: Record<string, unknown> = {};
     await mockEditApi(page, async (route) => {
@@ -117,6 +122,7 @@ test.describe("native edit form", () => {
   });
 
   test("reports an unavailable endpoint instead of failing silently", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.route("**/api/edits", (route) =>
       route.fulfill({ json: { available: false, turnstileRequired: false } }),
     );

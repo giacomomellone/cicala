@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Route } from "@playwright/test";
-import { payload } from "./fixtures";
+import { payload, skipWithoutQuestions } from "./fixtures";
 
 const GOOD = "Which unremarkable Tuesday would you happily live again?";
 /* Mechanically valid, absent from the database, and a ranking. */
@@ -46,6 +46,7 @@ test.describe("native suggestion form", () => {
   });
 
   test("tracks text rules and duplicates before submission", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.locator("#s-text").fill("short?");
     await expect(page.locator("#s-rule")).toHaveText(/at least 10/i);
 

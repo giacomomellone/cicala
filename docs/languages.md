@@ -73,7 +73,16 @@ when its `x-cicala.languages.<code>.google` block declares Google source and
 target codes. Remove that block when the fluent maintainer steps down. Enabling
 a language affects future merges and edits; it does not backfill the corpus or
 create a translation-completeness queue. The workflow expects a repository
-Actions secret named `GOOGLE_TRANSLATE_API_KEY`. It sends the key in Google's
+Actions secret named `GOOGLE_TRANSLATE_API_KEY`.
+
+No language declares a `google` block at the moment, so the plan step returns an
+empty target list and the translate job is skipped. Restore the block for a
+language when its fluent maintainer is ready. The plan is a diff between two
+commits, so restoring it translates nothing that merged while the block was
+absent. To catch up on that gap, put the blocks back first and then run
+`tools/translate_question.py apply --before-ref <commit> --after-ref main
+--target <lang>`, which reads the language config from the working tree and both
+corpora from the two refs. It sends the key in Google's
 documented `X-Goog-Api-Key` header rather than placing it in the request URL.
 Restrict the key to the Cloud Translation API, lower the project's daily
 character quota, and add a billing alert before enabling the workflow. Google
@@ -93,10 +102,16 @@ Submissions (GitHub issue → `promote-question.yml` → PR) are routed to the l
 
 ## Shipped languages
 
-| Language | Code | Maintainer                                          | Status                                                     |
-| -------- | ---- | --------------------------------------------------- | ---------------------------------------------------------- |
-| English  | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped (240 seed questions)                               |
-| Deutsch  | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped (99 seed questions; multilingual interaction test) |
+| Language | Code | Maintainer                                          | Status                      |
+| -------- | ---- | --------------------------------------------------- | --------------------------- |
+| English  | `en` | _TODO: replace with the repo owner's GitHub handle_ | shipped, corpus being built |
+| Deutsch  | `de` | _TODO: replace with the repo owner's GitHub handle_ | shipped, corpus being built |
+| Italiano | `it` | _TODO: replace with the repo owner's GitHub handle_ | shipped, corpus being built |
+
+All three corpora are currently empty. The seed questions were removed to build
+the database from scratch, so the site and the bundles carry no questions until
+the first entries land. Italian was opened directly as a shipped corpus rather
+than through the incubator, on the repo owner's decision as its maintainer.
 
 ## Incubator
 

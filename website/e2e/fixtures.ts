@@ -2,7 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Page } from "@playwright/test";
+import { test, type Page } from "@playwright/test";
 import { DEVICE_DECKS } from "../src/config";
 
 const at = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
@@ -31,6 +31,15 @@ export const schema = readJson<Schema>("../../questions/schema.json")["x-cicala"
 
 export const payload = (lang: string): Question[] =>
   readJson<{ questions: Question[] }>(`../src/data/questions.${lang}.json`).questions;
+
+/** Skip a test that has nothing to drive because a corpus ships no questions.
+    These suites read the real database on purpose, so an empty language is a
+    missing fixture rather than a failure; they run again on their own once the
+    language has entries. */
+export const skipWithoutQuestions = (...langs: string[]): void => {
+  const empty = langs.filter((lang) => payload(lang).length === 0);
+  test.skip(empty.length > 0, `no questions in the ${empty.join(" and ")} corpus yet`);
+};
 
 /** Questions the player can actually serve for a deck (spec §7.4). */
 export const playable = (lang: string, deck: string): Question[] =>

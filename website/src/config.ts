@@ -7,6 +7,7 @@ export const SITE_URL = "https://cicala.dev";
 export const LANGUAGES = [
   { code: "en", name: "English" },
   { code: "de", name: "Deutsch" },
+  { code: "it", name: "Italiano" },
 ] as const;
 
 // Category cycle order from questions/schema.json.
