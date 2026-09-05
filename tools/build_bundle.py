@@ -133,6 +133,13 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument(
+        "--corpus",
+        type=Path,
+        default=None,
+        help="directory of language directories (default: <root>/questions); the schema and "
+        "the deck order still come from <root>",
+    )
+    parser.add_argument(
         "--out", type=Path, default=None, help="output directory (default: <root>/dist/bundles)"
     )
     parser.add_argument("--version", default=None, help="release version (default: git describe)")
@@ -161,7 +168,7 @@ def main(argv=None) -> int:
 
     # These fields describe the raw .qdb downloaded by the device.
     manifest = {"schema": 3, "version": version, "min_fw": args.min_fw, "languages": {}}
-    for lang, lang_dir, incubator in validate.discover_languages(args.root):
+    for lang, lang_dir, incubator in validate.discover_languages(args.root, args.corpus):
         if incubator:
             continue
         path = lang_dir / cfg.get("questionFile", "questions.yaml")

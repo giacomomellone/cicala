@@ -18,15 +18,17 @@ target_sources(app PRIVATE
 target_include_directories(app PRIVATE ${CICALA_APP}/include)
 target_link_libraries(app PRIVATE cicala_layout cicala_qdb cicala_retained)
 
-set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../fixtures)
+# This suite walks every question the device ships, so it reads the real corpus
+# rather than the fixture one. firmware/tests/corpus/README.md explains the split.
+set(shipped ${CMAKE_CURRENT_SOURCE_DIR}/../../../dist/corpus)
 
 foreach(lang en de)
-  if(NOT EXISTS ${fixtures}/${lang}.qdb)
+  if(NOT EXISTS ${shipped}/${lang}.qdb)
     message(FATAL_ERROR
-      "missing ${fixtures}/${lang}.qdb — run `just fw-test`")
+      "missing ${shipped}/${lang}.qdb — run `just fw-test`")
   endif()
 
   generate_inc_file_for_target(app
-    ${fixtures}/${lang}.qdb
+    ${shipped}/${lang}.qdb
     ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_qdb.inc)
 endforeach()

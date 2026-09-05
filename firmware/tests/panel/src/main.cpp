@@ -165,6 +165,8 @@ ZTEST(cicala_panel, test_every_shipped_question_renders)
     const uint8_t *const bundles[] = {en_bundle, de_bundle};
     const size_t sizes[] = {sizeof(en_bundle), sizeof(de_bundle)};
 
+    uint16_t shipped = 0;
+
     for (size_t b = 0; b < ARRAY_SIZE(bundles); b++) {
         zassert_true(qdb.open(bundles[b], sizes[b]));
 
@@ -173,6 +175,13 @@ ZTEST(cicala_panel, test_every_shipped_question_renders)
 
             zassert_true(qdb.at(i, q));
             zassert_ok(cicala_panel_render(q.text, q.len), "question %u failed to render", i);
+
+            shipped++;
         }
+    }
+
+    /* The editorial corpus is built question by question and starts empty. */
+    if (shipped == 0) {
+        ztest_test_skip();
     }
 }

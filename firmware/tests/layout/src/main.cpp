@@ -247,6 +247,8 @@ ZTEST(cicala_layout, test_every_shipped_question_fits_the_panel)
     const uint8_t *const bundles[] = {en_bundle, de_bundle};
     const size_t sizes[] = {sizeof(en_bundle), sizeof(de_bundle)};
 
+    uint16_t shipped = 0;
+
     for (size_t b = 0; b < ARRAY_SIZE(bundles); b++) {
         zassert_true(qdb.open(bundles[b], sizes[b]));
 
@@ -265,6 +267,13 @@ ZTEST(cicala_layout, test_every_shipped_question_fits_the_panel)
                 zassert_true(layout.lines[l].cells <= kColumns, "question %u line %u is too wide",
                              i, l);
             }
+
+            shipped++;
         }
+    }
+
+    /* The editorial corpus is built question by question and starts empty. */
+    if (shipped == 0) {
+        ztest_test_skip();
     }
 }

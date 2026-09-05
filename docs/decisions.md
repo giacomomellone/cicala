@@ -928,3 +928,35 @@ Accepted cost: a second public endpoint and a second abuse surface, and the
 2026-08-31 limitation now applies to edits too — an anonymous contributor
 cannot revise the issue after it is filed, so the form validates hard before
 submitting and a maintainer owns every correction afterwards.
+
+## 2026-09-05: Firmware behaviour suites run against a fixture corpus
+
+The corpus reset (#23) emptied `questions/en` and `questions/de`, and the
+firmware job went red on `main`: `cicala.qdb`, `cicala.integration` and
+`cicala.soak` all embed bundles built from the shipped database, and an empty
+one draws nothing. The bag has no questions to cycle, the integration seams
+publish no card, and the soak run stops after the first refresh.
+
+The database is editorial and will stay in motion — it starts at zero and grows
+question by question, and a maintainer adding or retiring a question should
+never have to reason about the 20-deep recent ring or the smallest deck. So the
+suites that exercise behaviour now read a fixture corpus committed at
+`firmware/tests/corpus/`, built by `tools/build_bundle.py --corpus` into
+`firmware/tests/fixtures/`. Its shapes are documented and load bearing: two
+disjoint decks of fourteen for the shared ring, a German `here` deck smaller
+than the ring, depth 3 present, tone tags only in Wild.
+
+The suites that guard shipped content — `test_the_shipped_bundles_open`,
+the readable-and-within-the-buffer walk, the tone-flag rule, and the layout and
+panel walks over every shipped question — keep reading the real bundles, now
+staged at `dist/corpus/` instead of `firmware/tests/fixtures/`. Each skips
+itself while a corpus is empty rather than passing over nothing, so the twister
+report shows the gap. The application image and the OTA job read `dist/corpus/`
+too, which also stops a shipped artifact from being built out of a directory
+named `tests`.
+
+Accepted cost: two bundle sets to build before the suites run, and a fixture
+corpus that can drift from the schema the real database validates against —
+`build_bundle.py` reads the deck order and form tags from `questions/schema.json`
+for both, so a schema change still reaches the fixtures, but nothing runs the
+denylist or the style rules over them.

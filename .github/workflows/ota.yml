@@ -105,10 +105,10 @@ jobs:
           # Sysbuild uses imgtool to sign the application.
           pip install --quiet pyyaml jsonschema imgtool
           python3 tools/build_bundle.py
-          mkdir -p firmware/tests/fixtures
+          mkdir -p dist/corpus
           for f in dist/bundles/bundle-*.qdb; do
             lang=$(basename "$f" | cut -d- -f2)
-            cp "$f" "firmware/tests/fixtures/$lang.qdb"
+            cp "$f" "dist/corpus/$lang.qdb"
           done
 
       # Replace the committed development key when the release secret exists.

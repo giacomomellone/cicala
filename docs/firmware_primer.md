@@ -164,8 +164,13 @@ Each suite under `firmware/tests/` contains its CMake file, configuration,
 suites on `native_sim` in the Zephyr CI container. Both platforms support
 emulated GPIO through a `zephyr,gpio-emul` devicetree node.
 
-The private fixture recipe builds the real question database and copies QDB3
-files into `firmware/tests/fixtures/` before application builds and tests.
+The private fixture recipe builds two sets of QDB3 files before application
+builds and tests: the shipped database into `dist/corpus/`, which the image, the
+layout and panel walks and the qdb corpus guards read, and the fixture corpus in
+`firmware/tests/corpus/` into `firmware/tests/fixtures/`, which the bag,
+integration and soak cases draw from. Behaviour suites stay green whatever the
+editorial database currently holds; the guards skip while it is empty. See
+`firmware/tests/corpus/README.md`.
 
 ## Debugging
 

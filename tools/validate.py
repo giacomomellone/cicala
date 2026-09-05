@@ -81,9 +81,13 @@ def load_config(root: Path, rep: Reporter):
     return schema, cfg
 
 
-def discover_languages(root: Path):
-    """Yield (lang, dir, is_incubator) for every language directory."""
-    qdir = root / "questions"
+def discover_languages(root: Path, corpus: Path | None = None):
+    """Yield (lang, dir, is_incubator) for every language directory.
+
+    `corpus` overrides the directory holding the language directories, so a
+    caller can walk a corpus that is not the shipped `questions/` tree.
+    """
+    qdir = corpus or root / "questions"
     for entry in sorted(qdir.iterdir()):
         if not entry.is_dir():
             continue
