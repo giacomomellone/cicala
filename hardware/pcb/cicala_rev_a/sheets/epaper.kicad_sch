@@ -2800,16 +2800,6 @@
 	)
 	(wire
 		(pts
-			(xy 30.48 149.86) (xy 33.02 149.86)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c5920cd4-8263-464e-91a7-c8d92b2f0784")
-	)
-	(wire
-		(pts
 			(xy 62.23 43.18) (xy 62.23 48.26)
 		)
 		(stroke
@@ -3675,7 +3665,7 @@
 			)
 		)
 	)
-	(global_label "EPD_MOSI"
+	(global_label "PNL_MOSI"
 		(shape passive)
 		(at 33.02 160.02 0)
 		(fields_autoplaced yes)
@@ -3744,7 +3734,7 @@
 			)
 		)
 	)
-	(global_label "EPD_CS"
+	(global_label "PNL_CS"
 		(shape passive)
 		(at 33.02 154.94 0)
 		(fields_autoplaced yes)
@@ -3859,7 +3849,7 @@
 			)
 		)
 	)
-	(global_label "EPD_CLK"
+	(global_label "PNL_CLK"
 		(shape passive)
 		(at 33.02 157.48 0)
 		(fields_autoplaced yes)
@@ -3882,7 +3872,7 @@
 			)
 		)
 	)
-	(global_label "EPD_DC"
+	(global_label "PNL_DC"
 		(shape passive)
 		(at 33.02 152.4 0)
 		(fields_autoplaced yes)
@@ -3951,9 +3941,9 @@
 			)
 		)
 	)
-	(global_label "EPD_RESET"
+	(global_label "PNL_RESET"
 		(shape passive)
-		(at 33.02 149.86 0)
+		(at 55.88 149.86 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3963,7 +3953,7 @@
 		)
 		(uuid "fbf7cd7c-a923-4358-b1ce-2d00a8f99159")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 33.02 149.86 0)
+			(at 55.88 149.86 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6983,6 +6973,189 @@
 			(effects
 				(font
 					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 30.48 149.86) (xy 55.88 149.86)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4ce27758-79cd-42d7-bffc-edd15fdd1041")
+	)
+	(junction
+		(at 45.72 149.86)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "60963bfc-46b5-4506-8172-27edd6d17fe2")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 45.72 153.67 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "296cf4fe-6490-4bd8-987b-a8b7e2ea0997")
+		(property "Reference" "R32"
+			(at 41.91 151.892 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "1M"
+			(at 41.91 154.432 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 45.72 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 45.72 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 45.72 153.67 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "51128401-82d1-486d-953c-509ffcb765f5")
+		)
+		(pin "2"
+			(uuid "29a4effb-96a5-4758-bff4-60f5e0c9479a")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/9467d62a-f8ed-46c9-a7cb-f7af887ddb15"
+					(reference "R32")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 45.72 157.48) (xy 45.72 160.02)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2d647b20-760a-47c4-b059-5dfa667d40e6")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 45.72 160.02 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "b7ffadab-5f69-4321-85c8-54f60dad1d3e")
+		(property "Reference" "#PWR0156"
+			(at 45.72 166.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 45.72 163.83 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 45.72 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 45.72 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name GND, ground"
+			(at 45.72 160.02 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "82bea3b3-2738-4882-b8db-b95fde8e1baa")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/9467d62a-f8ed-46c9-a7cb-f7af887ddb15"
+					(reference "#PWR0156")
+					(unit 1)
 				)
 			)
 		)

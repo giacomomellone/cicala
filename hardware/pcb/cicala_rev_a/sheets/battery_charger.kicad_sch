@@ -2736,10 +2736,6 @@
 		(uuid "588cd01d-b09b-4ec8-a0d7-0a3547feab86")
 	)
 	(no_connect
-		(at 21.59 76.2)
-		(uuid "6006e6e8-7462-4a60-bf0a-88adfd1c46aa")
-	)
-	(no_connect
 		(at 181.61 139.7)
 		(uuid "63676f3d-0b3a-49fa-8abd-75f58edd7153")
 	)
@@ -9181,6 +9177,350 @@
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "C1")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 21.59 76.2) (xy 15.24 76.2)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0b149038-6116-455d-9480-93ca30666ecd")
+	)
+	(wire
+		(pts
+			(xy 15.24 76.2) (xy 15.24 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "88cd3c86-cd56-4de7-b343-d9bfd2ca3a94")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 15.24 92.71 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9778acd2-61de-4613-856a-3a66e5554ba2")
+		(property "Reference" "R33"
+			(at 17.78 91.186 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "0"
+			(at 18.288 89.154 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 15.24 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 15.24 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 15.24 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c2b546a0-95e9-4d2e-8759-357cf1b3f566")
+		)
+		(pin "2"
+			(uuid "e7c97161-3ead-4d1e-9ad2-9d7326b11590")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "R33")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 24.13 92.71 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "7a945a62-9ac4-4990-bbe0-1fad60caa8c6")
+		(property "Reference" "C31"
+			(at 19.812 91.44 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "1nF 2kV"
+			(at 18.034 94.488 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 24.13 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 24.13 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 24.13 92.71 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9e33b37a-241e-408b-b591-13d61f0e5fe0")
+		)
+		(pin "2"
+			(uuid "262ecc8c-c8cf-4cab-8101-9dd88eee84eb")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "C31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 15.24 88.9) (xy 24.13 88.9)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ef1f8235-dc63-4ab6-b640-b5db7400f261")
+	)
+	(wire
+		(pts
+			(xy 15.24 96.52) (xy 24.13 96.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1c3295f0-d546-479d-931d-be002447a903")
+	)
+	(junction
+		(at 15.24 88.9)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "eaff6d90-f146-41a6-b0f1-992d8a8a8905")
+	)
+	(junction
+		(at 15.24 96.52)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b32c3a19-919b-4119-b7b7-fea5412eccfe")
+	)
+	(wire
+		(pts
+			(xy 15.24 96.52) (xy 15.24 99.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c71d5299-2791-4ed6-a5c2-c1edfb8380f1")
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 15.24 99.06 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5605bfb0-0cb4-43b8-865e-509439182eeb")
+		(property "Reference" "#PWR0157"
+			(at 15.24 105.41 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 15.24 102.87 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 15.24 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 15.24 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name GND, ground"
+			(at 15.24 99.06 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0c49b96f-20c4-43f7-b1c6-aaf84c5d88c5")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "#PWR0157")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "USB_SHIELD"
+		(shape passive)
+		(at 15.24 76.2 0.0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "b269f5b7-80d7-4e37-bb15-d0c1a2453f48")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 15.24 76.2 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "CHG_ILIM_VSET"
+		(shape passive)
+		(at 35.56 135.89 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "6a2c701e-872a-47e1-a739-9dd91a627069")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 35.56 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
 				)
 			)
 		)
