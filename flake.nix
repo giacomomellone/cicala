@@ -37,6 +37,13 @@
       devShells = forEach (pkgs: {
         default = pkgs.mkShell {
           packages = with pkgs; [
+            # Without this, `git` in the shell resolves to /usr/bin/git, which
+            # on macOS is Apple's xcrun shim: it searches DEVELOPER_DIR, mkShell
+            # points that at the Nix SDK, and there is no git there -- every git
+            # command fails with `error: tool 'git' not found`. Shipping git
+            # here puts a real one on PATH ahead of the shim.
+            git
+
             just
 
             # `just setup` prefers python3.13 and falls back to python3; pinning
