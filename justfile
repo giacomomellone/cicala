@@ -406,18 +406,25 @@ test-e2e *args: data
     cd website && npx playwright install --with-deps chromium
     cd website && npx playwright test {{ args }}
 
-# copy the real question bundles into firmware/tests/fixtures/
+# build the two bundle sets the firmware embeds: the fixture corpus the
+# behaviour suites draw from, and the shipped corpus the corpus guards walk.
+# firmware/tests/corpus/README.md explains which suite reads which.
 # dist/bundles accumulates every past build, so copy the newest per language:
 # glob order is alphabetical and a stale build can sort last.
 [private]
 _fw-fixtures: bundle
-    mkdir -p firmware/tests/fixtures
+    {{ python }} tools/build_bundle.py --corpus firmware/tests/corpus --out dist/test-bundles
+    mkdir -p firmware/tests/fixtures dist/corpus
+    for dir in firmware/tests/corpus/*/; do \
+        lang=$(basename "$dir"); \
+        cp "$(ls -t dist/test-bundles/bundle-"$lang"-*.qdb | head -1)" "firmware/tests/fixtures/$lang.qdb"; \
+    done
     for dir in questions/*/; do \
         lang=$(basename "$dir"); \
         [ "$lang" = "incubator" ] && continue; \
-        cp "$(ls -t dist/bundles/bundle-"$lang"-*.qdb | head -1)" "firmware/tests/fixtures/$lang.qdb"; \
+        cp "$(ls -t dist/bundles/bundle-"$lang"-*.qdb | head -1)" "dist/corpus/$lang.qdb"; \
     done
-    @ls -l firmware/tests/fixtures/
+    @ls -l firmware/tests/fixtures/ dist/corpus/
 
 # firmware suites under qemu (one suite: just fw-test input)
 [group('tests')]

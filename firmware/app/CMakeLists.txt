@@ -61,15 +61,15 @@ target_link_libraries(app PRIVATE cicala_fsm cicala_app_fsm cicala_qdb cicala_la
     cicala_sync cicala_retained cicala_power cicala_status)
 
 # Compile shipped corpora into the offline fallback image.
-set(fixtures ${CMAKE_CURRENT_SOURCE_DIR}/../tests/fixtures)
+set(shipped ${CMAKE_CURRENT_SOURCE_DIR}/../../dist/corpus)
 
 foreach(lang ${CICALA_CORPUS_LANGUAGES})
-  if(NOT EXISTS ${fixtures}/${lang}.qdb)
+  if(NOT EXISTS ${shipped}/${lang}.qdb)
     message(FATAL_ERROR
-      "missing ${fixtures}/${lang}.qdb — run `just fw-build`")
+      "missing ${shipped}/${lang}.qdb — run `just fw-build`")
   endif()
 
   generate_inc_file_for_target(app
-    ${fixtures}/${lang}.qdb
+    ${shipped}/${lang}.qdb
     ${ZEPHYR_BINARY_DIR}/include/generated/${lang}_qdb.inc)
 endforeach()

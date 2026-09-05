@@ -707,6 +707,98 @@ class TestBundle(unittest.TestCase):
                     )
 
 
+class TestFixtureCorpus(unittest.TestCase):
+    """firmware/tests/corpus/ decides whether the firmware suites are green.
+
+    The bag cases read shapes out of it — a deck bigger than the recent ring,
+    a deck smaller than it, depth 3 present — and a well meaning edit here
+    fails in a Zephyr assertion minutes into a twister run, in a message about
+    rings and cycles rather than about the corpus. These cases fail in Python
+    instead, next to the file that broke. firmware/tests/corpus/README.md
+    documents the same list.
+    """
+
+    CORPUS = REPO / "firmware" / "tests" / "corpus"
+
+    @staticmethod
+    def policy_default(symbol: str) -> int:
+        """Read a Kconfig default, so the numbers cannot drift apart."""
+        text = (REPO / "firmware" / "Kconfig.policy").read_text(encoding="utf-8")
+        match = re.search(rf"config {symbol}\n(?:.*\n)*?\s*default (\d+)", text)
+        assert match, f"no default for {symbol}"
+        return int(match.group(1))
+
+    def setUp(self):
+        self.ring = self.policy_default("CICALA_RECENT_RING")
+        self.playback_depth = self.policy_default("CICALA_PLAYBACK_DEPTH_MAX")
+        self.max_bytes = self.policy_default("CICALA_MAX_QUESTION_BYTES")
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, err = run_quiet(
+                build_bundle.main,
+                [
+                    "--root",
+                    str(REPO),
+                    "--corpus",
+                    str(self.CORPUS),
+                    "--out",
+                    tmp,
+                    "--version",
+                    "test.1",
+                ],
+            )
+            self.assertEqual(code, 0, err)
+            self.bundles = {
+                lang: build_bundle.parse_bundle(
+                    (Path(tmp) / f"bundle-{lang}-test.1.qdb").read_bytes()
+                )["questions"]
+                for lang in ("en", "de")
+            }
+
+    def in_deck(self, lang: str, deck: str, playable: bool = True):
+        return [
+            q
+            for q in self.bundles[lang]
+            if deck in q["decks"] and (not playable or q["depth"] <= self.playback_depth)
+        ]
+
+    def test_every_english_deck_yields_something_in_normal_playback(self):
+        # test_a_cycle_never_repeats walks all six decks.
+        _, cfg = validate.load_config(REPO, validate.Reporter())
+
+        for deck in cfg["decks"]:
+            self.assertTrue(self.in_deck("en", deck), f"English {deck} draws nothing")
+
+    def test_the_two_ring_decks_are_large_enough_and_disjoint(self):
+        # test_the_ring_is_shared_across_decks alternates half a ring from each.
+        new_people = {q["text"] for q in self.in_deck("en", "new_people")}
+        close = {q["text"] for q in self.in_deck("en", "close")}
+
+        for name, deck in (("new_people", new_people), ("close", close)):
+            self.assertGreater(len(deck), self.ring // 2, f"{name} runs dry before the ring fills")
+        self.assertEqual(new_people & close, set(), "a shared question can be drawn twice")
+
+    def test_english_carries_depth_three(self):
+        # test_depth_three_is_out_of_normal_playback proves nothing without it.
+        self.assertTrue([q for q in self.bundles["en"] if q["depth"] == 3])
+
+    def test_the_german_here_deck_stays_smaller_than_the_ring(self):
+        # test_the_smallest_deck_still_draws_despite_the_ring needs the ring to
+        # relax rather than starve the deck.
+        here = self.in_deck("de", "here")
+
+        self.assertTrue(here, "the deck must not be empty")
+        self.assertLessEqual(len(here), self.ring)
+
+    def test_tone_tags_stay_in_wild_and_text_fits_the_panel(self):
+        for lang, questions in self.bundles.items():
+            for q in questions:
+                if q["spicy"] or q["dark"]:
+                    self.assertEqual(q["decks"], ["wild"], f"{lang}: {q['text']!r}")
+                self.assertLessEqual(
+                    len(q["text"].encode("utf-8")), self.max_bytes, f"{lang}: {q['text']!r}"
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
 
