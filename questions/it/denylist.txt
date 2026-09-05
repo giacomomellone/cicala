@@ -1,0 +1,71 @@
+# Lista di blocco per la moderazione italiana.
+# Un termine per riga, in minuscolo; sono ammesse espressioni di più parole.
+# tools/validate.py confronta parole intere (senza distinguere maiuscole e
+# minuscole) con il testo normalizzato della domanda. Una corrispondenza fa
+# fallire la CI perché una persona che cura la lingua controlli la voce a mano
+# — è un filo teso, non un giudizio. Inserisci solo insulti evidenti e
+# contenuti sessualmente espliciti; non tentare analisi linguistiche astute.
+scopare
+scopata
+inculare
+inculata
+troia
+puttana
+puttane
+zoccola
+mignotta
+bagascia
+cazzo
+cazzi
+minchia
+figa
+fica
+fregna
+pompino
+sega
+seghe
+sborra
+sperma
+coglione
+coglioni
+stronzo
+stronza
+stronzi
+merda
+vaffanculo
+fanculo
+culo
+tette
+frocio
+froci
+finocchio
+ricchione
+checca
+lesbica di merda
+travone
+negro
+negra
+negri
+sporco negro
+terrone
+terroni
+zingaro
+zingari
+zingaraccia
+crucco
+mangiaspaghetti
+ebreaccio
+giudeo
+handicappato
+mongoloide
+ritardato
+storpio
+spastico
+subnormale
+ammazzati
+uccidersi
+stuprare
+stupro
+pedofilo
+incesto
+zoofilia

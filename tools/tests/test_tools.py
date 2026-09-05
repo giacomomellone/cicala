@@ -27,6 +27,7 @@ import build_bundle  # noqa: E402
 import build_firmware_manifest  # noqa: E402
 import build_site_data  # noqa: E402
 import check_release  # noqa: E402
+import import_drafts  # noqa: E402
 import promote_issue  # noqa: E402
 import translate_question  # noqa: E402
 import validate  # noqa: E402
@@ -420,7 +421,22 @@ class TestTranslationPlanning(unittest.TestCase):
             root = Path(tmp_name)
             (root / "questions/en").mkdir(parents=True)
             (root / "questions/de").mkdir(parents=True)
-            shutil.copy(REPO / "questions/schema.json", root / "questions/schema.json")
+            # A fixture rather than the repo schema: this test is about the commit
+            # range, and the shipped languages opt into translation independently.
+            (root / "questions/schema.json").write_text(
+                json.dumps(
+                    {
+                        "x-cicala": {
+                            "questionFile": "questions.yaml",
+                            "languages": {
+                                "en": {"google": {"source": "en", "target": "en"}},
+                                "de": {"google": {"source": "de", "target": "de"}},
+                            },
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
             (root / "questions/de/questions.yaml").write_text("", encoding="utf-8")
             corpus = root / "questions/en/questions.yaml"
             corpus.write_text(
@@ -1210,3 +1226,97 @@ class TestProductionEndpoint(unittest.TestCase):
         self.assertEqual(self.kconfig_default("CICALA_SYNC_BASE_URL"), base)
         self.assertEqual(self.kconfig_default("CICALA_OTA_BASE_URL"), base)
         self.assertEqual(check_release.DEFAULT_BASE_URL, base)
+
+
+class TestDraftImport(TmpDb):
+    """`just draft` — plain-text drafts become entries the validator accepts."""
+
+    def draft(self, body):
+        path = self.tmp / "drafts.txt"
+        path.write_text(body, encoding="utf-8")
+        return path
+
+    def corpus(self):
+        return (self.tmp / "questions/en/questions.yaml").read_text(encoding="utf-8")
+
+    def import_file(self, draft, *extra):
+        return run_quiet(
+            import_drafts.main, ["--lang", "en", str(draft), "--root", str(self.tmp), *extra]
+        )
+
+    def setUp(self):
+        super().setUp()
+        self.write("questions/en/questions.yaml", "")
+
+    def test_a_group_header_covers_its_questions_and_a_question_may_wrap(self):
+        draft = self.draft(
+            "# a comment, not a header\n"
+            "\n"
+            "# decks: new_people, close · depth: 1 · tags: icebreaker\n"
+            "What closes on a single line?\n"
+            "What wraps across\n"
+            "two lines before it closes?\n"
+            "\n"
+            "# decks: wild | depth: 3 | tags: dark\n"
+            "What uses pipes to separate its fields?\n"
+        )
+
+        code, _, _ = self.import_file(draft)
+
+        self.assertEqual(code, 0)
+        entries = yaml.safe_load(self.corpus())
+        self.assertEqual(
+            [entry["text"] for entry in entries],
+            [
+                "What closes on a single line?",
+                "What wraps across two lines before it closes?",
+                "What uses pipes to separate its fields?",
+            ],
+        )
+        self.assertEqual(entries[0]["decks"], ["new_people", "close"])
+        self.assertEqual(entries[0]["tags"], ["icebreaker"])
+        # A header replaces the previous one rather than merging with it.
+        self.assertEqual(entries[2]["decks"], ["wild"])
+        self.assertEqual(entries[2]["depth"], 3)
+        # The fix pass owns ids and dates, exactly as for a hand-written entry.
+        for entry in entries:
+            self.assertEqual(entry["id"], validate.compute_id("en", entry["text"]))
+            self.assertIn("added", entry)
+
+    def test_rerunning_a_draft_skips_what_the_corpus_already_has(self):
+        draft = self.draft("# decks: close · depth: 2\nWhat is already on file here?\n")
+        self.import_file(draft)
+        before = self.corpus()
+
+        code, out, _ = self.import_file(draft)
+
+        self.assertEqual(code, 0)
+        self.assertIn("skipped", out)
+        self.assertEqual(self.corpus(), before)
+
+    def test_a_draft_the_validator_would_reject_is_not_written(self):
+        cases = {
+            "depth": "# decks: close · depth: 9\nWhat carries an impossible depth?\n",
+            "wild": "# decks: close · depth: 2 · tags: dark\nWhat wears dark outside wild?\n",
+            "length": "# decks: close · depth: 1\nShort?\n",
+            "denylist": "# decks: close · depth: 1\nWhat about that badword there?\n",
+            "unknown deck": "# decks: nope · depth: 1\nWhat sits under an unknown deck?\n",
+            "no header": "What has no header above it?\n",
+            "unterminated": "# decks: close · depth: 1\nThis line never ends properly\n",
+        }
+        for name, body in cases.items():
+            with self.subTest(name):
+                self.write("questions/en/questions.yaml", "")
+                code, _, err = self.import_file(self.draft(body))
+                self.assertEqual(code, 1)
+                self.assertTrue(err.strip(), "the failure should say why")
+                self.assertEqual(self.corpus(), "")
+
+    def test_dry_run_reports_without_touching_the_corpus(self):
+        draft = self.draft("# decks: close · depth: 2\nWhat would be appended?\n")
+
+        code, out, _ = self.import_file(draft, "--dry-run")
+
+        self.assertEqual(code, 0)
+        self.assertIn("What would be appended?", out)
+        self.assertEqual(self.corpus(), "")

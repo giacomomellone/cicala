@@ -7,7 +7,9 @@ import { heartIcon, shareIcon } from "../lib/icons";
 import type { Question } from "../lib/data";
 
 interface Props {
-  question: Question;
+  /* Absent when the language has no playable question yet: the panel renders
+     the empty state and the client draws nothing until the corpus has one. */
+  question?: Question;
   deck: Deck;
   lang: string;
   /* true on /q/[id] pages — "next" transitions back to / via replaceState */
@@ -19,7 +21,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
 <div
   class="play"
   id="play-root"
-  data-seed-id={question.id}
+  data-seed-id={question?.id}
   data-seed-deck={deck}
   data-permalink={permalink ? "1" : "0"}
 >
@@ -29,9 +31,9 @@ const { question, deck, lang, permalink = false } = Astro.props;
     <a
       class="panel__origin"
       id="q-origin"
-      href={question.origin ? `/q/${question.origin}` : "#"}
+      href={question?.origin ? `/q/${question.origin}` : "#"}
       data-i18n="question.translated"
-      hidden={!(question.translated_by === "google" && question.origin)}
+      hidden={!(question?.translated_by === "google" && question.origin)}
       >{t("en", "question.translated")}</a
     >
     <div class="meta panel__acts" id="q-meta">
@@ -55,7 +57,9 @@ const { question, deck, lang, permalink = false } = Astro.props;
     </div>
     <div class="q-zone">
       <div class="q-swap question-wrap" id="q-swap">
-        <p class="question" id="q-text" aria-live="polite">{question.text}</p>
+        <p class="question" id="q-text" aria-live="polite">
+          {question ? question.text : t("en", "play.empty")}
+        </p>
       </div>
     </div>
   </div>
@@ -73,7 +77,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
   <p class="card-links">
     <a href="/suggest?source=play" data-i18n="play.suggest">{t("en", "play.suggest")}</a>
     {
-      permalink && (
+      permalink && question && (
         <span id="q-edit">
           <span class="card-links__dot" aria-hidden="true">
             ·

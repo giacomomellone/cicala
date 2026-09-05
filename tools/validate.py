@@ -132,19 +132,29 @@ def load_corpus(lang_dir: Path, cfg: dict, rep: Reporter):
     return parse_file(lang_dir / cfg.get("questionFile", "questions.yaml"), rep)
 
 
+def question_terminators(lang: str, cfg: dict) -> list[str]:
+    lang_cfg = cfg.get("languages", {}).get(lang, {})
+    return lang_cfg.get("terminators", cfg.get("defaultTerminators", ["?"]))
+
+
+def ends_with_terminator(text: str, lang: str, cfg: dict) -> bool:
+    """True when the text closes the question. A closing quote or bracket may
+    follow the terminator."""
+    closing = "".join(cfg.get("closingCharacters", []))
+    stripped = text.rstrip(closing) if closing else text
+    return bool(stripped) and stripped[-1] in question_terminators(lang, cfg)
+
+
 def check_text_rules(text: str, lang: str, cfg: dict, path, line, rep: Reporter):
     if "\n" in text:
         rep.error(path, line, "text must not contain newlines")
         return
-    lang_cfg = cfg.get("languages", {}).get(lang, {})
-    terminators = lang_cfg.get("terminators", cfg.get("defaultTerminators", ["?"]))
-    closing = set(cfg.get("closingCharacters", []))
-    stripped = text.rstrip("".join(closing)) if closing else text
-    if not stripped or stripped[-1] not in terminators:
+    if not ends_with_terminator(text, lang, cfg):
         rep.error(
             path,
             line,
-            f"text must end with one of {terminators!r} (a closing quote/bracket after it is fine)",
+            f"text must end with one of {question_terminators(lang, cfg)!r} "
+            "(a closing quote/bracket after it is fine)",
         )
 
 

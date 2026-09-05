@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { islandReady, payload } from "./fixtures";
+import { islandReady, payload, skipWithoutQuestions } from "./fixtures";
 
 const rows = "#rows .row";
 
@@ -19,6 +19,7 @@ test.describe("browse", () => {
   });
 
   test("search matches without case or diacritics", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/browse");
     await islandReady(page);
     const target = payload("en").find((q) => /\bwhat\b/i.test(q.text))!;
@@ -45,6 +46,7 @@ test.describe("browse", () => {
   });
 
   test("a deck chip narrows the list to that deck", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/browse");
     await islandReady(page);
     await page.locator('#browse-chips [data-deck="work"]').click();
@@ -91,6 +93,7 @@ test.describe("browse", () => {
   });
 
   test("a row links to the question's permalink", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/browse");
     await islandReady(page);
     const first = page.locator(`${rows} .row-q`).first();
@@ -101,6 +104,7 @@ test.describe("browse", () => {
   });
 
   test("hearting a row carries over to the deck page", async ({ page }) => {
+    skipWithoutQuestions("en");
     await page.goto("/browse");
     await islandReady(page);
     const row = page.locator(rows).first();

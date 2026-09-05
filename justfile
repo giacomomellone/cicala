@@ -79,6 +79,11 @@ validate:
 fix:
     {{ python }} tools/validate.py --fix
 
+# append plain-text drafts to a language corpus: just draft en drafts/en.txt
+[group('database')]
+draft lang +files:
+    {{ python }} tools/import_drafts.py --lang {{ lang }} {{ files }}
+
 # regenerate website/src/data/*.json from the database
 [group('database')]
 data:

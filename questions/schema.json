@@ -101,13 +101,15 @@
     "languages": {
       "en": {
         "name": "English",
-        "terminators": ["?"],
-        "google": { "source": "en", "target": "en" }
+        "terminators": ["?"]
       },
       "de": {
         "name": "Deutsch",
-        "terminators": ["?"],
-        "google": { "source": "de", "target": "de" }
+        "terminators": ["?"]
+      },
+      "it": {
+        "name": "Italiano",
+        "terminators": ["?"]
       }
     }
   }

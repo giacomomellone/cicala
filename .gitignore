@@ -21,6 +21,9 @@ website/src/data/*.json
 # generated bundles
 dist/bundles/
 
+# question drafts — working notes for `just draft`, not the database itself
+drafts/
+
 # west workspace — zephyr and its modules, cloned by `just fw-init`.
 # deps/.clang-format is committed on purpose: it stops an editor from
 # reformatting Zephyr sources on save.

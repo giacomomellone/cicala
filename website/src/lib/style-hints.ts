@@ -17,11 +17,12 @@ const TARGET_LEN = 95;
 const RANKING: Record<Lang, RegExp> = {
   en: /\b(the (best|worst)|your favou?rite)\b/i,
   de: /\b(beste[rsn]?|schlimmste[rsn]?)\b/i,
+  it: /\b(migliore|migliori|peggiore|peggiori|preferit[oaie])\b/i,
 };
 
 /* A superlative followed by ", and …" asks for a story rather than a verdict,
-   which is the two-part shape both style guides recommend. */
-const FOLLOW_UP = /,\s(and|und)\s/i;
+   which is the two-part shape the style guides recommend. */
+const FOLLOW_UP = /,\s(and|und|e)\s/i;
 
 /* The first editorial problem with a question, or null. One at a time: a
    contributor who is already fixing the mechanics gets no second complaint. */
