@@ -6363,7 +6363,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Connector_USB:USB_C_Receptacle_HRO_TYPE-C-31-M-12"
+		(property "Footprint" "cicala:USB_C_Receptacle_HRO_TYPE-C-31-M-12_EdgeOverhang"
 			(at 29.21 53.34 0)
 			(hide yes)
 			(show_name no)

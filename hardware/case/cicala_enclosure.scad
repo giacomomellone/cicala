@@ -55,10 +55,10 @@ cell_recess_depth = 0.35;
 // and the display stack is on the underside, in the cell cavity, because the
 // sloped roof leaves only 0.8 to 3.5 mm above the board.
 pcb_x = 3;
-pcb_y = 3;
+pcb_y = 3.5;
 pcb_z = 9.2;
 pcb_width = 78;
-pcb_depth = 45;
+pcb_depth = 49;
 pcb_thickness = 1.2;
 pcb_corner_radius = 2;
 pcb_top = pcb_z + pcb_thickness;
@@ -74,16 +74,16 @@ switch_actuator_diameter = 2.8;
 switch_travel = 0.2;
 switch_travel_max = 0.5;
 // ESP32-S3-WROOM-1 including its shield; underside.
-module_width = 18.0;
-module_length = 25.5;
+module_width = 25.5;
+module_length = 18.0;
 module_height = 3.1;
-module_x = 9;
-module_y = 3;
+module_x = 3.5;
+module_y = 14;
 // Antenna end of the module, at the rear board edge. No copper, no metal.
-antenna_x0 = 8;
-antenna_x1 = 28;
-antenna_y0 = 3;
-antenna_y1 = 11;
+antenna_x0 = 3;
+antenna_x1 = 12;
+antenna_y0 = 13;
+antenna_y1 = 33;
 // HRO TYPE-C-31-M-12, underside. Confirm against the vendor drawing.
 usb_body_width = 8.94;
 usb_body_height = 3.3;
@@ -91,8 +91,8 @@ usb_body_height = 3.3;
 led_body_height = 1.0;
 // Protected 503035-class pack, underside. 36 x 30 clears the published
 // LP503035 drawing that the earlier 35 mm keep-out did not.
-cell_x = 29;
-cell_y = 3;
+cell_x = 32;
+cell_y = 6;
 cell_width = 36;
 cell_depth = 30;
 cell_height = 5.4;
@@ -151,22 +151,22 @@ usb_center_z = pcb_z - usb_body_height / 2;
 light_pipe_x = 52;
 light_pipe_diameter = 2.4;
 light_pipe_collar_diameter = 5.0;
-light_pipe_collar_length = 3.0;
+light_pipe_collar_length = 1.5;
 light_pipe_center_z = pcb_z - led_body_height / 2;
 
 // Display FPC. The flex leaves the panel past the board's front edge and
 // folds under it into a bottom-side connector facing forward, which is why
 // the retainer's exit slot sits at the front rather than the rear.
-fpc_x = 28;
-fpc_y = 43;
+fpc_x = 26;
+fpc_y = 47;
 fpc_width = 15.3;
 fpc_depth = 5.4;
 fpc_exit_width = 12;
 
 mount_points = [
-    [6.5, 6.5], [77.5, 6.5], [6.5, 44.5], [77.5, 44.5]
+    [13, 7], [77.5, 7], [13, 49], [77.5, 49]
 ];
-service_points = [[6.5, 28], [77.5, 28]];
+service_points = [[6.5, 40], [77.5, 40]];
 foot_points = [[14, 8], [70, 8], [14, 48], [70, 48]];
 
 function face_z(y) = face_rear_z -
@@ -731,6 +731,8 @@ assert(light_pipe_center_z - light_pipe_collar_diameter / 2 > seam_z,
        "The light-pipe collar reaches below the case seam");
 
 for (point = mount_points) {
+    assert(point[0] > antenna_x1 - 2.5 || point[0] > 60,
+           str("Mounting point ", point, " sits in the module antenna keep-out"));
     assert(roof_z(point[1]) > pcb_top,
            str("No room for a hold-down pillar at y=", point[1]));
     assert(point[0] < module_x || point[0] > module_x + module_width
