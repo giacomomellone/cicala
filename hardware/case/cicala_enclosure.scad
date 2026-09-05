@@ -45,9 +45,15 @@ wall = 2.0;
 roof = 2.0;
 fit_clearance_xy = 0.25;
 boss_outer_diameter = 6.0;
-boss_pilot_diameter = 2.1;
+boss_pilot_diameter = 2.1;      // M2.5 thread-forming screw from below
+boss_screw_diameter = 2.5;
+pillar_diameter = 5.0;          // roof pillar that holds the board down
+mount_hole_diameter = 2.7;
+cell_recess_depth = 0.35;
 
-// PCB datum: rear-left corner at (3, 3), component side upward.
+// PCB datum: rear-left corner at (3, 3). Everything except the two switches
+// and the display stack is on the underside, in the cell cavity, because the
+// sloped roof leaves only 0.8 to 3.5 mm above the board.
 pcb_x = 3;
 pcb_y = 3;
 pcb_z = 9.2;
@@ -55,6 +61,41 @@ pcb_width = 78;
 pcb_depth = 45;
 pcb_thickness = 1.2;
 pcb_corner_radius = 2;
+pcb_top = pcb_z + pcb_thickness;
+
+// Component datums taken from the vendor drawings. These set the stack, so a
+// part substitution changes the enclosure and must change both files.
+// KSC321G: 6.2 mm square body, 2.9 mm max to the body top, 3.5 mm to the
+// actuator top, travel 0.2 +0.3/-0 mm at 2 +/-0.4 N (C&K KSC3 series).
+switch_body = 6.2;
+switch_body_height = 2.9;
+switch_height = 3.5;
+switch_actuator_diameter = 2.8;
+switch_travel = 0.2;
+switch_travel_max = 0.5;
+// ESP32-S3-WROOM-1 including its shield; underside.
+module_width = 18.0;
+module_length = 25.5;
+module_height = 3.1;
+module_x = 9;
+module_y = 3;
+// Antenna end of the module, at the rear board edge. No copper, no metal.
+antenna_x0 = 8;
+antenna_x1 = 28;
+antenna_y0 = 3;
+antenna_y1 = 11;
+// HRO TYPE-C-31-M-12, underside. Confirm against the vendor drawing.
+usb_body_width = 8.94;
+usb_body_height = 3.3;
+// APBA2006 side-view LED, underside, emitting toward the front wall.
+led_body_height = 1.0;
+// Protected 503035-class pack, underside. 36 x 30 clears the published
+// LP503035 drawing that the earlier 35 mm keep-out did not.
+cell_x = 29;
+cell_y = 3;
+cell_width = 36;
+cell_depth = 30;
+cell_height = 5.4;
 
 // Display datum and vendor envelope.
 display_x = 42;
@@ -73,6 +114,9 @@ lens_pocket_width = 55.4;
 lens_pocket_depth = 30.5;
 
 // Controls. Default Rev A presentation: Category sub-flush, Next flush.
+// The cap sits in a bore through a thinned roof and is held up against a
+// counterbore shoulder by the switch's own return spring. A brim under the
+// roof takes an overload press into the shell rather than into the actuator.
 category_x = 27;
 category_y = 12;
 category_bore = 10.30;
@@ -88,14 +132,36 @@ next_cap_depth = 11.0;
 next_cap_radius = 5.5;
 next_proud = 0.0;
 
-// Front I/O. Light pipe is sealed by a gasket or adhesive at assembly.
+// Cap construction, shared by both bores.
+cap_bore_clearance = 0.15;     // radial gap between cap body and bore
+cap_roof_thickness = 1.0;      // roof left above the counterbore shoulder
+cap_flange_reach = 1.4;        // flange radius beyond the cap body
+cap_counterbore_reach = 1.65;  // counterbore radius beyond the cap body
+cap_brim_reach = 2.5;          // overload brim radius beyond the cap body
+cap_brim_thickness = 0.4;
+cap_overload_gap = 0.7;        // cap travel before the brim meets the roof
+switch_pocket_clearance = 0.5; // around the switch body, inside the cap
+
+// Front I/O. Both openings are derived from the underside mounting height, so
+// they cannot drift from the parts they serve.
 usb_x = 42;
 usb_width = 9.4;
 usb_height = 3.8;
-usb_center_z = 7.7;
+usb_center_z = pcb_z - usb_body_height / 2;
 light_pipe_x = 52;
 light_pipe_diameter = 2.4;
-light_pipe_center_z = 7.7;
+light_pipe_collar_diameter = 5.0;
+light_pipe_collar_length = 3.0;
+light_pipe_center_z = pcb_z - led_body_height / 2;
+
+// Display FPC. The flex leaves the panel past the board's front edge and
+// folds under it into a bottom-side connector facing forward, which is why
+// the retainer's exit slot sits at the front rather than the rear.
+fpc_x = 28;
+fpc_y = 43;
+fpc_width = 15.3;
+fpc_depth = 5.4;
+fpc_exit_width = 12;
 
 mount_points = [
     [6.5, 6.5], [77.5, 6.5], [6.5, 44.5], [77.5, 44.5]
@@ -107,6 +173,24 @@ function face_z(y) = face_rear_z -
     (face_rear_z - face_front_z) *
     (y - corner_radius) /
     (case_depth - 2 * corner_radius);
+
+// Inner surface of the roof directly above y.
+function roof_z(y) = face_z(y) - roof;
+// Shoulder the cap flange rests against, under a locally thinned roof.
+function cap_shoulder_z(y) = face_z(y) - cap_roof_thickness;
+// Top of the switch actuator, which the cap sits on.
+function actuator_top_z() = pcb_top + switch_height;
+// Underside of the overload brim's seat.
+function cap_brim_top_z(y) = roof_z(y) - cap_overload_gap;
+
+// A cap outline centred on the origin. A radius of half the smaller side
+// gives a circle, so both bores use one profile.
+module cap_2d(width, depth, radius) {
+    hull()
+        for (x = [-(width / 2 - radius), width / 2 - radius],
+             y = [-(depth / 2 - radius), depth / 2 - radius])
+            translate([x, y]) circle(r = radius);
+}
 
 module rounded_2d(width, depth, radius) {
     hull()
@@ -151,6 +235,19 @@ module face_part(width, depth, thickness, radius, x, y, z_offset = 0) {
             centered_rounded_prism(width, depth, thickness, radius);
 }
 
+
+// The cap bore is a straight hole through a locally thinned roof; the wider
+// counterbore below it leaves the shoulder the cap flange is held against.
+module cap_bore(x, y, width, depth, radius) {
+    translate([x, y, cap_shoulder_z(y)])
+        linear_extrude(height = 20)
+            offset(r = cap_bore_clearance) cap_2d(width, depth, radius);
+    translate([x, y, roof_z(y) - 0.01])
+        linear_extrude(height = roof - cap_roof_thickness + 0.02)
+            offset(r = cap_flange_reach + fit_clearance_xy)
+                cap_2d(width, depth, radius);
+}
+
 module top_shell_blank() {
     difference() {
         sloped_rounded_solid();
@@ -181,16 +278,10 @@ module top_shell_blank() {
             -3.0
         );
 
-        // Vertical cap bores. Flange and actuator stack are coupon-gated.
-        translate([category_x, category_y, seam_z - 1])
-            cylinder(d = category_bore, h = 20);
-        translate([next_x, next_y, seam_z + 8])
-            centered_rounded_prism(
-                next_bore_width,
-                next_bore_depth,
-                20,
-                next_bore_radius
-            );
+        cap_bore(category_x, category_y,
+                 category_cap_diameter, category_cap_diameter,
+                 category_cap_diameter / 2);
+        cap_bore(next_x, next_y, next_cap_width, next_cap_depth, next_cap_radius);
 
         // USB-C mouth and adjacent status-light channel through the front wall.
         translate([usb_x, case_depth + 1, usb_center_z])
@@ -207,40 +298,66 @@ module top_shell_blank() {
     }
 }
 
+
+
 module top_shell() {
     difference() {
         union() {
             top_shell_blank();
-            // Bosses are rebuilt inside the cavity after the cavity subtraction.
-            for (point = mount_points)
+            // Standoffs the board sits on, and pillars from the roof that hold
+            // it there. The board is captured by geometry: the screws below
+            // only clamp the base and the steel to the shell.
+            for (point = mount_points) {
                 translate([point[0], point[1], seam_z])
-                    cylinder(d = boss_outer_diameter, h = 4.4);
+                    cylinder(d = boss_outer_diameter, h = pcb_z - seam_z);
+                translate([point[0], point[1], pcb_top])
+                    cylinder(d = pillar_diameter, h = face_z(point[1]) - pcb_top);
+            }
+            // Collar that carries the light pipe across the cavity.
+            translate([light_pipe_x, case_depth - wall, light_pipe_center_z])
+                rotate([90, 0, 0])
+                    cylinder(d = light_pipe_collar_diameter,
+                             h = light_pipe_collar_length);
         }
         for (point = mount_points)
             translate([point[0], point[1], seam_z - 0.5])
-                cylinder(d = boss_pilot_diameter, h = 6);
+                cylinder(d = boss_pilot_diameter, h = pcb_z - seam_z);
+        // The pillar must not close the board's own mounting hole.
+        for (point = mount_points)
+            translate([point[0], point[1], pcb_top - 0.1])
+                cylinder(d = mount_hole_diameter, h = 3);
+        // Re-open the light-pipe channel through the collar.
+        translate([light_pipe_x, case_depth + 0.5, light_pipe_center_z])
+            rotate([90, 0, 0])
+                cylinder(d = light_pipe_diameter,
+                         h = wall + light_pipe_collar_length + 1);
     }
 }
 
+
 module base() {
     difference() {
-        translate([1.2, 1.2, base_z])
+        translate([wall - 0.8, wall - 0.8, base_z])
             rounded_prism(
-                case_width - 2.4,
-                case_depth - 2.4,
+                case_width - 2 * (wall - 0.8),
+                case_depth - 2 * (wall - 0.8),
                 base_thickness,
                 2.0
             );
 
         for (point = concat(mount_points, service_points))
             translate([point[0], point[1], base_z - 0.2])
-                cylinder(d = point[1] == 28 ? 2.5 : 2.7, h = base_thickness + 0.4);
+                cylinder(
+                    d = point[1] == service_points[0][1] ? 2.5 : mount_hole_diameter,
+                    h = base_thickness + 0.4
+                );
 
         // Shallow datum only: the adhesive-backed cell is retained above it.
-        translate([24.5, 4.0, base_z + base_thickness - 0.35])
-            rounded_prism(35, 30, 0.5, 1.5);
+        translate([cell_x, cell_y, base_z + base_thickness - cell_recess_depth])
+            rounded_prism(cell_width, cell_depth, 0.5, 1.5);
     }
 }
+
 
 module steel_skin() {
     difference() {
@@ -254,9 +371,11 @@ module steel_skin() {
         for (point = concat(mount_points, service_points))
             translate([point[0], point[1], steel_z - 0.2])
                 cylinder(d = 3.0, h = steel_thickness + 0.4);
-        // RF keepout: no steel under or beside the PCB antenna zone.
-        translate([-0.1, 20, steel_z - 0.2])
-            cube([15.1, 16, steel_thickness + 0.4]);
+        // RF keepout: no steel under or beside the module antenna.
+        translate([antenna_x0 - 2, -0.1, steel_z - 0.2])
+            cube([antenna_x1 - antenna_x0 + 4,
+                  antenna_y1 + 2,
+                  steel_thickness + 0.4]);
     }
 }
 
@@ -290,49 +409,90 @@ module panel_reference() {
         );
 }
 
+
 module retainer() {
-    // Front-loaded frame with a clear FPC exit at the rear-left of the panel.
+    // Front-loaded frame. The exit slot clears the panel flex where it folds
+    // past the board's front edge to the underside connector.
     difference() {
         face_part(61.2, 31.2, 1.2, 1.2, display_x, display_y, -2.8);
         face_part(56.8, 26.8, 2.0, 0.8, display_x, display_y, -2.8);
-        translate([24, 47, 7]) cube([12, 6, 8]);
+        translate([fpc_x - fpc_exit_width / 2, case_depth - 12, 7])
+            cube([fpc_exit_width, 12, 8]);
     }
+}
+
+
+// One cap body, built from the switch outwards: the underside meets the
+// actuator, the flange is caught under the counterbore shoulder, and the brim
+// hits the roof after cap_overload_gap so a hard press loads the shell.
+module cap_body(x, y, width, depth, radius, proud) {
+    top_z = face_z(y) + proud;
+    shoulder = cap_shoulder_z(y);
+    brim_top = cap_brim_top_z(y);
+    pocket = switch_body + 2 * switch_pocket_clearance;
+    difference() {
+        union() {
+            translate([0, 0, shoulder])
+                linear_extrude(height = top_z - shoulder)
+                    cap_2d(width, depth, radius);
+            translate([0, 0, brim_top])
+                linear_extrude(height = shoulder - brim_top)
+                    offset(r = cap_flange_reach) cap_2d(width, depth, radius);
+            translate([0, 0, brim_top - cap_brim_thickness])
+                linear_extrude(height = cap_brim_thickness)
+                    offset(r = cap_brim_reach) cap_2d(width, depth, radius);
+        }
+        // Clearance for the switch body; the ceiling of this pocket is the
+        // face the actuator pushes on.
+        translate([0, 0, brim_top - cap_brim_thickness - 1])
+            linear_extrude(height = actuator_top_z() - brim_top
+                                    + cap_brim_thickness + 1)
+                square([pocket, pocket], center = true);
+    }
+}
+
+module cap_at(x, y, width, depth, radius, proud, assembled) {
+    if (assembled) translate([x, y, 0]) cap_body(x, y, width, depth, radius, proud);
+    else translate([0, 0, -(cap_brim_top_z(y) - cap_brim_thickness)])
+             cap_body(x, y, width, depth, radius, proud);
 }
 
 module category_cap(assembled = false, proud = category_proud) {
-    local_z = assembled ? face_z(category_y) + proud - 1.15 : 0;
-    local_x = assembled ? category_x : 0;
-    local_y = assembled ? category_y : 0;
-    translate([local_x, local_y, local_z]) {
-        cylinder(d = category_cap_diameter, h = 1.15);
-        translate([0, 0, -1.15]) cylinder(d = 13.0, h = 1.15);
-        translate([0, 0, -2.8]) cylinder(d = 4.2, h = 1.7);
-    }
+    cap_at(category_x, category_y,
+           category_cap_diameter, category_cap_diameter,
+           category_cap_diameter / 2, proud, assembled);
 }
+
 
 module next_cap(assembled = false, proud = next_proud) {
-    local_z = assembled ? face_z(next_y) + proud - 1.15 : 0;
-    local_x = assembled ? next_x : 0;
-    local_y = assembled ? next_y : 0;
-    translate([local_x, local_y, local_z]) {
-        xy_centered_rounded_prism(
-            next_cap_width,
-            next_cap_depth,
-            1.15,
-            next_cap_radius
-        );
-        translate([0, 0, -1.15])
-            xy_centered_rounded_prism(21, 14, 1.15, 6.8);
-        translate([0, 0, -2.8]) cylinder(d = 4.2, h = 1.7);
-    }
+    cap_at(next_x, next_y, next_cap_width, next_cap_depth,
+           next_cap_radius, proud, assembled);
 }
 
+// Reference volume for a fitted KSC321G, so the assembly shows the real
+// relationship between actuator, cap and roof.
+module switch_reference(x, y) {
+    color([0.15, 0.15, 0.16])
+        translate([x, y, pcb_top]) {
+            translate([-switch_body / 2, -switch_body / 2, 0])
+                cube([switch_body, switch_body, switch_body_height]);
+            translate([0, 0, switch_body_height])
+                cylinder(d = switch_actuator_diameter,
+                         h = switch_height - switch_body_height);
+        }
+}
+
+
 module light_pipe() {
+    // Spans the whole gap from the outer face to the LED at the board's front
+    // edge; a 2 mm rod cannot bridge that unsupported, hence the shell collar.
+    length = case_depth - (pcb_y + pcb_depth);
     color([0.65, 0.95, 0.82, 0.85])
         translate([light_pipe_x, case_depth, light_pipe_center_z])
             rotate([90, 0, 0])
-                cylinder(d = 2.0, h = wall + 1.2);
+                cylinder(d = light_pipe_diameter - 2 * 0.2, h = length);
 }
+
 
 module pcb_reference() {
     color([0.07, 0.25, 0.20])
@@ -344,23 +504,57 @@ module pcb_reference() {
                 pcb_corner_radius
             );
 
+    // Underside parts, drawn where they actually sit.
+    color([0.20, 0.20, 0.22])
+        translate([module_x, module_y, pcb_z - module_height])
+            cube([module_width, module_length, module_height]);
+    color([0.62, 0.62, 0.65])
+        translate([usb_x, pcb_y + pcb_depth - 4.5, usb_center_z])
+            rotate([90, 0, 0])
+                xy_centered_rounded_prism(usb_body_width, usb_body_height,
+                                          7.3, usb_body_height / 2);
+    color([0.85, 0.85, 0.3])
+        translate([light_pipe_x - 1.0, pcb_y + pcb_depth - 2.0,
+                   pcb_z - led_body_height])
+            cube([2.0, 2.0, led_body_height]);
+    color([0.20, 0.20, 0.22])
+        translate([fpc_x - fpc_width / 2, fpc_y - fpc_depth / 2,
+                   pcb_z - 1.25])
+            cube([fpc_width, fpc_depth, 1.25]);
+
+    switch_reference(category_x, category_y);
+    switch_reference(next_x, next_y);
+
     // Battery and antenna keepouts are translucent design volumes.
     color([0.25, 0.25, 0.28, 0.60])
-        translate([24.5, 4, base_z + base_thickness - 0.35])
-            rounded_prism(35, 30, 5.4, 2);
+        translate([cell_x, cell_y, base_z + base_thickness - cell_recess_depth])
+            rounded_prism(cell_width, cell_depth, cell_height, 2);
     color([0.85, 0.25, 0.20, 0.24])
-        translate([0, 20, pcb_z]) cube([15, 16, 6.3]);
+        translate([antenna_x0, antenna_y0, pcb_z - module_height - 1])
+            cube([antenna_x1 - antenna_x0,
+                  antenna_y1 - antenna_y0,
+                  module_height + 1 + pcb_thickness + 2]);
 }
 
+
 module gasket_reference() {
-    color([0.12, 0.12, 0.12, 0.75])
-        translate([18, 4, face_z(12) - 2.5])
-            difference() {
-                rounded_prism(44, 16, 0.5, 4);
-                translate([2, 2, -0.1]) rounded_prism(40, 12, 0.7, 3);
-                // Low-point drain breaks the outer loop intentionally.
-                translate([22, 11, -0.1]) cube([2, 6, 0.7]);
-            }
+    // One splash loop per bore, clearing the cap brim. The break at the low
+    // point of each loop drains rather than seals; no ingress rating is
+    // claimed for the enclosure.
+    for (cap = [[category_x, category_y, category_cap_diameter,
+                 category_cap_diameter, category_cap_diameter / 2],
+                [next_x, next_y, next_cap_width, next_cap_depth,
+                 next_cap_radius]])
+        color([0.12, 0.12, 0.12, 0.75])
+            translate([cap[0], cap[1], roof_z(cap[1]) - 0.5])
+                linear_extrude(height = 0.5)
+                    difference() {
+                        offset(r = cap_brim_reach + 2.2)
+                            cap_2d(cap[2], cap[3], cap[4]);
+                        offset(r = cap_brim_reach + 0.6)
+                            cap_2d(cap[2], cap[3], cap[4]);
+                        translate([-1, 0]) square([2, cap[3] / 2 + 6]);
+                    }
 }
 
 module assembly(exploded = 0) {
@@ -382,8 +576,8 @@ module assembly(exploded = 0) {
     color(ink_color)
         translate([0, 0, 4 * exploded]) next_cap(true);
     translate([0, 0, 4 * exploded]) light_pipe();
-    if (exploded > 0)
-        translate([0, 0, -0.5 * exploded]) pcb_reference();
+    // Always drawn: the section view is only useful with the board in it.
+    translate([0, 0, -0.5 * exploded]) pcb_reference();
     if (exploded == 0)
         gasket_reference();
 }
@@ -435,30 +629,50 @@ module section_view() {
     }
 }
 
+
+// A section of roof at the button row, with the real bore, counterbore and
+// retention shoulder. Print it before the shell and check that a cap drops in,
+// is held by the shoulder, and returns.
 module coupon_buttons() {
+    caps = [[13, category_cap_diameter, category_cap_diameter,
+             category_cap_diameter / 2],
+            [36, next_cap_width, next_cap_depth, next_cap_radius]];
     difference() {
-        rounded_prism(50, 24, 3.0, 2);
-        translate([13, 12, -0.1]) cylinder(d = category_bore, h = 3.2);
-        translate([36, 12, 1.5])
-            centered_rounded_prism(
-                next_bore_width,
-                next_bore_depth,
-                3.2,
-                next_bore_radius
-            );
+        rounded_prism(50, 24, roof, 2);
+        for (c = caps) {
+            translate([c[0], 12, roof - cap_roof_thickness])
+                linear_extrude(height = cap_roof_thickness + 0.1)
+                    offset(r = cap_bore_clearance) cap_2d(c[1], c[2], c[3]);
+            translate([c[0], 12, -0.05])
+                linear_extrude(height = roof - cap_roof_thickness + 0.05)
+                    offset(r = cap_flange_reach + fit_clearance_xy)
+                        cap_2d(c[1], c[2], c[3]);
+        }
     }
 }
 
+
+
+// Height from the brim's underside to the flange top, which is what the
+// counterbore shoulder catches. Independent of y.
+function cap_export_flange_top() =
+    roof - cap_roof_thickness + cap_overload_gap + cap_brim_thickness;
+
 module coupon_buttons_assembly() {
+    lift = (roof - cap_roof_thickness) - cap_export_flange_top();
     color(paper_color) coupon_buttons();
-    color(ink_color) translate([13, 12, 4.35]) category_cap(false);
-    color(ink_color) translate([36, 12, 4.35]) next_cap(false);
+    color(ink_color) translate([13, 12, lift]) category_cap(false);
+    color(ink_color) translate([36, 12, lift]) next_cap(false);
 }
 
+
 module coupon_usb() {
+    // Front-wall section at the real opening heights, cut from the same
+    // datums the shell uses.
+    z0 = light_pipe_center_z - 4;
     difference() {
-        rounded_prism(34, 12, 8, 2);
-        translate([17, 12.1, 4])
+        translate([0, 0, z0]) rounded_prism(34, 12, 8, 2);
+        translate([17, 12.1, usb_center_z])
             rotate([90, 0, 0])
                 xy_centered_rounded_prism(
                     usb_width,
@@ -466,7 +680,7 @@ module coupon_usb() {
                     12.2,
                     usb_height / 2
                 );
-        translate([27, 12.1, 4])
+        translate([27, 12.1, light_pipe_center_z])
             rotate([90, 0, 0])
                 cylinder(d = light_pipe_diameter, h = 12.2);
     }
@@ -482,20 +696,77 @@ module coupon_lens() {
     }
 }
 
+
+// Gauges the real standoff, not a stand-in: same height, diameter and pilot as
+// the shell builds.
 module coupon_boss() {
     difference() {
         union() {
             rounded_prism(22, 18, 2.4, 2);
-            translate([11, 9, 2.4]) cylinder(d = boss_outer_diameter, h = 6);
+            translate([11, 9, 2.4])
+                cylinder(d = boss_outer_diameter, h = pcb_z - seam_z);
         }
-        translate([11, 9, 2.0]) cylinder(d = boss_pilot_diameter, h = 7);
+        translate([11, 9, 2.0])
+            cylinder(d = boss_pilot_diameter, h = pcb_z - seam_z);
     }
 }
+
+
+// Geometry contract. These fail the render, so `just hw-case-check` catches a
+// parameter change that breaks the stack instead of exporting a bad STL.
+cell_top_z = base_z + base_thickness - cell_recess_depth + cell_height;
+assert(cell_top_z <= pcb_z,
+       str("Cell keep-out reaches ", cell_top_z, " mm; the board is at ", pcb_z));
+assert(pcb_z - module_height > seam_z,
+       "The module does not clear the base inside the cell cavity");
+assert(module_x + module_width <= cell_x,
+       "The module overlaps the cell keep-out in plan");
+assert(usb_center_z - usb_height / 2 > seam_z,
+       "The USB opening reaches below the case seam");
+assert(usb_center_z + usb_height / 2 < face_front_z - roof,
+       "The USB opening reaches into the front roof");
+assert(light_pipe_center_z + light_pipe_diameter / 2 < pcb_top,
+       "The light pipe is not aligned with an underside LED");
+assert(light_pipe_center_z - light_pipe_collar_diameter / 2 > seam_z,
+       "The light-pipe collar reaches below the case seam");
+
+for (point = mount_points) {
+    assert(roof_z(point[1]) > pcb_top,
+           str("No room for a hold-down pillar at y=", point[1]));
+    assert(point[0] < module_x || point[0] > module_x + module_width
+           || point[1] < module_y || point[1] > module_y + module_length,
+           str("Mounting point ", point, " lands on the module"));
+    assert(point[0] < cell_x || point[0] > cell_x + cell_width
+           || point[1] < cell_y || point[1] > cell_y + cell_depth,
+           str("Mounting point ", point, " lands on the cell"));
+}
+
+for (button = [[category_y, category_cap_diameter, category_proud],
+               [next_y, next_cap_width, next_proud]]) {
+    assert(cap_shoulder_z(button[0]) > actuator_top_z(),
+           "The cap has no material between the actuator and the shoulder");
+    assert(cap_brim_top_z(button[0]) - cap_brim_thickness > pcb_top,
+           "The overload brim would touch the board");
+    assert(actuator_top_z() < face_z(button[0]) + button[2],
+           "The switch actuator would stand proud of the cap");
+    assert(switch_body + 2 * switch_pocket_clearance
+           < button[1] + 2 * cap_flange_reach,
+           "The switch pocket is wider than the cap flange");
+    assert(cap_overload_gap > switch_travel_max,
+           "The overload brim stops the cap before the switch can operate");
+}
+
+assert(window_width < lens_width && lens_width < lens_pocket_width,
+       "Window, lens and lens rebate are not nested");
+assert(active_width < window_width && active_depth < window_depth,
+       "The visible window does not clear the panel's active area");
 
 echo(str("CICALA_REV=A; part=", part));
 echo(str("ENVELOPE_MM=", case_width, "x", case_depth, "x", face_rear_z));
 echo(str("PCB_MM=", pcb_width, "x", pcb_depth, "x", pcb_thickness));
 echo(str("PCB_ORIGIN_MM=", pcb_x, ",", pcb_y, ",", pcb_z));
+echo(str("CELL_CLEARANCE_MM=", pcb_z - cell_top_z));
+echo(str("CAP_TRAVEL_TO_STOP_MM=", cap_overload_gap));
 
 if (part == "assembly") assembly(0);
 else if (part == "exploded") assembly(4);
