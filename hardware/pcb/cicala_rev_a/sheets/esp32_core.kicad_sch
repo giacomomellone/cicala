@@ -4527,7 +4527,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "150k"
 			(at 126.746 88.392 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5239,7 +5239,7 @@
 				)
 			)
 		)
-		(property "Value" "150k"
+		(property "Value" "100k"
 			(at 137.414 74.422 0)
 			(show_name no)
 			(do_not_autoplace no)

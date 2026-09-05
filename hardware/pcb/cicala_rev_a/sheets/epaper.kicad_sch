@@ -3976,84 +3976,6 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 20.32 59.69 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "04331218-7b8d-4785-97b3-d8cd135dc984")
-		(property "Reference" "#PWR0155"
-			(at 20.32 66.04 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "GND"
-			(at 20.32 63.5 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 20.32 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 20.32 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name GND, ground"
-			(at 20.32 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "8c0018fa-b753-42ff-8e65-53db90575ba1")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/9467d62a-f8ed-46c9-a7cb-f7af887ddb15"
-					(reference "#PWR0155")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
 		(at 222.25 154.94 0)
 		(unit 1)
 		(body_style 1)
@@ -7038,6 +6960,29 @@
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/9467d62a-f8ed-46c9-a7cb-f7af887ddb15"
 					(reference "C17")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 20.32 59.69 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "641db871-fe70-423a-9d46-0283ba2b31b4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 20.32 59.69 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
 				)
 			)
 		)
