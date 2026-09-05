@@ -45,17 +45,28 @@ the connector. The native USB pins (GPIO19/20) are the ESP32-S3 USB-Serial/JTAG
 block, so this one port does flashing, serial console and JTAG without a USB-UART
 bridge chip.
 
+### Shell grounding
+
+| Ref | Value       | Role                                                                                      |
+| --- | ----------- | ------------------------------------------------------------------------------------------- |
+| R33 | 0 Ω         | Ties the USB-C shell to board ground. Fitted by default.                                  |
+| C31 | 1 nF, 2 kV  | The alternative if a DC-isolated shell is ever wanted; not fitted alongside R33.           |
+
+The enclosure is plastic and carries no chassis ground, so the shell's only
+discharge path is into the board. A direct connection at the receptacle gives
+that discharge the shortest route to the ground plane.
+
 ### VBUS presence sensing
 
 | Ref | Value     | Role                                                                                                                     |
 | --- | --------- | ------------------------------------------------------------------------------------------------------------------------ |
-| R5  | 150 kΩ    | Top of the VBUS divider.                                                                                                 |
-| R6  | 100 kΩ    | Bottom of the VBUS divider. 150 k/100 k scales 5 V to about 2.0 V so a 3.3 V ADC/GPIO can read "adapter present" safely. |
+| R5  | 100 kΩ    | Top of the VBUS divider, from VBUS to the sense node.                                                                     |
+| R6  | 150 kΩ    | Bottom of the VBUS divider. 100 k over 150 k scales 5 V to 3.0 V, which clears the ESP32-S3 guaranteed high-input threshold at 3.3 V. The earlier 150 k/100 k gave 2.0 V and did not. |
 | C4  | 1 µF 25 V | Bulk/decoupling on VBUS at the charger input.                                                                            |
 | C3  | 100 nF    | Filters the divided VBUS-sense node against noise and switching transients.                                              |
 
-The high-value divider keeps the standing current on VBUS in the microamp range,
-which matters for the sleep budget when USB is attached but idle.
+The high-value divider keeps the standing current on VBUS at 20 µA, which
+matters for the sleep budget when USB is attached but idle.
 
 ### BQ25185 charger and power path
 
@@ -67,7 +78,7 @@ switching between USB and battery.
 | U2  | BQ25185    | Single-cell linear charger with power path. Sets charge from USB and hands VSYS to the regulator. |
 | C4  | 1 µF 25 V  | Input (VBUS/IN) capacitor, shared with the VBUS sense group above.                                |
 | C5  | 10 µF 25 V | SYS/VSYS output capacitor for the power path.                                                     |
-| C6  | 1 µF 10 V  | BAT-pin decoupling next to the cell connection.                                                   |
+| C6  | 1 µF 16 V  | BAT-pin decoupling next to the cell connection. 16 V keeps useful capacitance at 4.2 V.           |
 | R7  | 18 kΩ      | ILIM/VSET — sets the 4.2 V cell target and the 500 mA input current limit.                        |
 | R8  | 1.20 kΩ    | ISET — sets the 250 mA fast-charge current for the ~500 mAh pack.                                 |
 | R9  | 10 kΩ      | Pull-up on the open-drain STAT1 status output so the MCU can read it.                             |
@@ -83,6 +94,7 @@ charges.
 | Ref | Value                | Role                                                                                    |
 | --- | -------------------- | --------------------------------------------------------------------------------------- |
 | J3  | 3-pin JST-PH         | Protected LiPo connector: VBAT, the NTC sense wire, and GND.                            |
+| R34 | 0 Ω                  | Removable link in the cell lead, with TP22 on the pack side. Lifting it puts a meter between the pack and everything else, which is how whole-device sleep current is measured. Specify a part rated at least 1 A. |
 | BT1 | 503035-class 1S LiPo | Off-board protected pack with PCM and a 10 kΩ B=3435 NTC on a keyed three-wire harness. |
 
 The charger sources about 38 µA into its TS pin, so the pack's 10 kΩ NTC to GND
@@ -100,7 +112,7 @@ regulator would drop out as the cell approaches 3.3 V.
 | --- | ----------------- | ------------------------------------------------------------------------------------ |
 | U3  | TPS63802          | Low-IQ buck-boost regulator, VSYS in, 3V3 out.                                       |
 | L2  | 0.47 µH (XFL4015) | Buck-boost inductor; the single energy-storage element the topology switches.        |
-| C8  | 10 µF 6.3 V       | Input capacitor on VSYS at the regulator.                                            |
+| C8  | 10 µF 25 V        | Input capacitor on VSYS at the regulator. 25 V because SLUSF65B section 7.2.2.3 asks for it on the SYS node, and because the regulator needs 4 µF effective on VIN, which a 6.3 V part at 4.5 V does not reliably give. |
 | C9  | 22 µF 6.3 V       | Output bulk on 3V3.                                                                  |
 | C10 | 47 µF 6.3 V       | Additional 3V3 output bulk for transient response and display-refresh load steps.    |
 | C11 | 100 nF            | High-frequency 3V3 decoupling.                                                       |
@@ -167,6 +179,12 @@ download mode.
 | R23 | 1 kΩ               | Red-channel series/current-limit resistor.                            |
 | R24 | 1 kΩ               | Green-channel series resistor.                                        |
 
+Both dies are AlGaInP: hyper red at 1.95 V typical and 2.5 V maximum, green at
+574 nm, 2.1 V typical and 2.5 V maximum. From 3.3 V through 1 kΩ that is
+0.8 mA in the worst case and about 1.3 mA typically. That is a deliberately
+small current, and how much of it reaches the eye through the light pipe is a
+bench measurement, not a calculation.
+
 Each die has its own series resistor, so both GPIOs low leaves no standing LED
 current in sleep. The part is two independent diodes; the board ties both
 cathodes to GND to use it as a common-cathode LED.
@@ -218,6 +236,21 @@ the CT slew limits inrush and the QOD resistor guarantees a clean rail collapse.
 Schottky diodes are used for their low forward drop and fast recovery, which the
 charge pumps need to reach the panel's ±15 V-class rails efficiently.
 
+### Bus isolation and reset parking
+
+The panel's logic pins sit behind series resistors so that driving one while
+`EPD_3V3` is off cannot push current into the panel through its own ESD diodes.
+
+| Ref      | Value  | Role                                                                                                      |
+| -------- | ------ | ----------------------------------------------------------------------------------------------------------- |
+| R27–R31  | 470 Ω  | In series with CLK, MOSI, CS, D/C and RES#. Caps the injected current at about 5.7 mA per pin against a 3.3 V output and a diode drop, and damps the edges; fit 0 Ω to remove them during bring-up. |
+| R32      | 1 MΩ   | Pull-down on the panel side of RES#, so the panel is held in reset while its rail is off and while the MCU pin is high-impedance. |
+
+At 4 MHz into roughly 20 pF of connector and trace, 470 Ω adds about 21 ns of
+rise time, which is a small fraction of the 125 ns half-period. The resistors
+are the fallback, not the plan: firmware still parks the bus before removing
+panel power.
+
 ### Panel rail reservoirs and FPC
 
 Each SSD1680 analog rail gets its own reservoir capacitor so it holds voltage
@@ -229,7 +262,7 @@ through a refresh.
 | C18 | 1 µF 25 V      | EPD_VSH2 (positive source)                                    |
 | C19 | 1 µF 25 V      | EPD_3V3 (panel VCI/VDDIO)                                     |
 | C20 | 1 µF 25 V      | EPD_VDD                                                       |
-| C21 | 1 nF 25 V      | EPD_VSH1                                                      |
+| C21 | 1 µF 25 V      | EPD_VSH1                                                      |
 | C22 | 1 µF 25 V      | EPD_VSL (negative source)                                     |
 | C23 | 1 µF 25 V      | EPD_PREVGL pre-charge-pump reservoir                          |
 | C24 | 1 µF 25 V      | EPD_VCOM (common electrode)                                   |

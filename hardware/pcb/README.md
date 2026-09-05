@@ -1,82 +1,58 @@
-# PCB — Rev A schematic baseline
+# PCB — Rev A
 
-The KiCad 10 project is under `cicala_rev_a/`. It contains the first complete hierarchical schematic and a validated mechanical constraint board. The schematic is an electrical review baseline, not a fabrication release. Hardware files use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+The KiCad 10 project is under `cicala_rev_a/`. It contains the hierarchical
+schematic, a placed and routed four-layer board, and the fabrication and
+assembly outputs generated from it. Hardware files use
+[CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-The shared coordinate, stack-up, pin and validation contracts are in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` records the selected parts and the gates that remain before an assembly quote.
+The shared coordinate, stack-up, pin and validation contracts are in
+[docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` records the
+selected parts and what remains before an assembly order.
 
 ## What exists
 
-- `cicala_rev_a.kicad_pro`: KiCad project metadata;
-- `cicala_rev_a.kicad_sch`: root hierarchy with three functional sheets;
-- `cicala_rev_a.kicad_pcb`: 78 × 45 × 1.2 mm four-layer board skeleton;
-- `cicala_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library;
+- `cicala_rev_a.kicad_pro`: project metadata, net classes and design rules;
+- `cicala_rev_a.kicad_sch`: root block diagram with hierarchical sheet pins, over three functional sheets;
+- `cicala_rev_a.kicad_pcb`: 78 × 49 × 1.2 mm four-layer board, placed and routed;
+- `cicala_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library, including the GDEY0213B74 panel;
+- `cicala.pretty`: project land patterns for U3, L1, L2 and D4, and the J1 silkscreen variant;
 - `pin_contract.csv`: firmware-to-schematic signal allocation;
-- `renders/constraint_map.svg`: vector plot of mechanical datums and keep-outs;
-- `renders/board_top.png`: empty-board 3D check;
-- `exports/cicala_rev_a_board.step`: board outline for enclosure fit checks.
-
-The PCB skeleton carries four Ø2.7 mm mechanical holes, a 2 mm corner radius, and user-layer envelopes for the panel, FPC, USB-C, switches, cap bores, status light, cell, gasket, ESP32-S3 module and service holes. Keep-out zones prohibit all copper and metal below the module antenna and prohibit bottom-side components in the 503035 cell volume.
-
-All component outlines are mechanical datums. They are deliberately not electrical footprints. Replace each with a footprint reviewed against the current manufacturer drawing before placing copper.
+- `place_rev_a.py`: the script that generates placement, pours and routing from the schematic netlist;
+- `exports/`: Gerbers, drill, pick-and-place, BOM, assembly drawings, IPC-2581 and the board STEP.
 
 ## Hierarchy
 
-| Sheet                   | Captured circuit                                                                 |
+| Sheet                   | Captured circuit                                                                |
 | ----------------------- | -------------------------------------------------------------------------------- |
 | Power and USB           | USB-C protection and sensing, BQ25185 charger, protected cell path and TPS63802 |
 | Controller and user I/O | ESP32-S3, EN/IO0, buttons, status LED, recovery header and production test pads |
-| E-paper display         | GDEY0213B74 FPC, SSD1680 boost network and switched panel power                  |
+| E-paper display         | GDEY0213B74 panel, SSD1680 boost network, bus isolation and switched panel power |
 
-Short local connections are drawn directly. Named global labels are reserved for sheet boundaries, controller or connector fan-out, shared rails and production test access.
+The root sheet is a block diagram: the nineteen nets that cross a sheet
+boundary are hierarchical, with a directional pin on each block and the flow
+drawn between them. Ground stays global, because a ground symbol reads better
+than a pin on every block. Within a sheet, short connections are drawn
+directly and named labels are used for controller fan-out, shared rails and
+test access.
 
-Start capture from the power tree and recovery path. A battery-powered USB device needs both IO0 and EN access: plugging USB into a running unit is not a reliable reset action. Keep these pads concealed from normal use and reachable with the enclosure open.
+## Layout
 
-## Schematic review TODO
+Everything except the two switches and the display stack is on the underside,
+because the sloped roof leaves between 0.8 and 3.5 mm above the board and the
+cell cavity underneath leaves 5.3 mm. The module sits rear-left with its
+antenna at the board edge and clear of the display; Espressif's keep-out,
+which the module footprint carries, reaches 9.5 mm in from that edge and
+nothing else may sit in it.
 
-The following items were found during the Rev A functional and readability review. Checked items are resolved design decisions; unchecked items remain gates for schematic approval.
-
-### Clock decision
-
-- [x] Do not add an external 40 MHz crystal. The selected ESP32-S3-WROOM-1/1U module contains its required 40 MHz crystal.
-- [x] Do not fit a 32.768 kHz RTC crystal by default. It is optional for this product; revisit only if deep-sleep timing accuracy or measured sleep power requires it.
-
-### Electrical blockers
-
-- [ ] Correct the TPS22917 soft-start capacitor C14: connect its CT-side capacitor return to U6 VIN/3V3, not GND, following the device reference circuit.
-- [ ] Correct the VBUS-sense divider so R5, from VBUS to the sense node, is 100 kΩ and R6, from the sense node to GND, is 150 kΩ. The present 150 kΩ/100 kΩ arrangement produces only 2.0 V from 5 V, below the ESP32-S3 guaranteed high-input threshold at 3.3 V.
-- [ ] Prevent an unpowered e-paper panel from being back-powered through its logic pins. Drive or park every MCU-driven panel input low or high-impedance before deasserting `EPD_PWR_EN`, and preserve that state while `EPD_3V3` is off; add isolation if firmware cannot guarantee the sequence.
-- [ ] Decide and document the USB-C shield connection near the receptacle. Review a direct, 0 Ω configurable, or RC connection to board ground against the enclosure and EMC/ESD plan instead of leaving SHIELD explicitly unconnected without rationale.
-
-### Hardware and firmware integration
-
-- [ ] Add a Rev A firmware board configuration that controls GPIO2 `VBAT_SENSE_EN` and GPIO5 `EPD_PWR_EN`, including safe reset and deep-sleep states.
-- [ ] Update battery-voltage conversion for the 1 MΩ/470 kΩ divider to the exact multiplier 147/47 (approximately 3.1277), replacing the breadboard 2/1 value.
-- [ ] After enabling the battery divider, allow its 100 nF filter to settle before sampling. Its approximately 32 ms time constant requires about 160 ms for 1% settling unless the filter or measurement method is changed.
-- [ ] Define and test the e-paper power-up and power-down sequence, including panel reset, bus-pin parking, and discharge/restart behaviour.
-
-### Testability and drawing readability
-
-- [ ] Complete the production-test contract in `docs/hardware_rev_a.md`: expose USB D+/D−, the display bus, charger status, and removable current-measurement links in addition to the existing power, UART, IO0/EN, and regulator-status access.
-- [ ] Replace generic connector J2 with a project-specific GDEY0213B74 symbol carrying semantic signal names and correct electrical pin types so ERC can catch interface errors.
-- [ ] Turn the root sheet into a real system block diagram with hierarchical sheet pins for power, USB, SPI, control, and status. Show the power flow explicitly as USB/BAT → BQ25185 SYS → TPS63802 → 3V3 → panel load switch, and reduce passive global-label fan-out.
-- [ ] Tighten excess whitespace on the controller sheet and visually associate each decoupling group with the device or rail it serves.
-- [ ] Hide visible `#FLG`/`PWR_FLAG` references and add a consistent `PRELIMINARY — NOT FOR FABRICATION` title-block note and sheet date on every page.
-- [ ] Consider reserving 0 Ω or 22–47 Ω series-tuning footprints on e-paper CLK and MOSI near the controller for signal-integrity and EMC adjustment.
-
-## Layout constraints
-
-- Retain the current firmware pins recorded in `docs/hardware_rev_a.md`.
-- Prefer WROOM-1 for the close-range captive-portal use case if placement clears the module antenna keep-out. Keep WROOM-1U as the assembly fallback if the display, cell, buttons, copper or enclosure metal prevent that placement. Either variant requires assembled radio testing.
-- Keep the steel ballast, cell, display and button hardware out of the antenna volume. Test the final assembled radio; a drawing cannot qualify it.
-- Route GPIO19/20 as native USB over continuous ground. Set impedance from the selected four-layer fabricator stack before routing.
-- Keep charger, cell and e-paper boost current loops short. Do not route their switching returns through the USB or antenna reference path.
-- Put all development pads and current links on the underside. Maintain tool access with the base removed and prevent contact with the cell pouch.
-- Keep the preliminary FPC connector centred at (42, 40) and USB-C at the front datum only until reviewed footprints replace the envelopes. Their current drawings have 0.5 mm between them, which is not a manufacturing clearance.
-- Use a side-fire or light-guide-coupled bi-colour LED at the X=52 front-edge datum. Both firmware outputs low must leave no standing LED load.
+Placement and routing are generated by `place_rev_a.py` rather than dragged by
+hand, so they can be regenerated after a schematic change and reviewed as a
+diff. Anchors — the module, connectors, switches, the power column and the
+e-paper boost loop — are positioned deliberately; the remaining passives are
+packed into free regions ordered by distance to the pads they already share a
+net with. Routing negotiates congestion: nets may share space while the router
+decides which of them has somewhere else to go, and the ones that do move.
 
 ## Validation
-
-KiCad 10.0.5 currently reports zero schematic ERC violations and zero constraint-board DRC violations. STEP export also succeeds. Schematic-to-PCB parity is deliberately excluded until the open footprints are reviewed and components are placed; the current board contains only mechanical datums.
 
 Run the same checks with:
 
@@ -84,4 +60,19 @@ Run the same checks with:
 just hw-pcb-check
 ```
 
-Do not produce Gerbers until the schematic review, custom footprints, routed board, manufacturer stack, BOM, assembly drawing and enclosure interference check all pass their gates.
+KiCad 10.0.5 reports zero schematic ERC violations, zero board DRC violations,
+zero unconnected pads and zero schematic-to-PCB parity issues. STEP export
+succeeds.
+
+Generate the fabrication and assembly outputs with:
+
+```sh
+hardware/pcb/export_fab.sh
+```
+
+Those checks are necessary and not sufficient. ERC accepts electrically valid
+but topologically wrong wiring — it saw none of the eight circuit errors
+recorded in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md) — and DRC
+checks manufacturability and connectivity, not whether the loops are tight or
+the circuit is right. The physical gates in that document remain open until
+hardware exists.

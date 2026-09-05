@@ -79,11 +79,13 @@ module_length = 18.0;
 module_height = 3.1;
 module_x = 3.5;
 module_y = 14;
-// Antenna end of the module, at the rear board edge. No copper, no metal.
+// Espressif's keep-out around the module antenna, as the KiCad footprint
+// draws it: no copper on any layer and no metal, over the full board depth
+// left of x = 9.5. The steel cut-out follows it.
 antenna_x0 = 3;
-antenna_x1 = 12;
-antenna_y0 = 13;
-antenna_y1 = 33;
+antenna_x1 = 9.5;
+antenna_y0 = 3.5;
+antenna_y1 = 52.5;
 // HRO TYPE-C-31-M-12, underside. Confirm against the vendor drawing.
 usb_body_width = 8.94;
 usb_body_height = 3.3;
@@ -372,10 +374,8 @@ module steel_skin() {
             translate([point[0], point[1], steel_z - 0.2])
                 cylinder(d = 3.0, h = steel_thickness + 0.4);
         // RF keepout: no steel under or beside the module antenna.
-        translate([antenna_x0 - 2, -0.1, steel_z - 0.2])
-            cube([antenna_x1 - antenna_x0 + 4,
-                  antenna_y1 + 2,
-                  steel_thickness + 0.4]);
+        translate([-0.1, -0.1, steel_z - 0.2])
+            cube([antenna_x1 + 2, case_depth + 0.2, steel_thickness + 0.4]);
     }
 }
 
@@ -731,7 +731,7 @@ assert(light_pipe_center_z - light_pipe_collar_diameter / 2 > seam_z,
        "The light-pipe collar reaches below the case seam");
 
 for (point = mount_points) {
-    assert(point[0] > antenna_x1 - 2.5 || point[0] > 60,
+    assert(point[0] > antenna_x1 + 3.0 || point[0] > 60,
            str("Mounting point ", point, " sits in the module antenna keep-out"));
     assert(roof_z(point[1]) > pcb_top,
            str("No room for a hold-down pillar at y=", point[1]));

@@ -1,8 +1,21 @@
-# BOM — Rev A schematic baseline
+# BOM — Rev A
 
-The three functional KiCad sheets are captured and pass ERC. This list records the selected electrical parts and off-board assemblies. Every symbol now carries a footprint, so it is suitable for component sourcing and layout, but it is not yet an orderable PCBA BOM: the four project-drawn land patterns need a manufacturer-drawing review, and board placement, routing, alternates and live assembler stock still need work. For the development rig and physical-model purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
+The board is placed and routed and passes ERC, DRC and schematic-to-PCB
+parity. This list records the selected electrical parts and off-board
+assemblies. It is not yet an orderable PCBA BOM: the project-drawn land
+patterns need a manufacturer-drawing review, and manufacturer part numbers,
+alternates and live assembler stock still need to be pinned. The generated
+BOM that goes to an assembler is `cicala_rev_a/exports/assembly/`, written by
+`hardware/pcb/export_fab.sh`. For the development rig and physical-model
+purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
 
-Project-drawn land patterns live in `cicala_rev_a/cicala.pretty` (registered through `fp-lib-table`): `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm` (U3, no exposed pad), `L_Coilcraft_XFL4015` (L2), `L_TDK_VLS4012` (L1) and the preliminary `LED_Kingbright_APBA2006SURKCGKC` (D4). All other parts use KiCad library footprints.
+Project-drawn land patterns live in `cicala_rev_a/cicala.pretty` (registered
+through `fp-lib-table`): `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm` (U3, no
+exposed pad), `L_Coilcraft_XFL4015` (L2), `L_TDK_VLS4012` (L1), the
+preliminary `LED_Kingbright_APBA2006SURKCGKC` (D4), and
+`USB_C_Receptacle_HRO_TYPE-C-31-M-12_EdgeOverhang` (J1), which is the KiCad
+library land with its silkscreen trimmed at the board edge because the part
+deliberately overhangs it. All other parts use KiCad library footprints.
 
 ## Selected parts
 
@@ -25,6 +38,7 @@ Project-drawn land patterns live in `cicala_rev_a/cicala.pretty` (registered thr
 | J3       | Protected-cell connector with thermistor     | 3-pin JST-PH, horizontal SMD      | S3B-PH-SM4-TB(LF)(SN), mated custom harness                |   1 | Connector selected; wire order must be keyed in drawing |
 | BT1      | Protected 1S LiPo, nominal 500 mAh           | 503035-class pack, 3-wire harness | Custom pack with PCM and 10 kΩ, B=3435 K NTC               |   1 | Supplier drawing and enclosure fit open |
 | J4       | Concealed recovery connector                 | Tag-Connect TC2030-IDC-NL pads    | PCB footprint only                                         |   1 | DNP connector; underside access gate |
+| —        | Case screws                                  | M2.5 × 8 thread-forming, pan head | Into the shell bosses from below, through steel and base   |   4 | Length set by the coupon result |
 
 The WROOM variants are alternatives on one assembly position. WROOM-1 is preferred because setup-portal use is expected at close range and avoids an external antenna, cable and connector. It remains conditional on a placement that satisfies Espressif's antenna keep-out and an assembled radio test. WROOM-1U stays available if that placement cannot clear the display, cell, buttons and enclosure metal.
 
@@ -38,14 +52,18 @@ The protected cell is a specification rather than a frozen supplier MPN. A [publ
 - TPS63802 uses a 0.47 µH inductor, 511 kΩ/91 kΩ feedback divider, 10 µF input capacitance and 22 µF plus 47 µF output bulk. MODE is low for power-save operation.
 - The e-paper boost and reservoir network follows the GDEY0213B74 reference circuit. TPS22917 disconnects panel power between refreshes and discharges the switched rail through 150 Ω.
 - Both switches use 47 kΩ pull-ups and 10 nF hardware debounce. The LED dies each use 1 kΩ in series so both GPIOs low leave no standing LED current.
+- R27–R31 put 470 Ω in series with every MCU-driven panel line. They cap the current injected into an unpowered panel's ESD diodes at about 5.7 mA per pin and double as the series-tuning positions; fit 0 Ω to remove them during bring-up. R32 is a 1 MΩ pull-down that holds the panel in reset while its rail is off.
+- R33 (0 Ω, fitted) ties the USB-C shell to board ground; C31 (1 nF, 2 kV) is the alternative for a DC-isolated shell. The enclosure is plastic and carries no chassis ground, so this is the shell's only discharge path.
+- R34 is a removable 0 Ω link in the cell lead, with TP22 on the pack side. Lifting it puts a meter between the pack and everything else, which is how whole-device sleep current gets measured against the 30 µA target.
 - Ordinary resistors and small capacitors are 0603. High-capacitance and 25 V pump capacitors use 0805 where marked in the schematic. Voltage bias, tolerance and temperature rating must be checked when manufacturer part numbers are assigned.
 
 These packages are compatible with professional PCBA. The 0.4 mm-pitch BQ25185 WSON, exposed-pad regulator, fine-pitch FPC and USB receptacle make assembler placement preferable to hand soldering. Before requesting JLCPCB or PCBWay assembly, map every line to a stocked manufacturer part, add approved alternates, confirm any extended-part fees, and request inspection appropriate to the fine-pitch and bottom-terminated joints.
 
 ## Gates before a PCBA quote
 
-1. Confirm the drafted project land patterns for U3, L1, L2 and D4 against current manufacturer drawings. The KSC6xxG library land is accepted for SW1/SW2 — it matches the KSC321G drawing (3.1 × 1.0 mm pads, 8.9 mm column and 4.0 mm row centres). The U3 land omits an exposed pad because the DLA0010A HotRod package has none. The D4 land is preliminary and its pad numbers follow the `LED_Dual_AAKK` symbol (pad1 = red anode … pad4 = green cathode), not the datasheet pin numbers; verify both. Recheck the J1 and J2 library footprints and J2 contact orientation.
-2. Resolve WROOM-1 antenna placement or select WROOM-1U with an antenna and cable route. Test radio performance in the assembled enclosure.
-3. Obtain an exact protected-cell drawing with PCM, 10 kΩ NTC, connector pin order, wire exit and swelling allowance; then update the enclosure keep-out.
-4. Place and route the schematic, obtain the assembler's four-layer controlled-impedance stack, and re-enable schematic-to-PCB parity in `check_rev_a.sh`.
-5. Verify e-paper refresh brownout margin, charger temperature (including the TS/NTC charge window), USB flashing/serial/JTAG, sleep current and display power-off leakage on assembled boards.
+1. Confirm the drafted project land patterns for U3, L1, L2 and D4 against current manufacturer drawings. The KSC6xxG library land is accepted for SW1/SW2 — it matches the KSC321G drawing (3.1 × 1.0 mm pads, 8.9 mm column and 4.0 mm row centres). The U3 land omits an exposed pad because the DLA0010A HotRod package has none. The D4 land is preliminary and its pad numbers follow the `LED_Dual_AAKK` symbol (pad1 = red anode … pad4 = green cathode), not the datasheet pin numbers; verify both, along with which face the part emits from — the light pipe depends on it. Recheck the J1 and J2 library footprints and J2 contact orientation.
+2. Map every line to a stocked manufacturer part with approved alternates, and confirm any extended-part fees.
+3. Test radio performance with WROOM-1 in the assembled enclosure. Espressif's keep-out is honoured on the board, but a keep-out is not a measurement.
+4. Obtain an exact protected-cell drawing with PCM, 10 kΩ NTC, connector pin order, wire exit and swelling allowance. The 36 × 30 × 5.4 mm keep-out clears the published LP503035 drawing; the ordered pack still has to fit it.
+5. Obtain the assembler's four-layer controlled-impedance stack and re-check the USB pair against it. The 0.29 mm/0.29 mm geometry assumes the declared 0.18 mm prepreg at εr 4.5.
+6. Verify e-paper refresh brownout margin, charger temperature (including the TS/NTC charge window), USB flashing/serial/JTAG, sleep current at the R34 link and display power-off leakage on assembled boards.
