@@ -7,6 +7,8 @@
 	(title_block
 		(title "GDEY0213B74 e-paper interface and boost")
 		(rev "Rev A")
+		(date "2026-09-05")
+		(company "Cicala")
 	)
 	(lib_symbols
 		(symbol "Connector_Generic:Conn_01x24"
@@ -3582,8 +3584,8 @@
 		)
 		(uuid "fd672d41-a291-4c8b-8706-a42480ae217b")
 	)
-	(global_label "EPD_BUSY"
-		(shape passive)
+	(hierarchical_label "EPD_BUSY"
+		(shape output)
 		(at 33.02 147.32 0)
 		(fields_autoplaced yes)
 		(effects
@@ -3592,18 +3594,7 @@
 			)
 			(justify left)
 		)
-		(uuid "01f75368-c642-41af-9c87-cdcc152c21ad")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 33.02 147.32 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "e1a68855-4d15-432d-a56f-dabc42ae356c")
 	)
 	(global_label "EPD_VGL"
 		(shape passive)
@@ -3743,8 +3734,8 @@
 			)
 		)
 	)
-	(global_label "3V3"
-		(shape passive)
+	(hierarchical_label "3V3"
+		(shape input)
 		(at 190.5 113.03 90)
 		(fields_autoplaced yes)
 		(effects
@@ -3753,18 +3744,7 @@
 			)
 			(justify left)
 		)
-		(uuid "3f550913-eb09-420c-892a-f8b939c95e0d")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 190.5 113.03 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "fdd739f5-7e90-4763-813d-6f3e924a49e2")
 	)
 	(global_label "EPD_3V3"
 		(shape passive)
@@ -4043,8 +4023,8 @@
 			)
 		)
 	)
-	(global_label "3V3"
-		(shape passive)
+	(hierarchical_label "3V3"
+		(shape input)
 		(at 31.75 38.1 180)
 		(fields_autoplaced yes)
 		(effects
@@ -4053,18 +4033,7 @@
 			)
 			(justify right)
 		)
-		(uuid "80743533-036a-4283-afa1-cadc5d8ba852")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 31.75 38.1 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "d495674a-f67c-499a-b42e-78216cb7aca2")
 	)
 	(global_label "EPD_PUMP"
 		(shape passive)
@@ -4480,8 +4449,8 @@
 			)
 		)
 	)
-	(global_label "EPD_PWR_EN"
-		(shape passive)
+	(hierarchical_label "EPD_PWR_EN"
+		(shape input)
 		(at 31.75 43.18 180)
 		(fields_autoplaced yes)
 		(effects
@@ -4490,18 +4459,7 @@
 			)
 			(justify right)
 		)
-		(uuid "eaa455ce-e891-487a-ad5c-a335bc620286")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 31.75 43.18 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "6f1efcf8-c5a8-4b5d-b923-f07b0e465f66")
 	)
 	(global_label "PNL_CLK"
 		(shape passive)
@@ -7608,8 +7566,8 @@
 			)
 		)
 	)
-	(global_label "3V3"
-		(shape passive)
+	(hierarchical_label "3V3"
+		(shape input)
 		(at 20.32 59.69 270)
 		(fields_autoplaced yes)
 		(effects
@@ -7618,18 +7576,7 @@
 			)
 			(justify left)
 		)
-		(uuid "641db871-fe70-423a-9d46-0283ba2b31b4")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 20.32 59.69 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "8c87343c-5b18-4b4e-99ac-eb72cc12bd97")
 	)
 	(wire
 		(pts
@@ -7763,8 +7710,8 @@
 		)
 		(uuid "7b306f16-fc34-4a67-ac50-0896e1d8e234")
 	)
-	(global_label "EPD_CLK"
-		(shape passive)
+	(hierarchical_label "EPD_CLK"
+		(shape input)
 		(at 78.74 127.0 0)
 		(fields_autoplaced yes)
 		(effects
@@ -7773,18 +7720,7 @@
 			)
 			(justify left)
 		)
-		(uuid "07454a24-9449-4f90-a043-e20086409976")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 78.74 127.0 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "57a4c1c7-58f7-4846-b383-1dfe6da70319")
 	)
 	(global_label "PNL_MOSI"
 		(shape passive)
@@ -7908,8 +7844,8 @@
 		)
 		(uuid "dcd7b132-0418-46cb-be6d-61e49a0357d7")
 	)
-	(global_label "EPD_MOSI"
-		(shape passive)
+	(hierarchical_label "EPD_MOSI"
+		(shape input)
 		(at 78.74 134.62 0)
 		(fields_autoplaced yes)
 		(effects
@@ -7918,18 +7854,7 @@
 			)
 			(justify left)
 		)
-		(uuid "54d6ab99-c58f-488f-b9fe-202b94ceaad8")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 78.74 134.62 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "ef77608c-717c-42b8-a7aa-d05c422e4b89")
 	)
 	(global_label "PNL_CS"
 		(shape passive)
@@ -8053,8 +7978,8 @@
 		)
 		(uuid "8a68b016-9c97-4c18-abf2-75da156e3627")
 	)
-	(global_label "EPD_CS"
-		(shape passive)
+	(hierarchical_label "EPD_CS"
+		(shape input)
 		(at 78.74 142.24 0)
 		(fields_autoplaced yes)
 		(effects
@@ -8063,18 +7988,7 @@
 			)
 			(justify left)
 		)
-		(uuid "cf212837-49d3-4af9-8536-7a400c0293a1")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 78.74 142.24 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "bcdb2080-e9c1-4f4f-93aa-75f455967b71")
 	)
 	(global_label "PNL_DC"
 		(shape passive)
@@ -8198,8 +8112,8 @@
 		)
 		(uuid "252590a5-2111-4d1c-b3d7-5bdda2daf180")
 	)
-	(global_label "EPD_DC"
-		(shape passive)
+	(hierarchical_label "EPD_DC"
+		(shape input)
 		(at 78.74 149.86 0)
 		(fields_autoplaced yes)
 		(effects
@@ -8208,18 +8122,7 @@
 			)
 			(justify left)
 		)
-		(uuid "667ba670-44b6-49c1-a822-f02370e62155")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 78.74 149.86 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "dc71c60c-1262-4ed4-a76d-9c3ac4030461")
 	)
 	(global_label "PNL_RESET"
 		(shape passive)
@@ -8343,8 +8246,8 @@
 		)
 		(uuid "993a2b28-e01f-4182-9f8d-9ea82004a90d")
 	)
-	(global_label "EPD_RESET"
-		(shape passive)
+	(hierarchical_label "EPD_RESET"
+		(shape input)
 		(at 78.74 157.48 0)
 		(fields_autoplaced yes)
 		(effects
@@ -8353,18 +8256,7 @@
 			)
 			(justify left)
 		)
-		(uuid "e154c139-c1c2-4651-bc86-f1832beccb79")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 78.74 157.48 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "a200ff4b-fa85-4a43-a7c9-3303f500e75b")
 	)
 	(junction
 		(at 63.5 157.48)
@@ -9144,8 +9036,8 @@
 			)
 		)
 	)
-	(global_label "EPD_BUSY"
-		(shape passive)
+	(hierarchical_label "EPD_BUSY"
+		(shape output)
 		(at 162.56 160.02 270)
 		(fields_autoplaced yes)
 		(effects
@@ -9154,18 +9046,7 @@
 			)
 			(justify left)
 		)
-		(uuid "0ca599be-ee39-4718-9909-c859f8814094")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 162.56 160.02 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "2fa0f980-0178-47e2-9b66-a156840d97fe")
 	)
 	(rectangle
 		(start 93.98 140.97)

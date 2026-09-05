@@ -7,11 +7,13 @@
 	(title_block
 		(title "Cicala Rev A schematic overview")
 		(rev "Rev A")
+		(date "2026-09-05")
+		(company "Cicala")
 	)
 	(lib_symbols)
 	(sheet
-		(at 104.14 45.72)
-		(size 50.8 25.4)
+		(at 114.3 40.64)
+		(size 60.96 99.06)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -26,7 +28,7 @@
 		)
 		(uuid "5c37343c-ce2e-4af1-8c0e-7996e7e59814")
 		(property "Sheetname" "Controller and user I/O"
-			(at 104.14 45.0084 0)
+			(at 114.3 39.9284 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -37,7 +39,7 @@
 			)
 		)
 		(property "Sheetfile" "sheets/esp32_core.kicad_sch"
-			(at 104.14 71.8316 0)
+			(at 114.3 140.4116 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -54,10 +56,210 @@
 				)
 			)
 		)
+		(pin "3V3" input
+			(at 114.3 48.26 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "d0c3e38b-c659-45f9-aa69-17351bbc330a")
+		)
+		(pin "VSYS" input
+			(at 114.3 55.879999999999995 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "6b862a8b-e5ca-4cec-9687-fd34410d9bdf")
+		)
+		(pin "VBAT" input
+			(at 114.3 63.5 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "d6775921-3b91-4d43-9976-57e9386d9683")
+		)
+		(pin "USB_VBUS" input
+			(at 114.3 71.12 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "942d5e03-69e9-4e45-898b-a9736f50f567")
+		)
+		(pin "USB_DP" bidirectional
+			(at 114.3 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "6c47b537-3fee-430a-9125-858ee1b08e40")
+		)
+		(pin "USB_DN" bidirectional
+			(at 114.3 86.36 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "8129c679-4ce7-4794-b16d-4f7f711bac90")
+		)
+		(pin "CHG_STAT1" input
+			(at 114.3 93.97999999999999 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "f81a06a3-56ad-4e54-bc61-f8cc615b3499")
+		)
+		(pin "CHG_STAT2" input
+			(at 114.3 101.6 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "728e4975-f904-458c-956c-c3e7882d5ba2")
+		)
+		(pin "CHG_ENABLE" output
+			(at 114.3 109.22 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "ca1bd29b-963a-4a55-a552-53e1a410c2e7")
+		)
+		(pin "VBAT_SENSE" input
+			(at 114.3 116.84 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "6c7942f9-1e13-4079-8a19-4c07d3f5489c")
+		)
+		(pin "VBAT_SENSE_EN" output
+			(at 114.3 124.46000000000001 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "063c1bca-81c1-40be-9e3d-1b7b83efccf7")
+		)
+		(pin "REG_PG" input
+			(at 114.3 132.08 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "1530a9b5-9023-4368-96e4-27fc322633e6")
+		)
+		(pin "3V3" input
+			(at 175.26 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "58114be9-56e0-4272-89b4-973729105238")
+		)
+		(pin "EPD_PWR_EN" output
+			(at 175.26 55.879999999999995 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "f6927fba-7c14-4ea3-9643-190892d3db43")
+		)
+		(pin "EPD_CS" output
+			(at 175.26 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "10c3d7a6-ed3a-4a34-82ac-5d6c780ca602")
+		)
+		(pin "EPD_CLK" output
+			(at 175.26 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "73cc11d1-9855-467f-a9ff-eb136db87407")
+		)
+		(pin "EPD_MOSI" output
+			(at 175.26 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "61fe8102-e55b-435c-8232-a06435d1f654")
+		)
+		(pin "EPD_DC" output
+			(at 175.26 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7d76cea5-7bee-4e3a-87ea-1080c7d498ab")
+		)
+		(pin "EPD_RESET" output
+			(at 175.26 93.97999999999999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "7ae8e356-01f6-4a24-97b0-c7fc617bb2cf")
+		)
+		(pin "EPD_BUSY" input
+			(at 175.26 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "4ec7e510-55e0-478b-9b1e-67986f97877c")
+		)
 	)
 	(sheet
-		(at 25.4 45.72)
-		(size 50.8 25.4)
+		(at 20.32 40.64)
+		(size 60.96 99.06)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -72,7 +274,7 @@
 		)
 		(uuid "76abdd1f-1863-43cb-987e-b8bd556e1e12")
 		(property "Sheetname" "Power and USB"
-			(at 25.4 45.0084 0)
+			(at 20.32 39.9284 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -83,7 +285,7 @@
 			)
 		)
 		(property "Sheetfile" "sheets/battery_charger.kicad_sch"
-			(at 25.4 71.8316 0)
+			(at 20.32 140.4116 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -100,10 +302,130 @@
 				)
 			)
 		)
+		(pin "3V3" output
+			(at 81.28 48.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "d4d90f1e-8630-4a7c-a045-c4e9c7aefbde")
+		)
+		(pin "VSYS" output
+			(at 81.28 55.879999999999995 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "22de86ca-a067-4bef-a2f8-b07b6560dc20")
+		)
+		(pin "VBAT" output
+			(at 81.28 63.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "95026192-1767-4d28-a612-1dfd5ebc273e")
+		)
+		(pin "USB_VBUS" output
+			(at 81.28 71.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "73902a2b-8bf7-4f2f-a3fe-22d83b65c156")
+		)
+		(pin "USB_DP" bidirectional
+			(at 81.28 78.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "032322f5-7a8c-49a1-8173-cc91620dc022")
+		)
+		(pin "USB_DN" bidirectional
+			(at 81.28 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "62d7d22c-c3f6-4694-9631-85a0607b55c7")
+		)
+		(pin "CHG_STAT1" output
+			(at 81.28 93.97999999999999 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "e349d351-5adc-4a56-919d-4cbe1159bd2a")
+		)
+		(pin "CHG_STAT2" output
+			(at 81.28 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "24a2cbe9-88d8-4cf6-a5bf-6853b8c8d06f")
+		)
+		(pin "CHG_ENABLE" input
+			(at 81.28 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "1c42e26c-c278-46d1-b356-d2cd429887f0")
+		)
+		(pin "VBAT_SENSE" output
+			(at 81.28 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "3868bb34-1691-4754-8221-2b93cd915b76")
+		)
+		(pin "VBAT_SENSE_EN" input
+			(at 81.28 124.46000000000001 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "ac3a6c9e-239c-4cd7-8226-36ae8d19ecef")
+		)
+		(pin "REG_PG" output
+			(at 81.28 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+			(uuid "dff4413c-0107-41f9-a6f6-3c9f89186748")
+		)
 	)
 	(sheet
-		(at 182.88 45.72)
-		(size 50.8 25.4)
+		(at 208.28 40.64)
+		(size 60.96 68.58)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -118,7 +440,7 @@
 		)
 		(uuid "9467d62a-f8ed-46c9-a7cb-f7af887ddb15")
 		(property "Sheetname" "E-paper display"
-			(at 182.88 45.0084 0)
+			(at 208.28 39.9284 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -129,7 +451,7 @@
 			)
 		)
 		(property "Sheetfile" "sheets/epaper.kicad_sch"
-			(at 182.88 71.8316 0)
+			(at 208.28 109.9316 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -146,6 +468,86 @@
 				)
 			)
 		)
+		(pin "3V3" input
+			(at 208.28 48.26 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "fc8708cf-6663-4c69-8012-2739edcf1c0f")
+		)
+		(pin "EPD_PWR_EN" input
+			(at 208.28 55.879999999999995 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "83c40196-5b6f-4bb7-991a-91028ba517b8")
+		)
+		(pin "EPD_CS" input
+			(at 208.28 63.5 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "c5c31675-1af6-4028-8b35-db8c1e395ee3")
+		)
+		(pin "EPD_CLK" input
+			(at 208.28 71.12 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "daf33541-6851-4088-ab8c-606323069ef3")
+		)
+		(pin "EPD_MOSI" input
+			(at 208.28 78.74 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "c55ecf1b-0392-4dd0-b428-62a763c48a33")
+		)
+		(pin "EPD_DC" input
+			(at 208.28 86.36 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "3d038840-d8a8-4b0a-b9df-4b75aa32434f")
+		)
+		(pin "EPD_RESET" input
+			(at 208.28 93.97999999999999 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "7c0f85a2-7ea8-4be5-b6ab-143a17837bbc")
+		)
+		(pin "EPD_BUSY" output
+			(at 208.28 101.6 180)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+			(uuid "28a328b7-c149-41d5-b90f-5e1eeb744b07")
+		)
 	)
 	(sheet_instances
 		(path "/"
@@ -153,4 +555,677 @@
 		)
 	)
 	(embedded_fonts no)
+	(wire
+		(pts
+			(xy 81.28 48.26) (xy 114.3 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b35f7ef5-096e-4b6d-a71c-8d98858f158e")
+	)
+	(wire
+		(pts
+			(xy 81.28 55.879999999999995) (xy 114.3 55.879999999999995)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e8ba8a4-447f-42b7-b55a-bd25a307b73b")
+	)
+	(wire
+		(pts
+			(xy 81.28 63.5) (xy 114.3 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3e7baa6d-60a7-49f1-aaf8-3d11e6fbef40")
+	)
+	(wire
+		(pts
+			(xy 81.28 71.12) (xy 114.3 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c6d14cb-5688-44fd-b9c1-04afa7463c6d")
+	)
+	(wire
+		(pts
+			(xy 81.28 78.74) (xy 114.3 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7ef1d837-0d2a-476c-a36e-098b7ab53887")
+	)
+	(wire
+		(pts
+			(xy 81.28 86.36) (xy 114.3 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ccc29888-8e9a-45cf-8619-48ecbc3b40db")
+	)
+	(wire
+		(pts
+			(xy 81.28 93.97999999999999) (xy 114.3 93.97999999999999)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e8016313-38f3-43ed-9244-5152ce169d8a")
+	)
+	(wire
+		(pts
+			(xy 81.28 101.6) (xy 114.3 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b2160c14-2617-40c0-88b7-a002cf8de9df")
+	)
+	(wire
+		(pts
+			(xy 81.28 109.22) (xy 114.3 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7f30f856-5368-41b9-b6fd-e89f8cee0ebc")
+	)
+	(wire
+		(pts
+			(xy 81.28 116.84) (xy 114.3 116.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "49146f51-0edc-4894-8f4c-d168b44a65d5")
+	)
+	(wire
+		(pts
+			(xy 81.28 124.46000000000001) (xy 114.3 124.46000000000001)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b48dd182-4d0e-4cf5-9338-a0a3ed974d0b")
+	)
+	(wire
+		(pts
+			(xy 81.28 132.08) (xy 114.3 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b94fcf82-eeaa-4585-81e5-2332c60fb4c5")
+	)
+	(wire
+		(pts
+			(xy 175.26 48.26) (xy 208.28 48.26)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "981c6dcc-291e-423d-8683-688b7197d61d")
+	)
+	(wire
+		(pts
+			(xy 175.26 55.879999999999995) (xy 208.28 55.879999999999995)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a511d55c-c577-41e0-ad38-80e032eaed84")
+	)
+	(wire
+		(pts
+			(xy 175.26 63.5) (xy 208.28 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b28891ec-ce5d-4d3d-a3da-a13fccee55a1")
+	)
+	(wire
+		(pts
+			(xy 175.26 71.12) (xy 208.28 71.12)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7fd77848-90ae-4883-8360-d655a3db5e5f")
+	)
+	(wire
+		(pts
+			(xy 175.26 78.74) (xy 208.28 78.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0a566955-e5e0-4217-a6bd-a7096861d0d6")
+	)
+	(wire
+		(pts
+			(xy 175.26 86.36) (xy 208.28 86.36)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e66eb8fa-3cf7-41c2-98ff-37fc55802839")
+	)
+	(wire
+		(pts
+			(xy 175.26 93.97999999999999) (xy 208.28 93.97999999999999)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "95cc474a-26b7-4923-865c-4c221652cde8")
+	)
+	(wire
+		(pts
+			(xy 175.26 101.6) (xy 208.28 101.6)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1434c572-1c38-4d0e-931d-6308a112a2e8")
+	)
+	(text "Cicala Rev A system block diagram"
+		(exclude_from_sim no)
+		(at 20.32 25.4 0)
+		(effects
+			(font
+				(size 2.0 2.0)
+				(thickness 0.3)
+			)
+			(justify left bottom)
+		)
+		(uuid "5937fc93-a5f1-4861-8e3d-1c7c52b10c17")
+	)
+	(text "Power flow: USB-C 5 V or the protected cell -> BQ25185 power path (VSYS)\n-> TPS63802 buck-boost (3V3) -> TPS22917 load switches, one for the\nbattery divider and one for the panel and its boost network."
+		(exclude_from_sim no)
+		(at 20.32 33.02 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+		(uuid "4bc8cd55-2be9-44f5-9393-2c863fdbc11f")
+	)
+	(text "GND is a global net and is not drawn here."
+		(exclude_from_sim no)
+		(at 208.28 125.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+		(uuid "e77ba304-35b5-4a79-9e6f-07d9254ffeb6")
+	)
+	(global_label "3V3"
+		(shape passive)
+		(at 88.9 48.26 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "54ce465f-3084-4b91-9abe-3e30a5391882")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 48.26 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "VSYS"
+		(shape passive)
+		(at 88.9 55.879999999999995 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b18aa155-e7a0-4e61-8a8a-bd0f1751eb24")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 55.879999999999995 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "VBAT"
+		(shape passive)
+		(at 88.9 63.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "196d631b-696b-4e72-a453-5a3de4b62b54")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "USB_VBUS"
+		(shape passive)
+		(at 88.9 71.12 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2663e1c9-1432-4f88-be0a-f30c1e697824")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "USB_DP"
+		(shape passive)
+		(at 88.9 78.74 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "d4324123-5a06-455d-909d-112a67060da7")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "USB_DN"
+		(shape passive)
+		(at 88.9 86.36 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "98843b47-9fff-45d2-a9e4-449fd2da8ea5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 86.36 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "CHG_STAT1"
+		(shape passive)
+		(at 88.9 93.97999999999999 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "57513942-24e2-4117-ad01-5d034626e10c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 93.97999999999999 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "CHG_STAT2"
+		(shape passive)
+		(at 88.9 101.6 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "804361e9-dd43-42f7-8625-78e289e87e3a")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 101.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "CHG_ENABLE"
+		(shape passive)
+		(at 88.9 109.22 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "445467da-1ff1-430b-a335-6bd56ca0a33d")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 109.22 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "VBAT_SENSE"
+		(shape passive)
+		(at 88.9 116.84 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "15bb663d-652e-42f9-a18b-74748e2d9fc3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 116.84 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "VBAT_SENSE_EN"
+		(shape passive)
+		(at 88.9 124.46000000000001 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ca06af39-bbfe-4e39-90da-739649ccdba1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 124.46000000000001 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "REG_PG"
+		(shape passive)
+		(at 88.9 132.08 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "16d9cdaf-26cc-4a0a-a740-fab2ced43693")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 88.9 132.08 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_PWR_EN"
+		(shape passive)
+		(at 182.88 55.879999999999995 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e1bc8106-9ff1-4cd5-b0cb-467ac95431d1")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 55.879999999999995 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_CS"
+		(shape passive)
+		(at 182.88 63.5 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "dc9aac62-495d-4571-932b-6ded0cc9d00c")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 63.5 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_CLK"
+		(shape passive)
+		(at 182.88 71.12 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "465d3b2d-7417-4f14-a5c4-7bf8a0f2a342")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 71.12 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_MOSI"
+		(shape passive)
+		(at 182.88 78.74 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "7eaeb3a7-53a2-472e-894e-34400a6fe9aa")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 78.74 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_DC"
+		(shape passive)
+		(at 182.88 86.36 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c37be1a6-7c2c-44ab-947c-8e478b22bea0")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 86.36 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_RESET"
+		(shape passive)
+		(at 182.88 93.97999999999999 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e375a996-f8e3-4d5f-9334-7e56922a82a3")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 93.97999999999999 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(global_label "EPD_BUSY"
+		(shape passive)
+		(at 182.88 101.6 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e2a9ada4-89b3-404c-8e89-7b6048f3fac5")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 182.88 101.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
 )
