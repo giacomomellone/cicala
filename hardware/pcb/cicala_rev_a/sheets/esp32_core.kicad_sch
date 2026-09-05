@@ -2405,6 +2405,16 @@
 	)
 	(wire
 		(pts
+			(xy 69.85 72.39) (xy 67.31 72.39)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1fc4c140-e71d-4ea8-8ecf-318ed7658edb")
+	)
+	(wire
+		(pts
 			(xy 241.3 38.1) (xy 250.19 38.1)
 		)
 		(stroke
@@ -2875,6 +2885,16 @@
 	)
 	(wire
 		(pts
+			(xy 69.85 82.55) (xy 67.31 82.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a6ad53c1-0f49-4866-8102-3a41762136a9")
+	)
+	(wire
+		(pts
 			(xy 173.99 52.07) (xy 176.53 52.07)
 		)
 		(stroke
@@ -2882,6 +2902,16 @@
 			(type default)
 		)
 		(uuid "ac4a9e72-88df-42cf-8e0f-f712459cf47a")
+	)
+	(wire
+		(pts
+			(xy 69.85 80.01) (xy 67.31 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b3b6b0d1-1432-481d-91ed-77f2d85f2eb1")
 	)
 	(wire
 		(pts
@@ -2985,6 +3015,16 @@
 	)
 	(wire
 		(pts
+			(xy 69.85 77.47) (xy 67.31 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ce0a1522-37cb-455b-9609-128edde37ab0")
+	)
+	(wire
+		(pts
 			(xy 69.85 69.85) (xy 67.31 69.85)
 		)
 		(stroke
@@ -3042,6 +3082,16 @@
 			(type default)
 		)
 		(uuid "db26be50-ed3f-42ce-bb6d-47afdcd5ebb8")
+	)
+	(wire
+		(pts
+			(xy 100.33 54.61) (xy 102.87 54.61)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "dd351b8f-7193-4083-aa48-3d426141ca81")
 	)
 	(wire
 		(pts
@@ -3143,9 +3193,9 @@
 		)
 		(uuid "fdc96cfe-5d04-4144-9c10-93af710484d0")
 	)
-	(global_label "PNL_CLK"
+	(global_label "EPD_CLK"
 		(shape passive)
-		(at 57.15 82.55 180)
+		(at 67.31 82.55 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3155,7 +3205,7 @@
 		)
 		(uuid "01cd9574-4ff9-4835-b253-0c23c7eb1365")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 57.15 82.55 0)
+			(at 67.31 82.55 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -3535,9 +3585,9 @@
 			)
 		)
 	)
-	(global_label "PNL_DC"
+	(global_label "EPD_DC"
 		(shape passive)
-		(at 113.03 54.61 0)
+		(at 102.87 54.61 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -3547,7 +3597,7 @@
 		)
 		(uuid "5c6cb373-6a57-45cd-aac4-4c55a34799b5")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 113.03 54.61 0)
+			(at 102.87 54.61 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4042,9 +4092,9 @@
 			)
 		)
 	)
-	(global_label "PNL_RESET"
+	(global_label "EPD_RESET"
 		(shape passive)
-		(at 57.15 72.39 180)
+		(at 67.31 72.39 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4054,7 +4104,7 @@
 		)
 		(uuid "a2b72c62-43b3-42bc-b15a-b663f57ac9d7")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 57.15 72.39 0)
+			(at 67.31 72.39 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4272,9 +4322,9 @@
 			)
 		)
 	)
-	(global_label "PNL_CS"
+	(global_label "EPD_CS"
 		(shape passive)
-		(at 57.15 77.47 180)
+		(at 67.31 77.47 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4284,7 +4334,7 @@
 		)
 		(uuid "e1bf58e9-24d4-4326-8723-a031ad2b2b1a")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 57.15 77.47 0)
+			(at 67.31 77.47 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4410,9 +4460,9 @@
 			)
 		)
 	)
-	(global_label "PNL_MOSI"
+	(global_label "EPD_MOSI"
 		(shape passive)
-		(at 57.15 80.01 180)
+		(at 67.31 80.01 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4422,7 +4472,7 @@
 		)
 		(uuid "fe12f2e2-4b81-4791-b479-066fb4056d2e")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 57.15 80.01 0)
+			(at 67.31 80.01 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7680,19 +7730,18 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 63.5 72.39 90)
-		(mirror y)
+		(lib_id "Connector:TestPoint")
+		(at 91.44 154.94 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "967e4d8e-6af3-4e93-9d7f-4342190190a4")
-		(property "Reference" "R27"
-			(at 67.31 70.866 0)
+		(uuid "a12ddbf0-349f-4c69-8d51-c3d110a72d2d")
+		(property "Reference" "TP12"
+			(at 91.44 145.034 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7701,8 +7750,8 @@
 				)
 			)
 		)
-		(property "Value" "470"
-			(at 67.31 73.406 0)
+		(property "Value" "USB_DP"
+			(at 91.44 147.574 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7711,8 +7760,8 @@
 				)
 			)
 		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 63.5 72.39 0)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 91.44 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7723,7 +7772,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 63.5 72.39 0)
+			(at 91.44 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7733,108 +7782,8 @@
 				)
 			)
 		)
-		(property "Description" "Resistor"
-			(at 63.5 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "ef276e41-68a6-48b0-89c5-5c62fced5234")
-		)
-		(pin "2"
-			(uuid "8dd8e1c8-8f81-454e-a603-95e9302f2ee4")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "R27")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 69.85 72.39) (xy 67.31 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7fc7f388-dfb9-49f6-ad45-c15bc8bf5c39")
-	)
-	(wire
-		(pts
-			(xy 59.69 72.39) (xy 57.15 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ad0a7787-1e57-4b70-946c-ad668a5c1b3f")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 63.5 77.47 90)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "33bf93e0-942a-4f4d-b224-09c2fe89de85")
-		(property "Reference" "R28"
-			(at 67.31 75.946 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "470"
-			(at 67.31 78.486 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 63.5 77.47 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 63.5 77.47 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 63.5 77.47 0)
+		(property "Description" "test point"
+			(at 91.44 154.94 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7845,15 +7794,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "b6386465-6cbd-4767-83e0-0b1948d8ffc9")
-		)
-		(pin "2"
-			(uuid "6a24989b-251d-4d07-a68b-73da2c1e9c3a")
+			(uuid "7b044ad4-f2a2-4ba2-9a2b-663c1ae4da52")
 		)
 		(instances
 			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "R28")
+					(reference "TP12")
 					(unit 1)
 				)
 			)
@@ -7861,419 +7807,17 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 77.47) (xy 67.31 77.47)
+			(xy 91.44 154.94) (xy 91.44 157.48)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "86528bd0-09b0-4406-b3e4-4a2a98a62db3")
+		(uuid "70f07de0-b549-49b4-825d-5ea72d042cc4")
 	)
-	(wire
-		(pts
-			(xy 59.69 77.47) (xy 57.15 77.47)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4072dfb4-0a0f-42b1-a9fa-c2a670a2472d")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 63.5 80.01 90)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "62dea430-3acf-4ba9-9a85-5d926a0fb960")
-		(property "Reference" "R29"
-			(at 67.31 78.486 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "470"
-			(at 67.31 81.026 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 63.5 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 63.5 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 63.5 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "1abe0bd1-4d27-45c8-8e8c-ceff88c4a5e9")
-		)
-		(pin "2"
-			(uuid "ade5d9e7-00db-4eff-a6a5-4e462cecc59a")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "R29")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 69.85 80.01) (xy 67.31 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e39b0de0-e9b0-43c4-8712-d774236a16b8")
-	)
-	(wire
-		(pts
-			(xy 59.69 80.01) (xy 57.15 80.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "76813f9a-9552-4924-81e0-6e9d985cc872")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 63.5 82.55 90)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "c3f43e31-a9c5-4789-a31f-86e30df2e5c3")
-		(property "Reference" "R30"
-			(at 67.31 81.026 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "470"
-			(at 67.31 83.566 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 63.5 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 63.5 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 63.5 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "db349205-4d1b-48f9-998d-116b12b9dbeb")
-		)
-		(pin "2"
-			(uuid "729596c0-c2e6-49d0-b7d0-fcce601e32b2")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "R30")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 69.85 82.55) (xy 67.31 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "31ccf5a5-3627-41f2-b3b3-af11bac5fd1b")
-	)
-	(wire
-		(pts
-			(xy 59.69 82.55) (xy 57.15 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "aa399889-c480-4923-af38-184179a8d7e9")
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 106.68 54.61 90)
-		(mirror y)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "7660b641-f7d7-4bd3-aa0b-3029c9ad04c6")
-		(property "Reference" "R31"
-			(at 110.49 53.086 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "470"
-			(at 110.49 55.626 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 106.68 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 106.68 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 106.68 54.61 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "cab9aa71-b527-49ec-a14a-846471e923d5")
-		)
-		(pin "2"
-			(uuid "05fe12d6-8a82-4cdd-9d2f-c4c22c365a89")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "R31")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(wire
-		(pts
-			(xy 100.33 54.61) (xy 102.87 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d05bea9e-8035-46fe-b85d-7ed4b69897a3")
-	)
-	(wire
-		(pts
-			(xy 110.49 54.61) (xy 113.03 54.61)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a0db24b7-2088-4e1c-bc35-60abcf5f8c3d")
-	)
-	(global_label "EPD_RESET"
+	(global_label "USB_DP"
 		(shape passive)
-		(at 69.85 72.39 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "110dcc0f-0228-4272-852f-7198918d16b7")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 69.85 72.39 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "EPD_CS"
-		(shape passive)
-		(at 69.85 77.47 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "467c8bac-a309-4750-b888-bb47ce487c5a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 69.85 77.47 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "EPD_MOSI"
-		(shape passive)
-		(at 69.85 80.01 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "89b7e1fa-00c3-43ff-89b5-00f28131399a")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 69.85 80.01 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "EPD_CLK"
-		(shape passive)
-		(at 69.85 82.55 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "68fcf970-3531-4a23-ba45-e840dd44f195")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 69.85 82.55 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "EPD_DC"
-		(shape passive)
-		(at 100.33 54.61 0)
+		(at 91.44 157.48 270)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -8281,9 +7825,336 @@
 			)
 			(justify left)
 		)
-		(uuid "98719f41-91f6-45e3-84c1-a3a9a9b23ab3")
+		(uuid "41577039-c522-4555-a517-cefbbeccb5eb")
 		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 100.33 54.61 0)
+			(at 91.44 157.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 104.14 154.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "33b1ae61-7540-4569-af0a-8943ef922e22")
+		(property "Reference" "TP13"
+			(at 104.14 145.034 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "USB_DN"
+			(at 104.14 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 104.14 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 104.14 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 104.14 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "edaee982-92ce-4994-918e-510a546a5fa4")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
+					(reference "TP13")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 104.14 154.94) (xy 104.14 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c99b4ef5-c543-4c9b-a3ad-4fb6faa8765e")
+	)
+	(global_label "USB_DN"
+		(shape passive)
+		(at 104.14 157.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "d5e5d946-f4c0-4207-889c-d314a8d8dee8")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 104.14 157.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 116.84 154.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "e0f49d7a-b318-40ac-bc1e-eec70ee0178e")
+		(property "Reference" "TP14"
+			(at 116.84 145.034 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "CHG_STAT1"
+			(at 116.84 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 116.84 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 116.84 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 116.84 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "b3182540-e5f1-4379-97bd-2bcd1bb46b90")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
+					(reference "TP14")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 116.84 154.94) (xy 116.84 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8aef7d02-f4ff-4f8a-8de2-1b7b82309985")
+	)
+	(global_label "CHG_STAT1"
+		(shape passive)
+		(at 116.84 157.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "63bf708a-eeff-4c2f-9ae0-20238ab59dbc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 116.84 157.48 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 129.54 154.94 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "891b4d77-4a50-4acc-b790-6b555e4d837f")
+		(property "Reference" "TP15"
+			(at 129.54 145.034 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "CHG_STAT2"
+			(at 129.54 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 129.54 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 129.54 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 129.54 154.94 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "d80f64b4-04c5-41a9-93d7-180bb832650c")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
+					(reference "TP15")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(wire
+		(pts
+			(xy 129.54 154.94) (xy 129.54 157.48)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0f2ce2d8-adf6-4778-b629-ea2dd6cb8a43")
+	)
+	(global_label "CHG_STAT2"
+		(shape passive)
+		(at 129.54 157.48 270)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "0ce58d2c-efbe-4a73-a3cf-33e05d9bc122")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 129.54 157.48 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
