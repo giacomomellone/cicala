@@ -438,6 +438,8 @@ def main():
 
     board.BuildListOfNets()
     pcbnew.SaveBoard(PCB, board)
+    from unique_ids import normalize_file
+    normalize_file(PCB)
     print('saved', PCB)
 
 

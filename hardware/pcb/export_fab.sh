@@ -60,8 +60,10 @@ mkdir -p "$out/gerbers" "$out/drill" "$out/assembly"
     -o "$out/assembly/cicala_rev_a_bom.csv" "$sch"
 
 "$kicad_cli" pcb export pdf --layers F.Fab,F.SilkS,Edge.Cuts \
+    --mode-single --scale 0 --black-and-white --exclude-value \
     -o "$out/assembly/assembly_top.pdf" "$board"
 "$kicad_cli" pcb export pdf --layers B.Fab,B.SilkS,Edge.Cuts --mirror \
+    --mode-single --scale 0 --black-and-white --exclude-value \
     -o "$out/assembly/assembly_bottom.pdf" "$board"
 
 "$kicad_cli" pcb export ipc2581 --units mm \

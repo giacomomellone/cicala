@@ -1,0 +1,9 @@
+(version 1)
+
+# TC2030-IDC-NL datasheet, revision B, footprint notes 1 and 2.
+# Adjacent connector contact pads are fixed by the manufacturer's pattern;
+# the 0.020 inch rule applies to other tracks/signals, not pad-to-pad spacing.
+(rule "Recovery contact clearance"
+  (layer "B.Cu")
+  (condition "A.Type == 'Pad' && A.memberOfFootprint('J4') && B.Type != 'Pad'")
+  (constraint clearance (min 0.508mm)))

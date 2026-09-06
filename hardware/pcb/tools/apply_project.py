@@ -7,7 +7,7 @@ import json, collections, sys
 p = sys.argv[1]
 d = json.load(open(p), object_pairs_hook=collections.OrderedDict)
 ns = d['net_settings']
-base = ns['classes'][0]
+base = next(c for c in ns['classes'] if c['name'] == 'Default')
 base.update(clearance=0.20, track_width=0.2, via_diameter=0.6, via_drill=0.3)
 
 def cls(name, **kw):
@@ -23,10 +23,12 @@ ns['classes'] = [
     # well above the IPC-2221 minimum for the +/-15 V they carry.
     cls('HV', clearance=0.2, track_width=0.25, via_diameter=0.6, via_drill=0.3),
 ]
-POWER = ['GND', 'VBAT', 'VBAT_CELL', 'VSYS', '3V3', 'EPD_3V3', 'USB_VBUS']
-USB = ['USB_DP', 'USB_DN']
+POWER = ['GND', 'VBAT', 'VBAT_CELL', 'VSYS', '3V3', 'EPD_3V3', 'USB_VBUS',
+         'Net-(U3-L1)', 'Net-(U3-L2)', 'EPD_SW']
+USB = ['USB_DP', 'USB_DN', 'Net-(R4-Pad1)', 'Net-(R3-Pad1)',
+       'Net-(J1-D+-PadA6)', 'Net-(J1-D--PadA7)']
 HV = ['EPD_VGH', 'EPD_VGL', 'EPD_VSH1', 'EPD_VSH2', 'EPD_VSL', 'EPD_VCOM',
-      'EPD_VDD', 'EPD_PUMP', 'EPD_SW', 'EPD_GDR', 'EPD_RESE']
+      'EPD_VDD', 'EPD_PUMP', 'EPD_GDR', 'EPD_RESE']
 ns['netclass_patterns'] = [collections.OrderedDict(netclass=c, pattern=n)
                            for c, nets in (('Power', POWER), ('USB', USB), ('HV', HV))
                            for n in nets]

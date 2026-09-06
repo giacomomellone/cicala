@@ -26,7 +26,8 @@ MAX_HALF_WIDTH = 0.15
 # the outermost cell centre. Every clearance radius carries that slack.
 GRID_SLACK = 1
 
-POWER = {'GND', 'VBAT', 'VBAT_CELL', 'VSYS', '3V3', 'EPD_3V3', 'USB_VBUS'}
+POWER = {'GND', 'VBAT', 'VBAT_CELL', 'VSYS', '3V3', 'EPD_3V3', 'USB_VBUS',
+         'Net-(U3-L1)', 'Net-(U3-L2)', 'EPD_SW'}
 USB = {'USB_DP', 'USB_DN'}
 HV = {'EPD_VGH', 'EPD_VGL', 'EPD_VSH1', 'EPD_VSH2', 'EPD_VSL', 'EPD_VCOM',
       'EPD_VDD', 'EPD_PUMP', 'EPD_SW', 'EPD_GDR', 'EPD_RESE'}
@@ -220,7 +221,8 @@ def as_buffers(masks):
     return [m.tobytes() for m in masks]
 
 
-def astar(blk_track, blk_via, sources, targets, target_xy, cost=None):
+def astar(blk_track, blk_via, sources, targets, target_xy, cost=None,
+          heuristic_weight=1.0, max_expansions=600000):
     """Multi-source A* over (cell, layer). Returns a list of (cell, layer).
 
     Targets are (cell, layer) pairs: a pad that exists only on B.Cu is not
@@ -238,7 +240,7 @@ def astar(blk_track, blk_via, sources, targets, target_xy, cost=None):
         dx, dy = abs(x - tx), abs(y - ty)
         h = STEP * (dx + dy) + (DIAG - 2 * STEP) * min(dx, dy)
         # reaching a pad that only exists on one layer costs at least one via
-        return h + (0 if l in tlayers else VIA_COST)
+        return heuristic_weight * (h + (0 if l in tlayers else VIA_COST))
 
     for c, l in sources:
         if blk_track[l][c]:
@@ -246,7 +248,7 @@ def astar(blk_track, blk_via, sources, targets, target_xy, cost=None):
         best[(c, l)] = 0
         heapq.heappush(heap, (hcost(c, l), 0, c, l, None))
     # A hopeless net otherwise explores the whole board before giving up.
-    budget = 600000
+    budget = max_expansions
     seen = {}
     while heap:
         budget -= 1

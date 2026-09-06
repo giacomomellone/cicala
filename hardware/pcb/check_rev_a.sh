@@ -51,6 +51,7 @@ export FONTCONFIG_FILE="$fontconfig_file"
     "$pcb_dir/cicala_rev_a.kicad_sch"
 
 "$kicad_cli" pcb drc \
+    --schematic-parity --refill-zones \
     --exit-code-violations \
     -o "$report_dir/drc.rpt" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
@@ -60,5 +61,4 @@ touch "$report_dir/cicala_rev_a_board.step"
     -o "$report_dir/cicala_rev_a_board.step" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
 
-echo "KiCad: schematic ERC, BOM export, constraint-board DRC and STEP export passed"
-echo "KiCad: schematic-to-PCB parity remains gated until footprints are reviewed and placed"
+echo "KiCad: schematic ERC, BOM export, filled-board DRC, schematic parity and STEP export passed"
