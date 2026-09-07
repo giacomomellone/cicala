@@ -14,10 +14,23 @@ enum class PowerState {
     LOW,
     /** On the cell, nearly flat. Refreshes are refused. */
     CRITICAL,
-    /** External power is in. Says nothing about whether current is flowing. */
+    /** Charging, or external power with the breadboard's voltage estimate. */
     CHARGING,
-    /** External power is present and the cell reads above the full estimate. */
+    /** Breadboard voltage estimate; status pins cannot prove charge completion. */
     CHARGED,
+    /** External power, with charging idle, disabled, or status unavailable. */
+    EXTERNAL_IDLE,
+    /** The charger reports a recoverable or latched fault. */
+    CHARGE_FAULT,
+};
+
+enum class ChargerStatus {
+    NOT_MONITORED = 0,
+    CHARGING,
+    IDLE,
+    RECOVERABLE_FAULT,
+    LATCHED_FAULT,
+    UNAVAILABLE,
 };
 
 } // namespace cicala

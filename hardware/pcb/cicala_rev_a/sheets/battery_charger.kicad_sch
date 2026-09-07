@@ -6,8 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "Power, charging, and USB")
+		(date "2026-09-07")
 		(rev "Rev A")
-		(date "2026-09-05")
 		(company "Cicala")
 	)
 	(lib_symbols
@@ -718,6 +718,129 @@
 						)
 					)
 					(number "6"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(in_pos_files yes)
+			(duplicate_pin_numbers_are_jumpers no)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Datasheet" ""
+				(at 5.08 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -2537,129 +2660,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Connector:TestPoint"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0.762)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(in_pos_files yes)
-			(duplicate_pin_numbers_are_jumpers no)
-			(property "Reference" "TP"
-				(at 0 6.858 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "TestPoint"
-				(at 0 5.08 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Datasheet" ""
-				(at 5.08 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Description" "test point"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_keywords" "test point tp"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "ki_fp_filters" "Pin* Test*"
-				(at 0 0 0)
-				(show_name no)
-				(do_not_autoplace no)
-				(hide yes)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(symbol "TestPoint_0_1"
-				(circle
-					(center 0 3.302)
-					(radius 0.762)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "TestPoint_1_1"
-				(pin passive line
-					(at 0 0 90)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 	)
 	(rectangle
 		(start 156.21 22.86)
@@ -2758,7 +2758,7 @@
 	)
 	(text "Charger and protected cell"
 		(exclude_from_sim no)
-		(at 60.96 105.41 0)
+		(at 54.102 107.95 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2817,6 +2817,24 @@
 		(uuid "5b7b8dc1-e08f-4686-a45b-7215561398a6")
 	)
 	(junction
+		(at 33.02 119.38)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "775f68c7-776c-4850-ba2b-eced51d132c1")
+	)
+	(junction
+		(at 21.59 87.63)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "80223715-3e45-4acc-98bc-e8576201d4a1")
+	)
+	(junction
+		(at 21.59 95.25)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "955eb1be-b916-4bfa-a625-830cd61a3d0b")
+	)
+	(junction
 		(at 210.82 67.31)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2870,6 +2888,16 @@
 	)
 	(wire
 		(pts
+			(xy 33.02 119.38) (xy 43.18 119.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "00d3abfb-4446-4409-91a6-72ffd92772d9")
+	)
+	(wire
+		(pts
 			(xy 232.41 137.16) (xy 232.41 142.24)
 		)
 		(stroke
@@ -2877,6 +2905,16 @@
 			(type default)
 		)
 		(uuid "01b11ccc-555d-43b4-87f5-89be53240b52")
+	)
+	(wire
+		(pts
+			(xy 21.59 76.2) (xy 21.59 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "01e946c6-8a06-4106-8f78-8aec5e1ff093")
 	)
 	(wire
 		(pts
@@ -2917,6 +2955,16 @@
 			(type default)
 		)
 		(uuid "064848be-62a1-4f3a-b27a-b7327352b37e")
+	)
+	(wire
+		(pts
+			(xy 21.59 95.25) (xy 21.59 97.79)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0759b165-e9c8-4d83-b6d7-da5c7b8fc99a")
 	)
 	(wire
 		(pts
@@ -2977,6 +3025,16 @@
 			(type default)
 		)
 		(uuid "12099c2a-71b6-41f5-b4d8-d6b56b15ed51")
+	)
+	(wire
+		(pts
+			(xy 33.02 109.22) (xy 33.02 110.49)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "13a5a1e7-0833-4c43-9ade-f83866db6a02")
 	)
 	(wire
 		(pts
@@ -3120,6 +3178,16 @@
 	)
 	(wire
 		(pts
+			(xy 21.59 87.63) (xy 33.02 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "48f229a1-2f8e-421d-8a76-7d1d587e5917")
+	)
+	(wire
+		(pts
 			(xy 201.93 137.16) (xy 207.01 137.16)
 		)
 		(stroke
@@ -3240,13 +3308,13 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 129.54) (xy 41.91 139.7)
+			(xy 33.02 118.11) (xy 33.02 121.92)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "5de4d7f2-c06c-4439-ae7b-00a044481e70")
+		(uuid "5dd04efe-d2a3-4b61-973e-4b4df6464a34")
 	)
 	(wire
 		(pts
@@ -3277,6 +3345,16 @@
 			(type default)
 		)
 		(uuid "6b270a5c-ee69-43a7-a289-778c9f519af2")
+	)
+	(wire
+		(pts
+			(xy 21.59 95.25) (xy 33.02 95.25)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6e34210c-5cf8-4b22-bbb1-2404433e1338")
 	)
 	(wire
 		(pts
@@ -3387,6 +3465,16 @@
 			(type default)
 		)
 		(uuid "7b45f867-02c0-401e-bdc4-a757f1a06d39")
+	)
+	(wire
+		(pts
+			(xy 26.67 121.92) (xy 33.02 121.92)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7c65a3b7-397c-4bb8-b4ae-0fa11fb0d7a1")
 	)
 	(wire
 		(pts
@@ -3610,16 +3698,6 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 129.54) (xy 57.15 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b465928f-27b5-4ba4-8fd1-189bd468befe")
-	)
-	(wire
-		(pts
 			(xy 55.88 177.8) (xy 55.88 185.42)
 		)
 		(stroke
@@ -3820,7 +3898,7 @@
 	)
 	(wire
 		(pts
-			(xy 26.67 124.46) (xy 57.15 124.46)
+			(xy 26.67 124.46) (xy 43.18 124.46)
 		)
 		(stroke
 			(width 0)
@@ -3978,33 +4056,9 @@
 		)
 		(uuid "ff56bf37-aa8c-4a48-a151-48fe9ab36c09")
 	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 69.85 40.64 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "3d48bfe3-c937-429c-9953-1dd47f0e6c8f")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 46.99 38.1 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "7e92784a-274d-40cb-89fa-7d16a651ef4b")
-	)
 	(global_label "BATT_NTC"
 		(shape passive)
-		(at 29.21 124.46 0)
+		(at 43.18 120.65 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4024,114 +4078,6 @@
 				)
 			)
 		)
-	)
-	(hierarchical_label "VSYS"
-		(shape output)
-		(at 87.63 140.97 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "2e9f2c61-5acd-4a48-b63f-5d40cda94476")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 210.82 82.55 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "0e440847-d002-45e7-aab8-3c0e8e711352")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 46.99 38.1 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "d7a1ee31-a59d-435b-9273-3fd90999679c")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 195.58 82.55 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "7dd65f6e-b4a6-4319-9983-2b42c575171f")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 54.61 121.92 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "6c3cb8fd-e596-4b8f-8639-2fc507264d14")
-	)
-	(hierarchical_label "USB_DP"
-		(shape bidirectional)
-		(at 102.87 55.88 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "28503528-213b-4b90-85b1-cb841562d1e4")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 243.84 41.91 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "70aa4237-d504-4aa8-a91a-7122c7e5023a")
-	)
-	(hierarchical_label "CHG_STAT1"
-		(shape output)
-		(at 101.6 129.54 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "5ef243a2-157d-48e9-bf65-4ea451303875")
-	)
-	(hierarchical_label "CHG_ENABLE"
-		(shape input)
-		(at 44.45 139.7 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "6a756b09-d2b3-4d62-99eb-0eb2894db609")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -4156,33 +4102,9 @@
 			)
 		)
 	)
-	(hierarchical_label "VSYS"
-		(shape output)
-		(at 195.58 49.53 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "ed1964ad-301e-4a2a-96e8-55479ad91807")
-	)
-	(hierarchical_label "VBAT"
-		(shape output)
-		(at 27.94 186.69 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "702e2982-47fa-403d-b240-65f3fda67333")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 83.82 73.66 90)
+	(global_label "CHG_ILIM_VSET"
+		(shape passive)
+		(at 35.56 135.89 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4190,11 +4112,22 @@
 			)
 			(justify left)
 		)
-		(uuid "a6f40dba-735c-4c2c-9098-0ff3a4d823c5")
+		(uuid "6a2c701e-872a-47e1-a739-9dd91a627069")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 35.56 135.89 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
 	)
-	(hierarchical_label "CHG_STAT2"
-		(shape output)
-		(at 88.9 127.0 0)
+	(global_label "USB_SHIELD"
+		(shape passive)
+		(at 21.59 79.38 0)
 		(fields_autoplaced yes)
 		(effects
 			(font
@@ -4202,163 +4135,18 @@
 			)
 			(justify left)
 		)
-		(uuid "b3cd8d41-d056-4bc4-b7b1-1617901468b2")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 46.99 38.1 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
+		(uuid "b269f5b7-80d7-4e37-bb15-d0c1a2453f48")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 21.59 79.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
 			)
-			(justify left)
 		)
-		(uuid "c503f5a2-01bd-49a3-9b54-4432459373ad")
-	)
-	(hierarchical_label "VBAT"
-		(shape output)
-		(at 80.01 124.46 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "55c41855-63f0-4e8a-9ffb-034e9f763872")
-	)
-	(hierarchical_label "VBAT_SENSE_EN"
-		(shape input)
-		(at 179.07 142.24 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "e8f386b4-1998-4ee4-8ae3-f960460b3e1b")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 86.36 109.22 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "189bba55-b5ea-424e-b439-91df0daf7ee9")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 99.06 109.22 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "8042b2e4-76ce-45e2-959a-23340fd104b9")
-	)
-	(hierarchical_label "VBAT_SENSE"
-		(shape output)
-		(at 238.76 137.16 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "b2a3e0e1-9dc9-4378-b1ad-8b5ecbe26573")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 55.88 185.42 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "412d780b-13be-4169-b84d-49967a9ec80a")
-	)
-	(hierarchical_label "VSYS"
-		(shape output)
-		(at 175.26 82.55 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "09ae0585-8221-4f7d-91d8-c083f0714dcc")
-	)
-	(hierarchical_label "VBAT"
-		(shape output)
-		(at 179.07 137.16 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "b0a92f99-5cb0-413e-b47f-6564b9cb2d79")
-	)
-	(hierarchical_label "REG_PG"
-		(shape output)
-		(at 243.84 95.25 270)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right)
-		)
-		(uuid "e4305f04-5977-4295-952c-7b3a86b7437e")
-	)
-	(hierarchical_label "USB_VBUS"
-		(shape output)
-		(at 46.99 38.1 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "3e4657f5-db8d-4026-8caa-9601a48fb2c3")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 243.84 82.55 90)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "9bcd97cd-3113-4d66-904d-48a9c9408da1")
-	)
-	(hierarchical_label "3V3"
-		(shape output)
-		(at 220.98 49.53 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "4c32a81b-8c79-4fbd-b7e9-905d38864a7c")
 	)
 	(global_label "GND"
 		(shape passive)
@@ -4383,10 +4171,87 @@
 			)
 		)
 	)
+	(global_label "VBAT_CELL"
+		(shape passive)
+		(at 33.02 120.65 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "e81c4dd2-1869-419b-83ac-38af6efc0bbc")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 33.02 120.65 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 0.8 0.8)
+				)
+			)
+		)
+	)
+	(hierarchical_label "VSYS"
+		(shape output)
+		(at 175.26 82.55 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "09ae0585-8221-4f7d-91d8-c083f0714dcc")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 210.82 82.55 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "0e440847-d002-45e7-aab8-3c0e8e711352")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 86.36 109.22 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "189bba55-b5ea-424e-b439-91df0daf7ee9")
+	)
+	(hierarchical_label "VBAT"
+		(shape output)
+		(at 33.02 109.22 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "2218768f-6b0d-4c2f-8975-5d75d28465d2")
+	)
+	(hierarchical_label "USB_DP"
+		(shape bidirectional)
+		(at 102.87 55.88 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "28503528-213b-4b90-85b1-cb841562d1e4")
+	)
 	(hierarchical_label "USB_DN"
 		(shape bidirectional)
 		(at 115.57 50.8 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4397,20 +4262,150 @@
 	)
 	(hierarchical_label "VSYS"
 		(shape output)
-		(at 195.58 59.69 180)
-		(fields_autoplaced yes)
+		(at 87.63 140.97 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "2e9f2c61-5acd-4a48-b63f-5d40cda94476")
+	)
+	(hierarchical_label "USB_VBUS"
+		(shape output)
+		(at 69.85 40.64 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "3d48bfe3-c937-429c-9953-1dd47f0e6c8f")
+	)
+	(hierarchical_label "USB_VBUS"
+		(shape output)
+		(at 46.99 38.1 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "3e4657f5-db8d-4026-8caa-9601a48fb2c3")
+	)
+	(hierarchical_label "USB_VBUS"
+		(shape output)
+		(at 55.88 185.42 270)
 		(effects
 			(font
 				(size 0.9 0.9)
 			)
 			(justify right)
 		)
-		(uuid "e9b6e3c6-d144-4ce0-806b-27fde1ffb6f8")
+		(uuid "412d780b-13be-4169-b84d-49967a9ec80a")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 220.98 49.53 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "4c32a81b-8c79-4fbd-b7e9-905d38864a7c")
+	)
+	(hierarchical_label "VBAT"
+		(shape output)
+		(at 80.01 124.46 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "55c41855-63f0-4e8a-9ffb-034e9f763872")
+	)
+	(hierarchical_label "CHG_STAT1"
+		(shape output)
+		(at 101.6 129.54 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "5ef243a2-157d-48e9-bf65-4ea451303875")
+	)
+	(hierarchical_label "CHG_ENABLE"
+		(shape input)
+		(at 44.45 139.7 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "6a756b09-d2b3-4d62-99eb-0eb2894db609")
+	)
+	(hierarchical_label "USB_VBUS"
+		(shape output)
+		(at 54.61 121.92 180)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "6c3cb8fd-e596-4b8f-8639-2fc507264d14")
+	)
+	(hierarchical_label "VBAT"
+		(shape output)
+		(at 27.94 186.69 270)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "702e2982-47fa-403d-b240-65f3fda67333")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 243.84 41.91 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "70aa4237-d504-4aa8-a91a-7122c7e5023a")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 195.58 82.55 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "7dd65f6e-b4a6-4319-9983-2b42c575171f")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
+		(at 99.06 109.22 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "8042b2e4-76ce-45e2-959a-23340fd104b9")
 	)
 	(hierarchical_label "REG_PG"
 		(shape output)
 		(at 220.98 59.69 0)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4422,7 +4417,6 @@
 	(hierarchical_label "VBAT"
 		(shape output)
 		(at 80.01 140.97 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4433,8 +4427,73 @@
 	)
 	(hierarchical_label "3V3"
 		(shape output)
+		(at 243.84 82.55 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "9bcd97cd-3113-4d66-904d-48a9c9408da1")
+	)
+	(hierarchical_label "USB_VBUS"
+		(shape output)
+		(at 83.82 73.66 90)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "a6f40dba-735c-4c2c-9098-0ff3a4d823c5")
+	)
+	(hierarchical_label "VBAT"
+		(shape output)
+		(at 179.07 137.16 180)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "b0a92f99-5cb0-413e-b47f-6564b9cb2d79")
+	)
+	(hierarchical_label "VBAT_SENSE"
+		(shape output)
+		(at 238.76 137.16 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "b2a3e0e1-9dc9-4378-b1ad-8b5ecbe26573")
+	)
+	(hierarchical_label "CHG_STAT2"
+		(shape output)
+		(at 88.9 127 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "b3cd8d41-d056-4bc4-b7b1-1617901468b2")
+	)
+	(hierarchical_label "VSYS"
+		(shape output)
+		(at 80.01 121.92 0)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify left)
+		)
+		(uuid "c58e7a82-abdc-450f-8d0c-7c67587db981")
+	)
+	(hierarchical_label "3V3"
+		(shape output)
 		(at 224.79 82.55 90)
-		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4443,17 +4502,49 @@
 		)
 		(uuid "d0aecfa8-ab2e-4c47-be3e-8ce4ad6a6206")
 	)
-	(hierarchical_label "VSYS"
+	(hierarchical_label "REG_PG"
 		(shape output)
-		(at 80.01 121.92 0)
-		(fields_autoplaced yes)
+		(at 243.84 95.25 270)
 		(effects
 			(font
 				(size 0.9 0.9)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "c58e7a82-abdc-450f-8d0c-7c67587db981")
+		(uuid "e4305f04-5977-4295-952c-7b3a86b7437e")
+	)
+	(hierarchical_label "VBAT_SENSE_EN"
+		(shape input)
+		(at 179.07 142.24 180)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "e8f386b4-1998-4ee4-8ae3-f960460b3e1b")
+	)
+	(hierarchical_label "VSYS"
+		(shape output)
+		(at 195.58 59.69 180)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "e9b6e3c6-d144-4ce0-806b-27fde1ffb6f8")
+	)
+	(hierarchical_label "VSYS"
+		(shape output)
+		(at 195.58 49.53 180)
+		(effects
+			(font
+				(size 0.9 0.9)
+			)
+			(justify right)
+		)
+		(uuid "ed1964ad-301e-4a2a-96e8-55479ad91807")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -4634,6 +4725,18 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 191.77 139.7 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -4812,7 +4915,7 @@
 				)
 			)
 		)
-		(property "Value" "10uF 25V"
+		(property "Value" "47uF 10V"
 			(at 167.64 89.916 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4833,7 +4936,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL21A476MPYNNN.do"
 			(at 175.26 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -4867,6 +4970,39 @@
 					(reference "C8")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL21A476MPYNNNE"
+			(at 167.64 89.916 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 167.64 89.916 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C41796773"
+			(at 167.64 89.916 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -4990,7 +5126,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0718KL"
 			(at 35.56 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -5024,6 +5160,28 @@
 					(reference "R7")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-0718KL"
+			(at 32.512 148.336 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 32.512 148.336 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -5069,7 +5227,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0722RL"
 			(at 92.71 55.88 270)
 			(hide yes)
 			(show_name no)
@@ -5103,6 +5261,28 @@
 					(reference "R4")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-0722RL"
+			(at 92.71 57.912 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 92.71 57.912 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -5196,8 +5376,8 @@
 		(dnp no)
 		(uuid "2c4923fc-32e3-4aaa-9fcf-380cdfcb486d")
 		(property "Reference" "#FLG0101"
-			(hide yes)
 			(at 50.546 176.784 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -5303,7 +5483,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0722RL"
 			(at 92.71 50.8 270)
 			(hide yes)
 			(show_name no)
@@ -5337,6 +5517,28 @@
 					(reference "R3")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-0722RL"
+			(at 92.456 48.768 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 92.456 48.768 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -5507,6 +5709,18 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Coilcraft"
+			(at 207.01 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Cicala:TPS63802DLA")
@@ -5621,6 +5835,18 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 208.28 54.61 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -5701,6 +5927,160 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 21.59 97.79 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "5605bfb0-0cb4-43b8-865e-509439182eeb")
+		(property "Reference" "#PWR0157"
+			(at 21.59 104.14 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "GND"
+			(at 21.59 101.6 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 21.59 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 21.59 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name GND, ground"
+			(at 21.59 97.79 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "0c49b96f-20c4-43f7-b1c6-aaf84c5d88c5")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "#PWR0157")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 43.18 119.38 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(in_pos_files no)
+		(dnp no)
+		(uuid "5f1f1599-9e3b-44b8-b80a-a652811e7f32")
+		(property "Reference" "TP22"
+			(at 43.18 111.75999999999999 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "VBAT_CELL"
+			(at 43.18 114.3 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
+			(at 43.18 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 43.18 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "test point"
+			(at 43.18 119.38 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "22e3a4d0-2b1c-4d95-a3db-5c1af6c7c22a")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "TP22")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 243.84 88.9 0)
 		(unit 1)
@@ -5742,7 +6122,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-07100KL"
 			(at 243.84 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -5776,6 +6156,28 @@
 					(reference "R16")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-07100KL"
+			(at 247.396 90.424 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 247.396 90.424 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -5821,7 +6223,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-07511KL"
 			(at 243.84 48.26 0)
 			(hide yes)
 			(show_name no)
@@ -5855,6 +6257,129 @@
 					(reference "R14")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-07511KL"
+			(at 249.174 49.276 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 249.174 49.276 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 33.02 114.3 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "6fa8ebc6-c454-4234-9a7d-06f2090817cb")
+		(property "Reference" "R34"
+			(at 29.718 115.316 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "0"
+			(at 35.306 113.538 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 33.02 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603JR-070RL"
+			(at 33.02 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 33.02 114.3 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "958f29dd-72b0-4d6a-812d-37e4590d2414")
+		)
+		(pin "2"
+			(uuid "d54e8eb3-c905-4a5a-8a65-929dfffbeb82")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "R34")
+					(unit 1)
+				)
+			)
+		)
+		(property "MPN" "RC0603JR-070RL"
+			(at 35.306 113.538 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 35.306 113.538 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -5900,7 +6425,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-07470KL"
 			(at 219.71 146.05 0)
 			(hide yes)
 			(show_name no)
@@ -5936,6 +6461,28 @@
 				)
 			)
 		)
+		(property "MPN" "RC0603FR-07470KL"
+			(at 223.52 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 223.52 147.32 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:R")
@@ -5958,7 +6505,7 @@
 				)
 			)
 		)
-		(property "Value" "100k"
+		(property "Value" "4.7k"
 			(at 45.466 147.574 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5979,7 +6526,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-074K7L"
 			(at 41.91 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -6011,6 +6558,109 @@
 			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
 					(reference "R13")
+					(unit 1)
+				)
+			)
+		)
+		(property "MPN" "RC0603FR-074K7L"
+			(at 45.466 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 45.466 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 33.02 91.44 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp yes)
+		(uuid "7a945a62-9ac4-4990-bbe0-1fad60caa8c6")
+		(property "Reference" "C31"
+			(at 35.56 90.17 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "1nF 2kV DNP"
+			(at 35.56 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
+			(at 33.02 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 33.02 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 33.02 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "9e33b37a-241e-408b-b591-13d61f0e5fe0")
+		)
+		(pin "2"
+			(uuid "262ecc8c-c8cf-4cab-8101-9dd88eee84eb")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "C31")
 					(unit 1)
 				)
 			)
@@ -6136,7 +6786,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL21A106KAYNNN.do"
 			(at 87.63 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -6170,6 +6820,39 @@
 					(reference "C5")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL21A106KAYNNNE"
+			(at 93.726 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 93.726 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C15850"
+			(at 93.726 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -6216,7 +6899,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0710KL"
 			(at 86.36 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -6252,6 +6935,28 @@
 				)
 			)
 		)
+		(property "MPN" "RC0603FR-0710KL"
+			(at 89.916 116.84 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 89.916 116.84 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -6274,7 +6979,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "10uF 10V"
 			(at 77.47 78.74 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6295,7 +7000,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10A106KP8NNN.do"
 			(at 83.82 78.74 0)
 			(hide yes)
 			(show_name no)
@@ -6329,6 +7034,39 @@
 					(reference "C4")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 77.47 78.74 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 77.47 78.74 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C19702"
+			(at 77.47 78.74 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -6466,6 +7204,18 @@
 				)
 			)
 		)
+		(property "Manufacturer" "HRO"
+			(at 29.21 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -6509,7 +7259,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10B104KB8NNN.do"
 			(at 224.79 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -6545,6 +7295,39 @@
 				)
 			)
 		)
+		(property "MPN" "CL10B104KB8NNNC"
+			(at 231.14 90.424 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 231.14 90.424 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C1591"
+			(at 231.14 90.424 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x03")
@@ -6559,7 +7342,7 @@
 		(dnp no)
 		(uuid "8c045dcd-62b7-4b31-8056-4026c007e097")
 		(property "Reference" "J3"
-			(at 26.67 114.3 0)
+			(at 18.288 119.38 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6569,7 +7352,7 @@
 			)
 		)
 		(property "Value" "Protected LiPo + NTC"
-			(at 26.67 116.84 0)
+			(at 24.638 131.064 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6611,7 +7394,7 @@
 				)
 			)
 		)
-		(property "MPN" "custom 503035 pack harness"
+		(property "MPN" "S3B-PH-SM4-TB(LF)(SN)"
 			(at 21.59 124.46 0)
 			(hide yes)
 			(show_name no)
@@ -6637,6 +7420,18 @@
 					(reference "J3")
 					(unit 1)
 				)
+			)
+		)
+		(property "Manufacturer" "JST"
+			(at 21.59 124.46 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -6739,7 +7534,7 @@
 				)
 			)
 		)
-		(property "Value" "1uF 16V"
+		(property "Value" "10uF 10V"
 			(at 73.914 149.098 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6760,7 +7555,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10A106KP8NNN.do"
 			(at 80.01 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -6794,6 +7589,144 @@
 					(reference "C6")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 73.914 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 73.914 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C19702"
+			(at 73.914 149.098 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 21.59 91.44 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "9778acd2-61de-4613-856a-3a66e5554ba2")
+		(property "Reference" "R33"
+			(at 24.13 90.17 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "0"
+			(at 24.13 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
+			(at 21.59 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603JR-070RL"
+			(at 21.59 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 21.59 91.44 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "c2b546a0-95e9-4d2e-8759-357cf1b3f566")
+		)
+		(pin "2"
+			(uuid "e7c97161-3ead-4d1e-9ad2-9d7326b11590")
+		)
+		(instances
+			(project "cicala_rev_a"
+				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
+					(reference "R33")
+					(unit 1)
+				)
+			)
+		)
+		(property "MPN" "RC0603JR-070RL"
+			(at 24.13 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 24.13 92.71 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+				(hide yes)
 			)
 		)
 	)
@@ -6839,7 +7772,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-075K1L"
 			(at 49.53 76.2 0)
 			(hide yes)
 			(show_name no)
@@ -6873,6 +7806,28 @@
 					(reference "R2")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-075K1L"
+			(at 46.99 72.644 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 46.99 72.644 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -6996,7 +7951,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-075K1L"
 			(at 53.34 76.2 0)
 			(hide yes)
 			(show_name no)
@@ -7030,6 +7985,28 @@
 					(reference "R1")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-075K1L"
+			(at 56.388 72.644 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 56.388 72.644 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -7075,7 +8052,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10B104KB8NNN.do"
 			(at 232.41 146.05 0)
 			(hide yes)
 			(show_name no)
@@ -7109,6 +8086,39 @@
 					(reference "C7")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL10B104KB8NNNC"
+			(at 237.49 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 237.49 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C1591"
+			(at 237.49 147.574 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -7289,7 +8299,7 @@
 				)
 			)
 		)
-		(property "Value" "47uF 6.3V"
+		(property "Value" "47uF 10V"
 			(at 205.486 91.44 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -7310,7 +8320,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL21A476MPYNNN.do"
 			(at 210.82 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -7344,6 +8354,39 @@
 					(reference "C10")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL21A476MPYNNNE"
+			(at 205.486 91.44 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 205.486 91.44 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C41796773"
+			(at 205.486 91.44 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -7515,8 +8558,8 @@
 		(dnp no)
 		(uuid "ba0fc0a0-692d-4a4f-b22e-41b26d670805")
 		(property "Reference" "#FLG0103"
-			(hide yes)
 			(at 35.306 176.784 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -7622,7 +8665,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10A226MQ8NRN.do"
 			(at 195.58 88.9 0)
 			(hide yes)
 			(show_name no)
@@ -7656,6 +8699,39 @@
 					(reference "C9")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "CL10A226MQ8NRNC"
+			(at 188.468 89.662 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 188.468 89.662 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" "C59461"
+			(at 188.468 89.662 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -7779,7 +8855,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-071K2L"
 			(at 55.88 147.32 0)
 			(hide yes)
 			(show_name no)
@@ -7813,6 +8889,28 @@
 					(reference "R8")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-071K2L"
+			(at 59.69 148.082 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 59.69 148.082 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -7858,7 +8956,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0791KL"
 			(at 243.84 64.77 0)
 			(hide yes)
 			(show_name no)
@@ -7892,6 +8990,28 @@
 					(reference "R15")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-0791KL"
+			(at 249.682 65.786 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 249.682 65.786 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -8063,8 +9183,8 @@
 		(dnp no)
 		(uuid "cf122d4d-2bce-45fb-a66c-9d270db82b2c")
 		(property "Reference" "#FLG0102"
-			(hide yes)
 			(at 21.59 176.53 0)
+			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -8227,6 +9347,18 @@
 					(reference "U4")
 					(unit 1)
 				)
+			)
+		)
+		(property "Manufacturer" "STMicroelectronics"
+			(at 69.85 53.34 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -8586,7 +9718,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0710KL"
 			(at 99.06 115.57 0)
 			(hide yes)
 			(show_name no)
@@ -8620,6 +9752,28 @@
 					(reference "R9")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-0710KL"
+			(at 102.87 117.094 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 102.87 117.094 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -8665,7 +9819,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
+		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-071ML"
 			(at 210.82 137.16 270)
 			(hide yes)
 			(show_name no)
@@ -8699,6 +9853,28 @@
 					(reference "R11")
 					(unit 1)
 				)
+			)
+		)
+		(property "MPN" "RC0603FR-071ML"
+			(at 210.82 139.7 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer" "Yageo"
+			(at 210.82 139.7 270)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
 			)
 		)
 	)
@@ -8818,6 +9994,18 @@
 				)
 			)
 		)
+		(property "Manufacturer" "Texas Instruments"
+			(at 67.31 127 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -8898,90 +10086,30 @@
 			)
 		)
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 21.59 91.44 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "9778acd2-61de-4613-856a-3a66e5554ba2")
-		(property "Reference" "R33"
-			(at 24.13 90.17 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
+	(wire
+		(pts
+			(xy 52.07 129.54) (xy 57.15 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e55cf8e-e39e-45e5-86f5-fa47aba57f28")
+	)
+	(global_label "CHG_CE"
+		(shape passive)
+		(at 52.07 129.54 180.0)
+		(effects
+			(font
+				(size 0.9 0.9)
 			)
+			(justify right)
 		)
-		(property "Value" "0"
-			(at 24.13 92.71 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 21.59 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 21.59 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 21.59 91.44 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "c2b546a0-95e9-4d2e-8759-357cf1b3f566")
-		)
-		(pin "2"
-			(uuid "e7c97161-3ead-4d1e-9ad2-9d7326b11590")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
-					(reference "R33")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "37dcffd0-92fc-4107-af90-17b134c794f2")
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 33.02 91.44 0)
+		(at 168.91 139.7 0)
 		(unit 1)
 		(body_style 1)
 		(exclude_from_sim no)
@@ -8989,31 +10117,29 @@
 		(on_board yes)
 		(in_pos_files yes)
 		(dnp no)
-		(uuid "7a945a62-9ac4-4990-bbe0-1fad60caa8c6")
-		(property "Reference" "C31"
-			(at 35.56 90.17 0)
+		(uuid "cd8197a0-0c0e-4957-8b54-ce33fecdf7d6")
+		(property "Reference" "C34"
+			(at 164.592 138.43 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1 1)
 				)
-				(justify left)
 			)
 		)
-		(property "Value" "1nF 2kV"
-			(at 35.56 92.71 0)
+		(property "Value" "10uF 10V"
+			(at 162.814 141.478 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
 					(size 1 1)
 				)
-				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
-			(at 33.02 91.44 0)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric"
+			(at 168.91 139.7 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9023,8 +10149,8 @@
 				)
 			)
 		)
-		(property "Datasheet" "~"
-			(at 33.02 91.44 0)
+		(property "Datasheet" "https://product.samsungsem.com/mlcc/CL10A106KP8NNN.do"
+			(at 168.91 139.7 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9035,7 +10161,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 33.02 91.44 0)
+			(at 168.91 139.7 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9046,430 +10172,119 @@
 			)
 		)
 		(pin "1"
-			(uuid "9e33b37a-241e-408b-b591-13d61f0e5fe0")
+			(uuid "8162c842-79d1-40f0-9a51-513110d5960c")
 		)
 		(pin "2"
-			(uuid "262ecc8c-c8cf-4cab-8101-9dd88eee84eb")
+			(uuid "4696ba8e-bbf2-4d54-8837-970779c711e4")
 		)
 		(instances
 			(project "cicala_rev_a"
 				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
-					(reference "C31")
+					(reference "C34")
 					(unit 1)
 				)
 			)
 		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 21.59 97.79 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "5605bfb0-0cb4-43b8-865e-509439182eeb")
-		(property "Reference" "#PWR0157"
-			(at 21.59 104.14 0)
-			(hide yes)
+		(property "MPN" "CL10A106KP8NNNC"
+			(at 162.814 141.478 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 1 1)
 				)
+				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 21.59 101.6 0)
-			(hide yes)
+		(property "Manufacturer" "Samsung Electro-Mechanics"
+			(at 162.814 141.478 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 1 1)
 				)
+				(hide yes)
 			)
 		)
-		(property "Footprint" ""
-			(at 21.59 97.79 0)
-			(hide yes)
+		(property "LCSC" "C19702"
+			(at 162.814 141.478 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
 				(font
-					(size 1.27 1.27)
+					(size 1 1)
 				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 21.59 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name GND, ground"
-			(at 21.59 97.79 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "0c49b96f-20c4-43f7-b1c6-aaf84c5d88c5")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
-					(reference "#PWR0157")
-					(unit 1)
-				)
+				(hide yes)
 			)
 		)
 	)
-	(global_label "USB_SHIELD"
+	(wire
+		(pts
+			(xy 168.91 135.89) (xy 168.91 132.07999999999998)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "84cf3fe8-771d-4d62-b980-71bec0a14211")
+	)
+	(wire
+		(pts
+			(xy 168.91 143.51) (xy 168.91 147.32)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "95a71c11-a6ea-4f42-b413-44049608368f")
+	)
+	(global_label "VBAT"
 		(shape passive)
-		(at 21.59 79.38 0)
-		(fields_autoplaced yes)
+		(at 168.91 132.07999999999998 180)
 		(effects
 			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "b269f5b7-80d7-4e37-bb15-d0c1a2453f48")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 21.59 79.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "CHG_ILIM_VSET"
-		(shape passive)
-		(at 35.56 135.89 0)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left)
-		)
-		(uuid "6a2c701e-872a-47e1-a739-9dd91a627069")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 35.56 135.89 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
-	)
-	(global_label "VBAT_CELL"
-		(shape passive)
-		(at 33.02 120.65 180)
-		(fields_autoplaced yes)
-		(effects
-			(font
-				(size 0.9 0.9)
+				(size .9 .9)
 			)
 			(justify right)
 		)
-		(uuid "e81c4dd2-1869-419b-83ac-38af6efc0bbc")
-		(property "Intersheetrefs" "${INTERSHEET_REFS}"
-			(at 33.02 120.65 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 0.8 0.8)
-				)
-			)
-		)
+		(uuid "ed863d29-9fdc-4d41-9088-da0c7235c45c")
 	)
-	(symbol
-		(lib_id "Device:R")
-		(at 33.02 114.3 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "6fa8ebc6-c454-4234-9a7d-06f2090817cb")
-		(property "Reference" "R34"
-			(at 35.56 112.776 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "0"
-			(at 36.068 110.744 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 33.02 114.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 33.02 114.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 33.02 114.3 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "958f29dd-72b0-4d6a-812d-37e4590d2414")
-		)
-		(pin "2"
-			(uuid "d54e8eb3-c905-4a5a-8a65-929dfffbeb82")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12"
-					(reference "R34")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(hierarchical_label "VBAT"
-		(shape output)
-		(at 33.02 107.95 90)
-		(fields_autoplaced yes)
+	(global_label "GND"
+		(shape passive)
+		(at 168.91 147.32 180)
 		(effects
 			(font
-				(size 0.9 0.9)
+				(size .9 .9)
 			)
-			(justify left)
+			(justify right)
 		)
-		(uuid "2218768f-6b0d-4c2f-8975-5d75d28465d2")
-	)
-	(symbol
-		(lib_id "Connector:TestPoint")
-		(at 43.18 119.38 0)
-		(unit 1)
-		(body_style 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(in_pos_files yes)
-		(dnp no)
-		(uuid "5f1f1599-9e3b-44b8-b80a-a652811e7f32")
-		(property "Reference" "TP22"
-			(at 43.18 109.474 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Value" "VBAT_CELL"
-			(at 43.18 112.014 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Footprint" "TestPoint:TestPoint_Pad_D1.0mm"
-			(at 43.18 119.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 43.18 119.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(property "Description" "test point"
-			(at 43.18 119.38 0)
-			(hide yes)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1 1)
-				)
-			)
-		)
-		(pin "1"
-			(uuid "22e3a4d0-2b1c-4d95-a3db-5c1af6c7c22a")
-		)
-		(instances
-			(project "cicala_rev_a"
-				(path "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814"
-					(reference "TP22")
-					(unit 1)
-				)
-			)
-		)
+		(uuid "29fd8538-013d-4268-a5a6-38a91efada3e")
 	)
 	(wire
 		(pts
-			(xy 26.67 121.92) (xy 33.02 121.92)
+			(xy 43.18 124.46) (xy 57.15 124.46)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "7c65a3b7-397c-4bb8-b4ae-0fa11fb0d7a1")
-	)
-	(wire
-		(pts
-			(xy 21.59 76.2) (xy 21.59 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "01e946c6-8a06-4106-8f78-8aec5e1ff093")
-	)
-	(wire
-		(pts
-			(xy 21.59 87.63) (xy 33.02 87.63)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "48f229a1-2f8e-421d-8a76-7d1d587e5917")
-	)
-	(wire
-		(pts
-			(xy 21.59 95.25) (xy 33.02 95.25)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6e34210c-5cf8-4b22-bbb1-2404433e1338")
-	)
-	(wire
-		(pts
-			(xy 21.59 95.25) (xy 21.59 97.79)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "0759b165-e9c8-4d83-b6d7-da5c7b8fc99a")
+		(uuid "0ec36a99-b990-4b1d-bc53-2fb09b7e0d2a")
 	)
 	(junction
-		(at 21.59 87.63)
+		(at 43.18 124.46)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "80223715-3e45-4acc-98bc-e8576201d4a1")
-	)
-	(junction
-		(at 21.59 95.25)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "955eb1be-b916-4bfa-a625-830cd61a3d0b")
+		(uuid "693053f5-473e-47c8-a2aa-e1e209eb7a07")
 	)
 	(wire
 		(pts
-			(xy 33.02 107.95) (xy 33.02 110.49)
+			(xy 43.18 124.46) (xy 43.18 120.65)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "13a5a1e7-0833-4c43-9ade-f83866db6a02")
-	)
-	(wire
-		(pts
-			(xy 33.02 118.11) (xy 33.02 121.92)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5dd04efe-d2a3-4b61-973e-4b4df6464a34")
-	)
-	(junction
-		(at 33.02 119.38)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "775f68c7-776c-4850-ba2b-eced51d132c1")
-	)
-	(wire
-		(pts
-			(xy 33.02 119.38) (xy 43.18 119.38)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "00d3abfb-4446-4409-91a6-72ffd92772d9")
+		(uuid "3a6b62d3-3cb0-404f-a8b7-fe0f639f5e2c")
 	)
 )

@@ -190,3 +190,22 @@ ZTEST(cicala_status, test_only_something_moving_asks_to_be_looked_at_again)
     zassert_true(led.animating(0));
     zassert_false(led.animating(after(3)), "and stops asking once the burst has run");
 }
+
+ZTEST(cicala_status, test_charger_fault_takes_priority_over_network_indicators)
+{
+    StatusLed led;
+    led.set_portal(true);
+    led.set_activity(true);
+    led.set_power(PowerState::CHARGE_FAULT, false);
+    zassert_equal(led.output(0), Colour::RED);
+    zassert_equal(led.output(kStatusPulseMs / 2), Colour::OFF);
+    zassert_true(led.animating(0));
+}
+
+ZTEST(cicala_status, test_idle_charger_has_no_full_charge_claim)
+{
+    StatusLed led;
+    led.set_power(PowerState::EXTERNAL_IDLE, false);
+    zassert_equal(led.output(0), Colour::AMBER);
+    zassert_equal(led.output(kStatusPulseMs / 2), Colour::OFF);
+}

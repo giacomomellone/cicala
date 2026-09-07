@@ -36,6 +36,18 @@ def pad(**kwargs):
 
 
 class GeometryTests(unittest.TestCase):
+    def test_fanout_stays_on_the_surface_pad_layer(self):
+        from route_fanout import fanout
+        for side in ('F.Cu', 'B.Cu'):
+            with self.subTest(side=side):
+                p = pad(ref='J2', w=.3, h=1.3, layers=[side])
+                geom = board([p])
+                segments, vias, _ = fanout(Copper(geom), {'A': [p]})
+                self.assertTrue(segments)
+                self.assertEqual({s['layer'] for s in segments}, {side})
+                self.assertEqual(len(physical_groups('A', geom,
+                                 {'segments': segments, 'vias': vias})), 1)
+
     def test_reference_audit_reports_missing_plane_without_zero_coverage(self):
         geom = board()
         geom['filled_zones'] = []

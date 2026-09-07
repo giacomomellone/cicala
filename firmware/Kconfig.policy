@@ -353,12 +353,13 @@ config CICALA_POWER_PLAUSIBLE_MV
       which leaves refreshes enabled.
 
 config CICALA_POWER_FULL_MV
-    int "Cell voltage that counts as charged (mV)"
+    int "Breadboard voltage estimate for the green LED (mV)"
     default 4050
     depends on CICALA_POWER
     help
-      Controls only the green LED. The divider reads about 40 mV low, so the
-      default represents about 4090 mV at the cell.
+      Applies when charger status pins are absent. The breadboard divider
+      reads about 40 mV low. Rev A uses charger status and never infers charge
+      completion from this threshold.
 
 config CICALA_POWER_HYSTERESIS_MV
     int "Millivolts a reading must clear a threshold by to cross back (mV)"
@@ -388,6 +389,22 @@ config CICALA_POWER_CHARGE_WINDOW_MS
     help
       Limits network work for one continuous external-power connection. The
       device remains awake while VBUS is present.
+
+config CICALA_REV_A
+    bool "Cicala Rev A PCB"
+    default n
+    help
+      Enables the switched panel supply and the rotated display's cold-RAM
+      refresh policy. Build with rev_a.overlay and rev_a.conf together.
+
+config CICALA_POWER_DIVIDER_SETTLE_MS
+    int "Switched battery divider settling time (ms)"
+    default 0
+    range 0 1000
+    depends on CICALA_POWER
+    help
+      Rev A uses 1 MOhm / 470 kOhm and 100 nF. Allow 200 ms after enabling
+      its switch, including resistor and capacitor tolerance.
 
 config CICALA_POWER_DIVIDER_NUM
     int "Battery divider, numerator"

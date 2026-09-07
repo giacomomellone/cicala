@@ -10,6 +10,48 @@ Start with the [firmware primer](../docs/firmware_primer.md). See the
 [firmware architecture](../docs/firmware_architecture.md) for module boundaries
 and the [hardware wiring guide](../docs/hardware_wiring.md) for the bench rig.
 
+
+## Integrated Rev A board
+
+Select `hw=rev_a` for the integrated PCB; the default remains the breadboard.
+The Rev A overlay/configuration control the switched battery divider and panel
+rail, set the ADC divider to 1 MΩ/470 kΩ, wait 200 ms before sampling, and use
+native USB Serial/JTAG for console and debugging. A dedicated power-sampling
+work queue keeps the settling delay out of the input/system queue. Conversion
+failure and deep-sleep entry both switch the divider off.
+
+```sh
+just hw=rev_a fw-build debug
+just hw=rev_a fw-flash debug
+just hw=rev_a fw-monitor debug
+just hw=rev_a fw-debugserver
+just hw=rev_a fw-flash                 # release with MCUboot
+```
+
+Rev A build directories are `build/cicala-rev-a` and
+`build/cicala-rev-a-debug` (other profiles use the corresponding suffix).
+Use `port=/dev/cu.usbmodem…` or the Linux serial device as a `just` override
+when automatic detection selects the wrong port. The debug ELF is
+`build/cicala-rev-a-debug/zephyr/zephyr.elf`; the existing OpenOCD configuration
+uses the ESP32-S3 built-in USB JTAG adapter. No external JTAG probe is required.
+
+GPIO14 low requests charging; the independent analog temperature guard can
+still veto it. GPIO5 enables the panel before driver initialization. Deep
+sleep parks physical display-bus levels low before disabling the rail and
+holds those pins. The first refresh after power restoration is full because
+the display controller RAM has been lost. The PCB recovery pinout and first
+power checks are in [the hardware review](../hardware/pcb/REVIEW.md).
+
+The [Rev A build and flash guide](../docs/firmware_rev_a.md) covers toolchain
+installation, first USB download, JTAG, UART recovery and hardware acceptance.
+Rev A reads both BQ25185 status pins: high/high means idle or disabled, so it
+does not claim a full battery from voltage alone. The release application and
+MCUboot both use 16 MiB flash without PSRAM. Firmware validation passed 226
+QEMU cases across 16 configurations, with three platform-specific skips.
+Physical USB flashing, JTAG, charging and display operation remain prototype
+acceptance tests. The accepted question database is currently empty; use the
+existing charset diagnostic for initial display testing.
+
 ## Target
 
 - ESP32-S3-DevKitC-1-N8R8 on the breadboard

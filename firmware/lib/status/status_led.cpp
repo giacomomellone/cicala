@@ -39,6 +39,10 @@ void StatusLed::set_activity(bool busy)
 
 Pattern StatusLed::steady() const
 {
+    if (_power == PowerState::CHARGE_FAULT) {
+        return {Colour::RED, Rhythm::PULSE, 0};
+    }
+
     if (_busy) {
         return {Colour::GREEN, Rhythm::PULSE, 0};
     }
@@ -53,6 +57,9 @@ Pattern StatusLed::steady() const
 
     case PowerState::CHARGING:
         return {Colour::RED, Rhythm::STEADY, 0};
+
+    case PowerState::EXTERNAL_IDLE:
+        return {Colour::AMBER, Rhythm::PULSE, 0};
 
     default:
         return {Colour::OFF, Rhythm::STEADY, 0};

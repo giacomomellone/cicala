@@ -1,0 +1,89 @@
+{
+  "pcb_datums_checked": 12,
+  "pcb_dimensions_mm": [
+    3.0,
+    3.5,
+    78.0,
+    49.0,
+    1.2
+  ],
+  "app": {
+    "flash_bytes": 16777216,
+    "psram": false,
+    "gpio_signals": {
+      "VBUS_SENSE": {
+        "gpio": 21,
+        "flags": 0
+      },
+      "VBAT_SENSE_EN": {
+        "gpio": 2,
+        "flags": 0
+      },
+      "EPD_PWR_EN": {
+        "gpio": 5,
+        "flags": 0
+      },
+      "EPD_MOSI": {
+        "gpio": 11,
+        "flags": 0
+      },
+      "EPD_CLK": {
+        "gpio": 12,
+        "flags": 0
+      },
+      "CHG_ENABLE": {
+        "gpio": 14,
+        "flags": 0
+      },
+      "CHG_STAT1": {
+        "gpio": 6,
+        "flags": 0
+      },
+      "CHG_STAT2": {
+        "gpio": 7,
+        "flags": 0
+      },
+      "BTN_CATEGORY": {
+        "gpio": 4,
+        "flags": 17
+      },
+      "BTN_NEXT": {
+        "gpio": 17,
+        "flags": 17
+      },
+      "STATUS_RED": {
+        "gpio": 15,
+        "flags": 0
+      },
+      "STATUS_GREEN": {
+        "gpio": 16,
+        "flags": 0
+      },
+      "EPD_CS": {
+        "gpio": 10,
+        "flags": 1
+      },
+      "EPD_DC": {
+        "gpio": 18,
+        "flags": 0
+      },
+      "EPD_RESET": {
+        "gpio": 8,
+        "flags": 1
+      },
+      "EPD_BUSY": {
+        "gpio": 9,
+        "flags": 0
+      }
+    },
+    "display_rotation": 180,
+    "adc_divider": [
+      147,
+      47
+    ]
+  },
+  "boot": {
+    "flash_bytes": 16777216,
+    "psram": false
+  }
+}

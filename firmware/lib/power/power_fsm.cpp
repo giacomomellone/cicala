@@ -11,30 +11,53 @@ const Fsm::StateTransition PowerFsm::_transitions[] = {
     {STATE(UNKNOWN),   TRANSITION(REPEAT),     STATE(UNKNOWN),    0       },
     {STATE(UNKNOWN),   TRANSITION(MEASURED),   STATE(NORMAL),     0       },
     {STATE(UNKNOWN),   TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(UNKNOWN),   TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(UNKNOWN),   TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
 
     {STATE(NORMAL),    TRANSITION(REPEAT),     STATE(NORMAL),     0       },
     {STATE(NORMAL),    TRANSITION(SANK),       STATE(LOW),        0       },
     {STATE(NORMAL),    TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(NORMAL),    TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(NORMAL),    TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
     {STATE(NORMAL),    TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(LOW),       TRANSITION(REPEAT),     STATE(LOW),        0       },
     {STATE(LOW),       TRANSITION(SANK),       STATE(CRITICAL),   0       },
     {STATE(LOW),       TRANSITION(ROSE),       STATE(NORMAL),     0       },
     {STATE(LOW),       TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(LOW),       TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(LOW),       TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
     {STATE(LOW),       TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(CRITICAL),  TRANSITION(REPEAT),     STATE(CRITICAL),   0       },
     {STATE(CRITICAL),  TRANSITION(ROSE),       STATE(LOW),        0       },
     {STATE(CRITICAL),  TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(CRITICAL),  TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(CRITICAL),  TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
     {STATE(CRITICAL),  TRANSITION(IMPLAUSIBLE),STATE(UNKNOWN),    0       },
 
     {STATE(CHARGING),  TRANSITION(REPEAT),     STATE(CHARGING),   0       },
     {STATE(CHARGING),  TRANSITION(FULL),       STATE(CHARGED),    0       },
     {STATE(CHARGING),  TRANSITION(UNPLUGGED),  STATE(UNKNOWN),    0       },
+    {STATE(CHARGING),  TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(CHARGING),  TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
 
     {STATE(CHARGED),   TRANSITION(REPEAT),     STATE(CHARGED),    0       },
     {STATE(CHARGED),   TRANSITION(SANK),       STATE(CHARGING),   0       },
     {STATE(CHARGED),   TRANSITION(UNPLUGGED),  STATE(UNKNOWN),    0       },
+    {STATE(CHARGED),   TRANSITION(PLUGGED),    STATE(CHARGING),   0       },
+    {STATE(CHARGED),   TRANSITION(PAUSED),     STATE(EXTERNAL_IDLE), 0    },
+    {STATE(CHARGED),   TRANSITION(FAULT),      STATE(CHARGE_FAULT), 0     },
+
+    {STATE(EXTERNAL_IDLE), TRANSITION(REPEAT), STATE(EXTERNAL_IDLE), 0   },
+    {STATE(EXTERNAL_IDLE), TRANSITION(PLUGGED), STATE(CHARGING), 0       },
+    {STATE(EXTERNAL_IDLE), TRANSITION(FAULT), STATE(CHARGE_FAULT), 0     },
+    {STATE(EXTERNAL_IDLE), TRANSITION(UNPLUGGED), STATE(UNKNOWN), 0      },
+
+    {STATE(CHARGE_FAULT), TRANSITION(REPEAT), STATE(CHARGE_FAULT), 0    },
+    {STATE(CHARGE_FAULT), TRANSITION(PLUGGED), STATE(CHARGING), 0        },
+    {STATE(CHARGE_FAULT), TRANSITION(PAUSED), STATE(EXTERNAL_IDLE), 0   },
+    {STATE(CHARGE_FAULT), TRANSITION(UNPLUGGED), STATE(UNKNOWN), 0       },
 };
 // clang-format on
 
@@ -69,7 +92,7 @@ bool PowerFsm::refresh_allowed() const
 
 void PowerFsm::report(bool force)
 {
-    if (!force && _published) {
+    if (!force && _published && _published_charger == _charger) {
         const int32_t moved = (int32_t) _mv - (int32_t) _published_mv;
 
         if (moved > -(int32_t) kPublishDeadbandMv && moved < (int32_t) kPublishDeadbandMv) {
@@ -77,15 +100,17 @@ void PowerFsm::report(bool force)
         }
     }
 
-    _io.publish(state(), _mv, _usb);
+    _io.publish(state(), _mv, _usb, _charger);
 
     _published_mv = _mv;
     _published = true;
+    _published_charger = _charger;
 }
 
 void PowerFsm::on_enter_state(int state)
 {
-    const bool external = (state == STATE(CHARGING)) || (state == STATE(CHARGED));
+    const bool external = (state == STATE(CHARGING)) || (state == STATE(CHARGED)) ||
+                          (state == STATE(EXTERNAL_IDLE)) || (state == STATE(CHARGE_FAULT));
 
     if (external && !_external) {
         _external = true;
@@ -133,6 +158,11 @@ int PowerFsm::handle_current_state()
         transition = on_charged();
         break;
 
+    case STATE(EXTERNAL_IDLE):
+    case STATE(CHARGE_FAULT):
+        transition = on_external();
+        break;
+
     default:
         break;
     }
@@ -145,11 +175,25 @@ int PowerFsm::handle_current_state()
     return transition;
 }
 
+int PowerFsm::plugged_transition() const
+{
+    switch (_charger) {
+    case ChargerStatus::IDLE:
+    case ChargerStatus::UNAVAILABLE:
+        return TRANSITION(PAUSED);
+    case ChargerStatus::RECOVERABLE_FAULT:
+    case ChargerStatus::LATCHED_FAULT:
+        return TRANSITION(FAULT);
+    default:
+        return TRANSITION(PLUGGED);
+    }
+}
+
 int PowerFsm::on_unknown()
 {
     // VBUS remains useful when the ADC is unavailable.
     if (_usb) {
-        return TRANSITION(PLUGGED);
+        return plugged_transition();
     }
 
     if (!_measured) {
@@ -167,7 +211,7 @@ int PowerFsm::on_unknown()
 int PowerFsm::on_normal()
 {
     if (_usb) {
-        return TRANSITION(PLUGGED);
+        return plugged_transition();
     }
 
     if (!plausible()) {
@@ -184,7 +228,7 @@ int PowerFsm::on_normal()
 int PowerFsm::on_low()
 {
     if (_usb) {
-        return TRANSITION(PLUGGED);
+        return plugged_transition();
     }
 
     if (!plausible()) {
@@ -206,7 +250,7 @@ int PowerFsm::on_low()
 int PowerFsm::on_critical()
 {
     if (_usb) {
-        return TRANSITION(PLUGGED);
+        return plugged_transition();
     }
 
     // Values below the plausible floor are treated as a missing measurement.
@@ -232,6 +276,19 @@ int PowerFsm::on_external()
         _io.close_charge_window();
     }
 
+    const int desired = plugged_transition();
+    if (desired == TRANSITION(PAUSED) && state() != State::EXTERNAL_IDLE) {
+        return desired;
+    }
+    if (desired == TRANSITION(FAULT) && state() != State::CHARGE_FAULT) {
+        return desired;
+    }
+    if (desired == TRANSITION(PLUGGED) &&
+        (state() == State::EXTERNAL_IDLE || state() == State::CHARGE_FAULT ||
+         (_charger == ChargerStatus::CHARGING && state() == State::CHARGED))) {
+        return desired;
+    }
+
     return TRANSITION(REPEAT);
 }
 
@@ -243,7 +300,7 @@ int PowerFsm::on_charging()
         return transition;
     }
 
-    if (_mv >= kFullMv) {
+    if (_charger == ChargerStatus::NOT_MONITORED && _mv >= kFullMv) {
         return TRANSITION(FULL);
     }
 

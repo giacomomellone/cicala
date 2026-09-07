@@ -3,6 +3,19 @@ set -euo pipefail
 
 case_dir=$(cd "$(dirname "$0")" && pwd)
 source_file="$case_dir/cicala_enclosure.scad"
+pcb_z=$(python3 - "$source_file" <<'PY'
+from pathlib import Path
+import re
+import sys
+match = re.search(r'^pcb_z\s*=\s*([\d.]+);', Path(sys.argv[1]).read_text(), re.M)
+if not match:
+    raise SystemExit('Expected an explicit PCB mounting height in the enclosure')
+print(match[1])
+PY
+)
+python3 "$case_dir/export_component_bounds.py" \
+    "$case_dir/../pcb/cicala_rev_a/cicala_rev_a.kicad_pcb" \
+    "$case_dir/pcb_component_bounds.scad" --check --pcb-z "$pcb_z"
 task_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/cicala-case-check.XXXXXX")
 trap 'rm -rf "$task_tmp_dir"' EXIT
 
@@ -25,7 +38,7 @@ fi
 
 parts=(
     assembly exploded section top_shell base retainer category_cap next_cap lens steel_skin
-    light_pipe pcb_reference coupon_buttons coupon_buttons_assembly coupon_usb coupon_lens
+    light_pipe button_stop pcb_reference coupon_buttons coupon_buttons_assembly coupon_usb coupon_lens
     coupon_boss
 )
 
@@ -36,6 +49,40 @@ for part_name in "${parts[@]}"; do
         -D "part=\"$part_name\"" \
         -o "$task_tmp_dir/$part_name.stl" \
         "$source_file"
+    case "$part_name" in
+        assembly|exploded|section|pcb_reference|coupon_buttons_assembly) ;;
+        *) python3 "$case_dir/check_mesh.py" "$task_tmp_dir/$part_name.stl" ;;
+    esac
 done
 
-echo "OpenSCAD: ${#parts[@]} Rev A selectors rendered without warnings"
+fit_checks=(pcb_panel pcb_retainer panel_retainer panel_shell jst_base usb_plug
+            flex_shell flex_retainer components_case components_cell
+            harness_case harness_components button_stop caps_motion)
+for fit_check in "${fit_checks[@]}"; do
+    fit_log="$task_tmp_dir/fit_$fit_check.log"
+    if "${openscad_command[@]}" --hardwarnings \
+        -D "part=\"fit_$fit_check\"" \
+        -o "$task_tmp_dir/fit_$fit_check.stl" "$source_file" >"$fit_log" 2>&1; then
+        echo "Unexpected solid intersection: $fit_check" >&2
+        exit 1
+    fi
+    python3 - "$fit_log" <<'PY'
+from pathlib import Path
+import sys
+log = Path(sys.argv[1]).read_text()
+if "Current top level object is empty." not in log or "ERROR:" in log or "WARNING:" in log:
+    raise SystemExit(log)
+PY
+done
+
+"${openscad_command[@]}" --hardwarnings -D 'part="fit_button_stop_contact"' \
+    -o "$task_tmp_dir/button_stop_contact.stl" "$source_file" \
+    >"$task_tmp_dir/button_stop_contact.log" 2>&1
+python3 - "$case_dir" "$task_tmp_dir/button_stop_contact.stl" <<'PY'
+import sys
+sys.path.insert(0, sys.argv[1])
+from check_mesh import check
+check(sys.argv[2], expected_solids=None)
+PY
+
+echo "OpenSCAD: ${#parts[@]} selectors, printable meshes, ${#fit_checks[@]} empty fit checks and positive downward-stop contact passed"

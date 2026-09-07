@@ -1,0 +1,22 @@
+{
+  "cold_threshold_V": [
+    0.8071649034913108,
+    0.9295163584637269
+  ],
+  "hot_threshold_V": [
+    0.22321464382004944,
+    0.26675392670157066
+  ],
+  "nominal_charge_window_C": [
+    4.17,
+    37.11
+  ],
+  "reference_current_uA": 2.966292134831461,
+  "model_margins_V": {
+    "cold_stop_at_0C_V": 0.016417641536273564,
+    "hot_stop_at_45C_V": 0.019554733620373188,
+    "permission_at_10C_V": 0.062273903491310345,
+    "permission_at_30C_V": 0.0214993482984297
+  },
+  "floating_gpio_CE_max_V": 0.2516554695557462
+}

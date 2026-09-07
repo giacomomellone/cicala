@@ -96,7 +96,8 @@ const char *cicala_card_name(uint8_t kind)
 
 /* Same order as enum cicala_power_state, which is the same order as cicala::PowerState. */
 static const char *const power_names[] = {
-    "unknown", "on the cell", "low", "critical", "charging", "charged",
+    "unknown",  "on the cell", "low",           "critical",
+    "charging", "charged",     "external idle", "charger fault",
 };
 
 const char *cicala_power_name(uint8_t state)

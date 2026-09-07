@@ -1,7 +1,7 @@
 """Explicit USB channel geometry, including connector crossover and test pads.
 
 Requires refined placement. Outputs a routing seed; all copper is checked
-against the continuous pad geometry. Width/gap are 0.29/0.29 mm on F.Cu.
+against the continuous pad geometry. Width/gap are 0.32/0.26 mm on F.Cu (JLC04121H-7628).
 """
 import json
 import math
@@ -16,7 +16,7 @@ DN_IN = 'Net-(J1-D--PadA7)'
 DP_LONG = 'Net-(R4-Pad1)'
 DN_LONG = 'Net-(R3-Pad1)'
 USB_NETS = {DP_IN, DN_IN, DP_LONG, DN_LONG, 'USB_DP', 'USB_DN'}
-B_TO_IN2 = 0.18 + 0.035
+B_TO_IN2 = 0.2104 + (0.035 + 0.0152) / 2
 F_TO_B = 1.2 - 0.035
 
 
@@ -34,7 +34,8 @@ def require_pad(geom,ref,number,point,net):
 def make_pair(geom,validate_placement=True):
     segments, vias, terminals = [], [], []
     paths = {}
-    def run(net, points, layer='B.Cu', width=0.29):
+    def run(net, points, layer='B.Cu', width=None):
+        width = (0.32 if layer == 'F.Cu' else 0.29) if width is None else width
         points = [[round(x, 6), round(y, 6)] for x, y in points]
         paths.setdefault(net, []).append(points)
         segments.extend({'net': net, 'layer': layer, 'width': width, 'start': a, 'end': b}
@@ -157,7 +158,7 @@ def make_pair(geom,validate_placement=True):
                            'connector_dn_branch_mm':length(dn_a)+length(dn_b)+length(dn_bridge),
                            'connector_dp_barrel_mm':2*B_TO_IN2,
                            'main_channel_barrel_mm':2*F_TO_B,
-                           'test_point_stub_mm':0.0,'coupled_width_mm':0.29,'coupled_gap_mm':0.29}}
+                           'test_point_stub_mm':0.0,'coupled_width_mm':0.32,'coupled_gap_mm':0.26}}
 
 
 if __name__ == '__main__':

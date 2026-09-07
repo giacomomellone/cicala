@@ -2,8 +2,8 @@
 # Fabrication and assembly outputs for the Rev A board.
 #
 # Writes into cicala_rev_a/exports/. Everything here is generated; the KiCad
-# project is the source. Run hardware/pcb/check_rev_a.sh first: this script
-# does not gate on DRC.
+# project is the source. File checks and purchasing identifiers are checked
+# before any existing output is replaced. Physical release gates are in REVIEW.md.
 set -euo pipefail
 
 pcb_dir=$(cd "$(dirname "$0")/cicala_rev_a" && pwd)
@@ -37,6 +37,14 @@ cat >"$fontconfig_file" <<FC
 FC
 export FONTCONFIG_FILE="$fontconfig_file"
 
+"$pcb_dir/../check_rev_a.sh"
+"$kicad_cli" sch export bom --exclude-dnp \
+    --fields "Reference,Value,Footprint,MPN,Manufacturer,LCSC,QUANTITY,DNP" \
+    --labels "Refs,Value,Footprint,MPN,Manufacturer,LCSC,Qty,DNP" \
+    --group-by "Value,Footprint,MPN" \
+    -o "$task_tmp_dir/assembly_bom.csv" "$sch"
+python3 "$pcb_dir/../tools/check_assembly_bom.py" "$task_tmp_dir/assembly_bom.csv"
+
 rm -rf "$out/gerbers" "$out/drill"
 mkdir -p "$out/gerbers" "$out/drill" "$out/assembly"
 
@@ -51,13 +59,13 @@ mkdir -p "$out/gerbers" "$out/drill" "$out/assembly"
     -o "$out/drill/" "$board"
 
 "$kicad_cli" pcb export pos --format csv --units mm --side both \
-    --use-drill-file-origin -o "$out/assembly/cicala_rev_a_pos.csv" "$board"
+    --exclude-dnp --use-drill-file-origin \
+    -o "$out/assembly/cicala_rev_a_pos.csv" "$board"
 
-"$kicad_cli" sch export bom --exclude-dnp \
-    --fields "Reference,Value,Footprint,MPN,Manufacturer,QUANTITY,DNP" \
-    --labels "Refs,Value,Footprint,MPN,Manufacturer,Qty,DNP" \
-    --group-by "Value,Footprint,MPN" \
-    -o "$out/assembly/cicala_rev_a_bom.csv" "$sch"
+cp "$task_tmp_dir/assembly_bom.csv" "$out/assembly/cicala_rev_a_bom.csv"
+python3 "$pcb_dir/../tools/jlc_assembly.py" \
+    "$out/assembly/cicala_rev_a_bom.csv" "$out/assembly/cicala_rev_a_pos.csv" \
+    "$out/assembly"
 
 "$kicad_cli" pcb export pdf --layers F.Fab,F.SilkS,Edge.Cuts \
     --mode-single --scale 0 --black-and-white --exclude-value \
@@ -66,15 +74,37 @@ mkdir -p "$out/gerbers" "$out/drill" "$out/assembly"
     --mode-single --scale 0 --black-and-white --exclude-value \
     -o "$out/assembly/assembly_bottom.pdf" "$board"
 
-"$kicad_cli" pcb export ipc2581 --units mm \
-    -o "$out/cicala_rev_a.zip" "$board"
+"$kicad_cli" pcb export ipc2581 --units mm --compress \
+    --bom-col-mfg-pn MPN --bom-col-mfg Manufacturer \
+    --bom-col-dist-pn LCSC --bom-col-dist LCSC \
+    -o "$out/cicala_rev_a_ipc2581.zip" "$board"
 
-"$kicad_cli" pcb export step --subst-models --no-unspecified \
+python3 - "$out" <<'PY'
+from pathlib import Path
+import sys
+from zipfile import ZipFile, ZIP_DEFLATED
+out = Path(sys.argv[1])
+with ZipFile(out / 'cicala_rev_a_gerbers.zip', 'w', ZIP_DEFLATED) as archive:
+    for directory in ('gerbers', 'drill'):
+        for path in sorted((out / directory).iterdir()):
+            if path.is_file():
+                archive.write(path, path.relative_to(out))
+PY
+
+"$kicad_cli" pcb export step --force --subst-models --no-unspecified --no-dnp \
     -o "$out/cicala_rev_a_board.step" "$board"
+
+python3 - "$out/cicala_rev_a_board.step" <<'PY'
+from pathlib import Path
+import sys
+path = Path(sys.argv[1])
+path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines()) + '\n')
+PY
 
 echo "Fabrication outputs written to hardware/pcb/cicala_rev_a/exports/"
 echo "  gerbers/    four copper layers, paste, silk, mask and the board outline"
 echo "  drill/      Excellon, plated and non-plated separately, with maps"
 echo "  assembly/   pick-and-place, BOM and both assembly drawings"
-echo "  cicala_rev_a.zip        IPC-2581 for assemblers that prefer it"
+echo "  cicala_rev_a_gerbers.zip  Gerber and drill fabrication package"
+echo "  cicala_rev_a_ipc2581.zip  Alternative IPC-2581 exchange"
 echo "  cicala_rev_a_board.step 3D model for the enclosure fit check"

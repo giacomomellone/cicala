@@ -32,6 +32,7 @@
     zephyr,user {
         io-channels = <&adc0 0>;
         cicala-vbus-gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+        cicala-battery-enable-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
     };
 
     cicala_leds: cicala-leds {

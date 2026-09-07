@@ -23,6 +23,9 @@ bool cicala_power_external(void);
 /** True while a plug-in still has sync and update time left on it. */
 bool cicala_power_charge_window_open(void);
 
+/** Finish any ADC burst and disable its switch before GPIO sleep holds. */
+void cicala_power_prepare_sleep(void);
+
 #else
 
 static inline bool cicala_power_refresh_allowed(void)
@@ -44,6 +47,8 @@ static inline bool cicala_power_charge_window_open(void)
 {
     return false;
 }
+
+static inline void cicala_power_prepare_sleep(void) {}
 
 #endif /* CONFIG_CICALA_POWER */
 

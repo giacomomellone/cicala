@@ -1,69 +1,92 @@
-# BOM — Rev A
+# Rev A bill of materials
 
-The board is placed and routed and passes ERC, DRC and schematic-to-PCB
-parity. This list records the selected electrical parts and off-board
-assemblies. It is not yet an orderable PCBA BOM: the project-drawn land
-patterns need a manufacturer-drawing review, and manufacturer part numbers,
-alternates and live assembler stock still need to be pinned. The generated
-BOM that goes to an assembler is `cicala_rev_a/exports/assembly/`, written by
-`hardware/pcb/export_fab.sh`. For the development rig and physical-model
-purchases, use [docs/prototype_bom.md](../../docs/prototype_bom.md).
+The schematic contains exact manufacturer part numbers for every fitted PCB
+component. The generated grouped BOM is
+`cicala_rev_a/exports/assembly/cicala_rev_a_bom.csv`; the JLCPCB version also
+includes purchasing identifiers where available. Do not substitute a package,
+voltage rating or capacitor dielectric on value alone.
 
-Project-drawn land patterns live in `cicala_rev_a/cicala.pretty` (registered
-through `fp-lib-table`): `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm` (U3, no
-exposed pad), `L_Coilcraft_XFL4015` (L2), `L_TDK_VLS4012` (L1), the
-preliminary `LED_Kingbright_APBA2006SURKCGKC` (D4), and
-`USB_C_Receptacle_HRO_TYPE-C-31-M-12_EdgeOverhang` (J1), which is the KiCad
-library land with its silkscreen trimmed at the board edge because the part
-deliberately overhangs it. All other parts use KiCad library footprints.
+## Main PCB parts
 
-## Selected parts
+| Reference | Selected part | Purpose |
+| --- | --- | --- |
+| U1 | ESP32-S3-WROOM-1-N16 | Controller, 16 MB flash, PCB antenna |
+| U2 | BQ25185DLHR | Protected 1S cell charger and power path |
+| U3 | TPS63802DLAR | 3.3 V buck-boost supply |
+| U4 | USBLC6-2SC6 | USB ESD protection |
+| U5, U6 | TPS22917DBVR | Switched battery measurement and display supply |
+| U7 | TLV9022DGKR | Independent charge-temperature window comparator |
+| Q2 | 2N7002P,215 | Charge-enable veto interface |
+| J1 | HRO TYPE-C-31-M-12 | USB-C power, ROM flashing, serial and JTAG |
+| J2 | Hirose FH12-24S-0.5SH(55) | Top-side, bottom-contact display ZIF |
+| J3 | JST S3B-PH-SM4-TB(LF)(SN) | Protected cell, NTC and ground |
+| L1 | TDK VLS4012CX-470M-1 | 47 µH display boost inductor |
+| L2 | Coilcraft XFL4015-471ME | 0.47 µH buck-boost inductor |
+| Q1 | Si1308EDL-T1-GE3 | Display boost MOSFET |
+| D1–D3 | MBR0530-7-F | Display rail Schottky diodes |
+| D4 | APBA2006SURKCGKC | Red/green side-view status LED |
+| SW1, SW2 | KSC323GLFG | Gold-contact Category and Next switches; R21/R22 = 22 kΩ |
 
-| Ref      | Function                                      | Package or interface             | Selected MPN                                                | Qty | Status |
-| -------- | --------------------------------------------- | -------------------------------- | ----------------------------------------------------------- | --: | ------ |
-| U1       | ESP32-S3 module, 16 MB flash                 | Espressif module                 | ESP32-S3-WROOM-1-N16; alternate ESP32-S3-WROOM-1U-N16       |   1 | WROOM-1 preferred; placement/RF gate |
-| DISP1    | 2.13″, 250 × 122 e-paper panel               | 24-pin, 0.5 mm FPC               | [GDEY0213B74](https://www.good-display.com/product/391.html) |   1 | Selected off-board assembly |
-| J2       | Bottom-contact ZIF display connector          | 24-pin, 0.5 mm                   | FH12-24S-0.5SH(55)                                          |   1 | Footprint candidate; folded-cable orientation gate |
-| J1       | USB-C USB 2.0 receptacle                     | 16-pin mid-mount SMD             | TYPE-C-31-M-12                                              |   1 | Selected; enclosure/courtyard gate |
-| U4       | USB 2.0 ESD protection                      | SOT-23-6                         | USBLC6-2SC6                                                 |   1 | Selected |
-| U2       | Single-cell charger and power path           | DLH WSON-10, 2.2 × 2.0 mm        | BQ25185DLHR                                                 |   1 | Selected; 250 mA charge, 500 mA input, 4.2 V cell |
-| U3       | 3.3 V low-IQ buck-boost regulator            | DLA VSON-10, 2.0 × 3.0 mm        | TPS63802DLAR                                                |   1 | Selected; footprint drafted (cicala, no EP); land review pending |
-| U5, U6   | Battery-divider and display load switches    | SOT-23-6                         | TPS22917DBVR                                                |   2 | Selected |
-| L2       | Buck-boost inductor, 0.47 µH                 | 4.0 × 4.0 mm                     | XFL4015-471ME                                               |   1 | Selected; footprint drafted (cicala); land review pending |
-| L1       | E-paper boost inductor, 47 µH                | 4.0 × 4.0 × 1.2 mm               | VLS4012CX-470M-1                                            |   1 | Selected; footprint drafted (cicala); land review pending |
-| Q1       | E-paper boost MOSFET                         | SC-70                            | Si1308EDL-T1-GE3                                           |   1 | Selected |
-| D1–D3    | E-paper boost Schottky diodes                | SOD-123                          | MBR0530                                                    |   3 | Selected |
-| SW1, SW2 | Sealed 2 N SPST-NO tact switches             | 6.2 × 6.2 mm SMD                 | KSC321GLFS                                                 |   2 | Selected; footprint KiCad CK_KSC6xxG confirmed vs KSC3 land; cap stack open |
-| D4       | Right-angle red/green bi-colour LED          | 2.0 × 1.0 mm side-view SMD       | APBA2006SURKCGKC                                           |   1 | Selected; footprint drafted (cicala, PRELIMINARY); pad-map + optical coupling open |
-| J3       | Protected-cell connector with thermistor     | 3-pin JST-PH, horizontal SMD      | S3B-PH-SM4-TB(LF)(SN), mated custom harness                |   1 | Connector selected; wire order must be keyed in drawing |
-| BT1      | Protected 1S LiPo, nominal 500 mAh           | 503035-class pack, 3-wire harness | Custom pack with PCM and 10 kΩ, B=3435 K NTC               |   1 | Supplier drawing and enclosure fit open |
-| J4       | Concealed recovery connector                 | Tag-Connect TC2030-IDC-NL pads    | PCB footprint only                                         |   1 | DNP connector; underside access gate |
-| —        | Case screws                                  | M2.5 × 8 thread-forming, pan head | Into the shell bosses from below, through steel and base   |   4 | Length set by the coupon result |
+Resistors are Yageo RC0603, 1% except the 0 Ω links. Capacitors are Samsung
+MLCCs with exact purchasing suffixes in the schematic. The DLA0010A,
+Kingbright LED and two inductor lands follow the manufacturer drawings.
+U3 has an extended PGND terminal with split paste apertures and no central
+exposed pad. U7's adjacent package lands require 0.15 mm pad clearance; routed
+copper remains at least 0.20 mm from foreign copper.
 
-The WROOM variants are alternatives on one assembly position. WROOM-1 is preferred because setup-portal use is expected at close range and avoids an external antenna, cable and connector. It remains conditional on a placement that satisfies Espressif's antenna keep-out and an assembled radio test. WROOM-1U stays available if that placement cannot clear the display, cell, buttons and enclosure metal.
+C1/C2 (optional USB shunts) and C31 (optional shell capacitor) are DNP.
+R33 is the fitted 0 Ω USB-shell ground bond. J4, TP1–TP22 and H1–H4 are bare
+PCB features, excluded from the assembly BOM and placement file.
 
-The protected cell is a specification rather than a frozen supplier MPN. A [published protected LP503035 example](https://www.lipolbattery.com/LiPo-Battery-Datahseet/LiPo_Battery_LP503035_3.7V_500mAh.pdf) is approximately 36 × 30 × 5 mm before allowing for the wire exit and swelling. The current CAD keep-out is 35 × 30 × 5.4 mm, so an exact pack cannot be ordered until the enclosure volume is increased or a verified drawing fits it.
+## Off-board parts per device
 
-## Captured settings and passives
+| Item | Selection | Quantity |
+| --- | --- | ---: |
+| Display | Good Display GDEY0213B74, W2 mechanical drawing | 1 |
+| Battery | Adafruit 258, protected PKCELL LP503562, 1200 mAh | 1 |
+| Cell thermistor | Semitec 103AT-2, 10 kΩ at 25°C | 1 |
+| Harness | PH2 battery adapter to PHR-3, with bonded NTC; see assembly instructions | 1 |
+| Battery adapter source | Adafruit 1131 extension, retaining its battery-mating end | 1 |
+| PCB harness housing | JST PHR-3 | 1 |
+| Harness terminals | JST SPH-002T-P0.5S, crimped for AWG28 | 3 |
+| Case and controls | Printed parts in [case/README.md](../case/README.md) | 1 set |
+| Base screws | ISO 7046 / DIN 965 M2.5 × 20, countersunk machine screws | 3 |
+| Lens | 55.0 × 30.1 × 0.8 mm clear PMMA, R1 corners | 1 |
+| Light pipe | Ø2.0 × 3.5 mm clear PMMA rod, polished ends | 1 |
+| Ballast | Optional 1.2 mm steel cut to `steel_cut.svg`, countersunk after cutting | 1 |
+| Feet | Ø8 × 1.5 mm self-adhesive elastomer disks | 4 |
 
-- USB-C is a 5 V sink with separate 5.1 kΩ CC1/CC2 pull-downs. There is no USB-PD controller. Native USB D−/D+ passes through USBLC6-2SC6 and 22 Ω series resistors to ESP32-S3 GPIO19/20. Optional 3 pF shunts are DNP.
-- BQ25185 uses 18 kΩ on ILIM/VSET and 1.20 kΩ on ISET for a 4.2 V cell, 500 mA input limit and 250 mA charge current. STAT1/STAT2 have 10 kΩ pull-ups. `/CE` has a 100 kΩ pull-down so charging is enabled when firmware is absent. TS/MR is a separate `BATT_NTC` net carrying only the pack NTC wire (J3.2); the charger sources ~38 µA into TS, so the 10 kΩ B=3435 thermistor to GND needs no external bias resistors and sets roughly a 1.5 °C to 59 °C charge window.
-- The battery ADC uses a 1 MΩ/470 kΩ divider. TPS22917 switches the complete divider off during sleep; a 100 nF capacitor filters the ADC node.
-- TPS63802 uses a 0.47 µH inductor, 511 kΩ/91 kΩ feedback divider, 10 µF input capacitance and 22 µF plus 47 µF output bulk. MODE is low for power-save operation.
-- The e-paper boost and reservoir network follows the GDEY0213B74 reference circuit. TPS22917 disconnects panel power between refreshes and discharges the switched rail through 150 Ω.
-- Both switches use 47 kΩ pull-ups and 10 nF hardware debounce. The LED dies each use 1 kΩ in series so both GPIOs low leave no standing LED current.
-- R27–R31 put 470 Ω in series with every MCU-driven panel line. They cap the current injected into an unpowered panel's ESD diodes at about 5.7 mA per pin and double as the series-tuning positions; fit 0 Ω to remove them during bring-up. R32 is a 1 MΩ pull-down that holds the panel in reset while its rail is off.
-- R33 (0 Ω, fitted) ties the USB-C shell to board ground; C31 (1 nF, 2 kV) is the alternative for a DC-isolated shell. The enclosure is plastic and carries no chassis ground, so this is the shell's only discharge path.
-- R34 is a removable 0 Ω link in the cell lead, with TP22 on the pack side. Lifting it puts a meter between the pack and everything else, which is how whole-device sleep current gets measured against the 30 µA target.
-- Ordinary resistors and small capacitors are 0603. High-capacitance and 25 V pump capacitors use 0805 where marked in the schematic. Voltage bias, tolerance and temperature rating must be checked when manufacturer part numbers are assigned.
+The harness rows list its constituent connector parts, not additional complete
+harnesses. Also allow AWG28 insulated wire, splice insulation, polyimide NTC
+tape, 0.10 mm display-perimeter adhesive and 0.2 mm removable battery tabs.
+Print the steel surrogate when omitting the metal so the screw stack is retained.
+Bench equipment includes a USB-C data cable; UART recovery additionally uses
+a TC2030-IDC-NL breakout and a 3.3 V USB/UART adapter.
 
-These packages are compatible with professional PCBA. The 0.4 mm-pitch BQ25185 WSON, exposed-pad regulator, fine-pitch FPC and USB receptacle make assembler placement preferable to hand soldering. Before requesting JLCPCB or PCBWay assembly, map every line to a stocked manufacturer part, add approved alternates, confirm any extended-part fees, and request inspection appropriate to the fine-pitch and bottom-terminated joints.
+The battery's manufacturer drawing specifies a maximum new-pack envelope of
+62.3 × 35.3 × 5.3 mm. The case reserves 63 × 36 × 6.3 mm plus 0.2 mm adhesive.
+The NTC is attached to the pouch surface with electrically insulating tape;
+never solder directly to a pouch cell. The factory pack protection circuit
+and connector must remain intact. Wire J3 as 1=protected pack positive,
+2=NTC, 3=pack negative; the other NTC lead goes to pin 3.
 
-## Gates before a PCBA quote
+## Circuit settings
 
-1. Confirm the drafted project land patterns for U3, L1, L2 and D4 against current manufacturer drawings. The KSC6xxG library land is accepted for SW1/SW2 — it matches the KSC321G drawing (3.1 × 1.0 mm pads, 8.9 mm column and 4.0 mm row centres). The U3 land omits an exposed pad because the DLA0010A HotRod package has none. The D4 land is preliminary and its pad numbers follow the `LED_Dual_AAKK` symbol (pad1 = red anode … pad4 = green cathode), not the datasheet pin numbers; verify both, along with which face the part emits from — the light pipe depends on it. Recheck the J1 and J2 library footprints and J2 contact orientation.
-2. Map every line to a stocked manufacturer part with approved alternates, and confirm any extended-part fees.
-3. Test radio performance with WROOM-1 in the assembled enclosure. Espressif's keep-out is honoured on the board, but a keep-out is not a measurement.
-4. Obtain an exact protected-cell drawing with PCM, 10 kΩ NTC, connector pin order, wire exit and swelling allowance. The 36 × 30 × 5.4 mm keep-out clears the published LP503035 drawing; the ordered pack still has to fit it.
-5. Obtain the assembler's four-layer controlled-impedance stack and re-check the USB pair against it. The 0.29 mm/0.29 mm geometry assumes the declared 0.18 mm prepreg at εr 4.5.
-6. Verify e-paper refresh brownout margin, charger temperature (including the TS/NTC charge window), USB flashing/serial/JTAG, sleep current at the R34 link and display power-off leakage on assembled boards.
+USB-C is a 5 V sink with separate 5.1 kΩ CC pull-downs; it has no PD controller.
+BQ25185 is set to 4.2 V, approximately 250 mA charge and 500 mA input limit.
+R13 requests charging when the MCU is unpowered; U7/Q2 can independently
+force charge disable. The nominal external temperature window is roughly
+4–37°C and is deliberately conservative relative to the pack's 0–45°C charge
+range. The native charger TS protection remains connected.
+
+The battery divider is 1 MΩ / 470 kΩ with 100 nF filtering. Firmware enables
+it only for measurement and waits 200 ms before conversion. The buck-boost
+input C8 is 47 µF; its output is 22 µF + 47 µF. C4/C6/C34 use 10 µF parts so
+their effective capacitance stays above the required 1 µF after DC bias.
+The numerical capacitor and temperature review is in [REVIEW.md](REVIEW.md).
+
+R27–R31 are 470 Ω display signal resistors. Firmware parks the physical signal
+levels low before removing panel power. R34 is a removable battery-current
+measurement link; TP22 is on its protected-pack side. A WROOM-1U replacement
+requires a separate antenna and mechanical review and is not an approved BOM
+substitution.

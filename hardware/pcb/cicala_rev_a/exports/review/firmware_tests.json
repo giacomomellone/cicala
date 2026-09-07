@@ -1,0 +1,91 @@
+{
+  "platform": "qemu_xtensa/dc233c",
+  "zephyr": "v4.4.1",
+  "configurations": 16,
+  "cases_by_status": {
+    "passed": 226,
+    "skipped": 3
+  },
+  "suites": [
+    {
+      "name": "cicala.smoke",
+      "status": "passed",
+      "cases": 2
+    },
+    {
+      "name": "cicala.power",
+      "status": "passed",
+      "cases": 29
+    },
+    {
+      "name": "cicala.portal",
+      "status": "passed",
+      "cases": 35
+    },
+    {
+      "name": "cicala.qdb",
+      "status": "passed",
+      "cases": 19
+    },
+    {
+      "name": "cicala.panel",
+      "status": "passed",
+      "cases": 12
+    },
+    {
+      "name": "cicala.input",
+      "status": "passed",
+      "cases": 5
+    },
+    {
+      "name": "cicala.integration",
+      "status": "passed",
+      "cases": 15
+    },
+    {
+      "name": "cicala.integration.rev_a_power",
+      "status": "passed",
+      "cases": 16
+    },
+    {
+      "name": "cicala.layout",
+      "status": "passed",
+      "cases": 15
+    },
+    {
+      "name": "cicala.status",
+      "status": "passed",
+      "cases": 14
+    },
+    {
+      "name": "cicala.fsm",
+      "status": "passed",
+      "cases": 11
+    },
+    {
+      "name": "cicala.soak",
+      "status": "passed",
+      "cases": 1
+    },
+    {
+      "name": "cicala.ed25519",
+      "status": "passed",
+      "cases": 7
+    },
+    {
+      "name": "cicala.app_fsm",
+      "status": "passed",
+      "cases": 23
+    },
+    {
+      "name": "cicala.sync",
+      "status": "passed",
+      "cases": 16
+    },
+    {
+      "name": "cicala.retained",
+      "status": "passed",
+      "cases": 9
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+/* Applied after the DevKitC overlay; all unmodified signal pins are shared. */
+
+/ {
+    model = "Cicala Rev A / ESP32-S3-WROOM-1-N16";
+
+    zephyr,user {
+        /delete-property/ ws2812-gpios;
+        cicala-battery-enable-gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+        cicala-panel-power-gpios = <&gpio0 5 GPIO_ACTIVE_HIGH>;
+        cicala-panel-mosi-gpios = <&gpio0 11 GPIO_ACTIVE_HIGH>;
+        cicala-panel-clock-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
+        cicala-charge-disable-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
+        cicala-charger-status-gpios = <&gpio0 6 GPIO_ACTIVE_HIGH>,
+                                     <&gpio0 7 GPIO_ACTIVE_HIGH>;
+    };
+
+    chosen {
+        zephyr,console = &usb_serial;
+        zephyr,shell-uart = &usb_serial;
+    };
+};
+
+&usb_serial { status = "okay"; };
+&usb_otg { status = "disabled"; };
+&button0 { status = "disabled"; };
+&cicala_epaper { rotation = <180>; };
+&flash0 { reg = <0x0 DT_SIZE_M(16)>; };
+&psram0 { status = "disabled"; };
+
+/* GPIO13 is not connected to the write-only display bus on Rev A. */
+&spim2_default {
+    group1 {
+        pinmux = <SPIM2_SCLK_GPIO12>;
+    };
+};

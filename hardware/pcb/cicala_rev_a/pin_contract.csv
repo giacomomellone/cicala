@@ -6,16 +6,16 @@ BTN_CATEGORY,4,input,low,esp32_core,RTC wake,Preserve firmware mapping
 EPD_PWR_EN,5,output,high,epaper,low,Panel and boost off between refreshes
 CHG_STAT1,6,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT2
 CHG_STAT2,7,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT1
-EPD_RESET,8,output,low,epaper,inactive,Preserve firmware mapping
+EPD_RESET,8,output,low,epaper,physical_low,Park low before switching the panel rail off
 EPD_BUSY,9,input,panel-defined,epaper,input,Preserve firmware mapping
-EPD_CS,10,output,low,epaper,high,Preserve firmware mapping
-EPD_MOSI,11,output,high,epaper,inactive,Preserve firmware mapping
-EPD_CLK,12,output,high,epaper,inactive,Preserve firmware mapping
-CHG_ENABLE,14,output,low,battery_charger,low,Low enables BQ25185 charging; 100 kΩ pull-down enables by default
+EPD_CS,10,output,low,epaper,physical_low,Park low before switching the panel rail off
+EPD_MOSI,11,output,high,epaper,physical_low,Park low before switching the panel rail off
+EPD_CLK,12,output,high,epaper,physical_low,Park low before switching the panel rail off
+CHG_ENABLE,14,output,low,battery_charger,low,Low requests charging; 4.7 kΩ pull-down defaults on; independent U7/Q2 temperature veto
 STATUS_RED,15,output,high,esp32_core,low,Both status outputs low means off
 STATUS_GREEN,16,output,high,esp32_core,low,Both status outputs low means off
 BTN_NEXT,17,input,low,esp32_core,RTC wake,Preserve firmware mapping
-EPD_DC,18,output,high,epaper,inactive,Preserve firmware mapping
+EPD_DC,18,output,high,epaper,physical_low,Park low before switching the panel rail off
 USB_DN,19,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
 USB_DP,20,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
 VBUS_SENSE,21,input,high,battery_charger,input,Boot and polling path; optional EXT0 measurement

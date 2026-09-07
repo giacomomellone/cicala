@@ -38,6 +38,7 @@ target_sources_ifdef(CONFIG_CICALA_DEBUG_SOAK app PRIVATE src/soak.c)
 
 target_sources_ifdef(CONFIG_FILE_SYSTEM_LITTLEFS app PRIVATE src/corpus_store.c)
 target_sources_ifdef(CONFIG_CICALA_SLEEP app PRIVATE src/sleep.c)
+target_sources_ifdef(CONFIG_CICALA_REV_A app PRIVATE src/board_power.c)
 target_sources_ifdef(CONFIG_CICALA_NET app PRIVATE src/net.c src/net_logic.cpp src/portal.c)
 
 target_sources_ifdef(CONFIG_CICALA_POWER app PRIVATE src/power.c src/power_logic.cpp)

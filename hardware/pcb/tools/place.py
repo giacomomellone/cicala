@@ -443,4 +443,5 @@ def main():
     print('saved', PCB)
 
 
-main()
+if __name__ == '__main__':
+    main()

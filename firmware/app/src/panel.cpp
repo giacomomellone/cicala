@@ -327,8 +327,9 @@ int cicala_panel_init(void)
         ready = true;
     }
 
-    /* A cold boot requires a full refresh because panel contents are unknown. */
-    if (!cicala_retained_survived()) {
+    /* Rev A removes panel power during sleep, so controller RAM is lost even
+     * when the MCU's retained state and the visible image survive. */
+    if (IS_ENABLED(CONFIG_CICALA_REV_A) || !cicala_retained_survived()) {
         partial_since_full = CONFIG_CICALA_FULL_REFRESH_INTERVAL;
     }
 

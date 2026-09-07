@@ -1,5 +1,11 @@
 (version 1)
 
+# TI DGK manufacturer lands have 0.15 mm between adjacent 0.5 mm pads.
+# The general 0.2 mm clearance still applies to routed copper.
+(rule "DGK adjacent lands"
+  (condition "A.Type == 'Pad' && B.Type == 'Pad' && A.memberOfFootprint('U7') && B.memberOfFootprint('U7')")
+  (constraint clearance (min 0.15mm)))
+
 # TC2030-IDC-NL datasheet, revision B, footprint notes 1 and 2.
 # Adjacent connector contact pads are fixed by the manufacturer's pattern;
 # the 0.020 inch rule applies to other tracks/signals, not pad-to-pad spacing.

@@ -57,7 +57,7 @@ public:
     virtual ~PowerIo() = default;
 
     /** Publish every state change and voltage changes above the deadband. */
-    virtual void publish(PowerState state, uint16_t mv, bool usb) = 0;
+    virtual void publish(PowerState state, uint16_t mv, bool usb, ChargerStatus charger) = 0;
 
     /** Open the sync and update window once per connection to external power. */
     virtual void open_charge_window() = 0;
@@ -81,6 +81,8 @@ public:
         UNPLUGGED,   ///< it is not, and was
         FULL,        ///< the cell reads full while charging
         IMPLAUSIBLE, ///< the reading is too low to be a cell at all
+        PAUSED,      ///< charger idle, disabled, or status unavailable
+        FAULT,       ///< charger status reports a fault
     };
 
     explicit PowerFsm(PowerIo &io);
@@ -90,6 +92,9 @@ public:
 
     /** Post VBUS without changing the stored voltage or measurement state. */
     void post_usb(bool usb);
+
+    /** Post a hardware status before the corresponding sample/USB update. */
+    void post_charger(ChargerStatus charger) { _charger = charger; }
 
     PowerState state() const { return static_cast<PowerState>(get_current_state()); }
 
@@ -119,6 +124,7 @@ private:
     int on_charged();
 
     int on_external();
+    int plugged_transition() const;
 
     /** False when the last reading is too low to have come from a cell. */
     bool plausible() const { return _mv >= kPlausibleMv; }
@@ -132,9 +138,11 @@ private:
     uint16_t _mv = 0;
     bool _usb = false;
     bool _measured = false;
+    ChargerStatus _charger = ChargerStatus::NOT_MONITORED;
 
     uint16_t _published_mv = 0;
     bool _published = false;
+    ChargerStatus _published_charger = ChargerStatus::NOT_MONITORED;
 
     /** Tracks one continuous connection to external power. */
     bool _external = false;

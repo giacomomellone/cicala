@@ -216,8 +216,11 @@ The local Zephyr patch controlled by `firmware/patches.yml` preserves the image
 during driver initialization. Without it, every deep-sleep wake would clear the
 bistable panel before the app could decide that no refresh was needed.
 
-Before system power-off, `sleep.c` sends the panel controller to deep sleep and
-holds its reset, D/C, and chip-select pins inactive.
+Before system power-off, `sleep.c` sends the panel controller to deep sleep,
+stops pending ADC sampling and LED work, then parks the display signals.
+Rev A holds reset, D/C, chip-select, MOSI and clock physically low and disables
+the panel rail. Its first refresh after restoring power is full because the
+controller RAM was lost. The retained question and shuffle state survive.
 
 ## Retained state and wake
 
@@ -258,8 +261,11 @@ boot, and the network window opens.
 
 ## Power and status
 
-`power.c` samples the switched battery divider and VBUS. ADC failure leaves the
-state `UNKNOWN`; VBUS remains usable because it is read independently.
+`power.c` samples the battery divider and VBUS on a dedicated workqueue. Rev A
+switches its 1 MΩ/470 kΩ divider, waits 200 ms, samples, then switches it off
+even after a conversion failure. VBUS remains usable when the ADC fails.
+Rev A also reads both BQ25185 status inputs atomically. A mutex protects the
+power state machine and queries from app, networking and system workqueue threads.
 
 ```mermaid
 stateDiagram-v2
@@ -276,10 +282,18 @@ stateDiagram-v2
     NORMAL --> CHARGING: VBUS high
     LOW --> CHARGING: VBUS high
     CRITICAL --> CHARGING: VBUS high
-    CHARGING --> CHARGED: above full estimate
+    CHARGING --> CHARGED: breadboard voltage estimate only
     CHARGED --> CHARGING: below full estimate with hysteresis
     CHARGING --> UNKNOWN: VBUS low
     CHARGED --> UNKNOWN: VBUS low
+    CHARGING --> EXTERNAL_IDLE: Rev A idle or disabled
+    EXTERNAL_IDLE --> CHARGING: charging
+    CHARGING --> CHARGE_FAULT: charger fault
+    EXTERNAL_IDLE --> CHARGE_FAULT: charger fault
+    CHARGE_FAULT --> CHARGING: charging
+    CHARGE_FAULT --> EXTERNAL_IDLE: idle or disabled
+    EXTERNAL_IDLE --> UNKNOWN: VBUS low
+    CHARGE_FAULT --> UNKNOWN: VBUS low
 ```
 
 LOW and CRITICAL refuse panel refreshes. UNKNOWN permits them, so a missing or
@@ -287,9 +301,14 @@ failed divider does not disable the tabletop interaction. Downward transitions
 are immediate. Recovery uses hysteresis. A reading below
 `CONFIG_CICALA_POWER_PLAUSIBLE_MV` is treated as an invalid divider reading.
 
-The CHARGED state is a voltage estimate; the breadboard charger has no
-termination-status output. External power keeps the device awake in both
-CHARGING and CHARGED.
+CHARGED is retained for the breadboard's voltage estimate. Rev A selects
+CHARGING, EXTERNAL_IDLE or CHARGE_FAULT directly on USB insertion, depending
+on its two status pins. High/high can mean charge completion, CE-disabled or
+sleep; it does not prove a full battery. A failed status read uses EXTERNAL_IDLE
+and logs unavailable status. The message preserves recoverable/latched fault
+detail, even if voltage and the outer state do not change. External power
+keeps the device awake in all four external states and opens one network window
+per insertion; charger state changes do not reopen that window.
 
 The red and green LEDs share one priority arbiter:
 
@@ -297,14 +316,18 @@ The red and green LEDs share one priority arbiter:
 | ---------------------------------- | ---------------- |
 | critical refresh refused           | three red blinks |
 | low refresh refused                | one amber blink  |
+| Rev A charger fault                | slow red pulse   |
 | sync or update active              | slow green pulse |
 | setup portal active                | steady amber     |
-| charged estimate                   | steady green     |
-| external power present             | steady red       |
+| breadboard charged estimate        | steady green     |
+| charging                           | steady red       |
+| Rev A idle/disabled/unavailable     | slow amber pulse |
 | healthy battery or unknown reading | off              |
 
-Calls from app and network threads set atomic flags. The status work item owns
-the arbiter and GPIO writes, so blink state has a single writer.
+Calls from app, network and power threads set atomic flags. The zbus power
+listener also posts to those flags; it runs on the ADC publisher's thread.
+The status work item owns the arbiter and GPIO writes. Sleep synchronously
+cancels pending work, prevents rescheduling, then makes the final LED-off write.
 
 ## Setup, sync, and updates
 

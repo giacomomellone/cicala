@@ -8,3 +8,17 @@ tests:
     tags:
       - cicala
       - integration
+  cicala.integration.rev_a_power:
+    platform_allow:
+      - qemu_xtensa/dc233c
+      - native_sim
+    integration_platforms:
+      - qemu_xtensa/dc233c
+    extra_args:
+      - EXTRA_DTC_OVERLAY_FILE=charger.overlay
+    extra_configs:
+      - CONFIG_CICALA_POWER_DIVIDER_NUM=147
+      - CONFIG_CICALA_POWER_DIVIDER_DEN=47
+    tags:
+      - cicala
+      - integration

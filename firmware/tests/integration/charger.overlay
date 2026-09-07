@@ -1,0 +1,6 @@
+/ {
+    zephyr,user {
+        cicala-charger-status-gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>,
+                                     <&gpio0 4 GPIO_ACTIVE_HIGH>;
+    };
+};

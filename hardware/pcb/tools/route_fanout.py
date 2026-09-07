@@ -101,10 +101,11 @@ def fanout(copper, by_net):
             terminals[(p['ref'], p['uuid'])] = physical[physical_key]
             continue
         width = 0.15 if min(p['w'], p['h']) <= 0.3 else 0.2
+        side = next(name for name in LAYERS if name in p['layers'])
         for points in escape_candidates(p):
-            ss = [segment(net, a, b, width) for a, b in zip(points, points[1:]) if math.dist(a, b) > 1e-6]
+            ss = [segment(net, a, b, width, side) for a, b in zip(points, points[1:]) if math.dist(a, b) > 1e-6]
             v = {'net': net, 'at': list(points[-1]), 'size': 0.45, 'drill': 0.2}
-            if not all(copper.clear(segment_shape(s), net, ('B.Cu',)) for s in ss):
+            if not all(copper.clear(segment_shape(s), net, (side,)) for s in ss):
                 continue
             if not copper.clear(via_shape(v), net, LAYERS, via=True):
                 continue

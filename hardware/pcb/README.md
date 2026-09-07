@@ -1,99 +1,44 @@
 # PCB — Rev A
 
-The KiCad 10 project is under `cicala_rev_a/`. It contains the hierarchical
-schematic and a four-layer board under electrical-layout review. Hardware files use
-[CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
+The KiCad 10 project is `cicala_rev_a/cicala_rev_a.kicad_pro`. Open the project
+so that the local symbols, footprints and USB-C STEP model resolve. Hardware
+sources use [CERN-OHL-S-2.0](../../LICENSE-HARDWARE).
 
-The shared coordinate, stack-up, pin and validation contracts are in
-[docs/hardware_rev_a.md](../../docs/hardware_rev_a.md). `BOM.md` records the
-selected parts and what remains before an assembly order.
+The revised board is a prototype design with 119 footprints on a
+78 × 49 × 1.2 mm, four-layer PCB. The display connector and boost circuit are
+on top; the controller, USB and battery power circuits are underneath.
+The selected battery sits below the board. The enclosure is 84 × 56 × 24.05 mm.
 
-## What exists
+The checked board has 1949 track segments and 474 vias, zero DRC violations,
+zero unconnected items, and no independent copper or placement conflicts.
+The schematic has five pages, including an independent charge-temperature
+guard. Physical operation and printed fit still need prototype testing.
+Read [REVIEW.md](REVIEW.md) for the evidence and acceptance procedure.
 
-- `cicala_rev_a.kicad_pro`: project metadata, net classes and design rules;
-- `cicala_rev_a.kicad_sch`: root block diagram with hierarchical sheet pins, over three functional sheets;
-- `cicala_rev_a.kicad_pcb`: 78 × 49 mm four-layer board, connected but not released;
-- `cicala_rev_a.kicad_sym`: project symbols for parts absent from the KiCad library, including the GDEY0213B74 panel;
-- `cicala.pretty`: project land patterns for U3, L1, L2 and D4, and the J1 silkscreen variant;
-- `pin_contract.csv`: firmware-to-schematic signal allocation;
-- `tools/`: placement, geometry, routing and pour generation scripts;
-- `export_fab.sh`: fabrication export workflow; not a release approval.
+## Sources and outputs
 
-## Status
+| Path under `cicala_rev_a/` | Purpose |
+| --- | --- |
+| `cicala_rev_a.kicad_sch`, `sheets/` | System diagram, power/USB, controller, display, temperature guard |
+| `cicala_rev_a.kicad_pcb` | Authoritative placement, copper and mechanical outline |
+| `cicala_rev_a.kicad_sym`, `cicala.pretty/` | Local symbols and manufacturer-specific lands |
+| `models/` | Six original dimensional STEP models and their sources |
+| `exports/assembly/` | Assembly BOM, placement files and both assembly drawings |
+| `exports/cicala_rev_a_gerbers.zip` | Gerbers and plated/non-plated drills for fabrication |
+| `exports/cicala_rev_a_board.step` | Fitted board for mechanical integration |
+| `exports/review/` | Schematic, board renders and validation reports |
+| `pin_contract.csv` | Firmware GPIO allocation |
 
-Not production-ready. The checked routing checkpoint now replaces the working
-board: **0 unconnected items**, 994 track segments and 360 vias (182 GND,
-178 other). KiCad reports
-zero schematic-parity, clearance, copper-edge-clearance, courtyard and
-silkscreen violations. Starved thermals and dangling tracks/vias are zero.
-The remaining 58 DRC reports are all isolated-copper reports. These numbers
-are a checkpoint, not fabrication approval. Schematic and enclosure sources
-are unchanged.
+[BOM.md](BOM.md) records the selected circuit and off-board parts.
+[MANUFACTURING.md](MANUFACTURING.md) specifies the JLCPCB prototype handoff.
+The enclosure contract is [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md).
 
-The USB channels have a coupled 0.29 mm width/gap main run, matched to less
-than 0.001 mm in the generated centreline geometry, with inline test pads.
-In1.Cu has one connected ground polygon and covers both coupled paths.
-Retaining all pour islands exposes ground-connectivity work that automatic
-island removal would conceal. Do not order fabrication or assembly from this
-revision. See [the layout review](REVIEW.md) for remaining checks and risks.
+Run `just hw-pcb-check` to check ERC, critical pin mappings and lands, DRC,
+schematic parity and STEP export. Run `bash hardware/pcb/export_fab.sh` to
+regenerate the manufacturing files. The export rejects unresolved assembly
+MPNs. Manufacturer component availability and the placement preview must be
+reviewed when preparing an order.
 
-## Hierarchy
-
-| Sheet                   | Captured circuit                                                                |
-| ----------------------- | -------------------------------------------------------------------------------- |
-| Power and USB           | USB-C protection and sensing, BQ25185 charger, protected cell path and TPS63802 |
-| Controller and user I/O | ESP32-S3, EN/IO0, buttons, status LED, recovery header and production test pads |
-| E-paper display         | GDEY0213B74 panel, SSD1680 boost network, bus isolation and switched panel power |
-
-The root sheet is a block diagram: the nineteen nets that cross a sheet
-boundary are hierarchical, with a directional pin on each block and the flow
-drawn between them. Ground stays global, because a ground symbol reads better
-than a pin on every block. Within a sheet, short connections are drawn
-directly and named labels are used for controller fan-out, shared rails and
-test access.
-
-## Layout
-
-Everything except the two switches and the display stack is on the underside,
-because the sloped roof leaves between 0.8 and 3.5 mm above the board and the
-cell cavity underneath leaves 5.3 mm. The module sits rear-left with its
-antenna at the board edge and clear of the display; Espressif's keep-out,
-which the module footprint carries, reaches 9.5 mm in from that edge and
-nothing else may sit in it. The 36 × 30 mm area at board coordinates (32,6)
-is reserved for the cell, not spare component-placement space. Corner marks
-and a silk label identify it; the wordmark beneath the cell does not occupy
-any additional assembly volume.
-
-Placement and routing are generated by the [board tools](tools/README.md) rather than dragged by
-hand, so they can be regenerated after a schematic change and reviewed as a
-diff. Anchors — the module, connectors, switches, the power column and the
-e-paper boost loop — are positioned deliberately; the remaining passives are
-packed into free regions ordered by distance to the pads they already share a
-net with. The router uses hard clearance obstacles; it does not negotiate
-overlapping routes. Local, explicitly checked routing seeds can reserve
-critical geometry before maze routing.
-
-## Validation
-
-Run the same checks with:
-
-```sh
-just hw-pcb-check
-```
-
-This gate currently fails on the incomplete board. Zero ERC or schematic
-parity errors must not be confused with completed routing or passed board DRC.
-
-Only after zero DRC, completed electrical-layout review and verified routing,
-generate the fabrication and assembly outputs with:
-
-```sh
-hardware/pcb/export_fab.sh
-```
-
-Those checks are necessary and not sufficient. ERC accepts electrically valid
-but topologically wrong wiring — it saw none of the circuit errors
-recorded in [docs/hardware_rev_a.md](../../docs/hardware_rev_a.md) — and DRC
-checks manufacturability and connectivity, not whether the loops are tight or
-the circuit is right. The physical gates in that document remain open until
-hardware exists.
+The [routing tools](tools/README.md) can produce experimental candidates.
+They are not an exact replay of this board; keep the checked KiCad source
+and never regenerate it in place with the historical placement pipeline.

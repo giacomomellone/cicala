@@ -36,6 +36,8 @@ def audit(geom, tracks):
             recovery = ((label.startswith('J4.') and olabel in {'track','via'})
                         or (olabel.startswith('J4.') and label in {'track','via'}))
             clearance = 0.508 if recovery else 0.2
+            if label.startswith('U7.') and olabel.startswith('U7.'):
+                clearance = 0.15  # TI DGK package lands; routed copper stays 0.2.
             if d < clearance-0.00001:
                 conflicts.append({'a': [net, label, list(poly.centroid.coords)[0]],
                                   'b': [other, olabel, list(shape.centroid.coords)[0]],
@@ -55,6 +57,9 @@ def audit(geom, tracks):
     via_in_pad = [v for v in tracks['vias']
                   if len(copper.pad_tree.query(via_shape(v),predicate='intersects'))]
     return {'segments': len(tracks['segments']), 'vias': len(tracks['vias']),
+            'via_in_pad_scope': 'separately routed vias; footprint thermal holes are listed separately',
+            'footprint_thermal_holes': dict(Counter(p['ref'] for p in geom['pads']
+                if p['drill'] and not p['npth'] and p['ref'] in {'U1', 'U2'})),
             'vias_by_net': dict(Counter(v['net'] for v in tracks['vias'])),
             'clearance_conflicts': conflicts, 'edge_conflicts': edge,
             'minimum_pad_track_via_clearance_mm':round(minimum,6) if minimum is not None else None,
@@ -110,6 +115,8 @@ def main():
     print(json.dumps(result, indent=2))
     if args.plot:
         plot(geom, tracks, args.plot, args.bounds)
+    raise SystemExit(int(any(result[key] for key in (
+        'clearance_conflicts', 'edge_conflicts', 'via_in_pad', 'non_45_segments'))))
 
 
 if __name__ == '__main__':

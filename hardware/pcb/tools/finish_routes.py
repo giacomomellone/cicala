@@ -95,12 +95,13 @@ def main():
                     if p['net'] != net or f"{p['ref']}.{p['pad']}" != group[0]:
                         continue
                     width = min(0.2, rules(net)[0])
+                    layer = next(name for name in LAYERS if name in p['layers'])
                     for points in escape_candidates(p):
                         if sum(np.linalg.norm(np.array(b)-a) for a, b in zip(points, points[1:])) > 2.0:
                             continue
-                        necks = [segment(net, a, b, width) for a, b in zip(points, points[1:]) if a != b]
+                        necks = [segment(net, a, b, width, layer) for a, b in zip(points, points[1:]) if a != b]
                         via = {'net': net, 'at': list(points[-1]), 'size': 0.45, 'drill': 0.2}
-                        if not all(copper.clear(segment_shape(s), net, ('B.Cu',)) for s in necks):
+                        if not all(copper.clear(segment_shape(s), net, (layer,)) for s in necks):
                             continue
                         if not copper.clear(via_shape(via), net, LAYERS, via=True):
                             continue

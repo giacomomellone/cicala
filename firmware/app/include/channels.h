@@ -90,6 +90,10 @@ enum cicala_power_state {
     CICALA_POWER_CHARGING,
     /** External power is in and the cell reads above the full estimate. */
     CICALA_POWER_CHARGED,
+    /** USB present; charger idle/disabled, or its status cannot be read. */
+    CICALA_POWER_EXTERNAL_IDLE,
+    /** The charger reports a fault; VBUS can still power the system. */
+    CICALA_POWER_CHARGE_FAULT,
 };
 
 /** State channel for status consumers. Sleep queries power directly. */
@@ -100,6 +104,8 @@ struct cicala_power_msg {
     uint8_t state;
     /** VBUS. */
     bool usb;
+    /** One of enum cicala_charger_status; independent of pack-voltage estimate. */
+    uint8_t charger;
 };
 
 ZBUS_CHAN_DECLARE(chan_category);

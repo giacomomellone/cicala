@@ -38,3 +38,6 @@ if __name__=='__main__':
     result=audit(json.load(open(sys.argv[1])),json.load(open(sys.argv[2])))
     json.dump(result,open(sys.argv[3],'w'),indent=2)
     print(json.dumps(result,indent=2))
+    raise SystemExit(int(result['in1_ground_polygons'] != 1
+                         or result['usb_coupled_paths_checked'] != 2
+                         or any(n > 1e-4 for n in result['usb_centreline_without_in1_reference_mm'])))

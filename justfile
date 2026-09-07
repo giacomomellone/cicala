@@ -9,18 +9,20 @@ ruff := ".venv/bin/ruff"
 west := ".venv/bin/west"
 prettier := "website/node_modules/.bin/prettier"
 board := "esp32s3_devkitc/esp32s3/procpu"
+hw := env("CICALA_HW", "breadboard")
+export CICALA_HW := hw
 
-# The UART jack carries the console and flashing traffic. Override the detected
-# port when several boards are connected:
+# Rev A uses J1 native USB; the breadboard uses the DevKit UART bridge.
+# Override the detected port when several boards are connected:
 #   just port=/dev/cu.usbserial-0002 fw-flash
 
-port := env("ESPTOOL_PORT", shell("ls /dev/cu.usbserial-* /dev/cu.SLAB_USBtoUART 2>/dev/null | head -1 || true"))
+port := env("ESPTOOL_PORT", if hw == "rev_a" { shell("ls /dev/cu.usbmodem* /dev/ttyACM* 2>/dev/null | head -1 || true") } else { shell("ls /dev/cu.usbserial-* /dev/cu.SLAB_USBtoUART /dev/ttyUSB* 2>/dev/null | head -1 || true") })
 portflag := if port == "" { "" } else { "--esp-device " + port }
 monport := if port == "" { "" } else { "-p " + port }
 
 # The native USB jack carries JTAG and the debug console.
 
-usbport := env("CICALA_USB_PORT", shell("ls /dev/cu.usbmodem* 2>/dev/null | head -1 || true"))
+usbport := env("CICALA_USB_PORT", shell("ls /dev/cu.usbmodem* /dev/ttyACM* 2>/dev/null | head -1 || true"))
 usbmonport := if usbport == "" { "" } else { "-p " + usbport }
 
 # Override the Zephyr SDK location when needed:
@@ -179,10 +181,9 @@ fw-doctor:
     @echo "dtc:       $(dtc --version 2>/dev/null || echo MISSING)"
     @echo "board:     {{ board }}"
     @echo "simboard:  {{ simboard }}"
-    @# The UART jack appears as cu.usbserial-*.
+    @echo "hardware:  {{ hw }}"
     @echo "port:      {{ if port == '' { 'auto (esptool probes every port, Bluetooth included)' } else { port } }}"
-    @p=$(ls /dev/cu.usbserial-* /dev/cu.SLAB_USBtoUART /dev/tty.usbserial-* 2>/dev/null | tr '\n' ' '); \
-     echo "  detected: ${p:-none — is the cable in the UART jack, not the USB one?}"
+    @{{ python }} -m serial.tools.list_ports
     @# The USB jack carries JTAG and the debug console.
     @echo "usbport:   {{ if usbport == '' { 'none — USB jack not connected; no JTAG, no debug console' } else { usbport } }}"
 
@@ -196,12 +197,17 @@ fw-doctor:
 _fw-dir profile:
     #!/usr/bin/env bash
     set -euo pipefail
+    case "{{ hw }}" in
+        breadboard) target_dir="build/esp32s3" ;;
+        rev_a) target_dir="build/cicala-rev-a" ;;
+        *) echo "unknown hardware: {{ hw }} (breadboard or rev_a)" >&2; exit 2 ;;
+    esac
     case "{{ profile }}" in
         release)
-            echo "build/esp32s3"
+            echo "$target_dir"
             ;;
         debug|charset|soak|retain|power|portal|corpus|bench|ota)
-            echo "build/esp32s3-{{ profile }}"
+            echo "$target_dir-{{ profile }}"
             ;;
         *)
             echo "unknown firmware profile: {{ profile }}" >&2
@@ -221,22 +227,34 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
     dir=$({{ just_executable() }} _fw-dir "$profile")
     sysbuild=false
     cmake=()
+    extra_conf=()
+    extra_overlay=()
+
+    if [ "{{ hw }}" = rev_a ]; then
+        extra_conf+=(rev_a.conf)
+        extra_overlay+=(rev_a.overlay)
+    fi
 
     case "$profile" in
         release)
             sysbuild=true
             ;;
         debug)
-            cmake+=("-DEXTRA_CONF_FILE=debug.conf" "-DEXTRA_DTC_OVERLAY_FILE=debug.overlay")
+            extra_conf+=(debug.conf)
+            extra_overlay+=(debug.overlay)
             ;;
         charset)
             cmake+=("-DCONFIG_CICALA_DEBUG_CHARSET=y")
+            cmake+=("-DCONFIG_CICALA_SLEEP=n" "-DCONFIG_CICALA_PANEL_DEEP_SLEEP=n")
             ;;
         soak)
-            cmake+=("-DEXTRA_CONF_FILE=soak.conf")
+            extra_conf+=(soak.conf)
+            cmake+=("-DCONFIG_CICALA_SLEEP=n" "-DCONFIG_CICALA_PANEL_DEEP_SLEEP=n")
             ;;
         retain)
-            cmake+=("-DEXTRA_CONF_FILE=soak.conf" "-DCONFIG_CICALA_DEBUG_SOAK_REBOOT=y")
+            extra_conf+=(soak.conf)
+            cmake+=("-DCONFIG_CICALA_SLEEP=n" "-DCONFIG_CICALA_PANEL_DEEP_SLEEP=n")
+            cmake+=("-DCONFIG_CICALA_DEBUG_SOAK_REBOOT=y")
             ;;
         power)
             sysbuild=true
@@ -254,11 +272,11 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
                 exit 2
             fi
             cmake+=(
-                "-DEXTRA_CONF_FILE=bench.conf"
                 "-DCONFIG_CICALA_SYNC_HOST=\"$host\""
                 "-DCONFIG_CICALA_SYNC_PORT={{ port }}"
                 "-DCONFIG_CICALA_SYNC_BASE_URL=\"http://$host:{{ port }}\""
             )
+            extra_conf+=(bench.conf)
             ;;
         ota)
             sysbuild=true
@@ -271,16 +289,29 @@ fw-build profile="release" host="" port="8000": _fw-fixtures
                 exec {{ west }} build -d "$dir"
             fi
             cmake+=(
-                "-DEXTRA_CONF_FILE=bench.conf"
                 "-DCONFIG_CICALA_OTA=y"
                 "-DCONFIG_CICALA_SYNC_HOST=\"$host\""
                 "-DCONFIG_CICALA_SYNC_PORT={{ port }}"
                 "-DCONFIG_CICALA_SYNC_BASE_URL=\"http://$host:{{ port }}\""
                 "-DCONFIG_CICALA_OTA_BASE_URL=\"http://$host:{{ port }}\""
             )
+            extra_conf+=(bench.conf)
             ;;
     esac
 
+    if $sysbuild; then
+        if [ "{{ hw }}" = rev_a ]; then
+            cmake+=("-Dmcuboot_EXTRA_DTC_OVERLAY_FILE=$PWD/firmware/app/rev_a_boot.overlay")
+        fi
+    else
+        extra_conf+=(standalone.conf)
+    fi
+    if ((${#extra_conf[@]})); then
+        cmake+=("-DEXTRA_CONF_FILE=$(IFS=';'; echo "${extra_conf[*]}")")
+    fi
+    if ((${#extra_overlay[@]})); then
+        cmake+=("-DEXTRA_DTC_OVERLAY_FILE=$(IFS=';'; echo "${extra_overlay[*]}")")
+    fi
     command=({{ west }} build -b "{{ board }}" firmware/app -d "$dir")
     if $sysbuild; then command+=(--sysbuild); fi
     if ((${#cmake[@]})); then command+=(-- "${cmake[@]}"); fi
@@ -297,7 +328,7 @@ fw-flash profile="release" host="" port="8000": (fw-build profile host port)
 # open Kconfig for the release application (q to quit, s to save)
 [group('firmware')]
 fw-menuconfig: (fw-build "release")
-    {{ west }} build -t menuconfig -d build/esp32s3 --domain app
+    {{ west }} build -t menuconfig -d "$({{ just_executable() }} _fw-dir release)" --domain app
 
 # ------------------------------------------------------- firmware updates
 
@@ -318,8 +349,9 @@ fw-ota-publish version="" key="signing_key.pem" host="" port="8000":
     fi
     key=""
     if [ -f "{{ key }}" ]; then key="--sign-key {{ key }}"; fi
+    dir=$({{ just_executable() }} _fw-dir ota)
     {{ python }} tools/build_firmware_manifest.py \
-        build/esp32s3-ota/app/zephyr/zephyr.signed.bin \
+        "$dir/app/zephyr/zephyr.signed.bin" \
         --version "$v" --base-url "http://$h:{{ port }}" $key
 
 # serve dist/firmware so a device on the same network can fetch it
@@ -339,10 +371,10 @@ fw-monitor profile="release":
 
 [private]
 _fw-debugserver:
-    {{ west }} debugserver --no-rebuild -d build/esp32s3-debug \
+    {{ west }} debugserver --no-rebuild -d "$({{ just_executable() }} _fw-dir debug)" \
         --config firmware/app/support/esp32s3_builtin_jtag.cfg
 
-# OpenOCD gdb server on :3333 for the devkit (built-in USB-JTAG)
+# OpenOCD gdb server on :3333 using the ESP32-S3 built-in USB-JTAG
 [group('firmware')]
 fw-debugserver: (fw-build "debug") _fw-debugserver
 
@@ -375,6 +407,11 @@ fw-clean:
 hw-case-check:
     hardware/case/check_enclosure.sh
 
+# Regenerate printable files and sheet-material cutting outlines.
+[group('hardware')]
+hw-case-export:
+    bash hardware/case/export_parts.sh
+
 # validate the KiCad hierarchy, board skeleton and STEP export
 [group('hardware')]
 hw-pcb-check:
@@ -383,6 +420,16 @@ hw-pcb-check:
 # validate both Rev A hardware sources
 [group('hardware')]
 hw-check: hw-case-check hw-pcb-check
+
+# Filled KiCad checks, independent placement/copper/USB audits and enclosure fit.
+[group('hardware')]
+hw-review report="build/hardware-review" *args:
+    bash hardware/pcb/review_rev_a.sh "{{ report }}" {{ args }}
+
+# Regenerate Gerber, drill and assembly outputs after the source review.
+[group('hardware')]
+hw-fab-export:
+    bash hardware/pcb/export_fab.sh
 
 # ------------------------------------------------------------------- tests
 

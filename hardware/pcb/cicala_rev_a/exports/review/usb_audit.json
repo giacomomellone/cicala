@@ -1,0 +1,31 @@
+{
+  "source": "actual board segments, vias, pads and published stack construction",
+  "route_lengths_mm": {
+    "dp": 60.66621302264537,
+    "dp_connector_branch": 5.179527562373098,
+    "dn": 60.66621297308422,
+    "dn_connector_branch": 5.138528137423863
+  },
+  "main_mismatch_mm": 4.956115162713104e-08,
+  "connector_branch_mismatch_mm": 0.04099942494923425,
+  "in1_ground_polygons": 1,
+  "front_reference_checked_mm": {
+    "Net-(R4-Pad1)": 44.178879931434565,
+    "Net-(R3-Pad1)": 46.10083101762983
+  },
+  "front_via_launch_exemption_mm": {
+    "Net-(R4-Pad1)": 1.1686380008205575,
+    "Net-(R3-Pad1)": 1.1686380008205646
+  },
+  "front_centreline_without_reference_mm": {
+    "Net-(R4-Pad1)": 0.0,
+    "Net-(R3-Pad1)": 0.0
+  },
+  "copper_layer_centres_mm": {
+    "F.Cu": 0.027500000000000004,
+    "In1.Cu": 0.263,
+    "In2.Cu": 0.8782000000000001,
+    "B.Cu": 1.1137000000000001
+  },
+  "passed": true
+}

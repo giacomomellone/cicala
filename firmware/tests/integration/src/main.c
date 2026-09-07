@@ -6,10 +6,13 @@
 #include <zephyr/drivers/gpio/gpio_emul.h>
 #include <zephyr/init.h>
 #include <zephyr/kernel.h>
+#include <zephyr/sys/atomic.h>
 #include <zephyr/ztest.h>
 
 #include "channels.h"
 #include "input.h"
+#include "power.h"
+#include "power_logic.h"
 #include "status.h"
 
 static const struct gpio_dt_spec category = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_category), gpios);
@@ -21,6 +24,23 @@ static const struct gpio_dt_spec led_green = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_le
 static const struct adc_dt_spec cell = ADC_DT_SPEC_GET(DT_PATH(zephyr_user));
 
 static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_vbus_gpios);
+static const struct gpio_dt_spec divider =
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_battery_enable_gpios);
+
+#define HAS_CHARGER DT_NODE_HAS_PROP(DT_PATH(zephyr_user), cicala_charger_status_gpios)
+#if HAS_CHARGER
+static const struct gpio_dt_spec stat1 =
+    GPIO_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), cicala_charger_status_gpios, 0);
+static const struct gpio_dt_spec stat2 =
+    GPIO_DT_SPEC_GET_BY_IDX(DT_PATH(zephyr_user), cicala_charger_status_gpios, 1);
+
+static void set_charger(bool high1, bool high2)
+{
+    zassert_ok(gpio_emul_input_set(stat1.port, stat1.pin, high1));
+    zassert_ok(gpio_emul_input_set(stat2.port, stat2.pin, high2));
+    k_msleep(CONFIG_CICALA_POWER_SAMPLE_MS * 3);
+}
+#endif
 
 #define HEALTHY_MV 3900
 /* Clear of the critical and plausible thresholds after ADC rounding. */
@@ -29,9 +49,28 @@ static const struct gpio_dt_spec vbus = GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), c
 /* The emulator supplies divider-tap voltage; power.c scales it to pack voltage. */
 #define TAP_MV(pack) ((pack) * CONFIG_CICALA_POWER_DIVIDER_DEN / CONFIG_CICALA_POWER_DIVIDER_NUM)
 
+static atomic_t tap_mv = ATOMIC_INIT(TAP_MV(HEALTHY_MV));
+static atomic_t adc_reads;
+static atomic_t adc_gate_errors;
+static atomic_t adc_fail;
+
+static int sample_gated_cell(const struct device *dev, unsigned int chan, void *data,
+                             uint32_t *result)
+{
+    ARG_UNUSED(dev);
+    ARG_UNUSED(chan);
+    ARG_UNUSED(data);
+    if (gpio_emul_output_get(divider.port, divider.pin) != 1) {
+        atomic_inc(&adc_gate_errors);
+    }
+    atomic_inc(&adc_reads);
+    *result = atomic_get(&tap_mv);
+    return atomic_get(&adc_fail) ? -EIO : 0;
+}
+
 static int charge_the_cell(void)
 {
-    (void) adc_emul_const_value_set(cell.dev, cell.channel_id, TAP_MV(HEALTHY_MV));
+    (void) adc_emul_value_func_set(cell.dev, cell.channel_id, sample_gated_cell, NULL);
 
     return 0;
 }
@@ -41,7 +80,7 @@ SYS_INIT(charge_the_cell, APPLICATION, 0);
 
 static void set_cell_mv(uint16_t pack_mv)
 {
-    zassert_ok(adc_emul_const_value_set(cell.dev, cell.channel_id, TAP_MV(pack_mv)));
+    atomic_set(&tap_mv, TAP_MV(pack_mv));
     k_sleep(K_MSEC(CONFIG_CICALA_POWER_SAMPLE_MS * 3));
 }
 
@@ -111,6 +150,9 @@ static void *suite_setup(void)
     zassert_ok(gpio_emul_input_set(next_button.port, next_button.pin, 1));
 
     zassert_ok(gpio_emul_input_set(vbus.port, vbus.pin, 0));
+#if HAS_CHARGER
+    set_charger(true, false);
+#endif
 
     k_sleep(PRESS_WAIT);
 
@@ -120,7 +162,44 @@ static void *suite_setup(void)
     return NULL;
 }
 
-ZTEST_SUITE(cicala_integration, NULL, suite_setup, NULL, NULL, NULL);
+static void suite_teardown(void *data)
+{
+    ARG_UNUSED(data);
+    for (int i = 0; i < 200 && gpio_emul_output_get(divider.port, divider.pin) == 0; i++) {
+        k_msleep(1);
+    }
+    cicala_power_prepare_sleep();
+    cicala_status_off();
+    atomic_val_t completed = atomic_get(&adc_reads);
+    cicala_status_set_activity(true);
+    cicala_status_set_portal(true);
+    k_msleep(CONFIG_CICALA_POWER_SAMPLE_MS * 3);
+    zassert_equal(atomic_get(&adc_reads), completed, "ADC rearmed after sleep preparation");
+    zassert_equal(gpio_emul_output_get(divider.port, divider.pin), 0);
+    zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0);
+    zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+}
+
+ZTEST_SUITE(cicala_integration, NULL, suite_setup, NULL, NULL, suite_teardown);
+
+ZTEST(cicala_integration, test_adc_switch_closes_after_success_and_failure)
+{
+    set_cell_mv(HEALTHY_MV);
+    for (int fail = 0; fail < 2; fail++) {
+        atomic_set(&adc_fail, fail);
+        atomic_val_t before = atomic_get(&adc_reads);
+        for (int i = 0; i < 100 && atomic_get(&adc_reads) == before; i++) {
+            k_msleep(10);
+        }
+        zassert_true(atomic_get(&adc_reads) > before, "ADC worker did not run");
+        k_msleep(10);
+        zassert_equal(gpio_emul_output_get(divider.port, divider.pin), 0,
+                      "Divider must switch off even when conversion fails");
+    }
+    atomic_clear(&adc_fail);
+    zassert_equal(atomic_get(&adc_gate_errors), 0, "ADC sampled an unpowered divider");
+    set_cell_mv(HEALTHY_MV);
+}
 
 ZTEST(cicala_integration, test_boot_names_the_remembered_deck)
 {
@@ -315,7 +394,7 @@ ZTEST(cicala_integration, test_external_power_answers_a_press_the_cell_would_not
     set_vbus(false);
 }
 
-ZTEST(cicala_integration, test_a_charge_is_red_until_the_cell_is_full)
+ZTEST(cicala_integration, test_charge_indicator_follows_available_evidence)
 {
     set_cell_mv(HEALTHY_MV);
     set_vbus(true);
@@ -326,8 +405,15 @@ ZTEST(cicala_integration, test_a_charge_is_red_until_the_cell_is_full)
 
     set_cell_mv(CONFIG_CICALA_POWER_FULL_MV + 50);
 
+#if HAS_CHARGER
+    zassert_equal(last_power.state, CICALA_POWER_CHARGING,
+                  "high voltage must not override charging-in-progress status");
+    zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0);
+    zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+#else
     zassert_true(gpio_emul_output_get(led_green.port, led_green.pin) > 0, "and full is green");
     zassert_equal(gpio_emul_output_get(led_red.port, led_red.pin), 0);
+#endif
 
     set_vbus(false);
     set_cell_mv(HEALTHY_MV);
@@ -336,6 +422,44 @@ ZTEST(cicala_integration, test_a_charge_is_red_until_the_cell_is_full)
                   "unplugged and healthy shows nothing at all");
     zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
 }
+
+#if HAS_CHARGER
+ZTEST(cicala_integration, test_charger_status_pins_reach_state_and_leds)
+{
+    set_cell_mv(HEALTHY_MV);
+    set_vbus(true);
+    settle_leds();
+    set_charger(true, true);
+    zassert_equal(last_power.state, CICALA_POWER_EXTERNAL_IDLE);
+    zassert_equal(last_power.charger, CICALA_CHARGER_IDLE);
+
+    set_charger(false, true);
+    zassert_equal(last_power.state, CICALA_POWER_CHARGE_FAULT);
+    zassert_equal(last_power.charger, CICALA_CHARGER_RECOVERABLE_FAULT);
+    zassert_true(cicala_power_external());
+    zassert_true(cicala_power_refresh_allowed());
+
+    set_charger(false, false);
+    zassert_equal(last_power.state, CICALA_POWER_CHARGE_FAULT);
+    zassert_equal(last_power.charger, CICALA_CHARGER_LATCHED_FAULT,
+                  "fault detail must publish even at unchanged cell voltage");
+    bool lit = false;
+    bool dark = false;
+    for (int i = 0; i < 200 && !(lit && dark); i++) {
+        int red = gpio_emul_output_get(led_red.port, led_red.pin);
+        lit |= red > 0;
+        dark |= red == 0;
+        zassert_equal(gpio_emul_output_get(led_green.port, led_green.pin), 0);
+        k_msleep(10);
+    }
+    zassert_true(lit && dark, "charger faults pulse red");
+
+    set_charger(true, false);
+    zassert_equal(last_power.state, CICALA_POWER_CHARGING);
+    zassert_true(gpio_emul_output_get(led_red.port, led_red.pin) > 0);
+    set_vbus(false);
+}
+#endif
 
 ZTEST(cicala_integration, test_the_portal_shows_amber)
 {

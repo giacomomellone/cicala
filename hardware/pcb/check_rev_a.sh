@@ -50,14 +50,18 @@ export FONTCONFIG_FILE="$fontconfig_file"
     -o "$report_dir/bom.csv" \
     "$pcb_dir/cicala_rev_a.kicad_sch"
 
+"$kicad_cli" sch export netlist \
+    -o "$report_dir/cicala_rev_a.net" "$pcb_dir/cicala_rev_a.kicad_sch"
+python3 "$pcb_dir/../tools/audit_electrical.py" \
+    "$report_dir/cicala_rev_a.net" "$pcb_dir"
+
 "$kicad_cli" pcb drc \
-    --schematic-parity --refill-zones \
+    --schematic-parity --refill-zones --severity-all \
     --exit-code-violations \
     -o "$report_dir/drc.rpt" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
 
-touch "$report_dir/cicala_rev_a_board.step"
-"$kicad_cli" pcb export step \
+"$kicad_cli" pcb export step --force --subst-models --no-dnp --no-unspecified \
     -o "$report_dir/cicala_rev_a_board.step" \
     "$pcb_dir/cicala_rev_a.kicad_pcb"
 

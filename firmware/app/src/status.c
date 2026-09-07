@@ -29,6 +29,10 @@ static atomic_t pending_activity = ATOMIC_INIT(0);
 static atomic_t pending_blocked = ATOMIC_INIT(0);
 static atomic_t pending_portal = ATOMIC_INIT(0);
 static atomic_t pending_portal_on = ATOMIC_INIT(0);
+static atomic_t pending_power = ATOMIC_INIT(0);
+static atomic_t pending_power_state = ATOMIC_INIT(CICALA_POWER_UNKNOWN);
+static atomic_t stopping;
+static atomic_t ready;
 
 static void apply(uint8_t colour)
 {
@@ -43,7 +47,14 @@ static void status_tick(struct k_work *work)
 {
     ARG_UNUSED(work);
 
+    if (atomic_get(&stopping) || !atomic_get(&ready)) {
+        return;
+    }
+
     /* Apply cross-thread events on the system workqueue. */
+    if (atomic_cas(&pending_power, 1, 0)) {
+        cicala_status_post_power((uint8_t) atomic_get(&pending_power_state), false);
+    }
     if (atomic_cas(&pending_activity, 1, 0)) {
         cicala_status_post_activity(atomic_get(&pending_busy) != 0);
     }
@@ -68,15 +79,18 @@ static void status_tick(struct k_work *work)
 
 static void refresh(void)
 {
-    (void) k_work_reschedule(&tick_work, K_NO_WAIT);
+    if (!atomic_get(&stopping)) {
+        (void) k_work_reschedule(&tick_work, K_NO_WAIT);
+    }
 }
 
-/* Power updates are serialized through the system workqueue. */
+/* zbus listeners execute on the publisher's thread, including the ADC worker. */
 static void on_power(const struct zbus_channel *chan)
 {
     const struct cicala_power_msg *msg = zbus_chan_const_msg(chan);
 
-    cicala_status_post_power(msg->state, false);
+    atomic_set(&pending_power_state, msg->state);
+    atomic_set(&pending_power, 1);
 
     refresh();
 }
@@ -109,9 +123,13 @@ void cicala_status_note_refresh_blocked(void)
 
 void cicala_status_off(void)
 {
-    (void) k_work_cancel_delayable(&tick_work);
+    struct k_work_sync sync;
+    atomic_set(&stopping, 1);
+    (void) k_work_cancel_delayable_sync(&tick_work, &sync);
 
-    apply(CICALA_STATUS_OFF);
+    if (atomic_get(&ready)) {
+        apply(CICALA_STATUS_OFF);
+    }
 }
 
 static int status_start(void)
@@ -121,8 +139,12 @@ static int status_start(void)
         return 0;
     }
 
-    (void) gpio_pin_configure_dt(&led_red, GPIO_OUTPUT_INACTIVE);
-    (void) gpio_pin_configure_dt(&led_green, GPIO_OUTPUT_INACTIVE);
+    if (gpio_pin_configure_dt(&led_red, GPIO_OUTPUT_INACTIVE) != 0 ||
+        gpio_pin_configure_dt(&led_green, GPIO_OUTPUT_INACTIVE) != 0) {
+        LOG_ERR("could not configure status LED outputs");
+        return 0;
+    }
+    atomic_set(&ready, 1);
 
     /* Start dark. */
     refresh();

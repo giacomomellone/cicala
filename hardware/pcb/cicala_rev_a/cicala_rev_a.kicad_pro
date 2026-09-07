@@ -240,7 +240,7 @@
       "internal_id": "",
       "mfg": "",
       "mpn": "",
-      "sch_revision": ""
+      "sch_revision": "Rev A"
     },
     "layer_pairs": [],
     "layer_presets": [],
@@ -521,6 +521,25 @@
         "line_style": 0,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
+        "name": "HV",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2147483647,
+        "schematic_color": "rgba(0, 0, 0, 0.000)",
+        "track_width": 0.25,
+        "tuning_profile": "",
+        "via_diameter": 0.6,
+        "via_drill": 0.3,
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "clearance": 0.2,
+        "diff_pair_gap": 0.25,
+        "diff_pair_via_gap": 0.25,
+        "diff_pair_width": 0.2,
+        "line_style": 0,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
         "name": "Power",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2147483647,
@@ -545,25 +564,6 @@
         "priority": 2147483647,
         "schematic_color": "rgba(0, 0, 0, 0.000)",
         "track_width": 0.29,
-        "tuning_profile": "",
-        "via_diameter": 0.6,
-        "via_drill": 0.3,
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "clearance": 0.2,
-        "diff_pair_gap": 0.25,
-        "diff_pair_via_gap": 0.25,
-        "diff_pair_width": 0.2,
-        "line_style": 0,
-        "microvia_diameter": 0.3,
-        "microvia_drill": 0.1,
-        "name": "HV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2147483647,
-        "schematic_color": "rgba(0, 0, 0, 0.000)",
-        "track_width": 0.25,
         "tuning_profile": "",
         "via_diameter": 0.6,
         "via_drill": 0.3,
@@ -820,12 +820,30 @@
       {
         "filename": "cicala_rev_a.kicad_sch",
         "name": "cicala_rev_a",
-        "uuid": "00000000-0000-0000-0000-000000000000"
+        "uuid": "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc"
       }
     ],
+    "used_designators": "",
     "variants": []
   },
-  "sheets": [],
+  "sheets": [
+    [
+      "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc",
+      "cicala_rev_a"
+    ],
+    [
+      "76abdd1f-1863-43cb-987e-b8bd556e1e12",
+      "Power and USB"
+    ],
+    [
+      "5c37343c-ce2e-4af1-8c0e-7996e7e59814",
+      "Controller and user I/O"
+    ],
+    [
+      "9467d62a-f8ed-46c9-a7cb-f7af887ddb15",
+      "E-paper display"
+    ]
+  ],
   "text_variables": {},
   "tuning_profiles": {
     "meta": {

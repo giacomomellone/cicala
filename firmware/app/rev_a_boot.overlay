@@ -1,0 +1,3 @@
+/* ESP32-S3-WROOM-1-N16 has 16 MiB flash and no PSRAM. */
+&flash0 { reg = <0x0 DT_SIZE_M(16)>; };
+&psram0 { status = "disabled"; };

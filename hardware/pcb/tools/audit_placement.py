@@ -4,9 +4,14 @@ import json
 from pathlib import Path
 
 from shapely import union_all
-from shapely.geometry import Polygon, box
+from shapely.geometry import Polygon
 
 import ksexp
+from copper_geometry import pad_shape
+
+FRONT_PARTS = {'SW1', 'SW2', 'J2', 'U6', 'L1', 'Q1', 'D1', 'D2', 'D3',
+               *(f'C{i}' for i in range(12, 25)), 'R18', 'R19', 'R20',
+               *(f'R{i}' for i in range(27, 33))}
 
 
 def audit(geom, board_path=None, models_root=None):
@@ -18,12 +23,20 @@ def audit(geom, board_path=None, models_root=None):
         for b,pb in courts[i+1:]:
             if a['layer']==b['layer'] and pa.intersection(pb).area>0.00001:
                 overlaps.append([a['ref'],b['ref']])
-    cell = box(32,6,68,36)
+    # Alignment holes pass through both assembly faces. Same-side courtyard
+    # checks alone miss a probe hole underneath a component on the other face.
+    hole_intrusions = []
+    for pad in geom.get('pads', []):
+        if not pad['npth']:
+            continue
+        hole = pad_shape(pad, drill=True).buffer(0.2)
+        for fp, court in courts:
+            if fp['ref'] != pad['ref'] and hole.intersection(court).area > 0.00001:
+                hole_intrusions.append([pad['ref'], fp['ref']])
     result = {'footprints':len(footprints), 'courtyard_overlaps':overlaps,
-              'cell_courtyard_intrusions':[f['ref'] for f,p in courts
-                  if f['layer']=='B.Cu' and p.intersection(cell).area>0.00001],
+              'through_hole_component_intrusions':hole_intrusions,
               'unexpected_front_parts':[f['ref'] for f in footprints
-                  if f['layer']=='F.Cu' and f['ref'] not in {'SW1','SW2'}
+                  if f['layer']=='F.Cu' and f['ref'] not in FRONT_PARTS
                   and not f['ref'].startswith('H')]}
     if board_path:
         missing = []
@@ -57,3 +70,4 @@ if __name__=='__main__':
     print(json.dumps(result,indent=2))
     if args.output:
         Path(args.output).write_text(json.dumps(result,indent=2)+'\n')
+    raise SystemExit(int(any(result[key] for key in result if key != 'footprints')))

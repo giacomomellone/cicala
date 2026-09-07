@@ -16,16 +16,18 @@ public:
     PowerState last_state = PowerState::UNKNOWN;
     uint16_t last_mv = 0;
     bool last_usb = false;
+    ChargerStatus last_charger = ChargerStatus::NOT_MONITORED;
 
     int opens = 0;
     int closes = 0;
 
-    void publish(PowerState state, uint16_t mv, bool usb) override
+    void publish(PowerState state, uint16_t mv, bool usb, ChargerStatus charger) override
     {
         publishes++;
         last_state = state;
         last_mv = mv;
         last_usb = usb;
+        last_charger = charger;
     }
 
     void open_charge_window() override { opens++; }
@@ -453,4 +455,88 @@ ZTEST(cicala_power, test_a_reading_that_has_barely_moved_is_not_published)
 
     sample(fsm, 3800 - kPublishDeadbandMv, false);
     zassert_equal(io.publishes, settled + 1, "a real drop is");
+}
+
+ZTEST(cicala_power, test_charger_status_overrides_voltage_estimate)
+{
+    const ChargerStatus statuses[] = {
+        ChargerStatus::CHARGING,      ChargerStatus::IDLE,        ChargerStatus::RECOVERABLE_FAULT,
+        ChargerStatus::LATCHED_FAULT, ChargerStatus::UNAVAILABLE,
+    };
+    const State states[] = {State::CHARGING, State::EXTERNAL_IDLE, State::CHARGE_FAULT,
+                            State::CHARGE_FAULT, State::EXTERNAL_IDLE};
+    const uint16_t voltages[] = {2900, 3100, 3900, 4200};
+    for (uint16_t voltage : voltages) {
+        for (size_t i = 0; i < ARRAY_SIZE(statuses); i++) {
+            FakePowerIo io;
+            TestPowerFsm fsm(io);
+            sample(fsm, voltage, false);
+            fsm.post_charger(statuses[i]);
+            sample(fsm, voltage, true);
+            zassert_equal(fsm.state(), states[i]);
+            zassert_equal(io.last_charger, statuses[i]);
+            zassert_true(fsm.refresh_allowed());
+            zassert_equal(io.opens, 1);
+        }
+    }
+}
+
+ZTEST(cicala_power, test_charger_idle_never_proves_a_full_cell)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+    fsm.post_charger(ChargerStatus::CHARGING);
+    sample(fsm, 4200, true);
+    zassert_equal(fsm.state(), State::CHARGING, "CV charging can continue at 4.2 V");
+    fsm.post_charger(ChargerStatus::IDLE);
+    settle(fsm);
+    zassert_equal(fsm.state(), State::EXTERNAL_IDLE, "high/high may be a thermal CE veto");
+    fsm.post_charger(ChargerStatus::CHARGING);
+    settle(fsm);
+    zassert_equal(fsm.state(), State::CHARGING);
+}
+
+ZTEST(cicala_power, test_charger_faults_do_not_reopen_the_usb_window)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+    fsm.post_charger(ChargerStatus::CHARGING);
+    sample(fsm, 3900, true);
+    const ChargerStatus statuses[] = {ChargerStatus::RECOVERABLE_FAULT, ChargerStatus::IDLE,
+                                      ChargerStatus::LATCHED_FAULT, ChargerStatus::CHARGING};
+    for (ChargerStatus status : statuses) {
+        fsm.post_charger(status);
+        fsm.advance(kChargeWindowMs);
+        settle(fsm);
+        zassert_true(fsm.external());
+        zassert_false(fsm.charge_window_open());
+    }
+    zassert_equal(io.opens, 1);
+    zassert_equal(io.closes, 1);
+}
+
+ZTEST(cicala_power, test_fault_detail_publishes_without_a_voltage_change)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+    fsm.post_charger(ChargerStatus::RECOVERABLE_FAULT);
+    sample(fsm, 3900, true);
+    const int before = io.publishes;
+    fsm.post_charger(ChargerStatus::LATCHED_FAULT);
+    settle(fsm);
+    zassert_equal(fsm.state(), State::CHARGE_FAULT);
+    zassert_equal(io.publishes, before + 1);
+    zassert_equal(io.last_charger, ChargerStatus::LATCHED_FAULT);
+}
+
+ZTEST(cicala_power, test_unplugging_during_a_fault_rechecks_the_cell)
+{
+    FakePowerIo io;
+    TestPowerFsm fsm(io);
+    fsm.post_charger(ChargerStatus::RECOVERABLE_FAULT);
+    sample(fsm, 2900, true);
+    sample(fsm, 2900, false);
+    zassert_equal(fsm.state(), State::CRITICAL);
+    zassert_false(fsm.refresh_allowed());
+    zassert_false(fsm.external());
 }

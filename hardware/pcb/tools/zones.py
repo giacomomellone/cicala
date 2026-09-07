@@ -42,7 +42,7 @@ def zone(name, net, layers, pts, priority):
         [Sym('min_thickness'), Sym('0.2')],
         [Sym('filled_areas_thickness'), Sym('no')],
         [Sym('fill'), Sym('yes'),
-         [Sym('island_removal_mode'), Sym('1')],
+         [Sym('island_removal_mode'), Sym('0')],
          [Sym('thermal_gap'), Sym('0.2')],
          [Sym('thermal_bridge_width'), Sym('0.2')]],
         [Sym('polygon'), [Sym('pts')] +
@@ -61,16 +61,11 @@ zone('GND_IN2_USB', 'GND', ['In2.Cu'],
 zone('GND_IN2_USB_MODULE', 'GND', ['In2.Cu'],
      [(22.0, Y0), (31.0, Y0), (31.0, 15.5), (22.0, 15.5)], 20)
 
-from recovery_keepout import polygon as contact_keepout
+from recovery_keepout import from_footprint
 j4 = next(fp for fp in ksexp.children(board,'footprint')
           if any(str(p[1])=='Reference' and str(p[2])=='J4'
                  for p in ksexp.children(fp,'property')))
-at = ksexp.child(j4,'at')
-assert [float(x) for x in at[1:3]] == [61,46.5] and (len(at)<4 or float(at[3])==0), \
-    'Update the TC2030 keepout transform after moving its reviewed anchor'
-shape = contact_keepout([{'ref':'J4','pad':str(i),'x':x,'y':y,'w':0.7874}
-                        for i,(x,y) in enumerate([(59.73,45.865),(59.73,47.135),
-                            (61,45.865),(61,47.135),(62.27,45.865),(62.27,47.135)],1)])
+shape = from_footprint(j4)
 board.append([Sym('zone'),[Sym('layer'),'B.Cu'],[Sym('uuid'),str(uuid.uuid4())],
     [Sym('name'),'TC2030_CONTACT_KEEPOUT'],[Sym('hatch'),Sym('edge'),Sym('0.5')],
     [Sym('connect_pads'),[Sym('clearance'),Sym('0')]],
@@ -81,4 +76,4 @@ board.append([Sym('zone'),[Sym('layer'),'B.Cu'],[Sym('uuid'),str(uuid.uuid4())],
                                 for x,y in list(shape.exterior.coords)[:-1]]]])
 
 ksexp.save(path, board)
-print('zones written: 3 ground pours, the 3V3 plane and 2 USB escape references; islands retained')
+print('zones written: 3 ground pours, the 3V3 plane and 2 USB escape references; unconnected islands removed')

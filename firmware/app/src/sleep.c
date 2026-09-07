@@ -43,6 +43,13 @@ static const struct gpio_dt_spec panel_pins[] = {
     GPIO_DT_SPEC_GET(DT_NODELABEL(cicala_mipi_dbi), reset_gpios),
     GPIO_DT_SPEC_GET(DT_NODELABEL(cicala_mipi_dbi), dc_gpios),
     GPIO_DT_SPEC_GET_BY_IDX(DT_NODELABEL(spi2), cs_gpios, 0),
+#if IS_ENABLED(CONFIG_CICALA_REV_A)
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_panel_mosi_gpios),
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_panel_clock_gpios),
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_battery_enable_gpios),
+    /* Power is last: park every driven signal before removing the rail. */
+    GPIO_DT_SPEC_GET(DT_PATH(zephyr_user), cicala_panel_power_gpios),
+#endif
 };
 
 #if IS_ENABLED(CONFIG_CICALA_PANEL_DEEP_SLEEP)
@@ -110,7 +117,7 @@ enum cicala_wake_source cicala_wake_button(void)
 /* Read the wake mask before anything else can disturb it. */
 static int latch_wake_button(void)
 {
-    if (esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_EXT1) {
+    if (!(esp_sleep_get_wakeup_causes() & BIT(ESP_SLEEP_WAKEUP_EXT1))) {
         return 0;
     }
 
@@ -169,7 +176,12 @@ static void hold_panel_pins(void)
     for (size_t i = 0; i < ARRAY_SIZE(panel_pins); i++) {
         const gpio_num_t pin = (gpio_num_t) panel_pins[i].pin;
 
-        (void) gpio_pin_configure_dt(&panel_pins[i], GPIO_OUTPUT_INACTIVE);
+        if (IS_ENABLED(CONFIG_CICALA_REV_A)) {
+            /* Physical zero also applies to active-low CS and RESET. */
+            (void) gpio_pin_configure(panel_pins[i].port, panel_pins[i].pin, GPIO_OUTPUT_LOW);
+        } else {
+            (void) gpio_pin_configure_dt(&panel_pins[i], GPIO_OUTPUT_INACTIVE);
+        }
         (void) rtc_gpio_hold_en(pin);
     }
 }
@@ -220,10 +232,10 @@ static void sleep_now(struct k_work *work)
 
     hold_wake_pins(mask);
 
-    cicala_status_off();
-
     panel_controller_sleep();
 
+    cicala_power_prepare_sleep();
+    cicala_status_off();
     hold_panel_pins();
 
     /* ESP32-S3 soft-off preserves RTC slow memory. */
