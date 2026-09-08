@@ -17,7 +17,7 @@ from finish_routes import physical_groups
 from unique_ids import normalize, uuid_nodes
 from usb_pair import make_pair
 from chamfer_routes import chamfer
-from apply_silkscreen import apply as apply_silk, keyhole
+from apply_silkscreen import apply as apply_silk, apply_mark, keyhole
 from cleanup_dangling import clean
 from recovery_keepout import polygon as recovery_keepout
 from thermal_relief import apply as apply_thermal
@@ -151,7 +151,29 @@ class ArtifactTests(unittest.TestCase):
         apply_silk(node)
         self.assertEqual(node,first)
         self.assertEqual(ksexp.children(node,'segment'),copper)
-        self.assertEqual(len(ksexp.children(node,'group')),1)
+        self.assertEqual(len(ksexp.children(node,'group')),2)
+
+    def test_mark_only_preserves_existing_board_items(self):
+        node = ksexp.parse('(kicad_pcb (segment (start 1 2) (end 3 4) '
+                           '(layer "B.Cu") (net "A") (width 0.2)) '
+                           '(gr_text "Custom service label" (at 42 12) (layer "B.SilkS")) '
+                           '(footprint "R" (at 4 5) (property "Reference" "R1" (at 2 3))))')
+        before = copy.deepcopy(node)
+        apply_mark(node)
+        self.assertEqual(node[:len(before)], before)
+        first = copy.deepcopy(node)
+        apply_mark(node)
+        self.assertEqual(node, first)
+        for tag in ('gr_curve', 'gr_line'):
+            for shape in ksexp.children(node, tag):
+                self.assertEqual(str(ksexp.child(shape, 'layer')[1]), 'B.SilkS')
+
+    def test_cicada_artwork_matches_public_source(self):
+        import hashlib
+        root = Path(__file__).resolve().parents[3]
+        art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
+        self.assertEqual(art['source_sha256'], hashlib.sha256((root / art['source']).read_bytes()).hexdigest())
+        self.assertGreaterEqual(art['stroke_mm'], 0.15)
 
     def test_wordmark_counters_keep_their_area(self):
         from shapely.geometry import Polygon

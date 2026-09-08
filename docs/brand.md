@@ -4,13 +4,12 @@ Cicala is Italian for cicada. Cicadas fill Italian summers with a steady
 background sound; the name gives the object a clear job: make a first voice
 easier, invite reflection, and break silence without becoming the conversation.
 
-## Wordmark and type
+## Mark, wordmark and type
 
-The identity is typographic. There is no symbol: the whole of it is the
-lowercase `cicala` wordmark, and where a square is all there is, the wordmark's
-own lowercase `c` stands for it. A name and a picture saying the same thing at
-once is one of them too many, and the header has a question to get out of the
-way of.
+The identity pairs the lowercase `cicala` wordmark with a minimal outline
+cicada. The selected mark, Quiet opening, has two tapered wings and an opening
+in the head that suggests speech. The gap between the wings suggests the body.
+The cicada alone represents the identity in square formats.
 
 The wordmark is Literata at normal weight with optical kerning and restrained
 negative tracking, over a 50% dither rule the width of the lockup. The rule
@@ -26,9 +25,10 @@ The e-paper renders none of them. The panel draws the CFB bitmap fonts
 (10 × 16, 15 × 24, 20 × 32) with a one-pixel overdraw for weight, so the device
 mirrors the website's tone and not its typeface.
 
-Keep clear space around the wordmark at least equal to the height of its `c`.
-Where a name will not fit, use the `c` alone; never enlarge the wordmark enough
-to compete with a question.
+Keep clear space around the lockup at least equal to the height of its `c`.
+Where a name will not fit, use the cicada alone. Keep the logo subordinate to
+the question. Preserve the open head, the separation between the wings and
+the round stroke ends; use the supplied artwork rather than redrawing it.
 
 ## Colour
 
@@ -67,14 +67,20 @@ needs it.
 
 ## Assets
 
-There is no editable logo source, because there is no logo. The wordmark stays
-live text on the web; the PNGs exist only for services that cannot load the
-bundled font. Regenerate every raster asset from that font with
-`npm run brand-assets` in `website/`. The square assets are drawn on a canvas
-rather than laid out as HTML: a lowercase `c` has neither ascender nor
-descender, so centring its line box leaves it small and sitting low, and only
-`TextMetrics` reports where the ink actually is.
+The canonical vector source is `website/public/brand/cicala-mark.svg`.
+Its three paths are shared by the website and the PCB artwork generator.
+The website inlines it beside the live Literata wordmark. The source uses
+`currentColor` so the mark follows its surrounding ink colour.
 
+Regenerate the PNGs with `npm run brand-assets` in `website/`. Square assets
+use the cicada, and the social preview uses the cicada and wordmark together.
+The 16 px favicon slightly strengthens the stroke to one pixel while retaining
+the master paths. Transparent wordmark-only PNGs remain available alongside
+the complete logo lockups.
+
+- [canonical SVG mark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-mark.svg)
+- [dark transparent logo](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-logo-dark.png)
+- [reversed transparent logo](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-logo-reversed.png)
 - [1024 px avatar](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-avatar-1024.png)
 - [dark transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-dark.png)
 - [reversed transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-reversed.png)
@@ -94,10 +100,16 @@ live-text wordmark and palette, but it must remain self-contained and make no
 font or image requests. If a physical mark is useful later, use only an
 optional small blind emboss on the underside or a concealed lower edge.
 
+The PCB carries the cicada beside the existing underside wordmark on
+`B.SilkS`, mirrored for reading from below. Its 8 mm square artwork uses a
+0.359 mm stroke. Native KiCad curves and lines preserve the SVG geometry.
+Regeneration and the mark-only update command are documented in
+`hardware/pcb/tools/assets/README.md`.
+
 ## Prohibited treatments
 
-Do not draw a cicada, a speech bubble, a sound wave, a question mark, or any
-other symbol and set it beside the name. Do not introduce a brand colour, add
+Do not add speech bubbles, sound waves, faces or other details to the approved
+cicada. Do not close the opening in its head. Do not introduce a brand colour, add
 gradients or glow, round a corner the device could not round, distort the
 letterforms, or make the wordmark larger than the current question. Do not lay
 the dither under a question at any density. The questions remain visually

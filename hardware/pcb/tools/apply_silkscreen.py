@@ -3,9 +3,9 @@
 Run with system Python: apply_silkscreen.py input.kicad_pcb output.kicad_pcb.
 Dense passive references stay on the assembly fab layer.
 """
+import argparse
 import json
 import math
-import sys
 import uuid
 from pathlib import Path
 
@@ -15,6 +15,7 @@ from ksexp import Sym
 
 NAMESPACE = uuid.UUID('43d8319c-81b4-4451-9a87-4e99fe66b0aa')
 GROUP_NAME = 'Cicala identity and service legends'
+MARK_GROUP_NAME = 'Cicala cicada mark'
 OLD_LEGENDS = {'RECOVERY', '1 3V3', '2 GND', '3 EN', '4 BOOT', '5 TX',
                '6 RX', 'USB 5V', 'LiPo / NTC', '+', 'T', '-', 'CICALA A0',
                'CICALA REV A0'}
@@ -52,6 +53,42 @@ def keyhole(outline, holes):
         loop = ring[hi:] + ring[:hi+1]
         points = points[:oi+1] + loop + points[oi:]
     return points
+
+
+def apply_mark(board):
+    """Replace only the cicada; preserve all other board and label geometry."""
+    remove_ids = set()
+    for group in list(ksexp.children(board, 'group')):
+        if str(group[1]) == MARK_GROUP_NAME:
+            remove_ids.update(str(i) for i in ksexp.child(group, 'members')[1:])
+            board.remove(group)
+    for item in list(board):
+        if isinstance(item, list):
+            identity = ksexp.child(item, 'uuid')
+            if identity and str(identity[1]) in remove_ids:
+                board.remove(item)
+
+    artwork = json.loads((Path(__file__).parent / 'assets/cicala-mark.json').read_text())
+    members = []
+    for i, segment in enumerate(artwork['segments']):
+        # Back silk is mirrored in board coordinates for underside reading.
+        points = [(number(61 - x), number(8.5 + y)) for x, y in segment['points']]
+        if segment['type'] == 'line':
+            shape = node('gr_line', node('start', *points[0]), node('end', *points[1]))
+        elif segment['type'] == 'curve':
+            shape = node('gr_curve', node('pts', *[node('xy', *p) for p in points]))
+        else:
+            raise ValueError(f"Unsupported cicada segment: {segment['type']}")
+        identity = str(uuid.uuid5(NAMESPACE, f'cicada:{i}'))
+        shape.extend([
+            node('stroke', node('width', number(artwork['stroke_mm'])), node('type', Sym('default'))),
+            node('layer', 'B.SilkS'), node('uuid', identity),
+        ])
+        board.append(shape)
+        members.append(identity)
+    board.append(node('group', MARK_GROUP_NAME,
+                      node('uuid', str(uuid.uuid5(NAMESPACE, 'cicada-group'))),
+                      node('members', *members)))
 
 
 def apply(board):
@@ -126,9 +163,15 @@ def apply(board):
             if angle==90 and str(ksexp.child(field,'layer')[1]).startswith('B.'):
                 angle=270
             at[3] = number(angle)
+    apply_mark(board)
 
 
 if __name__ == '__main__':
-    board = ksexp.load(sys.argv[1])
-    apply(board)
-    ksexp.save(sys.argv[2], board)
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('input', type=Path)
+    parser.add_argument('output', type=Path)
+    parser.add_argument('--mark-only', action='store_true', help='Preserve existing service legends and references')
+    args = parser.parse_args()
+    board = ksexp.load(args.input)
+    (apply_mark if args.mark_only else apply)(board)
+    ksexp.save(args.output, board)

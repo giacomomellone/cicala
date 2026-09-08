@@ -45,7 +45,8 @@ are optional analysis dependencies; install them in a separate environment.
 | `audit_fabrication.py` | Gerber ZIP + geometry → eleven layers and every drill/slot read back independently; needs Gerbonara |
 | `check_assembly_bom.py` | Reject blank, unresolved or multiple MPNs |
 | `make_component_models.py` | CadQuery → six original STEP envelopes; drawings in `../cicala_rev_a/models/README.md` |
-| `apply_silkscreen.py` | Native wordmark/service legends and fab references, no copper changes |
+| `apply_silkscreen.py` | Native cicada/wordmark/service legends and fab references; `--mark-only` preserves existing legends |
+| `make_cicada.py` | Public SVG → committed native stroke geometry for the cicada silkscreen |
 
 The fabrication audit accounts for Excellon's 1 µm coordinate rounding.
 It also opens the compressed IPC-2581 exchange and checks its XML document;
@@ -95,5 +96,6 @@ DRC warning merely because the router finished.
 
 `unique_ids.py` assigns deterministic unique IDs to cloned footprint items;
 `apply_tracks.py` emits stable IDs for copper. Appearance uses native polygon
-artwork from `assets/cicala-wordmark.json`; its font source and regeneration
-are documented in `assets/README.md`.
+artwork from `assets/cicala-wordmark.json` and stroke geometry from
+`assets/cicala-mark.json`; their sources and regeneration are documented in
+`assets/README.md`.
