@@ -338,7 +338,7 @@
 				)
 			)
 			(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-				(at 5.08 2.54 0)
+				(at -5.08 17.78 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -346,10 +346,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/2N7002P.pdf"
-				(at 0 0 0)
+				(at -5.08 15.24 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -357,10 +358,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "N-MOSFET transistor, gate/source/drain"
-				(at 0 0 0)
+				(at -5.08 12.7 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -368,10 +370,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "ki_keywords" "transistor NMOS N-MOS N-MOSFET"
-				(at 0 0 0)
+				(at -5.08 10.16 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -379,6 +382,7 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "2N7002P_0_1"
@@ -613,48 +617,53 @@
 			(in_bom yes)
 			(on_board yes)
 			(property "Reference" "U"
-				(at 0 0 0)
+				(at -12.7 27.94 0)
 				(hide yes)
 				(effects
 					(font
 						(size 0.9 0.9)
 					)
+					(justify left)
 				)
 			)
 			(property "Value" "TLV9022DGK"
-				(at 0 0 0)
+				(at -12.7 25.4 0)
 				(hide yes)
 				(effects
 					(font
 						(size 0.9 0.9)
 					)
+					(justify left)
 				)
 			)
 			(property "Footprint" "Package_SO:VSSOP-8_3x3mm_P0.65mm"
-				(at 0 0 0)
+				(at -12.7 22.86 0)
 				(hide yes)
 				(effects
 					(font
 						(size 0.9 0.9)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9022.pdf"
-				(at 0 0 0)
+				(at -12.7 20.32 0)
 				(hide yes)
 				(effects
 					(font
 						(size 0.9 0.9)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "Dual precision comparator with open-drain outputs; TI DGK pinout"
-				(at 0 0 0)
+				(at -12.7 17.78 0)
 				(hide yes)
 				(effects
 					(font
 						(size 0.9 0.9)
 					)
+					(justify left)
 				)
 			)
 			(symbol "TLV9022DGK_0_1"

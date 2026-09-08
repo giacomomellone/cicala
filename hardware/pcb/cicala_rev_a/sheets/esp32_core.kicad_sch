@@ -1875,7 +1875,7 @@
 				)
 			)
 			(property "Footprint" ""
-				(at 0.762 0 0)
+				(at -7.62 21.844 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -1883,10 +1883,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.kingbrightusa.com/images/catalog/SPEC/APBA2006SURKCGKC.pdf"
-				(at 0.762 0 0)
+				(at -7.62 19.304 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -1894,10 +1895,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "Side-view red/green LED; pins 1=A red, 4=K red, 2=A green, 3=K green (Kingbright DSAQ1665)."
-				(at 0 0 0)
+				(at -7.62 16.764 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -1905,10 +1907,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "ki_keywords" "LED diode bicolor dual"
-				(at 0 0 0)
+				(at -7.62 14.224 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -1916,10 +1919,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
-				(at 0 0 0)
+				(at -7.62 11.684 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -1927,6 +1931,7 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "APBA2006SURKCGKC_0_1"

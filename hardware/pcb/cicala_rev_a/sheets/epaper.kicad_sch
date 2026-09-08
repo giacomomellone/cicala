@@ -41,7 +41,7 @@
 				)
 			)
 			(property "Footprint" "Connector_FFC-FPC:Hirose_FH12-24S-0.5SH_1x24-1MP_P0.50mm_Horizontal"
-				(at 0 0 0)
+				(at -5.08 45.72 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -49,10 +49,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.good-display.com/product/391.html"
-				(at 0 0 0)
+				(at -5.08 43.18 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -60,10 +61,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "Good Display GDEY0213B74 2.13 inch 250x122 e-paper panel with an on-glass SSD1680 controller, 24-pin 0.5 mm FPC tail"
-				(at 0 0 0)
+				(at -5.08 40.64 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -71,10 +73,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "ki_keywords" "e-paper epaper display SSD1680 FPC"
-				(at 0 0 0)
+				(at -5.08 38.1 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -82,10 +85,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "ki_fp_filters" "Hirose*FH12*24S*0.5SH*"
-				(at 0 0 0)
+				(at -5.08 35.56 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -93,6 +97,7 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "GDEY0213B74_1_1"

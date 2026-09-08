@@ -28,7 +28,7 @@
 				)
 			)
 			(property "Value" "BQ25185DLH"
-				(at 7.62 10.16 0)
+				(at 12.7 10.16 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -39,7 +39,7 @@
 				)
 			)
 			(property "Footprint" "Package_DFN_QFN:Texas_DLH0010A_WSON-10-1EP_2.2x2mm_P0.4mm_EP0.9x1.5mm_ThermalVias"
-				(at 0 0 0)
+				(at -10.16 20.32 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -47,10 +47,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/bq25185.pdf"
-				(at 0 0 0)
+				(at -10.16 17.78 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -58,10 +59,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "1-cell linear charger with power path, NTC input, and dual status outputs"
-				(at 0 0 0)
+				(at -10.16 15.24 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -69,12 +71,13 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "BQ25185DLH_0_1"
 				(rectangle
 					(start -7.62 7.62)
-					(end 7.62 -7.62)
+					(end 12.7 -7.62)
 					(stroke
 						(width 0.254)
 						(type default)
@@ -86,7 +89,7 @@
 			)
 			(symbol "BQ25185DLH_1_1"
 				(pin power_out line
-					(at 10.16 5.08 180)
+					(at 15.24 5.08 180)
 					(length 2.54)
 					(name "SYS"
 						(effects
@@ -104,7 +107,7 @@
 					)
 				)
 				(pin passive line
-					(at 10.16 2.54 180)
+					(at 15.24 2.54 180)
 					(length 2.54)
 					(name "BAT"
 						(effects
@@ -122,7 +125,7 @@
 					)
 				)
 				(pin open_collector line
-					(at 10.16 0 180)
+					(at 15.24 0 180)
 					(length 2.54)
 					(name "STAT2"
 						(effects
@@ -230,7 +233,7 @@
 					)
 				)
 				(pin open_collector line
-					(at 10.16 -2.54 180)
+					(at 15.24 -2.54 180)
 					(length 2.54)
 					(name "STAT1"
 						(effects
@@ -314,7 +317,7 @@
 				)
 			)
 			(property "Footprint" ""
-				(at 0 0 0)
+				(at -10.16 20.32 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -322,10 +325,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps63802.pdf"
-				(at 0 0 0)
+				(at -10.16 17.78 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -333,10 +337,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "2 A low-IQ synchronous buck-boost converter"
-				(at 0 0 0)
+				(at -10.16 15.24 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -344,6 +349,7 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "TPS63802DLA_0_1"
@@ -571,7 +577,7 @@
 				)
 			)
 			(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-				(at 0 0 0)
+				(at -10.16 20.32 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -579,10 +585,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Datasheet" "https://www.st.com/resource/en/datasheet/usblc6-2.pdf"
-				(at 0 0 0)
+				(at -10.16 17.78 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -590,10 +597,11 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(property "Description" "Low-capacitance two-line USB 2.0 ESD protector"
-				(at 0 0 0)
+				(at -10.16 15.24 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(hide yes)
@@ -601,6 +609,7 @@
 					(font
 						(size 1.27 1.27)
 					)
+					(justify left)
 				)
 			)
 			(symbol "USBLC6-2SC6_0_1"
@@ -2841,13 +2850,13 @@
 		(uuid "ac7ee37c-6de0-483c-8e8f-4dc3a968a106")
 	)
 	(junction
-		(at 86.36 127)
+		(at 91.44 127)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b46c2ca4-43ac-4e17-abef-16fa6d78a404")
 	)
 	(junction
-		(at 99.06 129.54)
+		(at 104.14 129.54)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b526ca5b-7e3b-41b7-8296-4effb6a85048")
@@ -3078,7 +3087,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 119.38) (xy 86.36 127)
+			(xy 91.44 119.38) (xy 91.44 127)
 		)
 		(stroke
 			(width 0)
@@ -3128,7 +3137,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 111.76) (xy 86.36 109.22)
+			(xy 91.44 111.76) (xy 91.44 109.22)
 		)
 		(stroke
 			(width 0)
@@ -3688,7 +3697,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 129.54) (xy 99.06 129.54)
+			(xy 82.55 129.54) (xy 104.14 129.54)
 		)
 		(stroke
 			(width 0)
@@ -3708,7 +3717,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 127) (xy 86.36 127)
+			(xy 82.55 127) (xy 91.44 127)
 		)
 		(stroke
 			(width 0)
@@ -3718,7 +3727,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 124.46) (xy 80.01 124.46)
+			(xy 82.55 124.46) (xy 85.09 124.46)
 		)
 		(stroke
 			(width 0)
@@ -3798,7 +3807,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 111.76) (xy 99.06 109.22)
+			(xy 104.14 111.76) (xy 104.14 109.22)
 		)
 		(stroke
 			(width 0)
@@ -3838,7 +3847,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 129.54) (xy 101.6 129.54)
+			(xy 104.14 129.54) (xy 106.68 129.54)
 		)
 		(stroke
 			(width 0)
@@ -3958,7 +3967,7 @@
 	)
 	(wire
 		(pts
-			(xy 77.47 121.92) (xy 80.01 121.92)
+			(xy 82.55 121.92) (xy 85.09 121.92)
 		)
 		(stroke
 			(width 0)
@@ -3978,7 +3987,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 127) (xy 88.9 127)
+			(xy 91.44 127) (xy 93.98 127)
 		)
 		(stroke
 			(width 0)
@@ -4018,7 +4027,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 119.38) (xy 99.06 129.54)
+			(xy 104.14 119.38) (xy 104.14 129.54)
 		)
 		(stroke
 			(width 0)
@@ -4218,7 +4227,7 @@
 	)
 	(hierarchical_label "3V3"
 		(shape output)
-		(at 86.36 109.22 90)
+		(at 91.44 109.22 90)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4317,7 +4326,7 @@
 	)
 	(hierarchical_label "VBAT"
 		(shape output)
-		(at 80.01 124.46 0)
+		(at 85.09 124.46 0)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4328,7 +4337,7 @@
 	)
 	(hierarchical_label "CHG_STAT1"
 		(shape output)
-		(at 101.6 129.54 0)
+		(at 106.68 129.54 0)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4394,7 +4403,7 @@
 	)
 	(hierarchical_label "3V3"
 		(shape output)
-		(at 99.06 109.22 90)
+		(at 104.14 109.22 90)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4471,7 +4480,7 @@
 	)
 	(hierarchical_label "CHG_STAT2"
 		(shape output)
-		(at 88.9 127 0)
+		(at 93.98 127 0)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -4482,7 +4491,7 @@
 	)
 	(hierarchical_label "VSYS"
 		(shape output)
-		(at 80.01 121.92 0)
+		(at 85.09 121.92 0)
 		(effects
 			(font
 				(size 0.9 0.9)
@@ -6858,7 +6867,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 86.36 115.57 0)
+		(at 91.44 115.57 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -6869,7 +6878,7 @@
 		(dnp no)
 		(uuid "7d765563-3fe2-4a9a-9be9-90faac471b10")
 		(property "Reference" "R10"
-			(at 89.916 114.3 0)
+			(at 94.996 114.3 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6879,7 +6888,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 89.916 116.84 0)
+			(at 94.996 116.84 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6889,7 +6898,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 86.36 115.57 0)
+			(at 91.44 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6900,7 +6909,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0710KL"
-			(at 86.36 115.57 0)
+			(at 91.44 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6911,7 +6920,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 86.36 115.57 0)
+			(at 91.44 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6936,7 +6945,7 @@
 			)
 		)
 		(property "MPN" "RC0603FR-0710KL"
-			(at 89.916 116.84 0)
+			(at 94.996 116.84 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -6947,7 +6956,7 @@
 			)
 		)
 		(property "Manufacturer" "Yageo"
-			(at 89.916 116.84 0)
+			(at 94.996 116.84 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9677,7 +9686,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 99.06 115.57 0)
+		(at 104.14 115.57 0)
 		(mirror y)
 		(unit 1)
 		(body_style 1)
@@ -9688,7 +9697,7 @@
 		(dnp no)
 		(uuid "f845f5e6-e00f-49c2-8549-fef7a675ad17")
 		(property "Reference" "R9"
-			(at 102.87 114.554 0)
+			(at 107.95 114.554 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9698,7 +9707,7 @@
 			)
 		)
 		(property "Value" "10k"
-			(at 102.87 117.094 0)
+			(at 107.95 117.094 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9708,7 +9717,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric"
-			(at 99.06 115.57 0)
+			(at 104.14 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9719,7 +9728,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.yageogroup.com/component-documentation/download/specsheet/RC0603FR-0710KL"
-			(at 99.06 115.57 0)
+			(at 104.14 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9730,7 +9739,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 99.06 115.57 0)
+			(at 104.14 115.57 0)
 			(hide yes)
 			(show_name no)
 			(do_not_autoplace no)
@@ -9755,7 +9764,7 @@
 			)
 		)
 		(property "MPN" "RC0603FR-0710KL"
-			(at 102.87 117.094 0)
+			(at 107.95 117.094 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -9766,7 +9775,7 @@
 			)
 		)
 		(property "Manufacturer" "Yageo"
-			(at 102.87 117.094 0)
+			(at 107.95 117.094 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects

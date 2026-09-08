@@ -19,7 +19,7 @@
 			)
 		)
 		(property "Value" "BQ25185DLH"
-			(at 7.62 10.16 0)
+			(at 12.7 10.16 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
@@ -30,7 +30,7 @@
 			)
 		)
 		(property "Footprint" "Package_DFN_QFN:Texas_DLH0010A_WSON-10-1EP_2.2x2mm_P0.4mm_EP0.9x1.5mm_ThermalVias"
-			(at 0 0 0)
+			(at -10.16 20.32 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -38,10 +38,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/bq25185.pdf"
-			(at 0 0 0)
+			(at -10.16 17.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -49,10 +50,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "1-cell linear charger with power path, NTC input, and dual status outputs"
-			(at 0 0 0)
+			(at -10.16 15.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -60,12 +62,13 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "BQ25185DLH_0_1"
 			(rectangle
 				(start -7.62 7.62)
-				(end 7.62 -7.62)
+				(end 12.7 -7.62)
 				(stroke
 					(width 0.254)
 					(type default)
@@ -77,7 +80,7 @@
 		)
 		(symbol "BQ25185DLH_1_1"
 			(pin power_out line
-				(at 10.16 5.08 180)
+				(at 15.24 5.08 180)
 				(length 2.54)
 				(name "SYS"
 					(effects
@@ -95,7 +98,7 @@
 				)
 			)
 			(pin passive line
-				(at 10.16 2.54 180)
+				(at 15.24 2.54 180)
 				(length 2.54)
 				(name "BAT"
 					(effects
@@ -113,7 +116,7 @@
 				)
 			)
 			(pin open_collector line
-				(at 10.16 0 180)
+				(at 15.24 0 180)
 				(length 2.54)
 				(name "STAT2"
 					(effects
@@ -221,7 +224,7 @@
 				)
 			)
 			(pin open_collector line
-				(at 10.16 -2.54 180)
+				(at 15.24 -2.54 180)
 				(length 2.54)
 				(name "STAT1"
 					(effects
@@ -307,7 +310,7 @@
 			)
 		)
 		(property "Footprint" "Connector_FFC-FPC:Hirose_FH12-24S-0.5SH_1x24-1MP_P0.50mm_Horizontal"
-			(at 0 0 0)
+			(at -5.08 45.72 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -315,10 +318,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.good-display.com/product/391.html"
-			(at 0 0 0)
+			(at -5.08 43.18 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -326,10 +330,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "Good Display GDEY0213B74 2.13 inch 250x122 e-paper panel with an on-glass SSD1680 controller, 24-pin 0.5 mm FPC tail"
-			(at 0 0 0)
+			(at -5.08 40.64 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -337,10 +342,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "ki_keywords" "e-paper epaper display SSD1680 FPC"
-			(at 0 0 0)
+			(at -5.08 38.1 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -348,10 +354,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "ki_fp_filters" "Hirose*FH12*24S*0.5SH*"
-			(at 0 0 0)
+			(at -5.08 35.56 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -359,6 +366,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "GDEY0213B74_1_1"
@@ -836,7 +844,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0 0 0)
+			(at -10.16 20.32 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -844,10 +852,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tps63802.pdf"
-			(at 0 0 0)
+			(at -10.16 17.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -855,10 +864,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "2 A low-IQ synchronous buck-boost converter"
-			(at 0 0 0)
+			(at -10.16 15.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -866,6 +876,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "TPS63802DLA_0_1"
@@ -1093,7 +1104,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23-6"
-			(at 16.256 20.574 0)
+			(at -10.16 20.32 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1101,10 +1112,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.st.com/resource/en/datasheet/usblc6-2.pdf"
-			(at 28.702 25.654 0)
+			(at -10.16 17.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1112,10 +1124,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "Low-capacitance two-line USB 2.0 ESD protector"
-			(at 24.892 23.114 0)
+			(at -10.16 15.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1123,6 +1136,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "USBLC6-2SC6_0_1"
@@ -1281,7 +1295,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 0.762 0 0)
+			(at -7.62 21.844 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1289,10 +1303,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.kingbrightusa.com/images/catalog/SPEC/APBA2006SURKCGKC.pdf"
-			(at 0.762 0 0)
+			(at -7.62 19.304 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1300,10 +1315,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "Side-view red/green LED; pins 1=A red, 4=K red, 2=A green, 3=K green (Kingbright DSAQ1665)."
-			(at 0 0 0)
+			(at -7.62 16.764 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1311,10 +1327,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "ki_keywords" "LED diode bicolor dual"
-			(at 0 0 0)
+			(at -7.62 14.224 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1322,10 +1339,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "ki_fp_filters" "LED* LED_SMD:* LED_THT:*"
-			(at 0 0 0)
+			(at -7.62 11.684 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1333,6 +1351,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "APBA2006SURKCGKC_0_1"
@@ -1551,48 +1570,53 @@
 		(in_bom yes)
 		(on_board yes)
 		(property "Reference" "U"
-			(at 0 0 0)
+			(at -12.7 27.94 0)
 			(hide yes)
 			(effects
 				(font
 					(size 0.9 0.9)
 				)
+				(justify left)
 			)
 		)
 		(property "Value" "TLV9022DGK"
-			(at 0 0 0)
+			(at -12.7 25.4 0)
 			(hide yes)
 			(effects
 				(font
 					(size 0.9 0.9)
 				)
+				(justify left)
 			)
 		)
 		(property "Footprint" "Package_SO:VSSOP-8_3x3mm_P0.65mm"
-			(at 0 0 0)
+			(at -12.7 22.86 0)
 			(hide yes)
 			(effects
 				(font
 					(size 0.9 0.9)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://www.ti.com/lit/ds/symlink/tlv9022.pdf"
-			(at 0 0 0)
+			(at -12.7 20.32 0)
 			(hide yes)
 			(effects
 				(font
 					(size 0.9 0.9)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "Dual precision comparator with open-drain outputs; TI DGK pinout"
-			(at 0 0 0)
+			(at -12.7 17.78 0)
 			(hide yes)
 			(effects
 				(font
 					(size 0.9 0.9)
 				)
+				(justify left)
 			)
 		)
 		(symbol "TLV9022DGK_0_1"
@@ -1788,7 +1812,7 @@
 			)
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-23"
-			(at 5.08 2.54 0)
+			(at -5.08 17.78 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1796,10 +1820,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Datasheet" "https://assets.nexperia.com/documents/data-sheet/2N7002P.pdf"
-			(at 0 0 0)
+			(at -5.08 15.24 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1807,10 +1832,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "Description" "N-MOSFET transistor, gate/source/drain"
-			(at 0 0 0)
+			(at -5.08 12.7 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1818,10 +1844,11 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(property "ki_keywords" "transistor NMOS N-MOS N-MOSFET"
-			(at 0 0 0)
+			(at -5.08 10.16 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(hide yes)
@@ -1829,6 +1856,7 @@
 				(font
 					(size 1.27 1.27)
 				)
+				(justify left)
 			)
 		)
 		(symbol "2N7002P_0_1"
