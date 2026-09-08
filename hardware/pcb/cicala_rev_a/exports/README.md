@@ -1,6 +1,6 @@
 # Generated Rev A outputs
 
-`cicala_rev_a_prototype_2026-09-07.zip` is the dated review snapshot containing
+`cicala_rev_a_prototype_2026-09-08.zip` is the dated review snapshot containing
 the manufacturing files, current public source files (including firmware),
 enclosure sources/prints, instructions and checksums. Git metadata and downloaded
 dependencies are excluded. Unpack it first; upload its inner `cicala_rev_a_gerbers.zip`
@@ -26,6 +26,6 @@ stand in for running the checks. After a verified source revision and updated
 `review/verification.json`, regenerate/check the archive from the repo root:
 
 ```sh
-python3 hardware/pcb/tools/package_prototype.py 2026-09-07
-python3 hardware/pcb/tools/package_prototype.py 2026-09-07 --check
+python3 hardware/pcb/tools/package_prototype.py 2026-09-08
+python3 hardware/pcb/tools/package_prototype.py 2026-09-08 --check
 ```

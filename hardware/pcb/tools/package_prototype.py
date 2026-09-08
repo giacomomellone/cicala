@@ -22,7 +22,7 @@ def snapshot_files():
     tracked = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT)
     added = subprocess.check_output([
         'git', 'ls-files', '-z', '--others', '--exclude-standard',
-        'hardware', 'firmware', 'docs/firmware_rev_a.md'], cwd=ROOT)
+        'hardware', 'firmware', 'website', 'docs/firmware_rev_a.md'], cwd=ROOT)
     names = sorted(set((tracked + added).decode().split('\0')) - {''})
     files = []
     for name in names:

@@ -1,5 +1,23 @@
 # Silkscreen artwork
 
+`cicala-mark.json` is stroke geometry derived from the public
+`website/public/brand/cicala-mark.svg`. It stores the SVG's SHA256 and native
+cubic curves and lines, centred in an 8 mm square with a 0.359 mm stroke.
+`apply_silkscreen.py` mirrors it onto `B.SilkS` at (61, 8.5) mm beside the
+wordmark. The group is named `Cicala cicada mark` in KiCad.
+
+Regenerate with fontTools installed, then apply just the mark to preserve
+existing labels, reference positions and all electrical geometry:
+
+```sh
+python3 hardware/pcb/tools/make_cicada.py \
+  website/public/brand/cicala-mark.svg \
+  hardware/pcb/tools/assets/cicala-mark.json
+python3 hardware/pcb/tools/apply_silkscreen.py \
+  hardware/pcb/cicala_rev_a/cicala_rev_a.kicad_pcb \
+  hardware/pcb/cicala_rev_a/cicala_rev_a.kicad_pcb --mark-only
+```
+
 `cicala-wordmark.json` is polygon artwork for the public lowercase wordmark,
 set in Literata Latin 400 normal with -0.035 em tracking at 22 mm ink width.
 It contains only this word's outlines, not an embedded font program. The
@@ -20,4 +38,5 @@ python3 hardware/pcb/tools/make_wordmark.py \
 ```
 
 Ordinary board generation reads the committed artwork and does not require
-Node, website dependencies, fontTools or Brotli.
+Node, website dependencies, fontTools or Brotli. Regenerate the fabrication
+exports after updating the board.
