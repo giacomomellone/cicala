@@ -75,8 +75,8 @@ static void cicala_net_show_sync_result(enum cicala_sync_result result, uint16_t
 
     switch (result) {
     case CICALA_SYNC_UPDATED:
-        msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text),
-                                      "New questions: %u in this deck (%s)", count, version);
+        msg.len = (uint16_t) snprintk(msg.text, sizeof(msg.text), "New questions: %u (%s)", count,
+                                      version);
         break;
 
     case CICALA_SYNC_CURRENT:

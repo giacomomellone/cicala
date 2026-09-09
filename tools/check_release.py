@@ -45,7 +45,7 @@ def check_manifest(path: Path, base_url: str) -> list[str]:
     urls = []
     sigs = []
     schema = manifest.get("schema")
-    if schema == 3:
+    if schema == 4:
         languages = manifest.get("languages")
         if not languages:
             findings.append(f"{path.name}: no languages")

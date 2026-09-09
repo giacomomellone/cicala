@@ -1,6 +1,6 @@
 # sync
 
-Sync downloads the release manifest and the selected language's raw QDB3
+Sync downloads the release manifest and the selected language's raw QDB4
 bundle, checks its size, SHA-256 digest, and Ed25519 signature, then swaps it
 into LittleFS. Any failure leaves the installed corpus unchanged.
 

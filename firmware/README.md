@@ -46,8 +46,8 @@ The [Rev A build and flash guide](../docs/firmware_rev_a.md) covers toolchain
 installation, first USB download, JTAG, UART recovery and hardware acceptance.
 Rev A reads both BQ25185 status pins: high/high means idle or disabled, so it
 does not claim a full battery from voltage alone. The release application and
-MCUboot both use 16 MiB flash without PSRAM. Firmware validation passed 226
-QEMU cases across 16 configurations, with three platform-specific skips.
+MCUboot both use 16 MiB flash without PSRAM. Firmware validation passed 195
+QEMU cases across 16 configurations, with two skips.
 Physical USB flashing, JTAG, charging and display operation remain prototype
 acceptance tests. The accepted question database is currently empty; use the
 existing charset diagnostic for initial display testing.
@@ -57,7 +57,7 @@ existing charset diagnostic for initial display testing.
 - ESP32-S3-DevKitC-1-N8R8 on the breadboard
 - ESP32-S3-WROOM-1-N16 on rev A
 - 250 × 122 GDEY0213B74 e-paper panel with SSD1680 controller
-- Category and Next buttons
+- Filters and Next buttons
 - red and green status LEDs; lighting both produces amber
 - single-cell LiPo with a bq25185 power-path bench
 
@@ -110,13 +110,13 @@ OpenOCD on port 3333. `just fw-debugserver` starts the server without flashing.
 
 ## Interaction
 
-- Category advances through the five device decks (Work stays on the website)
-  and shows the new deck name.
-- Next draws one question from the active deck.
-- A cold boot starts at New People. RTC memory preserves the active deck,
-  shuffle bag, panel state, and partial-refresh count across deep sleep.
+- Filters opens the menu or advances through Dark, Sexual, Heavy, and Done.
+- Next draws during play, toggles a permission in the menu, or applies Done.
+- A cold boot excludes all three permissions. RTC memory preserves the question
+  snapshot, menu draft/cursor, per-language bags, and refresh count through sleep.
 - Presses during a panel refresh are dropped.
-- Normal playback includes depths 1 and 2. Depth 3 remains browse-only.
+- Ordinary playback includes depths 1 and 2. Heavy permits depth 3.
+- Display errors and refused refreshes do not commit pending selection state.
 - Holding both buttons through boot opens the setup portal.
 - External power keeps the device awake and opens the sync and update window.
 - LOW and CRITICAL battery states refuse panel refreshes. LOW blinks amber
@@ -141,14 +141,14 @@ firmware/
 ```
 
 The build creates question fixtures from the real YAML database. Firmware tests
-therefore exercise the same QDB3 bytes compiled into the application.
+therefore exercise the same QDB4 bytes compiled into the application.
 
 ## Hardware checks
 
 The breadboard rig has verified:
 
-- Category and Next from GPIO input through the panel refresh
-- English and German QDB3 bundles and no-repeat draws
+- Filters and Next from GPIO input through the panel refresh
+- English and German QDB4 bundles and no-repeat draws
 - every shipped question at the minimum font size
 - partial and full refresh policy on the GDEY0213B74
 - deep-sleep wake and RTC-retained state

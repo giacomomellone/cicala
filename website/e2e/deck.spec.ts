@@ -9,21 +9,13 @@ test.describe("your deck", () => {
     await expect(page.locator("#d-export")).toBeDisabled();
   });
 
-  test("saved questions appear and the deck chips filter them", async ({ page }) => {
+  test("saved questions remain available without category chips", async ({ page }) => {
     skipWithoutQuestions("en");
-    const questions = payload("en");
-    const work = questions.find((q) => q.decks.includes("work"))!;
-    const notWork = questions.find((q) => !q.decks.includes("work"))!;
-    await seedStorage(page, {
-      "cicala.favs": JSON.stringify([work.id, notWork.id]),
-    });
-
+    const questions = payload("en").slice(0, 2);
+    await seedStorage(page, { "cicala.favs": JSON.stringify(questions.map((q) => q.id)) });
     await page.goto("/deck");
-    await expect(page.locator("#d-rows .row")).toHaveCount(2);
-    await expect(page.locator("#d-count")).toHaveText(/^2\b/);
-
-    await page.locator('#deck-chips [data-deck="work"]').click();
-    await expect(page.locator("#d-rows .row-q")).toHaveText([work.text]);
+    await expect(page.locator("#d-rows .row")).toHaveCount(questions.length);
+    await expect(page.locator("#deck-chips")).toHaveCount(0);
   });
 
   test("share copies a link that reproduces the deck", async ({ page }) => {

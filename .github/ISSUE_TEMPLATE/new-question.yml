@@ -8,7 +8,7 @@ body:
       value: |
         Thanks for adding to the database! A maintainer who speaks your language reviews every
         submission; once approved it ships to the website within minutes and to every device with
-        the next release. Quality bar: answerable in every selected deck, open-ended (no yes/no),
+        the next release. Quality bar: answerable without a specific shared relationship, open-ended (no yes/no),
         and specific enough to start a story. See your language's style guide in
         `questions/<lang>/STYLE.md`.
   - type: dropdown
@@ -24,25 +24,10 @@ body:
     validations:
       required: true
   - type: dropdown
-    id: decks
-    attributes:
-      label: Decks
-      description: Choose every physical selector position where the question fits. "new_people" assumes no shared history; "close" assumes familiarity. Dark or spicy questions belong only in "wild".
-      multiple: true
-      options:
-        - new_people
-        - close
-        - family
-        - work
-        - here
-        - wild
-    validations:
-      required: true
-  - type: dropdown
     id: depth
     attributes:
       label: Depth
-      description: Editorial exposure cost, independent of tone. The initial player serves only 1 and 2.
+      description: Editorial exposure cost, independent of tone. Depth 3 requires the Heavy permission during play.
       options:
         - 1 - little public exposure
         - 2 - a personal construction
@@ -61,12 +46,12 @@ body:
     id: tags
     attributes:
       label: Tags (optional)
-      description: Pick at most one or two. "dark" and "spicy" are tone markers and require Wild as the only deck.
+      description: Pick at most one or two. "dark" and "sexual" are independent content restrictions.
       multiple: true
       options:
         - icebreaker
         - reflective
-        - spicy
+        - sexual
         - dark
         - hypothetical
         - memory

@@ -1,6 +1,5 @@
 ---
 // Browse (spec §7.5): sticky toolbar, flat rows, 100-row pagination.
-import Chips from "../components/Chips.astro";
 import { TAGS } from "../config";
 import { t, type StringKey } from "../i18n";
 import Base from "../layouts/Base.astro";
@@ -24,6 +23,16 @@ const firstPage = newestFirst.slice(0, 100);
         aria-label={t("en", "browse.search")}
         data-i18n-aria="browse.search"
       />
+      <select id="b-depth" aria-label="depth filter">
+        <option value="" data-i18n="browse.alldepths">{t("en", "browse.alldepths")}</option>
+        {
+          [1, 2, 3].map((depth) => (
+            <option value={depth} data-i18n={`depth.${depth}`}>
+              {t("en", `depth.${depth}` as StringKey)}
+            </option>
+          ))
+        }
+      </select>
       <select id="b-tag" aria-label="tag filter">
         <option value="" data-i18n="browse.alltags">{t("en", "browse.alltags")}</option>
         {
@@ -43,7 +52,6 @@ const firstPage = newestFirst.slice(0, 100);
         >
       </select>
     </div>
-    <Chips id="browse-chips" />
   </div>
 
   <p class="disclaimer browse-disclaimer" data-i18n="play.disclaimer">
@@ -59,9 +67,6 @@ const firstPage = newestFirst.slice(0, 100);
               {q.text}
             </a>
             <div class="row-meta">
-              {q.decks.map((deck) => (
-                <span data-i18n={`deck.${deck}`}>{t("en", `deck.${deck}` as StringKey)}</span>
-              ))}
               <span data-i18n={`depth.${q.depth}`}>{t("en", `depth.${q.depth}` as StringKey)}</span>
               {q.tags.map((tag) => (
                 <span data-i18n={`tag.${tag}`}>{t("en", `tag.${tag}` as StringKey)}</span>

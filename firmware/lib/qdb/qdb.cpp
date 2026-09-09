@@ -13,21 +13,21 @@ constexpr uint32_t kFnvOffset = 2166136261u;
 constexpr uint32_t kFnvPrime = 16777619u;
 
 /** Magic bytes double as the format version. */
-constexpr uint8_t kMagic[] = {'Q', 'D', 'B', '3'};
+constexpr uint8_t kMagic[] = {'Q', 'D', 'B', '4'};
 
-/** Per-question record: mask, metadata, forms, u16 LE text length, text. */
-constexpr size_t kRecordHeaderBytes = 5;
-constexpr size_t kRecordMetadataOffset = 1;
-constexpr size_t kRecordFormsOffset = 2;
-constexpr size_t kRecordTextLenOffset = 3;
+/** Per-question record: metadata, forms, u16 LE text length, text. */
+constexpr size_t kRecordHeaderBytes = 4;
+constexpr size_t kRecordMetadataOffset = 0;
+constexpr size_t kRecordFormsOffset = 1;
+constexpr size_t kRecordTextLenOffset = 2;
 
 /** Metadata byte: bits 0–1 are depth - 1, then the tone flags. */
 constexpr uint8_t kDepthBitsMask = 0x03;
-constexpr uint8_t kSpicyBit = 1 << 2;
+constexpr uint8_t kSexualBit = 1 << 2;
 constexpr uint8_t kDarkBit = 1 << 3;
 
 /** Texture cost classes: band and form can each repeat, or neither, or both. */
-constexpr uint8_t kTextureClasses = 3;
+constexpr uint8_t kTextureClasses = 6;
 
 uint32_t fnv1a(uint32_t hash, const void *data, size_t len)
 {
@@ -51,6 +51,7 @@ uint16_t read_u16(const uint8_t *p)
 bool Qdb::open(const uint8_t *data, size_t size)
 {
     _data = nullptr;
+    _count = 0;
 
     if (data == nullptr || size < sizeof(kMagic)) {
         return false;
@@ -90,7 +91,7 @@ bool Qdb::open(const uint8_t *data, size_t size)
     pos += 2;
 
     if (count > kMaxQuestions) {
-        // Bag state has one bit per question and deck.
+        // Bag state has one bit per question.
         return false;
     }
 
@@ -102,6 +103,11 @@ bool Qdb::open(const uint8_t *data, size_t size)
             return false;
         }
 
+        const uint8_t metadata = data[walk];
+        if ((metadata & 0xf0) || (metadata & kDepthBitsMask) == 3 ||
+            (data[walk + kRecordFormsOffset] & ~kFormBitsValid)) {
+            return false;
+        }
         const uint16_t text_len = read_u16(data + walk + kRecordTextLenOffset);
 
         walk += kRecordHeaderBytes;
@@ -126,11 +132,7 @@ bool Qdb::open(const uint8_t *data, size_t size)
     _language = strings[1];
     _language_len = lengths[1];
 
-    uint32_t hash = fnv1a(kFnvOffset, _version, _version_len);
-
-    hash = fnv1a(hash, _language, _language_len);
-    hash = fnv1a(hash, &_count, sizeof(_count));
-    _fingerprint = hash;
+    _fingerprint = fnv1a(kFnvOffset, data, size);
 
     return true;
 }
@@ -148,14 +150,12 @@ bool Qdb::at(uint16_t index, Question &out) const
         pos += kRecordHeaderBytes + read_u16(_data + pos + kRecordTextLenOffset);
     }
 
-    const uint8_t mask = _data[pos];
     const uint8_t metadata = _data[pos + kRecordMetadataOffset];
     const uint16_t text_len = read_u16(_data + pos + kRecordTextLenOffset);
 
-    out.deck_mask = mask;
     out.depth = static_cast<uint8_t>((metadata & kDepthBitsMask) + 1);
     out.forms = _data[pos + kRecordFormsOffset];
-    out.spicy = (metadata & kSpicyBit) != 0;
+    out.sexual = (metadata & kSexualBit) != 0;
     out.dark = (metadata & kDarkBit) != 0;
     out.text = reinterpret_cast<const char *>(_data + pos + kRecordHeaderBytes);
     out.len = text_len;
@@ -163,38 +163,20 @@ bool Qdb::at(uint16_t index, Question &out) const
     return true;
 }
 
-bool Qdb::is_eligible(uint16_t index, uint8_t deck, uint8_t max_depth) const
+bool Qdb::is_eligible(uint16_t index, uint8_t permissions) const
 {
     Question q;
-
-    if (deck >= kDeckCount || !at(index, q)) {
-        return false;
-    }
-
-    return (q.deck_mask & (1u << deck)) != 0 && q.depth <= max_depth;
+    return !(permissions & ~kPermissionsValid) && at(index, q) &&
+           (!q.dark || (permissions & kAllowDark)) && (!q.sexual || (permissions & kAllowSexual)) &&
+           (q.depth <= 2 || (permissions & kAllowHeavy));
 }
 
-uint16_t Qdb::eligible_count(uint8_t deck, uint8_t max_depth) const
+uint16_t Qdb::eligible_count(uint8_t permissions) const
 {
-    if (!is_open() || deck >= kDeckCount) {
-        return 0;
-    }
-
     uint16_t total = 0;
-    size_t pos = _first;
-
-    for (uint16_t i = 0; i < _count; i++) {
-        const uint8_t mask = _data[pos];
-        const uint8_t metadata = _data[pos + kRecordMetadataOffset];
-        const uint8_t depth = static_cast<uint8_t>((metadata & kDepthBitsMask) + 1);
-
-        if ((mask & (1u << deck)) != 0 && depth <= max_depth) {
-            total++;
-        }
-
-        pos += kRecordHeaderBytes + read_u16(_data + pos + kRecordTextLenOffset);
+    for (uint16_t i = 0; i < count(); i++) {
+        total += is_eligible(i, permissions);
     }
-
     return total;
 }
 
@@ -214,29 +196,29 @@ void Bag::reset()
 {
     _state.recent_len = 0;
     _state.recent_next = 0;
-    _state.last_band = 0;
+    _state.last_depth = 0;
     _state.last_forms = 0;
 
-    for (uint8_t deck = 0; deck < kDeckCount; deck++) {
-        clear_deck(deck);
+    memset(_state.drawn, 0, sizeof(_state.drawn));
+}
+
+void Bag::clear_eligible(const Qdb &qdb, uint8_t permissions)
+{
+    for (uint16_t i = 0; i < qdb.count(); i++) {
+        if (qdb.is_eligible(i, permissions)) {
+            _state.drawn[i / 32] &= ~(1u << (i % 32));
+        }
     }
 }
 
-void Bag::clear_deck(uint8_t deck)
+bool Bag::is_drawn(uint16_t index) const
 {
-    for (uint16_t w = 0; w < kBitmapWords; w++) {
-        _state.drawn[deck][w] = 0;
-    }
+    return (_state.drawn[index / 32] & (1u << (index % 32))) != 0;
 }
 
-bool Bag::is_drawn(uint8_t deck, uint16_t index) const
+void Bag::mark_drawn(uint16_t index)
 {
-    return (_state.drawn[deck][index / 32] & (1u << (index % 32))) != 0;
-}
-
-void Bag::mark_drawn(uint8_t deck, uint16_t index)
-{
-    _state.drawn[deck][index / 32] |= 1u << (index % 32);
+    _state.drawn[index / 32] |= 1u << (index % 32);
 }
 
 bool Bag::is_recent(uint16_t index) const
@@ -264,16 +246,12 @@ void Bag::push_recent(uint16_t index)
     }
 }
 
-uint16_t Bag::drawn_count(uint8_t deck) const
+uint16_t Bag::drawn_count() const
 {
-    if (deck >= kDeckCount) {
-        return 0;
-    }
-
     uint16_t total = 0;
 
     for (uint16_t w = 0; w < kBitmapWords; w++) {
-        uint32_t word = _state.drawn[deck][w];
+        uint32_t word = _state.drawn[w];
 
         while (word != 0) {
             total += (word & 1u);
@@ -287,9 +265,9 @@ uint16_t Bag::drawn_count(uint8_t deck) const
 uint8_t Bag::texture_cost(const Question &q) const
 {
     const uint8_t band = depth_band(q.depth);
-    uint8_t cost = 0;
+    uint8_t cost = (_state.last_depth == 3 && q.depth == 3) ? 3 : 0;
 
-    if (_state.last_band != 0 && band == _state.last_band) {
+    if (_state.last_depth != 0 && band == depth_band(_state.last_depth)) {
         cost++;
     }
 
@@ -300,8 +278,7 @@ uint8_t Bag::texture_cost(const Question &q) const
     return cost;
 }
 
-bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_recent,
-               uint16_t &index) const
+bool Bag::pick(const Qdb &qdb, uint8_t permissions, uint8_t recency, uint16_t &index) const
 {
     // Count first to avoid a candidate buffer. With texture on, the draw is
     // uniform within the cheapest cost class: a question that repeats both
@@ -312,11 +289,13 @@ bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_rece
     uint8_t best = kTextureClasses; // unset: costs run 0..kTextureClasses-1
 
     for (uint16_t i = 0; i < qdb.count(); i++) {
-        if (!qdb.is_eligible(i, deck, max_depth) || is_drawn(deck, i)) {
+        if (!qdb.is_eligible(i, permissions) || is_drawn(i)) {
             continue;
         }
 
-        if (honour_recent && is_recent(i)) {
+        if ((recency == 2 && is_recent(i)) ||
+            (recency >= 1 && _state.recent_len &&
+             _state.recent[(_state.recent_next + kRecentRing - 1) % kRecentRing] == i)) {
             continue;
         }
 
@@ -346,11 +325,13 @@ bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_rece
     uint16_t target = static_cast<uint16_t>(_rand(_ctx) % pool);
 
     for (uint16_t i = 0; i < qdb.count(); i++) {
-        if (!qdb.is_eligible(i, deck, max_depth) || is_drawn(deck, i)) {
+        if (!qdb.is_eligible(i, permissions) || is_drawn(i)) {
             continue;
         }
 
-        if (honour_recent && is_recent(i)) {
+        if ((recency == 2 && is_recent(i)) ||
+            (recency >= 1 && _state.recent_len &&
+             _state.recent[(_state.recent_next + kRecentRing - 1) % kRecentRing] == i)) {
             continue;
         }
 
@@ -373,26 +354,18 @@ bool Bag::pick(const Qdb &qdb, uint8_t deck, uint8_t max_depth, bool honour_rece
     return false;
 }
 
-bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index, Question &out)
+bool Bag::draw(const Qdb &qdb, uint8_t permissions, uint16_t &index, Question &out)
 {
-    if (!qdb.is_open() || deck >= kDeckCount) {
+    if (!qdb.is_open() || (permissions & ~kPermissionsValid) || !qdb.eligible_count(permissions)) {
         return false;
     }
-
-    bool found = pick(qdb, deck, max_depth, true, index);
-
-    if (!found) {
-        // Ignore recent history when it excludes every remaining question.
-        found = pick(qdb, deck, max_depth, false, index);
-    }
-
-    if (!found) {
-        // Start a new cycle while keeping the recent-question filter.
-        clear_deck(deck);
-        found = pick(qdb, deck, max_depth, true, index);
-
-        if (!found) {
-            found = pick(qdb, deck, max_depth, false, index);
+    bool found = false;
+    for (int cycle = 0; cycle < 2 && !found; cycle++) {
+        for (int recency = 2; recency >= 0 && !found; recency--) {
+            found = pick(qdb, permissions, recency, index);
+        }
+        if (!found && cycle == 0) {
+            clear_eligible(qdb, permissions);
         }
     }
 
@@ -400,16 +373,15 @@ bool Bag::draw(const Qdb &qdb, uint8_t deck, uint8_t max_depth, uint16_t &index,
         return false;
     }
 
-    mark_drawn(deck, index);
+    mark_drawn(index);
     push_recent(index);
 
     if (!qdb.at(index, out)) {
         return false;
     }
 
-    // Texture compares against what the panel showed, not against the deck's
-    // history, so a deck switch does not reset it. A cycle reset keeps it too.
-    _state.last_band = depth_band(out.depth);
+    // Remember the exact depth and forms across filter and cycle changes.
+    _state.last_depth = out.depth;
     _state.last_forms = out.forms;
 
     return true;

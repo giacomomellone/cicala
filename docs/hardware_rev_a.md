@@ -51,26 +51,26 @@ first download, diagnostics, charger indications and normal operation.
 All dimensions are millimetres. Viewed from above, the case origin is the
 rear-left corner: X right, Y toward the USB front edge, Z up from the table.
 
-| Item | Contract |
-| --- | --- |
-| Case | 84 × 56 × 24.05, flat face, R3 outside corners |
-| PCB | Origin (3,3.5,16.5), 78 × 49 × 1.2, R2 corners |
-| PCB top | Z=17.7 |
-| Mounts | H1 (13,7), H2 (77.5,7), H3 (13,49), H4 (79,49), Ø2.7 NPTH |
-| Retention | Three M2.5 × 20 countersunk screws at H1/H2/H4; H3 locating peg |
-| Battery reserve | (10.2,10), 63 × 36 × 6.3, plus 0.2 adhesive; top Z=10.05 |
-| Battery | Protected Adafruit 258 / PKCELL LP503562, 1200 mAh |
-| Category / Next | Centres (27,12) and (53,12); 0.15 radial cap clearance |
+| Item               | Contract                                                                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------- |
+| Case               | 84 × 56 × 24.05, flat face, R3 outside corners                                                  |
+| PCB                | Origin (3,3.5,16.5), 78 × 49 × 1.2, R2 corners                                                  |
+| PCB top            | Z=17.7                                                                                          |
+| Mounts             | H1 (13,7), H2 (77.5,7), H3 (13,49), H4 (79,49), Ø2.7 NPTH                                       |
+| Retention          | Three M2.5 × 20 countersunk screws at H1/H2/H4; H3 locating peg                                 |
+| Battery reserve    | (10.2,10), 63 × 36 × 6.3, plus 0.2 adhesive; top Z=10.05                                        |
+| Battery            | Protected Adafruit 258 / PKCELL LP503562, 1200 mAh                                              |
+| Filters / Next     | Centres (27,12) and (53,12); 0.15 radial cap clearance                                          |
 | Button travel stop | Separate insulating plate on PCB top; nominal 0.85 travel, tune on fitted gold-contact switches |
-| Display glass | Centre (45.075,37), 59.2 × 29.2 × 1.0, rotated 180° |
-| Visible window | Centre (42,37), 50.6 × 25.7 |
-| Lens | Centre (42,37), 55.0 × 30.1 × 0.8, R1 corners |
-| USB-C | J1 underside at (42,50.1), opening 12.6 × 6.4 |
-| Display connector | J2 top at (67.66,38.58), 90°, mouth faces +X, contacts down |
-| Display flex | 14.3 ±0.3 free length, 2.0 nominal bend radius, 3.4 insertion |
-| Battery connector | J3 underside at (73.6,40), 90°; 1=+, 2=NTC, 3=− |
-| Recovery | J4 underside at (39,20), project-specific TC2030 pinout |
-| Antenna exclusion | X=3…9.5 over the full board depth; no PCB copper or metal ballast |
+| Display glass      | Centre (45.075,37), 59.2 × 29.2 × 1.0, rotated 180°                                             |
+| Visible window     | Centre (42,37), 50.6 × 25.7                                                                     |
+| Lens               | Centre (42,37), 55.0 × 30.1 × 0.8, R1 corners                                                   |
+| USB-C              | J1 underside at (42,50.1), opening 12.6 × 6.4                                                   |
+| Display connector  | J2 top at (67.66,38.58), 90°, mouth faces +X, contacts down                                     |
+| Display flex       | 14.3 ±0.3 free length, 2.0 nominal bend radius, 3.4 insertion                                   |
+| Battery connector  | J3 underside at (73.6,40), 90°; 1=+, 2=NTC, 3=−                                                 |
+| Recovery           | J4 underside at (39,20), project-specific TC2030 pinout                                         |
+| Antenna exclusion  | X=3…9.5 over the full board depth; no PCB copper or metal ballast                               |
 
 The display's 48.55 × 23.7046 mm active area is offset from the glass centre.
 Rotating the glass brings the short tail to the right; the case and firmware

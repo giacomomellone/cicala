@@ -7,103 +7,86 @@
 
 - id: q-9cd8b9ca
   text: "Was faellt dir an einem neuen Ort zuerst auf, Teil 1?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-b9948c32
   text: "Was faellt dir an einem neuen Ort zuerst auf, Teil 2?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-8e7b8436
   text: "Was faellt dir an einem neuen Ort zuerst auf, Teil 3?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-7780bb32
   text: "Was faellt dir an einem neuen Ort zuerst auf, Teil 4?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-bd4599f6
   text: "Wofuer entschuldigst du dich nicht mehr, Teil 1?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-26d2ce62
   text: "Wofuer entschuldigst du dich nicht mehr, Teil 2?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-cbc8c74c
   text: "Wofuer entschuldigst du dich nicht mehr, Teil 3?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-cd7aee4b
   text: "Wofuer entschuldigst du dich nicht mehr, Teil 4?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-53daa403
   text: "Welche Familiengeschichte wird jedes Jahr erzaehlt, Teil 1?"
-  decks: [family]
   depth: 2
   tags: [memory]
   added: "2026-09-05"
 - id: q-f5552a68
   text: "Welche Familiengeschichte wird jedes Jahr erzaehlt, Teil 2?"
-  decks: [family]
   depth: 1
   tags: [memory]
   added: "2026-09-05"
 - id: q-05f7737e
   text: "Welchen Teil deiner Arbeit wuerdest du unbezahlt machen, Teil 1?"
-  decks: [work]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-e8389a35
   text: "Welchen Teil deiner Arbeit wuerdest du unbezahlt machen, Teil 2?"
-  decks: [work]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-d5f6464a
   text: "Was ist das Beste in Laufnaehe, Teil 1?"
-  decks: [here]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-f47abf8c
   text: "Was ist das Beste in Laufnaehe, Teil 2?"
-  decks: [here]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-ffc6cf07
   text: "Was ist das Beste in Laufnaehe, Teil 3?"
-  decks: [here]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-4240129d
   text: "Welche Regel wuerdest du aus gutem Grund brechen, Teil 1?"
-  decks: [wild]
   depth: 2
   tags: [hypothetical]
   added: "2026-09-05"
 - id: q-07c3e6e3
   text: "Welche Regel wuerdest du aus gutem Grund brechen, Teil 2?"
-  decks: [wild]
   depth: 1
   tags: [hypothetical]
   added: "2026-09-05"

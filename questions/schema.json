@@ -2,14 +2,21 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://cicala.dev/questions/schema.json",
   "title": "Cicala question corpus",
-  "description": "Each shipped language stores its independent corpus in questions/{lang}/questions.yaml. A question is stored once and may be eligible for more than one physical deck.",
+  "description": "Each language stores one mixed corpus in questions/{lang}/questions.yaml. Depth and tone permissions govern automatic play.",
   "type": "array",
   "items": {
     "type": "object",
     "additionalProperties": false,
-    "required": ["id", "text", "decks", "depth", "added"],
+    "required": [
+      "id",
+      "text",
+      "depth",
+      "added"
+    ],
     "dependentRequired": {
-      "translated_by": ["origin"]
+      "translated_by": [
+        "origin"
+      ]
     },
     "properties": {
       "id": {
@@ -24,15 +31,6 @@
         "maxLength": 140,
         "pattern": "^\\S(.*\\S)?$"
       },
-      "decks": {
-        "description": "One or more selector positions where this question may appear. Deck membership is eligibility, not ownership; store the question once.",
-        "type": "array",
-        "minItems": 1,
-        "uniqueItems": true,
-        "items": {
-          "enum": ["new_people", "close", "family", "work", "here", "wild"]
-        }
-      },
       "depth": {
         "description": "Editorial exposure cost: 1 asks little public exposure, 2 asks for a personal construction, 3 may ask for vulnerability, conflict, fear, loss, or consequential disclosure. It is independent of tone.",
         "type": "integer",
@@ -40,14 +38,14 @@
         "maximum": 3
       },
       "tags": {
-        "description": "Optional controlled vocabulary. `dark` marks morbid or macabre tone; `spicy` marks socially risky or risqué tone. Tone is independent of depth.",
+        "description": "Optional editorial tags. dark marks macabre or disturbing material; sexual marks sexual experiences, desires or explicit material. Depth 3 requires the independent Heavy permission.",
         "type": "array",
         "uniqueItems": true,
         "items": {
           "enum": [
             "icebreaker",
             "reflective",
-            "spicy",
+            "sexual",
             "dark",
             "hypothetical",
             "memory",
@@ -62,7 +60,9 @@
       },
       "translated_by": {
         "description": "Machine-translation provenance. `google` marks a Google Cloud Translation draft or a reviewed descendant of one; it requires `origin` and is never a source for another machine translation.",
-        "enum": ["google"]
+        "enum": [
+          "google"
+        ]
       },
       "author": {
         "description": "Optional free-text credit. Courtesy only, no legal claim; all questions are CC0.",
@@ -77,10 +77,8 @@
     }
   },
   "x-cicala": {
-    "description": "Project config consumed by the validation and build tools. The direct GitHub issue form restates the editorial vocabulary; native website suggestions leave decks, depth and tags to maintainers. `depthLabels` are the exact option strings of the issue form's depth dropdown, indexed by depth minus one. Not part of the JSON Schema vocabulary.",
+    "description": "Project config consumed by the validation and build tools. The direct GitHub issue form restates the editorial vocabulary; native website suggestions leave depth and tags to maintainers. `depthLabels` are the exact option strings of the issue form's depth dropdown, indexed by depth minus one. Not part of the JSON Schema vocabulary.",
     "questionFile": "questions.yaml",
-    "decks": ["new_people", "close", "family", "work", "here", "wild"],
-    "playbackDepthMax": 2,
     "depthLabels": [
       "1 - little public exposure",
       "2 - a personal construction",
@@ -89,28 +87,60 @@
     "tags": [
       "icebreaker",
       "reflective",
-      "spicy",
+      "sexual",
       "dark",
       "hypothetical",
       "memory",
       "wouldyourather"
     ],
-    "keyOrder": ["id", "text", "decks", "depth", "tags", "origin", "translated_by", "author", "added"],
-    "defaultTerminators": ["?"],
-    "closingCharacters": ["\"", "'", "”", "’", "»", "«", ")", "]"],
+    "keyOrder": [
+      "id",
+      "text",
+      "depth",
+      "tags",
+      "origin",
+      "translated_by",
+      "author",
+      "added"
+    ],
+    "defaultTerminators": [
+      "?"
+    ],
+    "closingCharacters": [
+      "\"",
+      "'",
+      "\u201d",
+      "\u2019",
+      "\u00bb",
+      "\u00ab",
+      ")",
+      "]"
+    ],
     "languages": {
       "en": {
         "name": "English",
-        "terminators": ["?"]
+        "terminators": [
+          "?"
+        ]
       },
       "de": {
         "name": "Deutsch",
-        "terminators": ["?"]
+        "terminators": [
+          "?"
+        ]
       },
       "it": {
         "name": "Italiano",
-        "terminators": ["?"]
+        "terminators": [
+          "?"
+        ]
       }
+    },
+    "recentWindow": 20,
+    "defaultPermissions": {
+      "dark": false,
+      "sexual": false,
+      "heavy": false
     }
   }
 }

@@ -1,8 +1,7 @@
 ---
 // The play surface, shared by / and /q/[id] (spec §7.4). Mirrors the device:
-// Category cycles the five decks and names the deck, Next draws from it.
-import type { Deck } from "../config";
-import { t, type StringKey } from "../i18n";
+// Filters sets independent permissions; Next draws from one mixed stream.
+import { t } from "../i18n";
 import { heartIcon, shareIcon } from "../lib/icons";
 import type { Question } from "../lib/data";
 
@@ -10,24 +9,17 @@ interface Props {
   /* Absent when the language has no playable question yet: the panel renders
      the empty state and the client draws nothing until the corpus has one. */
   question?: Question;
-  deck: Deck;
   lang: string;
   /* true on /q/[id] pages — "next" transitions back to / via replaceState */
   permalink?: boolean;
 }
-const { question, deck, lang, permalink = false } = Astro.props;
+const { question, lang, permalink = false } = Astro.props;
 ---
 
-<div
-  class="play"
-  id="play-root"
-  data-seed-id={question?.id}
-  data-seed-deck={deck}
-  data-permalink={permalink ? "1" : "0"}
->
+<div class="play" id="play-root" data-seed-id={question?.id} data-permalink={permalink ? "1" : "0"}>
   <div class="panel">
     <i class="panel__floor dither" aria-hidden="true"></i>
-    <span class="panel__deck" id="q-deck-name">{t("en", `deck.${deck}` as StringKey)}</span>
+    <span class="panel__permissions" id="q-permissions">dark − · sexual − · heavy −</span>
     <a
       class="panel__origin"
       id="q-origin"
@@ -60,13 +52,27 @@ const { question, deck, lang, permalink = false } = Astro.props;
         <p class="question" id="q-text" aria-live="polite">
           {question ? question.text : t("en", "play.empty")}
         </p>
+        <div class="filter-menu" id="q-menu" hidden aria-live="polite">
+          <p class="filter-title" data-i18n="play.filters">{t("en", "play.filters")}</p>
+          <ol aria-label={t("en", "play.filters")}>
+            {
+              [0, 1, 2, 3].map((i) => (
+                <li>
+                  <button type="button" class="filter-row" id={`q-filter-${i}`} />
+                </li>
+              ))
+            }
+          </ol>
+          <p class="filter-hint" data-i18n="filter.hint">{t("en", "filter.hint")}</p>
+          <p class="filter-scope" data-i18n="filter.scope">{t("en", "filter.scope")}</p>
+        </div>
       </div>
     </div>
   </div>
   <div class="device-controls">
-    <button type="button" class="key" id="q-category">
-      <span data-i18n="play.category">{t("en", "play.category")}</span>
-      <span class="key__kbd" aria-hidden="true">c</span>
+    <button type="button" class="key" id="q-filters" aria-expanded="false" aria-controls="q-menu">
+      <span data-i18n="play.filters">{t("en", "play.filters")}</span>
+      <span class="key__kbd" aria-hidden="true">f</span>
     </button>
     <button type="button" class="key" id="q-next">
       <span data-i18n="play.next">{t("en", "play.next")}</span>
@@ -92,6 +98,70 @@ const { question, deck, lang, permalink = false } = Astro.props;
 </div>
 
 <style>
+  [hidden] {
+    display: none !important;
+  }
+  .filter-menu {
+    width: min(100%, 25rem);
+    text-align: left;
+    font-family: var(--font-ui);
+  }
+  .filter-title {
+    margin: 0 0 1rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .filter-menu ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .filter-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.7rem;
+    width: 100%;
+    min-height: 44px;
+    padding: 0.6rem 0.7rem;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    text-align: left;
+    cursor: pointer;
+  }
+  .filter-row.is-selected {
+    background: var(--ink);
+    color: var(--panel);
+  }
+  .filter-row:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  .filter-row[role="switch"]::after {
+    content: "";
+    flex: 0 0 1.6rem;
+    height: 0.85rem;
+    border: 1px solid currentColor;
+    background: linear-gradient(currentColor, currentColor) left 0.15rem center / 0.55rem 0.55rem
+      no-repeat;
+  }
+  .filter-row[aria-checked="true"]::after {
+    background-position: right 0.15rem center;
+  }
+  .filter-hint {
+    margin: 1rem 0 0.5rem;
+    font-size: 0.7rem;
+  }
+  .filter-scope {
+    font-size: 0.65rem;
+    color: var(--ink-soft);
+  }
+
   /* The panel is the e-paper analogue: one enclosed surface, a 1 px rule, and
      no radius, because the device cannot round a corner. */
   .panel {
@@ -130,8 +200,8 @@ const { question, deck, lang, permalink = false } = Astro.props;
   }
 
   /* Both corners are chrome, so the centre line belongs to the question
-     alone: the deck names the panel on the left, the actions own the right. */
-  .panel__deck,
+     alone: permissions sit on the left and actions on the right. */
+  .panel__permissions,
   .panel__acts {
     position: absolute;
     z-index: 1;
@@ -142,7 +212,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
   .panel__origin {
     position: absolute;
     z-index: 1;
-    /* Under the deck name, in the chrome corner. Never over .panel__floor:
+    /* Under the permissions, in the chrome corner. Never over .panel__floor:
        the ramp is densest at the bottom and eats small type there. */
     top: calc(clamp(0.55rem, 2.4vw, 0.9rem) + clamp(1.3rem, 4.4vw, 1.7rem));
     left: clamp(0.8rem, 3.5vw, 1.3rem);
@@ -157,12 +227,12 @@ const { question, deck, lang, permalink = false } = Astro.props;
     text-underline-offset: 2px;
   }
 
-  .panel__deck {
+  .panel__permissions {
     left: clamp(0.8rem, 3.5vw, 1.3rem);
     font-family: var(--font-ui);
     font-size: 0.625rem;
     font-weight: 500;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: var(--ink-faint);
     /* Sit on the actions' optical centre, which carries 44 px of touch target. */
@@ -175,16 +245,10 @@ const { question, deck, lang, permalink = false } = Astro.props;
   }
 
   /* Chrome follows the question through the swap rather than jumping. */
-  .panel:has(.q-swap.is-fading) .panel__deck,
+  .panel:has(.q-swap.is-fading) .panel__permissions,
   .panel:has(.q-swap.is-fading) .panel__origin,
   .panel:has(.q-swap.is-fading) .panel__acts {
     opacity: 0;
-  }
-
-  /* The deck-name card already names the deck in full. */
-  .panel:has(.question.is-name) .panel__deck,
-  .panel:has(.question.is-name) .panel__origin {
-    visibility: hidden;
   }
 
   .q-zone {
@@ -203,7 +267,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
     opacity: 0;
   }
 
-  /* Category and Next share a rule with the panel and with each other, and are
+  /* Filters and Next share a rule with the panel and with each other, and are
      sized in the proportion of the two buttons on the device. */
   .device-controls {
     display: grid;
@@ -295,7 +359,7 @@ const { question, deck, lang, permalink = false } = Astro.props;
       padding: 2.1rem 1.25rem 1.15rem;
     }
 
-    .panel__deck {
+    .panel__permissions {
       position: static;
       margin-top: 0;
       letter-spacing: 0.3em;
@@ -324,18 +388,10 @@ const { question, deck, lang, permalink = false } = Astro.props;
     }
   }
 
-  /* The deck-name card: quiet UI type, visibly not a question. */
-  .question.is-name {
-    font-family: var(--font-ui);
-    font-size: clamp(0.9rem, 3vw, 1.2rem);
-    letter-spacing: 0.12em;
-    color: var(--ink-soft);
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .q-swap,
     .key,
-    .panel__deck,
+    .panel__permissions,
     .panel__origin,
     .panel__acts {
       transition: none;

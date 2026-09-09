@@ -1,149 +1,140 @@
 # Design
 
-Product and interaction rationale. [Theory](theory.md) governs the question
-corpus. When choices conflict, the principle below wins.
+Product and interaction rationale. [Theory](theory.md) governs question writing.
 
 ## The principle
 
-**Minimize time-to-question, maximize time-in-conversation.** A feature must
-shorten the path to a useful question or help the conversation after it starts.
-Time spent operating the product is a cost.
+**Minimize time-to-question, maximize time-in-conversation.** Start with a question.
+The originality belongs in the writing and its variety, rather than a taxonomy
+that people must learn before talking.
 
-## Non-goals
+## One mixed stream
 
-- No accounts, login, or profiles.
-- No mobile app or Bluetooth.
-- No analytics in v1 and no third-party scripts.
-- No visible vote counts on the play page.
-- No dark mode in website v1.
-- No CMS or database server. The Git repository is the database.
-- No master-language translation pipeline; see [languages.md](languages.md).
-- No device menus, modes, favorites, or session progression.
+Questions have no relationship categories. Each question is stored once per
+language with editorial depth and optional tags. There is no topic taxonomy,
+new emotional-weight scale, intensity ladder, or inferred readiness.
 
-## Why a device
+Depth means the existing disclosure cost:
 
-The device is a shared object rather than personal territory. Its question
-remains visible on e-paper without power. Putting it in the middle of a table
-is the invitation, as with putting down a deck of cards. It has no feed,
-notifications, or reason to be checked between questions.
+1. Little public exposure.
+2. A personal construction.
+3. Vulnerability, conflict, fear, loss, or consequential disclosure.
 
-## The complete device interaction
+Forms describe how a question invites an answer: `icebreaker`, `reflective`,
+`hypothetical`, `memory`, and `wouldyourather`. Form tags guide variety and remain
+available in Browse. They are not modes of play.
 
-The top face has a small Category button, a larger primary Next button, and one
-e-paper display. The e-paper shows the active category.
+The ordinary pool includes depths 1 and 2, with Dark and Sexual excluded.
+Thoughtful, gentle questions can belong here. Editorial review must ensure that
+a standalone question does not depend on everyone sharing a particular
+relationship. Existing wording and IDs remain human-owned.
 
-| Input                               | Action                                                              | Feedback                                                                             |
-| ----------------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Press Category                      | Advance through `new people`, `close`, `family`, `here`, and `wild` | Replace the old question with the selected category name; Wild wraps to New People   |
-| Press Next                          | Draw another eligible question                                      | One e-paper refresh                                                                  |
-| Hold Next                           | Same as a short press                                               | One e-paper refresh; press duration has no second meaning                            |
-| Leave it alone                      | Sleep                                                               | The question and active category remain readable on e-paper                          |
-| Hold Category and Next through boot | Enter service setup                                                 | Wi-Fi and language setup open on a phone; the tabletop face stays a question display |
+## Optional permissions
 
-Hard rules:
+| Filters row | What enabling it permits                                                        |
+| ----------- | ------------------------------------------------------------------------------- |
+| Dark        | Questions tagged `dark`: macabre material, morbid scenarios, disturbing imagery |
+| Sexual      | Questions tagged `sexual`: sexual experiences, desire, explicit material        |
+| Heavy       | Depth 3: vulnerable or consequential disclosure                                 |
+| Done        | Apply the draft and resume play                                                 |
 
-- E-paper shows the active category and either its question or a category-only
-  selection screen: no logo, number, status, menu, progress, or follow-up
-  nudge.
-- Category advances one step in a fixed cycle. Next always draws from the
-  category printed on the panel.
-- The active category is retained with the other RTC state and defaults to New
-  People after total state loss.
-- A press discarded during an e-paper refresh changes neither the display nor
-  hidden category state.
-- Long press is not Favorite. The device has no way to confirm a save without
-  adding status UI, and a hidden saved collection would introduce a mode.
-- Wi-Fi is optional. Sync runs while charging and never interrupts use.
+These are independent permissions. A dark, sexual depth-3 question needs all
+three. Enabling a permission adds eligible questions to the mixed pool. It does
+not select a separate channel. Absurdity, playfulness, ordinary disagreement,
+and emotional depth alone do not imply sexual content.
 
-The service gesture is both buttons held through a boot. Plugging in USB opens
-a sync window; the next button wake joins the stored network and checks for new
-questions.
+The old `spicy` tag is retired. It was broader than Sexual, so pending submissions
+with that tag need explicit human reclassification. It must never be silently
+converted. Production question texts and IDs are unchanged by this migration.
 
-## Six decks
+## Two-button interaction
 
-Decks are eligibility lenses, not mutually exclusive folders. One stored
-question may be eligible for several category choices.
+The small physical button is **Filters**; the large one is **Next**. The phone
+and web player use the same controls and state transitions. On web and phone,
+each filter row is also a clickable toggle, and Done can be tapped directly.
+Tapping a row selects it for subsequent Filters / Next input. These edits use
+the same draft and apply only at Done.
 
-| Deck         | Assumption                                                                                                                                          |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `new_people` | The table may have no shared history. Ask for a story, choice, observation, or present construction without testing how well people know each other |
-| `close`      | People already know one another. Prefer change, interpretation, and the present over basic biography they have probably heard                       |
-| `family`     | The relationship is family. Questions remain safe and answerable for a 10-year-old                                                                  |
-| `work`       | The shared place is work. Avoid forced intimacy, gossip, diagnosis, and material that can change someone's standing                                 |
-| `here`       | The room, table, event, or visible surroundings provide a third object for attention                                                                |
-| `wild`       | The table explicitly chose dark, spicy, macabre, or absurd tone                                                                                     |
+| Input                          | During play                      | In Filters                                    |
+| ------------------------------ | -------------------------------- | --------------------------------------------- |
+| Filters                        | Open the menu with Dark selected | Move to the next row; Done wraps to Dark      |
+| Next                           | Draw a permitted question        | Toggle the selected permission, or apply Done |
+| Hold a button                  | One action on release            | One action on release                         |
+| Both buttons held through boot | Open service setup               | Existing service gesture                      |
 
-`wild` is not Random and not a depth setting. Random describes a selection
-algorithm and gives no warning about tone. Dark and spicy questions are
-exclusive to Wild so they cannot leak into Work or Family through overlapping
-membership.
+All four menu rows are visible. The e-paper explains “Filters: move” and
+“Next: change / done”; the cap labels stay fixed. Changes remain a draft until
+Done. Done resumes the same question if it is still permitted, otherwise it
+selects an eligible replacement. An empty pool shows an empty state with Filters
+still reachable. Question-specific save, share, edit, and provenance controls
+are hidden while the menu is open.
 
-The device offers five of the six decks. `work` stays in the corpus and on the
-website but leaves the object's Category cycle: the object belongs on
-household tables, and Work's constraint — nothing that can change someone's
-standing — serves a context it is not in. The bundle format keeps the `work`
-mask bit; only the offered cycle shrinks.
+During play, a compact summary shows each permission as included or excluded.
+A discarded press changes no state. Firmware stages the question, bag, draft,
+and permissions, committing only after a successful matching display result.
+A failed queue, denied refresh, error, or timeout does not silently consume a
+question or apply a permission.
 
-## Depth without a control
+## Fresh starts and sleep
 
-Depth remains editorial metadata:
+All permissions start excluded. During use, they persist through device deep
+sleep and same-tab browser reloads and navigation. The browser uses
+`sessionStorage`; a fresh tab/session starts excluded. Favorites and language
+preferences still use `localStorage`.
 
-1. little public exposure;
-2. a personal construction;
-3. vulnerability, conflict, fear, loss, or consequential disclosure.
+The device retains the menu cursor, draft, permissions, question text snapshot,
+and per-language selection state in validated RTC memory. Full power loss or an
+invalid RTC block restores defaults. A corpus fingerprint change clears its
+index-based selection state. A copied question snapshot remains safe to display
+even when the underlying corpus buffer is replaced.
 
-Tone and depth are independent. A macabre cartoon-villain question can be
-depth 1; a calm question about forgiveness can be depth 3.
+## Selection and variance
 
-The first player and physical prototype draw only depths 1 and 2. Depth 3 stays
-in the corpus and browse view while consent is unresolved. There is no ramp,
-session counter, idle heuristic, or inferred readiness. The product cannot
-observe a conversation well enough to know when to escalate.
+Both platforms select at draw time, using one bag per language and a recent
+window of 20. Filter changes preserve seen history. The priority order is:
 
-Texture is not a ramp. Within a deck, the bag prefers a question whose depth
-band and form differ from the one just shown, and relaxes to a uniform draw
-when the pool cannot offer one. This decorrelates consecutive draws — no run
-of three reflective questions — without modeling the table: the only state is
-the last-served band and form mask, which describes the panel, not a session.
+1. Require every relevant permission.
+2. Prefer unseen eligible questions. Reopen the eligible cycle only when exhausted;
+   excluded questions retain their seen state.
+3. Avoid recent questions when possible, then avoid the current question when possible.
+4. After depth 3, prefer a non-3 question within those candidates.
+5. Prefer a different depth band (1 versus 2/3) and a different form; each repetition
+   costs one point.
+6. Choose randomly within the best remaining group.
 
-A physical depth slider remains a testable hypothesis, not part of this
-prototype. Its proposed benefit is public, low-cost boundary setting. Its
-largest risk is the same public signal: moving a date or work table to “light”
-can read as a judgment about the people present. The non-functional study must
-show people changing such a control in front of others without prompting
-before it earns a component.
+A breather never forces an early repeat. Small pools can relax recency and
+texture, but permissions never relax. A singleton can repeat; an empty pool
+stays empty. There is no escalation schedule, turn count, or judgment of the table.
 
 ## Website jobs
 
-Navigation is play / browse / contribute / device.
+- Play mirrors the device and adds visible save/share actions. F opens or advances
+  Filters; Space and Right perform Next. There is no previous/forward replay history.
+- Browse exposes all questions with search, depth, tags, and sort. Play permissions
+  do not filter Browse.
+- Saved and shared collections remain at `/deck`, without relationship chips.
+- Direct question links display their named question regardless of play permissions.
+  They do not enable permissions; Next returns to the allowed automatic pool.
+- Contribution collects original human wording. Editors assign depth and precise tags.
 
-1. The player: one question in dominant type and the device's own model —
-   Category cycles the five device decks and names the deck, Next draws from
-   it — plus save and share. It uses depths 1 and 2 and defaults to New
-   People.
-2. Browse: all questions, including depth 3, with deck and editorial metadata.
-3. Contribution: one question stored once, with one or more eligible decks and
-   an editorial depth.
-4. Device explanation and build documentation.
+The visual language remains two tones, square corners, 1 px rules, ordered
+dither, Zilla Slab questions, Literata wordmark, and IBM Plex Mono controls.
+The short fade respects reduced motion. See the [brand guide](brand.md).
 
-Favorites remain on the website because a browser can show confirmation and
-ownership without changing the physical object's interaction.
+## Why a device
 
-The visual language obeys the panel's constraint: two tones, no radius, 1 px
-rules, and an ordered dither where a tint would otherwise go. Questions are
-Zilla Slab, the wordmark stays Literata over a dither rule, and IBM Plex Mono
-carries controls and metadata. There is no accent colour — state is inversion,
-weight, or density. Motion is limited to the 120 ms question fade and the
-category change. The [brand guide](brand.md) defines the identity without
-changing this interaction hierarchy.
+The device stays a shared object: e-paper keeps the conversation visible at
+zero display power, without accounts, notifications, Bluetooth, or an app.
+Wi-Fi and language setup remain on a phone. Sync is optional and does not
+interrupt the displayed question. There are no physical favorites or automatic
+session progression.
 
-## Deferred work
+QDB4 removes category masks. Question manifests use schema 4 and require
+firmware 0.2.0; RTC layout version 3 replaces version 2. A stored QDB3 bundle is
+rejected and the embedded QDB4 corpus is the fallback. The electrical aliases
+and enclosure geometry retain their existing identifiers; visible labels become
+Filters. See [the protocol](sync_protocol.md) and
+[firmware architecture](firmware_architecture.md).
 
-- Anonymous submissions through a small backend.
-- Anonymous “sparked a good conversation” voting; see [votes.md](votes.md).
-- A token-swap dark theme. Inversion already exists as a state, so the tokens
-  are close to swappable.
-- A depth-boundary physical study. A slider is reconsidered only if people use
-  it publicly and unprompted.
-- Curating the deck from the setup portal: browsing the questions on a phone,
-  keeping a favourites deck, and hiding questions that do not suit a table.
+Physical validation still needs to check menu legibility, accepted versus
+dropped presses during real e-paper refreshes, wake replay, and total power loss.

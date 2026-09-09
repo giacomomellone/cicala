@@ -960,3 +960,31 @@ corpus that can drift from the schema the real database validates against —
 `build_bundle.py` reads the deck order and form tags from `questions/schema.json`
 for both, so a schema change still reaches the fixtures, but nothing runs the
 denylist or the style rules over them.
+
+## 2026-09-09 — One mixed stream with explicit permissions
+
+Supersedes the category-cycle and depth-3 exclusion decisions above. The owner
+approved removal of relationship categories from the corpus, player, Browse,
+and editorial workflow. Filters replaces the visible Category control. Dark,
+Sexual, and Heavy are independent permissions, excluded on a fresh start. Heavy
+uses existing depth 3; forms and depth remain the only variance metadata.
+
+The same two-button menu applies on web, phone, and device. Changes are drafted
+until Done, then resume the permitted current question or draw a replacement.
+Selection is draw-time, with one bag per language, 20 recent questions, unseen
+priority, a depth-3 breather preference, and existing band/form texture. No
+permission relaxes to fill an empty pool. Browse, direct links, and collections
+remain unrestricted; a direct link does not change play permissions.
+
+QDB4 removes the category byte. Question manifest schema 4 and firmware 0.2.0
+ship together; RTC version 3 invalidates old layouts. Legacy `spicy` submissions
+require explicit reclassification. Historical decisions remain here as history.
+See [Design](design.md) for the complete current contract.
+
+## 2026-09-09 — Direct filter toggles on web and phone
+
+The owner requested clickable filter rows alongside the device controls. Web
+and phone accept a tap on Dark, Sexual, or Heavy to select and toggle that row,
+and a tap on Done to apply the draft. Filters and Next keep their existing
+actions, so both input methods can be used in the same menu. The physical
+device continues to use its two buttons.

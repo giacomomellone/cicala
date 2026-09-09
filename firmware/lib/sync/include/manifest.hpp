@@ -9,7 +9,7 @@ namespace cicala
 {
 
 /** Supported question-bundle manifest schema. */
-constexpr uint32_t kManifestSchema = 3;
+constexpr uint32_t kManifestSchema = 4;
 
 /** Supported firmware manifest schema. */
 constexpr uint32_t kFirmwareSchema = 1;

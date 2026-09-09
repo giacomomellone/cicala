@@ -23,11 +23,10 @@ ROOT = Path(__file__).resolve().parent.parent
 
 SECTION_RE = re.compile(r"^### (.+?)\s*$", re.M)
 NO_RESPONSE = "_No response_"
-DECK_VOCAB = ("new_people", "close", "family", "work", "here", "wild")
 TAG_VOCAB = (
     "icebreaker",
     "reflective",
-    "spicy",
+    "sexual",
     "dark",
     "hypothetical",
     "memory",
@@ -102,7 +101,6 @@ def parse_issue(body: str, *, allow_unclassified_native: bool = False) -> dict:
 
     if native:
         editorial_labels = {
-            *(f"deck:{deck}" for deck in DECK_VOCAB),
             *(f"depth:{depth}" for depth in (1, 2, 3)),
             *(f"tag:{tag}" for tag in TAG_VOCAB),
         }
@@ -113,23 +111,16 @@ def parse_issue(body: str, *, allow_unclassified_native: bool = False) -> dict:
         )
         if unknown:
             raise Rejected(f"unknown editorial label(s): {', '.join(unknown)}")
-        decks = [deck for deck in DECK_VOCAB if f"deck:{deck}" in labels]
         depth_labels = [depth for depth in (1, 2, 3) if f"depth:{depth}" in labels]
         if len(depth_labels) > 1:
             raise Rejected("choose exactly one editorial depth label")
         depth = depth_labels[0] if depth_labels else None
-        classified = bool(decks and depth is not None)
+        classified = depth is not None
         if not classified and not allow_unclassified_native:
             raise Rejected(
-                "classify the suggestion with at least one deck:<name> label and exactly one "
-                "depth:<1-3> label before approval"
+                "classify the suggestion with exactly one depth:<1-3> label before approval"
             )
     else:
-        decks_raw = s.get("decks", "")
-        decks = [deck for deck in DECK_VOCAB if re.search(rf"\b{deck}\b", decks_raw)]
-        if not decks:
-            raise Rejected("choose at least one deck")
-
         depth_raw = s.get("depth", "")
         match = re.match(r"\s*([123])\b", depth_raw)
         if not match:
@@ -148,9 +139,14 @@ def parse_issue(body: str, *, allow_unclassified_native: bool = False) -> dict:
         tags_raw = s.get("tags (optional)", s.get("tags", ""))
         tags = []
         if tags_raw and tags_raw != NO_RESPONSE:
-            tags = [t.strip() for t in tags_raw.split(",") if t.strip() in TAG_VOCAB]
-    if classified and {"spicy", "dark"}.intersection(tags) and decks != ["wild"]:
-        raise Rejected("dark and spicy questions must use only the wild deck")
+            tags = [t.strip() for t in tags_raw.split(",") if t.strip()]
+            unknown_tags = sorted(set(tags) - set(TAG_VOCAB))
+            if unknown_tags:
+                raise Rejected(
+                    "unknown or retired tags: "
+                    + ", ".join(unknown_tags)
+                    + "; a maintainer must reclassify them"
+                )
 
     credit = s.get("name for credit (optional)", s.get("name for credit", ""))
     if credit == NO_RESPONSE:
@@ -169,7 +165,6 @@ def parse_issue(body: str, *, allow_unclassified_native: bool = False) -> dict:
     return {
         "lang": lang,
         "text": text,
-        "decks": decks,
         "depth": depth,
         "tags": tags,
         "credit": credit,
@@ -186,7 +181,6 @@ def render_entry(entry: dict) -> str:
         return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
     lines = [f"- text: {quoted(entry['text'])}"]
-    lines.append(f"  decks: [{', '.join(entry['decks'])}]")
     lines.append(f"  depth: {entry['depth']}")
     if entry["tags"]:
         lines.append(f"  tags: [{', '.join(entry['tags'])}]")
@@ -231,7 +225,7 @@ def check_entry(entry: dict) -> list[str]:
         shutil.copytree(ROOT / "questions", root / "questions")
         candidate = entry
         if not entry["classified"]:
-            candidate = {**entry, "decks": ["new_people"], "depth": 1, "tags": []}
+            candidate = {**entry, "depth": 1, "tags": []}
         append_entry(root / "questions" / entry["lang"] / "questions.yaml", candidate)
 
         err = io.StringIO()

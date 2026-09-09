@@ -94,7 +94,7 @@ Every asset is monochrome.
 ## Device placement
 
 The logo does not appear on the e-paper. The normal device face stays free of
-branding, including the areas beside the Category and Next controls. Do not add
+branding, including the areas beside the Filters and Next controls. Do not add
 startup, sleep, or device logo screens. The phone captive portal may use the
 live-text wordmark and palette, but it must remain self-contained and make no
 font or image requests. If a physical mark is useful later, use only an

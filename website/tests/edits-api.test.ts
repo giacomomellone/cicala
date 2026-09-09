@@ -164,7 +164,7 @@ describe("editIssueBody", () => {
     questionId: "q-5a3fb181",
     language: "en",
     proposedText: "Who made @home feel better than <away>?",
-    aspects: ["decks", "tags"],
+    aspects: ["tags"],
     reason: "It reads as a ranking.\n\nAnd it assumes a home.",
     submissionId: "4c527b9a-65a6-4c45-9a17-0b07620aebd0",
     turnstileToken: "token",
@@ -192,7 +192,7 @@ describe("editIssueBody", () => {
 
   it("ticks only the aspects that were asked for", () => {
     const body = editIssueBody(base, "English", now());
-    expect(body).toContain("- [x] Deck eligibility");
+    expect(body).not.toContain("Deck eligibility");
     expect(body).toContain("- [ ] Depth");
     expect(body).toContain("- [x] Tags");
     expect(body).toContain("- [ ] Translation provenance or origin");

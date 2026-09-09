@@ -13,8 +13,8 @@ extern "C" {
 /** Open the selected corpus and bind the bag. Return 0 or `-EINVAL`. */
 int cicala_app_init(void);
 
-/** One Category press happened: advance to the next deck and name it. */
-void cicala_app_post_category(void);
+/** One Filters press happened: open the menu or move to its next row. */
+void cicala_app_post_filters(void);
 
 /** One Next press happened. */
 void cicala_app_post_next(void);

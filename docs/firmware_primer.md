@@ -24,7 +24,7 @@ firmware/
 │   ├── layout/                 UTF-8 layout and accent composition
 │   ├── portal/                 setup protocol and state machine
 │   ├── power/                  battery-state rules
-│   ├── qdb/                    QDB3 reader and shuffle bag
+│   ├── qdb/                    QDB4 reader and shuffle bag
 │   ├── retained/               RTC state block
 │   ├── status/                 LED policy
 │   └── sync/                   manifest parsing
@@ -91,7 +91,7 @@ filename from the board target by replacing `/` with `_`.
 
 The overlay declares:
 
-- Category and Next as `gpio-keys`;
+- Filters and Next as `gpio-keys`;
 - red and green indicators as `gpio-leds`;
 - the SSD1680 panel on SPI2;
 - battery ADC and VBUS GPIO properties under `zephyr,user`.
@@ -164,7 +164,7 @@ Each suite under `firmware/tests/` contains its CMake file, configuration,
 suites on `native_sim` in the Zephyr CI container. Both platforms support
 emulated GPIO through a `zephyr,gpio-emul` devicetree node.
 
-The private fixture recipe builds two sets of QDB3 files before application
+The private fixture recipe builds two sets of QDB4 files before application
 builds and tests: the shipped database into `dist/corpus/`, which the image, the
 layout and panel walks and the qdb corpus guards read, and the fixture corpus in
 `firmware/tests/corpus/` into `firmware/tests/fixtures/`, which the bag,

@@ -96,12 +96,6 @@ question-edit
 approved
 needs-changes
 
-deck:new_people
-deck:close
-deck:family
-deck:work
-deck:here
-deck:wild
 
 depth:1
 depth:2
@@ -109,7 +103,7 @@ depth:3
 
 tag:icebreaker
 tag:reflective
-tag:spicy
+tag:sexual
 tag:dark
 tag:hypothetical
 tag:memory
@@ -119,8 +113,8 @@ tag:wouldyourather
 `lang:<code>` labels are created on demand by `promote-question.yml` when an
 issue opens.
 
-For a native issue, a language maintainer adds at least one `deck:*` label,
-exactly one `depth:*` label, any applicable `tag:*` labels, and then
+For a native issue, a language maintainer adds exactly one `depth:*` label,
+any applicable `tag:*` labels, and then
 `approved`. Approval before classification fails closed and removes
 `approved`.
 

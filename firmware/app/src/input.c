@@ -49,12 +49,12 @@ static void cicala_input_cb(struct input_event *evt, void *user_data)
 
     if (evt->code == CATEGORY_CODE) {
         if (press_completed(evt->value, &category_press_ms, &duration_ms)) {
-            const struct cicala_category_msg msg = {
+            const struct cicala_filters_msg msg = {
                 .timestamp_ms = k_uptime_get() - duration_ms,
                 .duration_ms = duration_ms,
             };
 
-            (void) zbus_chan_pub(&chan_category, &msg, K_MSEC(10));
+            (void) zbus_chan_pub(&chan_filters, &msg, K_MSEC(10));
         }
 
         return;

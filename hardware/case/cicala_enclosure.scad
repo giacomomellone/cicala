@@ -121,7 +121,8 @@ lens_thickness = 0.8;
 lens_pocket_width = 55.4;
 lens_pocket_depth = 30.5;
 
-// Controls. Default Rev A presentation: Category sub-flush, Next flush.
+// Controls. Default Rev A presentation: Filters sub-flush, Next flush.
+// category_* identifiers remain stable for existing CAD scripts.
 // The cap sits in a bore through a thinned roof and is held up against a
 // counterbore shoulder by the switch's return spring. The lower brim meets
 // a separate support plate during downward travel, spreading load over the PCB.

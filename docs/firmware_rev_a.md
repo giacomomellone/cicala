@@ -43,13 +43,13 @@ just hw=rev_a fw-build release
 just fw-test
 ```
 
-| Profile | Build directory | Use |
-| --- | --- | --- |
-| `debug` | `build/cicala-rev-a-debug` | USB console and JTAG, sleep disabled |
+| Profile   | Build directory              | Use                                                    |
+| --------- | ---------------------------- | ------------------------------------------------------ |
+| `debug`   | `build/cicala-rev-a-debug`   | USB console and JTAG, sleep disabled                   |
 | `charset` | `build/cicala-rev-a-charset` | Existing glyph/display diagnostic; Next advances pages |
-| `power` | `build/cicala-rev-a-power` | Raw ADC and battery-voltage logging, with MCUboot |
-| `portal` | `build/cicala-rev-a-portal` | Wi-Fi setup screen at every boot |
-| `release` | `build/cicala-rev-a` | Normal application and matching MCUboot |
+| `power`   | `build/cicala-rev-a-power`   | Raw ADC and battery-voltage logging, with MCUboot      |
+| `portal`  | `build/cicala-rev-a-portal`  | Wi-Fi setup screen at every boot                       |
+| `release` | `build/cicala-rev-a`         | Normal application and matching MCUboot                |
 
 Debug, charset and portal are standalone diagnostic images. Release, power
 and OTA profiles build MCUboot and a signed application together. The local
@@ -58,7 +58,7 @@ public. Follow [firmware updates](firmware_update.md) before making release-key
 devices. This prototype workflow does not program secure-boot or USB/JTAG eFuses.
 
 The reviewed `questions/` database currently contains zero accepted questions.
-A normal release therefore embeds an empty corpus; it can show category/setup
+A normal release therefore embeds an empty corpus; it can show empty/setup
 screens but cannot display a conversation question. Use the charset profile
 for display bring-up. Human-authored, accepted content must enter the normal
 database workflow before a content-bearing release is built. Firmware tests
@@ -80,6 +80,7 @@ built-in JTAG. No separate programmer is required for the normal path.
    Typical ports are `/dev/cu.usbmodem…` on macOS and `/dev/ttyACM0` on Linux.
    Use the reported path; the examples below use Linux's usual name. Linux
    needs permission to open that serial device and the USB JTAG endpoint.
+
 3. If the blank board does not enter download mode, connect BOOT to ground
    at TP1 or J4 pin 4. Momentarily ground EN at TP2 or J4 pin 3, then release
    EN while BOOT remains grounded. Release BOOT after the port enumerates.
@@ -95,6 +96,7 @@ built-in JTAG. No separate programmer is required for the normal path.
    it again if necessary. The explicit `usbport` selects the debug monitor;
    `port` selects the flash and normal monitor. Both can also be set through
    `CICALA_USB_PORT` and `ESPTOOL_PORT`.
+
 5. Verify console output and the charger status log. A charger fault is expected
    while the battery/NTC harness is disconnected. Power down, connect the
    display with J2 contacts facing the PCB, then flash the charset profile:
@@ -106,6 +108,7 @@ built-in JTAG. No separate programmer is required for the normal path.
 
    Check the installed display's orientation, full refresh and Next input.
    Fit and tune both printed caps before closing the case.
+
 6. Flash the normal bootloader/application pair:
 
    ```sh
@@ -148,14 +151,14 @@ UART recovery uses the unpopulated TC2030-IDC-NL pattern at J4. Remove the
 base and disconnect/move the battery. Wire a breakout to this **project-specific**
 mapping; an ordinary ARM cable mapping is incompatible.
 
-| J4 pin | Board signal | Adapter connection |
-| --- | --- | --- |
-| 1 | 3V3 | Target voltage reference only; leave adapter power disconnected |
-| 2 | GND | Ground |
-| 3 | EN | Momentary pull to ground for reset |
-| 4 | GPIO0 / BOOT | Ground while releasing reset for ROM download |
-| 5 | GPIO43 / UART0 TX | 3.3 V adapter RX |
-| 6 | GPIO44 / UART0 RX | 3.3 V adapter TX |
+| J4 pin | Board signal      | Adapter connection                                              |
+| ------ | ----------------- | --------------------------------------------------------------- |
+| 1      | 3V3               | Target voltage reference only; leave adapter power disconnected |
+| 2      | GND               | Ground                                                          |
+| 3      | EN                | Momentary pull to ground for reset                              |
+| 4      | GPIO0 / BOOT      | Ground while releasing reset for ROM download                   |
+| 5      | GPIO43 / UART0 TX | 3.3 V adapter RX                                                |
+| 6      | GPIO44 / UART0 RX | 3.3 V adapter TX                                                |
 
 Power the target through J1, use 3.3 V logic, enter ROM mode as above and run
 `fw-flash` with the UART adapter's port. J4 pin 1 must not back-power the
@@ -173,12 +176,12 @@ samples at a one-second interval after the previous work completes, with
 200 ms divider settling; display activity can defer sampling. The four
 pin combinations follow [TI's status table](https://www.ti.com/lit/ds/symlink/bq25185.pdf).
 
-| STAT1 / STAT2 | Interpretation | Idle LED output |
-| --- | --- | --- |
-| High / low | Charging | Steady red |
-| High / high | Idle, charge complete, or disabled | Slow amber pulse |
-| Low / high | Recoverable charger fault | Slow red pulse |
-| Low / low | Latched charger fault | Slow red pulse |
+| STAT1 / STAT2 | Interpretation                     | Idle LED output  |
+| ------------- | ---------------------------------- | ---------------- |
+| High / low    | Charging                           | Steady red       |
+| High / high   | Idle, charge complete, or disabled | Slow amber pulse |
+| Low / high    | Recoverable charger fault          | Slow red pulse   |
+| Low / low     | Latched charger fault              | Slow red pulse   |
 
 An unreadable status input also produces the ambiguous amber state and a log
 message. Green pulses indicate network work; steady amber indicates setup.

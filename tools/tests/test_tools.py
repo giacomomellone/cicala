@@ -58,8 +58,8 @@ class TmpDb(unittest.TestCase):
         path.write_text(text, encoding="utf-8")
         return path
 
-    def question(self, text, decks="[new_people]", depth=1, extra=""):
-        return f'- text: "{text}"\n  decks: {decks}\n  depth: {depth}\n{extra}'
+    def question(self, text, depth=1, extra=""):
+        return f'- text: "{text}"\n  depth: {depth}\n{extra}'
 
 
 class TestIdAssignment(TmpDb):
@@ -68,7 +68,6 @@ class TestIdAssignment(TmpDb):
             "questions/en/questions.yaml",
             self.question(
                 "When did you last change your mind about something important?",
-                "[new_people, close]",
                 2,
                 "  tags: [reflective]\n",
             ),
@@ -86,7 +85,7 @@ class TestIdAssignment(TmpDb):
     def test_missing_id_without_fix_fails(self):
         self.write(
             "questions/en/questions.yaml",
-            self.question("What matters most to you today?", "[close]", 2),
+            self.question("What matters most to you today?", 2),
         )
         code, _, err = run_quiet(validate.main, ["--root", str(self.tmp)])
         self.assertEqual(code, 1)
@@ -98,7 +97,6 @@ class TestIdAssignment(TmpDb):
             "questions/en/questions.yaml",
             "- id: q-00000000\n"
             '  text: "What matters most to you todayy?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             '  added: "2026-01-01"\n',
         )
@@ -122,7 +120,7 @@ class TestDedup(TmpDb):
         self.write(
             "questions/en/questions.yaml",
             self.question("What made you laugh today, honestly?")
-            + self.question("What  made you LAUGH today,   honestly?", "[close]", 2),
+            + self.question("What  made you LAUGH today,   honestly?", 2),
         )
         code, _, err = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 1)
@@ -176,7 +174,7 @@ class TestTextRules(TmpDb):
     def test_missing_question_mark_fails(self):
         self.write(
             "questions/en/questions.yaml",
-            self.question("Tell me about your best day ever.", "[close]", 2),
+            self.question("Tell me about your best day ever.", 2),
         )
         code, _, err = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 1)
@@ -185,9 +183,7 @@ class TestTextRules(TmpDb):
     def test_terminator_followed_by_closing_quote_passes(self):
         self.write(
             "questions/en/questions.yaml",
-            "- text: 'When did you last ask yourself \"why not me?\"'\n"
-            "  decks: [close]\n"
-            "  depth: 2\n",
+            "- text: 'When did you last ask yourself \"why not me?\"'\n  depth: 2\n",
         )
         code, _, _ = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 0)
@@ -195,7 +191,7 @@ class TestTextRules(TmpDb):
     def test_too_short_fails(self):
         self.write(
             "questions/en/questions.yaml",
-            self.question("Why not?", "[close]", 2),
+            self.question("Why not?", 2),
         )
         code, _, _ = run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         self.assertEqual(code, 1)
@@ -207,7 +203,6 @@ class TestOrigin(TmpDb):
             "questions/en/questions.yaml",
             self.question(
                 "What belief have you outgrown lately?",
-                "[close]",
                 2,
                 "  origin: q-deadbeef\n",
             ),
@@ -222,7 +217,6 @@ class TestOrigin(TmpDb):
             "questions/en/questions.yaml",
             self.question(
                 "What belief have you outgrown lately?",
-                "[close]",
                 2,
                 "  translated_by: google\n",
             ),
@@ -236,7 +230,6 @@ class TestOrigin(TmpDb):
             "questions/en/questions.yaml",
             self.question(
                 "What belief have you outgrown lately?",
-                "[close]",
                 2,
                 "  origin: q-deadbeef\n  translated_by: google\n",
             ),
@@ -250,12 +243,10 @@ class TestOrigin(TmpDb):
             "questions/en/questions.yaml",
             "- id: q-11111111\n"
             '  text: "What belief have you outgrown lately?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             '  added: "2026-01-01"\n'
             "- id: q-22222222\n"
             '  text: "What idea have you stopped believing?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             "  origin: q-11111111\n"
             '  added: "2026-01-01"\n',
@@ -269,7 +260,6 @@ class TestOrigin(TmpDb):
             "questions/en/questions.yaml",
             "- id: q-11111111\n"
             '  text: "What belief have you outgrown lately?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             "  origin: q-00000000\n"
             '  added: "2026-01-01"\n',
@@ -281,7 +271,6 @@ class TestOrigin(TmpDb):
             "questions/de/questions.yaml",
             "- id: q-22222222\n"
             '  text: "Welche Überzeugung hast du in letzter Zeit abgelegt?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             "  origin: q-11111111\n"
             "  translated_by: google\n"
@@ -294,7 +283,7 @@ class TestOrigin(TmpDb):
 
 class TestTranslationPlanning(unittest.TestCase):
     def question(self, qid, text, **extra):
-        entry = {"id": qid, "text": text, "decks": ["close"], "depth": 2}
+        entry = {"id": qid, "text": text, "depth": 2}
         entry.update(extra)
         return entry
 
@@ -364,7 +353,6 @@ class TestTranslationPlanning(unittest.TestCase):
             self.question(
                 "q-11111111",
                 "What changed your mind?",
-                decks=["new_people", "close"],
                 depth=1,
                 tags=["reflective"],
                 author="Ada",
@@ -382,7 +370,6 @@ class TestTranslationPlanning(unittest.TestCase):
             [
                 {
                     "text": "Was hat deine Meinung geändert?",
-                    "decks": ["new_people", "close"],
                     "depth": 1,
                     "tags": ["reflective"],
                     "origin": "q-11111111",
@@ -442,7 +429,6 @@ class TestTranslationPlanning(unittest.TestCase):
             corpus.write_text(
                 "- id: q-11111111\n"
                 '  text: "What changed your mind most recently?"\n'
-                "  decks: [close]\n"
                 "  depth: 2\n"
                 '  added: "2026-01-01"\n',
                 encoding="utf-8",
@@ -462,7 +448,6 @@ class TestTranslationPlanning(unittest.TestCase):
                 handle.write(
                     "- id: q-22222222\n"
                     '  text: "What did you learn today?"\n'
-                    "  decks: [close]\n"
                     "  depth: 1\n"
                     '  added: "2026-01-02"\n'
                 )
@@ -554,7 +539,6 @@ class TestSiteData(TmpDb):
             "questions/en/questions.yaml",
             self.question(
                 "What belief have you outgrown lately?",
-                "[new_people, close]",
                 2,
                 '  author: "seed"\n',
             ),
@@ -562,7 +546,7 @@ class TestSiteData(TmpDb):
         (self.tmp / "questions/incubator/fr").mkdir(parents=True)
         self.write(
             "questions/incubator/fr/questions.yaml",
-            self.question("Quelle certitude as-tu abandonnée récemment?", "[close]", 2),
+            self.question("Quelle certitude as-tu abandonnée récemment?", 2),
         )
         run_quiet(validate.main, ["--fix", "--root", str(self.tmp)])
         out = self.tmp / "site_data"
@@ -575,7 +559,7 @@ class TestSiteData(TmpDb):
         payload = json.loads((out / "questions.en.json").read_text())
         entry = payload["questions"][0]
         self.assertEqual(
-            set(entry), {"id", "text", "decks", "depth", "tags"}
+            set(entry), {"id", "text", "depth", "tags"}
         )  # author/added omitted; this human original has no provenance
         self.assertFalse((out / "recent.en.json").exists())
         index = json.loads((out / "index.json").read_text())
@@ -589,7 +573,6 @@ class TestSiteData(TmpDb):
             "questions/en/questions.yaml",
             "- id: q-deadbeef\n"
             '  text: "What belief have you outgrown lately?"\n'
-            "  decks: [close]\n"
             "  depth: 2\n"
             '  added: "2026-01-01"\n',
         )
@@ -597,7 +580,6 @@ class TestSiteData(TmpDb):
             "questions/de/questions.yaml",
             self.question(
                 "Welche Überzeugung hast du in letzter Zeit abgelegt?",
-                "[close]",
                 2,
                 "  origin: q-deadbeef\n  translated_by: google\n",
             ),
@@ -620,7 +602,7 @@ class TestBundle(unittest.TestCase):
             )
             self.assertEqual(code, 0)
             manifest = json.loads((Path(tmp) / "manifest.json").read_text())
-            self.assertEqual(manifest["schema"], 3)
+            self.assertEqual(manifest["schema"], 4)
             for lang in ("en", "de"):
                 blob = (Path(tmp) / f"bundle-{lang}-test.1.qdb").read_bytes()
                 self.assertEqual(len(blob), manifest["languages"][lang]["size"])
@@ -629,13 +611,10 @@ class TestBundle(unittest.TestCase):
                 self.assertEqual(parsed["version"], "test.1")
                 self.assertEqual(len(parsed["questions"]), manifest["languages"][lang]["count"])
                 for question in parsed["questions"]:
-                    self.assertTrue(question["decks"])
                     self.assertIn(question["depth"], (1, 2, 3))
-                    if question["spicy"] or question["dark"]:
-                        self.assertEqual(question["decks"], ["wild"])
 
     def test_manifest_describes_the_raw_bundle_a_device_downloads(self):
-        """schema 3: the device takes the .qdb, and size/sha256/sig cover it.
+        """schema 4: the device takes the .qdb, and size/sha256/sig cover it.
 
         The gzip is still published for the website, so the failure this
         guards against is the manifest quietly pointing at one artifact while
@@ -659,7 +638,7 @@ class TestBundle(unittest.TestCase):
                 self.assertEqual(entry["sha256"], hashlib.sha256(raw).hexdigest())
 
                 # The raw bundle is the format itself, magic and all.
-                self.assertEqual(raw[:4], b"QDB3")
+                self.assertEqual(raw[:4], b"QDB4")
 
                 # Both artifacts are published and carry the same questions.
                 self.assertEqual(gzip.decompress(gz), raw)
@@ -730,7 +709,6 @@ class TestFixtureCorpus(unittest.TestCase):
 
     def setUp(self):
         self.ring = self.policy_default("CICALA_RECENT_RING")
-        self.playback_depth = self.policy_default("CICALA_PLAYBACK_DEPTH_MAX")
         self.max_bytes = self.policy_default("CICALA_MAX_QUESTION_BYTES")
         with tempfile.TemporaryDirectory() as tmp:
             code, _, err = run_quiet(
@@ -754,46 +732,21 @@ class TestFixtureCorpus(unittest.TestCase):
                 for lang in ("en", "de")
             }
 
-    def in_deck(self, lang: str, deck: str, playable: bool = True):
-        return [
-            q
-            for q in self.bundles[lang]
-            if deck in q["decks"] and (not playable or q["depth"] <= self.playback_depth)
+    def test_default_pool_can_fill_the_recent_ring(self):
+        ordinary = [
+            q for q in self.bundles["en"] if q["depth"] <= 2 and not q["dark"] and not q["sexual"]
         ]
+        self.assertGreater(len(ordinary), self.ring)
 
-    def test_every_english_deck_yields_something_in_normal_playback(self):
-        # test_a_cycle_never_repeats walks all six decks.
-        _, cfg = validate.load_config(REPO, validate.Reporter())
+    def test_english_exercises_all_permissions(self):
+        questions = self.bundles["en"]
+        self.assertTrue(any(q["depth"] == 3 for q in questions))
+        self.assertTrue(any(q["dark"] for q in questions))
+        self.assertTrue(any(q["sexual"] for q in questions))
 
-        for deck in cfg["decks"]:
-            self.assertTrue(self.in_deck("en", deck), f"English {deck} draws nothing")
-
-    def test_the_two_ring_decks_are_large_enough_and_disjoint(self):
-        # test_the_ring_is_shared_across_decks alternates half a ring from each.
-        new_people = {q["text"] for q in self.in_deck("en", "new_people")}
-        close = {q["text"] for q in self.in_deck("en", "close")}
-
-        for name, deck in (("new_people", new_people), ("close", close)):
-            self.assertGreater(len(deck), self.ring // 2, f"{name} runs dry before the ring fills")
-        self.assertEqual(new_people & close, set(), "a shared question can be drawn twice")
-
-    def test_english_carries_depth_three(self):
-        # test_depth_three_is_out_of_normal_playback proves nothing without it.
-        self.assertTrue([q for q in self.bundles["en"] if q["depth"] == 3])
-
-    def test_the_german_here_deck_stays_smaller_than_the_ring(self):
-        # test_the_smallest_deck_still_draws_despite_the_ring needs the ring to
-        # relax rather than starve the deck.
-        here = self.in_deck("de", "here")
-
-        self.assertTrue(here, "the deck must not be empty")
-        self.assertLessEqual(len(here), self.ring)
-
-    def test_tone_tags_stay_in_wild_and_text_fits_the_panel(self):
+    def test_text_fits_the_panel(self):
         for lang, questions in self.bundles.items():
             for q in questions:
-                if q["spicy"] or q["dark"]:
-                    self.assertEqual(q["decks"], ["wild"], f"{lang}: {q['text']!r}")
                 self.assertLessEqual(
                     len(q["text"].encode("utf-8")), self.max_bytes, f"{lang}: {q['text']!r}"
                 )
@@ -895,8 +848,9 @@ class TestIssueFormVocabulary(unittest.TestCase):
         self.options = issue_form_options()
         self.cfg = schema_config()
 
-    def test_deck_options_follow_the_schema_order(self):
-        self.assertEqual(self.options["decks"], self.cfg["decks"])
+    def test_categories_are_not_editorial_metadata(self):
+        self.assertNotIn("decks", self.options)
+        self.assertNotIn("decks", self.cfg)
 
     def test_tag_options_are_the_schema_tags(self):
         self.assertEqual(self.options["tags"], self.cfg["tags"])
@@ -916,7 +870,6 @@ class TestIssueFormVocabulary(unittest.TestCase):
 
 def rendered_issue(
     language="English (en)",
-    decks="new_people, close",
     depth=None,
     question="When did you last change your mind about something important?",
     tags="_No response_",
@@ -928,7 +881,6 @@ def rendered_issue(
         depth = schema_config()["depthLabels"][1]
     return (
         f"### Language\n\n{language}\n\n"
-        f"### Decks\n\n{decks}\n\n"
         f"### Depth\n\n{depth}\n\n"
         f"### Question\n\n{question}\n\n"
         f"### Tags (optional)\n\n{tags}\n\n"
@@ -1002,7 +954,7 @@ class TestPromoteIssue(PromoteCase):
         self.assertEqual(code, 0)
 
         entry = self.corpus()[0]
-        self.assertEqual(entry["decks"], ["new_people", "close"])
+
         self.assertEqual(entry["depth"], 2)
         self.assertNotIn("id", entry)  # validate.py --fix assigns it
 
@@ -1028,10 +980,10 @@ class TestPromoteIssue(PromoteCase):
         self.assertIn("CC0", err)
         self.assertEqual(self.corpus(), None)
 
-    def test_dark_questions_outside_wild_are_refused(self):
-        code, _, err = self.promote(rendered_issue(decks="new_people, close", tags="dark"))
+    def test_legacy_spicy_requires_explicit_reclassification(self):
+        code, _, err = self.promote(rendered_issue(tags="spicy"))
         self.assertEqual(code, 1)
-        self.assertIn("wild", err)
+        self.assertIn("reclassify", err)
 
     def test_a_new_language_exits_for_the_incubator_explainer(self):
         code, _, _ = self.promote(rendered_issue(language="other / new language"))
@@ -1054,10 +1006,10 @@ class TestPromoteIssue(PromoteCase):
         self.assertEqual(code, 0)
         self.assertEqual(self.corpus()[0]["author"], "A" * 40)
 
-    def test_unknown_tags_are_dropped_rather_than_written(self):
+    def test_unknown_tags_are_refused(self):
         code, _, _ = self.promote(rendered_issue(tags="memory, sneaky-injected-tag"))
-        self.assertEqual(code, 0)
-        self.assertEqual(self.corpus()[0]["tags"], ["memory"])
+        self.assertEqual(code, 1)
+        self.assertIsNone(self.corpus())
 
     def test_parse_mode_reads_the_issue_without_touching_the_database(self):
         code, out, _ = self.promote(rendered_issue(), mode="parse")
@@ -1068,14 +1020,13 @@ class TestPromoteIssue(PromoteCase):
     def test_a_native_suggestion_takes_editorial_metadata_from_labels(self):
         code, _, err = self.promote(
             rendered_native_issue(credit="Ada"),
-            labels=("question-submission", "deck:close", "deck:family", "depth:2", "tag:memory"),
+            labels=("question-submission", "depth:2", "tag:memory"),
         )
         self.assertEqual(code, 0, err)
         self.assertEqual(
             self.corpus()[0],
             {
                 "text": "Which ordinary day would you happily live again?",
-                "decks": ["close", "family"],
                 "depth": 2,
                 "tags": ["memory"],
                 "author": "Ada",
@@ -1089,14 +1040,12 @@ class TestPromoteIssue(PromoteCase):
         self.assertEqual(self.corpus(), None)
 
     def test_a_native_suggestion_rejects_multiple_depth_labels(self):
-        code, _, err = self.promote(
-            rendered_native_issue(), labels=("deck:close", "depth:1", "depth:2")
-        )
+        code, _, err = self.promote(rendered_native_issue(), labels=("depth:1", "depth:2"))
         self.assertEqual(code, 1)
         self.assertIn("exactly one", err)
 
     def test_a_native_suggestion_rejects_unknown_editorial_labels(self):
-        code, _, err = self.promote(rendered_native_issue(), labels=("deck:close", "depth:medium"))
+        code, _, err = self.promote(rendered_native_issue(), labels=("depth:medium",))
         self.assertEqual(code, 1)
         self.assertIn("unknown editorial label", err)
 
@@ -1106,7 +1055,7 @@ class TestPromoteIssue(PromoteCase):
                 question="Who made you think &#64;home was better than &lt;away&gt;?",
                 credit="A &amp; B",
             ),
-            labels=("deck:close", "depth:2"),
+            labels=("depth:2",),
         )
         self.assertEqual(code, 0, err)
         self.assertEqual(
@@ -1227,7 +1176,7 @@ class TestCheckRelease(unittest.TestCase):
         }
         entry.update(overrides)
         return {
-            "schema": 3,
+            "schema": 4,
             "version": "2026.08.2",
             "min_fw": "0.1.0",
             "languages": {"en": entry},
@@ -1289,7 +1238,7 @@ class TestCheckRelease(unittest.TestCase):
         self.assertIn("nope.json", err)
 
     def test_a_manifest_without_languages_is_refused(self):
-        code, _, err = self.check(self.write({"schema": 3, "languages": {}}))
+        code, _, err = self.check(self.write({"schema": 4, "languages": {}}))
         self.assertEqual(code, 1)
         self.assertIn("no languages", err)
 
@@ -1344,12 +1293,12 @@ class TestDraftImport(TmpDb):
         draft = self.draft(
             "# a comment, not a header\n"
             "\n"
-            "# decks: new_people, close · depth: 1 · tags: icebreaker\n"
+            "# depth: 1 · tags: icebreaker\n"
             "What closes on a single line?\n"
             "What wraps across\n"
             "two lines before it closes?\n"
             "\n"
-            "# decks: wild | depth: 3 | tags: dark\n"
+            "# depth: 3 | tags: dark\n"
             "What uses pipes to separate its fields?\n"
         )
 
@@ -1365,10 +1314,10 @@ class TestDraftImport(TmpDb):
                 "What uses pipes to separate its fields?",
             ],
         )
-        self.assertEqual(entries[0]["decks"], ["new_people", "close"])
+
         self.assertEqual(entries[0]["tags"], ["icebreaker"])
         # A header replaces the previous one rather than merging with it.
-        self.assertEqual(entries[2]["decks"], ["wild"])
+
         self.assertEqual(entries[2]["depth"], 3)
         # The fix pass owns ids and dates, exactly as for a hand-written entry.
         for entry in entries:
@@ -1376,7 +1325,7 @@ class TestDraftImport(TmpDb):
             self.assertIn("added", entry)
 
     def test_rerunning_a_draft_skips_what_the_corpus_already_has(self):
-        draft = self.draft("# decks: close · depth: 2\nWhat is already on file here?\n")
+        draft = self.draft("# depth: 2\nWhat is already on file here?\n")
         self.import_file(draft)
         before = self.corpus()
 
@@ -1388,13 +1337,13 @@ class TestDraftImport(TmpDb):
 
     def test_a_draft_the_validator_would_reject_is_not_written(self):
         cases = {
-            "depth": "# decks: close · depth: 9\nWhat carries an impossible depth?\n",
-            "wild": "# decks: close · depth: 2 · tags: dark\nWhat wears dark outside wild?\n",
-            "length": "# decks: close · depth: 1\nShort?\n",
-            "denylist": "# decks: close · depth: 1\nWhat about that badword there?\n",
+            "depth": "# depth: 9\nWhat carries an impossible depth?\n",
+            "legacy tag": "# depth: 2 · tags: spicy\nWhat wears dark outside wild?\n",
+            "length": "# depth: 1\nShort?\n",
+            "denylist": "# depth: 1\nWhat about that badword there?\n",
             "unknown deck": "# decks: nope · depth: 1\nWhat sits under an unknown deck?\n",
             "no header": "What has no header above it?\n",
-            "unterminated": "# decks: close · depth: 1\nThis line never ends properly\n",
+            "unterminated": "# depth: 1\nThis line never ends properly\n",
         }
         for name, body in cases.items():
             with self.subTest(name):
@@ -1405,10 +1354,46 @@ class TestDraftImport(TmpDb):
                 self.assertEqual(self.corpus(), "")
 
     def test_dry_run_reports_without_touching_the_corpus(self):
-        draft = self.draft("# decks: close · depth: 2\nWhat would be appended?\n")
+        draft = self.draft("# depth: 2\nWhat would be appended?\n")
 
         code, out, _ = self.import_file(draft, "--dry-run")
 
         self.assertEqual(code, 0)
         self.assertIn("What would be appended?", out)
         self.assertEqual(self.corpus(), "")
+
+
+class TestQdb4Contract(unittest.TestCase):
+    def fixture(self):
+        return {
+            "text": "When did you last sing out loud?",
+            "depth": 3,
+            "tags": ["dark", "sexual", "memory"],
+        }
+
+    def test_precise_flags_and_record_layout(self):
+        raw = build_bundle.build_bundle_bytes(
+            "en",
+            "v",
+            [self.fixture()],
+            ["icebreaker", "reflective", "hypothetical", "memory", "wouldyourather"],
+        )
+        self.assertEqual(raw[:4], b"QDB4")
+        self.assertEqual(raw[11:15], bytes([14, 8, 32, 0]))
+        question = build_bundle.parse_bundle(raw)["questions"][0]
+        self.assertEqual(question["depth"], 3)
+        self.assertTrue(question["dark"] and question["sexual"])
+        self.assertEqual(question["forms"], ["memory"])
+        for size in range(len(raw)):
+            with self.assertRaises(ValueError):
+                build_bundle.parse_bundle(raw[:size])
+        with self.assertRaises(ValueError):
+            build_bundle.parse_bundle(b"QDB3" + raw[4:])
+
+    def test_writer_refuses_retired_metadata(self):
+        for legacy in [
+            {**self.fixture(), "tags": ["spicy"]},
+            {**self.fixture(), "decks": ["wild"]},
+        ]:
+            with self.assertRaisesRegex(ValueError, "reclassify"):
+                build_bundle.build_bundle_bytes("en", "v", [legacy], ["memory"])

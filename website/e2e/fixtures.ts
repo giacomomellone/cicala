@@ -3,7 +3,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test, type Page } from "@playwright/test";
-import { DEVICE_DECKS } from "../src/config";
+import { DEFAULT_PERMISSIONS } from "../src/config";
+import { permitted } from "../src/lib/bag";
 
 const at = (relative: string) => fileURLToPath(new URL(relative, import.meta.url));
 
@@ -12,17 +13,14 @@ const readJson = <T>(relative: string): T => JSON.parse(readFileSync(at(relative
 export interface Question {
   id: string;
   text: string;
-  decks: string[];
   depth: number;
   tags: string[];
 }
 
 export interface Schema {
   "x-cicala": {
-    decks: string[];
     tags: string[];
     depthLabels: string[];
-    playbackDepthMax: number;
     languages: Record<string, { name: string }>;
   };
 }
@@ -41,22 +39,15 @@ export const skipWithoutQuestions = (...langs: string[]): void => {
   test.skip(empty.length > 0, `no questions in the ${empty.join(" and ")} corpus yet`);
 };
 
-/** Questions the player can actually serve for a deck (spec §7.4). */
-export const playable = (lang: string, deck: string): Question[] =>
-  payload(lang).filter((q) => q.depth <= schema.playbackDepthMax && q.decks.includes(deck));
-
-/** The category that requires the fewest draws to exhaust, among the decks
-    the player offers. */
-export const smallestDeck = (lang: string): string =>
-  DEVICE_DECKS.map((deck) => ({ deck, size: playable(lang, deck).length })).sort(
-    (a, b) => a.size - b.size,
-  )[0]!.deck;
+/** Automatic play uses explicit permissions, independent of Browse. */
+export const playable = (lang: string): Question[] =>
+  payload(lang).filter((q) => permitted(q, DEFAULT_PERMISSIONS));
 
 /** Wait for the play island to replace the build-time seed question. */
 export async function playReady(page: Page, lang = "en"): Promise<void> {
   await page.waitForFunction(
-    (prefix) => Object.keys(localStorage).some((key) => key.startsWith(prefix)),
-    `cicala.bag.${lang}.`,
+    (prefix) => Object.keys(sessionStorage).some((key) => key.startsWith(prefix)),
+    `cicala.play.v1.${lang}`,
   );
 }
 

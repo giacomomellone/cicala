@@ -4,15 +4,14 @@ import { CC0_CONSENT_VERSION } from "./submission";
 export const REASON_MIN = 10;
 export const REASON_MAX = 1000;
 
-/* The four editorial properties a maintainer can be asked to reconsider.
+/* The three editorial properties a maintainer can be asked to reconsider.
    They mirror the checkbox options in .github/ISSUE_TEMPLATE/edit-question.yml
    so both routes produce one issue shape. */
-export const EDIT_ASPECTS = ["decks", "depth", "tags", "translation"] as const;
+export const EDIT_ASPECTS = ["depth", "tags", "translation"] as const;
 
 export type EditAspect = (typeof EDIT_ASPECTS)[number];
 
 export const EDIT_ASPECT_LABELS: Record<EditAspect, string> = {
-  decks: "Deck eligibility",
   depth: "Depth",
   tags: "Tags",
   translation: "Translation provenance or origin",

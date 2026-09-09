@@ -13,14 +13,14 @@ namespace
 constexpr uint32_t kMagic = 0x3152'4B54u;
 
 // Bump when the payload layout or field meaning changes.
-// 2: Bag::State gains the last-served depth band and form mask.
-constexpr uint16_t kVersion = 2;
+// 3: One bag per language, explicit permissions, menu and question snapshot.
+constexpr uint16_t kVersion = 3;
 
 // FNV-1a detects accidental RTC-memory corruption.
 constexpr uint32_t kFnvOffset = 2166136261u;
 constexpr uint32_t kFnvPrime = 16777619u;
 
-constexpr size_t kPayloadOffset = offsetof(Retained, bag);
+constexpr size_t kPayloadOffset = offsetof(Retained, bags);
 
 uint32_t payload_hash(const Retained &block)
 {

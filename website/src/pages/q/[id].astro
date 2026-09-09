@@ -1,7 +1,6 @@
 ---
 // Static question permalinks include the question title and language.
 import PlayShell from "../../components/PlayShell.astro";
-import type { Deck } from "../../config";
 import Base from "../../layouts/Base.astro";
 import type { Question } from "../../lib/data";
 
@@ -19,7 +18,7 @@ export function getStaticPaths() {
     for (const q of mod.default.questions) {
       paths.push({
         params: { id: q.id },
-        props: { q, deck: q.decks[0] ?? "new_people", lang },
+        props: { q, lang },
       });
     }
   }
@@ -28,10 +27,9 @@ export function getStaticPaths() {
 
 interface Props {
   q: Question;
-  deck: string;
   lang: string;
 }
-const { q, deck, lang } = Astro.props;
+const { q, lang } = Astro.props;
 ---
 
 <Base
@@ -40,5 +38,5 @@ const { q, deck, lang } = Astro.props;
   lang={lang}
   seedLang={lang}
 >
-  <PlayShell question={q} deck={deck as Deck} lang={lang} permalink />
+  <PlayShell question={q} lang={lang} permalink />
 </Base>

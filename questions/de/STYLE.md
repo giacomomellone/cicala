@@ -1,7 +1,6 @@
 # Deutscher Stil-Leitfaden
 
-So schreibst du eine Cicala-Frage auf Deutsch. Die Messlatte: Sie passt zu
-jedem gewählten Deck, ist nicht mit Ja oder Nein zu erledigen und ist konkret
+So schreibst du eine Cicala-Frage auf Deutsch. Die Messlatte: Sie steht für sich, ist nicht mit Ja oder Nein zu erledigen und ist konkret
 genug, um eine Geschichte anzustoßen. Die Begründung für diese Regeln steht in
 der [Theorie](../../docs/theory.md).
 
@@ -9,7 +8,7 @@ der [Theorie](../../docs/theory.md).
 
 - Sprich eine Person direkt an: **du**, immer klein geschrieben, niemals "Sie" oder "man".
 - **Keine Anglizismen in Fragen.** Schreibe "Verabredung", nicht "Date". Die
-  Deck-Schlüssel und die Beschriftung des ersten Prototyps bleiben englisch.
+  Die Metadaten-Schlüssel bleiben englisch.
 - Eine gute deutsche Frage klingt, als hätte sie jemand am Küchentisch
   gestellt, unabhängig davon, ob sie auf Deutsch verfasst oder aus einer anderen
   Sprache übersetzt wurde.
@@ -28,20 +27,11 @@ der [Theorie](../../docs/theory.md).
 - Schreibe nur eine Frage, die auch die fragende Person beantworten könnte.
 - Meide Superlative wie "beste", "schlimmste", "meiste" und "wenigste"; sie machen aus Erinnerung eine Rangliste.
 
-## Deck-Zuordnung
+## Eigenständige Fragen
 
-- `new_people`: setzt keine gemeinsame Vergangenheit voraus. Keine
-  Wissensprüfung über die Beziehung und keine erzwungene Lebensgeschichte.
-- `close`: setzt Vertrautheit voraus. Frage eher nach Veränderung und Deutung
-  als nach bekannten Eckdaten.
-- `family`: muss für ein zehnjähriges Kind sicher *und interessant* sein. Generationsübergreifend: Oma und Enkel können beide antworten.
-- `work`: keine erzwungene Intimität, Gerüchte, Diagnosen oder Antworten, die
-  den Status am Arbeitsplatz verändern können.
-- `here`: nutzt den Raum, den Tisch, die Veranstaltung oder sichtbare Umgebung.
-- `wild`: düster, gewagt, makaber oder absurd. Solche Fragen erscheinen in
-  keinem anderen Deck.
-
-Eine Frage wird einmal gespeichert und kann mehreren Decks zugeordnet sein.
+Jede Frage wird einmal im gemischten Korpus gespeichert. Sie darf keine
+bestimmte Beziehung oder gewählte Kategorie voraussetzen. Raum und sichtbare
+Umgebung bleiben mögliche Ausgangspunkte.
 
 ## Tiefe
 
@@ -50,8 +40,8 @@ Eine Frage wird einmal gespeichert und kann mehreren Decks zugeordnet sein.
 - `3`: kann Verletzlichkeit, Konflikt, Angst, Verlust oder folgenreiche
   Preisgabe betreffen.
 
-Tiefe und Ton sind getrennt. Die normale Wiedergabe nutzt derzeit 1 und 2; 3
-bleibt im Korpus und in der Stöberansicht.
+Tiefe und Ton sind getrennt. Die normale Wiedergabe nutzt 1 und 2. Schwer erlaubt Tiefe 3.
+Düster und Sexuell sind davon unabhängige Freigaben.
 
 ## Schlagwörter
 
@@ -59,8 +49,10 @@ Sparsam verwenden, die meisten Fragen brauchen null oder eins. Die Schlüssel si
 
 - `icebreaker`: sicher mit völlig Fremden in den ersten fünf Minuten.
 - `reflective`: verlangt einen Blick nach innen; eine Denkpause ist zu erwarten.
-- `spicy`: gewagt oder gesellschaftlich riskant. Erfordert `decks: [wild]`.
-- `dark`: düsterer oder makaberer Ton. Erfordert `decks: [wild]`.
+- `sexual`: sexuelle Erfahrungen, Wünsche oder explizites Material. Erfordert
+  Sexuell. Gewagtheit allein genügt nicht; alte `spicy`-Einträge brauchen
+  eine ausdrückliche menschliche Neueinstufung.
+- `dark`: düsteres, makabres oder verstörendes Material. Erfordert Düster.
 - `hypothetical`: Gedankenspiele ("wenn…", "was würdest du…").
 - `memory`: fragt nach einem konkreten erinnerten Moment.
 - `wouldyourather`: eine erzwungene Wahl zwischen genau zwei Möglichkeiten.

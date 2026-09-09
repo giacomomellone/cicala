@@ -9,9 +9,9 @@ Stable URL: `http://<site-domain>/device/manifest.json`
 
 ```json
 {
-  "schema": 3,
+  "schema": 4,
   "version": "2026.07.2",
-  "min_fw": "0.1.0",
+  "min_fw": "0.2.0",
   "languages": {
     "en": {
       "url": "http://<site-domain>/device/bundle-en-2026.07.2.qdb",
@@ -24,8 +24,7 @@ Stable URL: `http://<site-domain>/device/manifest.json`
 }
 ```
 
-`count` is the number of unique stored questions, not the sum of deck
-eligibilities. `sig` is an Ed25519 signature over the 32 raw bytes of the
+`count` is the number of stored questions. `sig` is an Ed25519 signature over the 32 raw bytes of the
 bundle's SHA-256 digest. An unsigned development bundle uses `"sig": null`;
 release firmware rejects it.
 
@@ -38,9 +37,9 @@ public key compiled into the firmware. The device rejects manifests whose
 version is not newer than the installed version, which limits replay of an old
 signed release.
 
-## QDB3 bundle
+## QDB4 bundle
 
-**QDB3** is the flat binary form of the question database used by the device.
+**QDB4** is the flat binary form of the question database used by the device.
 The format version is part of the magic bytes.
 
 Two file extensions contain the same data:
@@ -53,43 +52,41 @@ Two file extensions contain the same data:
 A `.qdb.gz` file is a deterministic gzip stream (`mtime=0`) around this flat
 binary. Integers are little-endian and strings are UTF-8 without a terminator.
 
-| Field              |  Size | Meaning                                                                                 |
-| ------------------ | ----: | --------------------------------------------------------------------------------------- |
-| magic              |     4 | ASCII `QDB3`                                                                            |
-| version            | 1 + n | u8 length, then release version                                                         |
-| language           | 1 + n | u8 length, then language code                                                           |
-| count              |     2 | u16 number of unique questions                                                          |
-| then, per question |       |                                                                                         |
-| deck mask          |     1 | bits 0–5 are `new_people`, `close`, `family`, `work`, `here`, `wild`; bits 6–7 are zero |
-| metadata           |     1 | bits 0–1 are `depth - 1`; bit 2 is `spicy`; bit 3 is `dark`; bits 4–7 are zero          |
-| forms              |     1 | form-tag bits in schema tag order minus the tone flags; bits 5–7 are zero               |
-| text               | 2 + n | u16 byte length, then question text                                                     |
+| Field              |  Size | Meaning                                                                         |
+| ------------------ | ----: | ------------------------------------------------------------------------------- |
+| magic              |     4 | ASCII `QDB4`                                                                    |
+| version            | 1 + n | u8 length, then release version                                                 |
+| language           | 1 + n | u8 length, then language code                                                   |
+| count              |     2 | u16 number of unique questions                                                  |
+| then, per question |       |                                                                                 |
+| metadata           |     1 | bits 0–1 are `depth - 1`; bit 2 is `sexual`; bit 3 is `dark`; bits 4–7 are zero |
+| forms              |     1 | form-tag bits in schema tag order minus the tone flags; bits 5–7 are zero       |
+| text               | 2 + n | u16 byte length, then question text                                             |
 
 The bundle omits IDs because the physical device has no favorites, permalinks,
 or human-visible question numbers. IDs remain in the repository and website.
-A question with several eligible decks is stored once with several mask bits,
-which avoids duplicated text.
+Each record belongs to the single mixed stream. Dark and Sexual permissions
+must be explicitly enabled for their respective flags, and Heavy must be enabled
+for depth 3. Combinations require every permission. The forms byte carries
+icebreaker, reflective, hypothetical, memory, and wouldyourather, in that order.
 
-Dark and spicy flags are tone metadata. Corpus validation requires either flag
-to be exclusive to the Wild deck. Normal playback filters out depth 3. The
-forms byte carries the remaining tags — icebreaker, reflective, hypothetical,
-memory, wouldyourather — which the bag's texture preference reads.
+QDB3 is incompatible and rejected. Firmware 0.2.0 and question manifest schema 4
+ship together. If a stored corpus is incompatible, the embedded QDB4 corpus is
+used. RTC layout version 3 invalidates old category bags and filter state.
 
 ### Worked example
 
-Language `en`, version `2026.07.2`, with one depth-2 question eligible for New
-People and Close:
+Language `en`, version `2026.07.2`, with one depth-2 question:
 
 `When did you last sing out loud?`
 
-Its deck mask is `00000011`, metadata is `00000001`, and forms is `00000000`.
+Its metadata is `00000001`, and forms is `00000000`.
 
 ```text
-51 44 42 33                                      "QDB3"
+51 44 42 34                                      "QDB4"
 09 32 30 32 36 2E 30 37 2E 32                    len=9, "2026.07.2"
 02 65 6E                                         len=2, "en"
 01 00                                            count = 1
-03                                               new_people + close
 01                                               depth 2, no tone flags
 00                                               no form tags
 20 00                                            text length = 32

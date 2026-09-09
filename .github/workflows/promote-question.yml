@@ -99,7 +99,7 @@ jobs:
               body = [
                 'The question passes the text, duplicate, and per-language denylist checks.',
                 '',
-                'A language maintainer assigns its decks, depth, and optional tags before approval.',
+                'A language maintainer assigns its depth and optional tags before approval.',
               ].join('\n');
             } else if (passed) {
               body = [

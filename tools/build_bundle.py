@@ -3,13 +3,12 @@
 
 Bundle format (docs/sync_protocol.md has the worked example) — gzip of:
 
-  magic        4 bytes  "QDB3"
+  magic        4 bytes  "QDB4"
   version      u8 length + UTF-8 bytes (e.g. "2026.07.1")
   lang         u8 length + UTF-8 bytes (e.g. "en")
   count        u16 LE
   per question:
-    deck mask  u8; bits follow the fixed deck order in questions/schema.json
-    metadata   u8; bits 0–1 = depth - 1, bit 2 = spicy, bit 3 = dark
+    metadata   u8; bits 0–1 = depth - 1, bit 2 = sexual, bit 3 = dark
     forms      u8; bits follow the schema tag order minus the tone flags
     text       u16 LE length + UTF-8 bytes
 
@@ -39,27 +38,28 @@ from build_site_data import git_version  # noqa: E402
 
 def form_tags(cfg: dict) -> list[str]:
     """Form tags in schema order, minus the tone flags the metadata byte carries."""
-    return [tag for tag in cfg["tags"] if tag not in ("spicy", "dark")]
+    return [tag for tag in cfg["tags"] if tag not in ("sexual", "dark")]
 
 
-def build_bundle_bytes(
-    lang: str, version: str, questions: list[dict], decks: list[str], forms: list[str]
-) -> bytes:
+def build_bundle_bytes(lang: str, version: str, questions: list[dict], forms: list[str]) -> bytes:
     out = bytearray()
-    out += b"QDB3"
+    out += b"QDB4"
     for s in (version, lang):
         raw = s.encode("utf-8")
         out += struct.pack("<B", len(raw)) + raw
     out += struct.pack("<H", len(questions))
     for entry in questions:
-        mask = sum(1 << decks.index(deck) for deck in entry["decks"])
         tags = entry.get("tags", [])
+        if "decks" in entry or any(tag not in [*forms, "dark", "sexual"] for tag in tags):
+            raise ValueError("retired or unknown metadata; reclassify before bundling")
+        if entry["depth"] not in (1, 2, 3):
+            raise ValueError("invalid depth")
         metadata = entry["depth"] - 1
-        metadata |= (1 << 2) if "spicy" in tags else 0
+        metadata |= (1 << 2) if "sexual" in tags else 0
         metadata |= (1 << 3) if "dark" in tags else 0
         form_bits = sum(1 << forms.index(tag) for tag in tags if tag in forms)
         text = entry["text"].encode("utf-8")
-        out += struct.pack("<BBBH", mask, metadata, form_bits, len(text)) + text
+        out += struct.pack("<BBH", metadata, form_bits, len(text)) + text
     return bytes(out)
 
 
@@ -74,15 +74,19 @@ def parse_bundle(blob: bytes):
     Takes either shape: the raw binary a device downloads, or the gzip around
     it that the website publishes.
     """
-    raw = blob if blob[:4] == b"QDB3" else gzip.decompress(blob)
-    if raw[:4] != b"QDB3":
+    raw = gzip.decompress(blob) if blob[:2] == b"\x1f\x8b" else blob
+    if raw[:4] != b"QDB4":
         raise ValueError("bad magic")
     pos = 4
 
     def take_str8():
         nonlocal pos
+        if pos >= len(raw):
+            raise ValueError("truncated string length")
         n = raw[pos]
         pos += 1
+        if pos + n > len(raw):
+            raise ValueError("truncated string")
         s = raw[pos : pos + n].decode("utf-8")
         pos += n
         return s
@@ -91,22 +95,28 @@ def parse_bundle(blob: bytes):
     cfg = json.loads(
         (Path(__file__).resolve().parent.parent / "questions" / "schema.json").read_text()
     )["x-cicala"]
-    decks = cfg["decks"]
     forms = form_tags(cfg)
+    if pos + 2 > len(raw):
+        raise ValueError("truncated count")
     (count,) = struct.unpack_from("<H", raw, pos)
     pos += 2
     items = []
     for _ in range(count):
-        mask, metadata, form_bits, tlen = struct.unpack_from("<BBBH", raw, pos)
-        pos += 5
+        if pos + 4 > len(raw):
+            raise ValueError("truncated record")
+        metadata, form_bits, tlen = struct.unpack_from("<BBH", raw, pos)
+        pos += 4
+        if (metadata & 0xF0) or (metadata & 3) == 3 or form_bits >> len(forms):
+            raise ValueError("invalid metadata")
+        if pos + tlen > len(raw):
+            raise ValueError("truncated text")
         text = raw[pos : pos + tlen].decode("utf-8")
         pos += tlen
         items.append(
             {
                 "text": text,
-                "decks": [deck for bit, deck in enumerate(decks) if mask & (1 << bit)],
                 "depth": (metadata & 0b11) + 1,
-                "spicy": bool(metadata & (1 << 2)),
+                "sexual": bool(metadata & (1 << 2)),
                 "dark": bool(metadata & (1 << 3)),
                 "forms": [tag for bit, tag in enumerate(forms) if form_bits & (1 << bit)],
             }
@@ -137,13 +147,13 @@ def main(argv=None) -> int:
         type=Path,
         default=None,
         help="directory of language directories (default: <root>/questions); the schema and "
-        "the deck order still come from <root>",
+        "the form vocabulary still comes from <root>",
     )
     parser.add_argument(
         "--out", type=Path, default=None, help="output directory (default: <root>/dist/bundles)"
     )
     parser.add_argument("--version", default=None, help="release version (default: git describe)")
-    parser.add_argument("--min-fw", default="0.1.0")
+    parser.add_argument("--min-fw", default="0.2.0")
     parser.add_argument(
         "--sign-key",
         type=Path,
@@ -163,11 +173,10 @@ def main(argv=None) -> int:
     if schema is None:
         print("\n".join(rep.errors), file=sys.stderr)
         return 1
-    decks = cfg["decks"]
     forms = form_tags(cfg)
 
     # These fields describe the raw .qdb downloaded by the device.
-    manifest = {"schema": 3, "version": version, "min_fw": args.min_fw, "languages": {}}
+    manifest = {"schema": 4, "version": version, "min_fw": args.min_fw, "languages": {}}
     for lang, lang_dir, incubator in validate.discover_languages(args.root, args.corpus):
         if incubator:
             continue
@@ -184,7 +193,11 @@ def main(argv=None) -> int:
                 return 1
         count = len(entries)
 
-        raw = build_bundle_bytes(lang, version, entries, decks, forms)
+        try:
+            raw = build_bundle_bytes(lang, version, entries, forms)
+        except ValueError as exc:
+            print(f"{path}: {exc}", file=sys.stderr)
+            return 1
         gz = compress_bundle(raw)
 
         raw_name = f"bundle-{lang}-{version}.qdb"

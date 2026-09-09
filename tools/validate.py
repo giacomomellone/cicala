@@ -4,11 +4,11 @@
 Checks every questions/{lang}/questions.yaml (shipped and incubator) against
 questions/schema.json plus the rules JSON Schema cannot express: id format and
 global uniqueness, per-language dedup on normalized text, per-language
-denylist, terminator rules, deck/tone invariants, and translation lineage.
+denylist, terminator rules, editorial vocabulary, and translation lineage.
 
 With --fix, assigns missing ids and added dates and rewrites every clean corpus
 with stable formatting. New ids hash `lang|normalized text`; existing ids stay
-stable through later text or deck edits.
+stable through later text or metadata edits.
 
 Exit code 0 = clean (warnings allowed), 1 = errors. Requires pyyaml, jsonschema.
 """
@@ -174,20 +174,6 @@ def check_denylist(text: str, terms: list[str], path, line, rep: Reporter):
             )
 
 
-def check_deck_rules(entry: dict, path, line, rep: Reporter):
-    decks = entry.get("decks")
-    tags = entry.get("tags", [])
-    if not isinstance(decks, list) or not isinstance(tags, list):
-        return
-    daring = {"dark", "spicy"}.intersection(tags)
-    if daring and decks != ["wild"]:
-        rep.error(
-            path,
-            line,
-            f"{', '.join(sorted(daring))} questions must be exclusive to the wild deck",
-        )
-
-
 def _render_scalar(value) -> str:
     escaped = str(value).replace("\\", "\\\\").replace('"', '\\"')
     return f'"{escaped}"'
@@ -206,7 +192,7 @@ def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
             if key not in entry:
                 continue
             value = entry[key]
-            if key in ("decks", "tags"):
+            if key == "tags":
                 if not value and key == "tags":
                     continue
                 rendered = "[" + ", ".join(value) + "]"
@@ -240,14 +226,12 @@ def main(argv=None) -> int:
         print("\n".join(rep.errors), file=sys.stderr)
         return 1
 
-    decks = cfg["decks"]
     question_file = cfg.get("questionFile", "questions.yaml")
     key_order = cfg.get(
         "keyOrder",
         [
             "id",
             "text",
-            "decks",
             "depth",
             "tags",
             "origin",
@@ -297,7 +281,6 @@ def main(argv=None) -> int:
         file_error_count = len(rep.errors)
         seen_texts: dict[str, str] = {}
         seen_machine_origins: dict[str, str] = {}
-        coverage = {deck: 0 for deck in decks}
 
         for entry in entries:
             line = entry.pop("__line__", 0)
@@ -330,11 +313,6 @@ def main(argv=None) -> int:
                 else:
                     seen_texts[norm] = f"{rpath}:{line}"
 
-            check_deck_rules(entry, rpath, line, rep)
-            for deck in entry.get("decks", []):
-                if deck in coverage:
-                    coverage[deck] += 1
-
             qid = entry.get("id")
             if isinstance(qid, str) and ID_RE.match(qid):
                 if qid in all_ids:
@@ -356,13 +334,6 @@ def main(argv=None) -> int:
                         )
                     else:
                         seen_machine_origins[origin] = f"{rpath}:{line}"
-
-        minimum = 1 if incubator else 10
-        for deck, count in coverage.items():
-            if count < minimum:
-                rep.warn(
-                    rpath, 0, f"deck '{deck}' has {count} questions; target is at least {minimum}"
-                )
 
         if args.fix and len(rep.errors) == file_error_count:
             formatted = format_file(lang, entries, key_order)

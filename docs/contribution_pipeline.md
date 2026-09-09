@@ -18,7 +18,7 @@ Turnstile and opens a public issue through the repository-scoped `cicala-bot`
 GitHub App.
 
 The direct GitHub issue form remains available. It asks the contributor for
-decks, depth and optional tags because a GitHub contributor owns and can edit
+depth and optional tags because a GitHub contributor owns and can edit
 that issue. Developers editing `questions/{lang}/questions.yaml` directly
 skip to the pull-request half.
 
@@ -64,7 +64,7 @@ flowchart TD
     J3 --> M3[normal pull request preserving the id]
     M3 --> O
     G -->|problems| H[comment + needs-changes label]
-    G -->|clean native text| I[maintainer classifies with deck, depth and tag labels]
+    G -->|clean native text| I[maintainer classifies with depth and tag labels]
     G -->|clean GitHub form| J[maintainer review]
     I --> J
     J -->|approved label| K{promote_issue.py apply}
@@ -129,17 +129,16 @@ putting a secret in the issue.
 
 ## Editorial classification
 
-A native suggestion carries no contributor-selected decks, depth or tags. A
+A native suggestion carries no contributor-selected depth or tags. A
 language maintainer adds:
 
-- one or more `deck:<name>` labels;
 - exactly one of `depth:1`, `depth:2`, or `depth:3`;
 - zero or more `tag:<name>` labels.
 
 The `approved` label comes last. `promote_issue.py apply` refuses an
-unclassified native issue, more than one depth, unknown values, or a dark or
-spicy question outside Wild. Direct GitHub form issues continue to read this
-metadata from their body, so existing submissions do not need label migration.
+unclassified native issue, more than one depth, unknown values, or retired `deck:*` or `tag:spicy` labels. Direct GitHub form issues continue to read this
+metadata from their body. Legacy `spicy` submissions need explicit human
+reclassification; they are never silently mapped to `sexual`.
 
 ## Where each rule is enforced
 
@@ -150,8 +149,8 @@ metadata from their body, so existing submissions do not need label migration.
 | Shipped language                                 | yes     | yes            | yes         | yes              |
 | Explicit, current CC0 consent                    | yes     | yes            | yes         | yes              |
 | Same-origin request and Turnstile                | —       | yes            | —           | —                |
-| At least one deck and exactly one depth          | —       | —              | direct form | yes              |
-| Dark/spicy only in Wild                          | —       | —              | direct form | yes              |
+| Exactly one depth                                | —       | —              | direct form | yes              |
+| Current, precise content tags                    | —       | —              | direct form | yes              |
 | Per-language denylist                            | no      | no             | yes         | yes              |
 | Style guide, tone, whether it is a good question | no      | no             | no          | maintainer       |
 
@@ -177,7 +176,7 @@ composition is a duplicate.
 
 `validate.py --fix` assigns `q-` plus the first eight hex characters of
 SHA-256 over `lang|normalized text`. Contributors and the submission endpoint
-never write one. An id remains stable through later text, deck or depth edits.
+never write one. An id remains stable through later text or depth edits.
 
 ## Testing this pipeline
 

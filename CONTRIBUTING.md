@@ -4,10 +4,10 @@
 
 This is the contribution that matters most. Two ways, both take about 30 seconds:
 
-1. **Website:** [suggest a question](https://cicala.dev/suggest) without an account. Enter the question and language, optionally add a credit, and confirm the public-domain dedication. A maintainer assigns decks, depth, and tags.
+1. **Website:** [suggest a question](https://cicala.dev/suggest) without an account. Enter the question and language, optionally add a credit, and confirm the public-domain dedication. A maintainer assigns depth and tags.
 2. **GitHub:** open a [new-question issue](../../issues/new?template=new-question.yml) directly.
 
-The website submits through the repository's narrowly scoped GitHub App, so the resulting issue is opened by `cicala-bot` without exposing a contributor account. Direct GitHub submissions require a free GitHub account and ask the contributor to choose editorial metadata. Within a minute of opening either kind of issue, an automated check covers the applicable text, deck, tone, denylist, and duplicate rules. A maintainer who speaks the language reviews every submission; once approved, another workflow turns the issue into a pull request. The question ships to the website within minutes of merge and to devices with the next database release. [docs/contribution_pipeline.md](docs/contribution_pipeline.md) describes the path.
+The website submits through the repository's narrowly scoped GitHub App, so the resulting issue is opened by `cicala-bot` without exposing a contributor account. Direct GitHub submissions require a free GitHub account and ask the contributor to choose editorial metadata. Within a minute of opening either kind of issue, an automated check covers the applicable text, tone, denylist, and duplicate rules. A maintainer who speaks the language reviews every submission; once approved, another workflow turns the issue into a pull request. The question ships to the website within minutes of merge and to devices with the next database release. [docs/contribution_pipeline.md](docs/contribution_pipeline.md) describes the path.
 
 ### The public domain dedication (please read)
 
@@ -15,13 +15,13 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 
 ### What makes a good question
 
-- Answerable in every selected deck. `new_people` questions require no shared
-  history; `close` questions may assume familiarity.
+- Standalone and answerable without a prescribed relationship.
+- Give the asker and every participant a way to answer.
 - Open-ended, never yes/no.
 - Specific enough to start a story ("When did you last…" beats "What do you think about…").
 - 10–140 characters, ends with `?`, one question per entry.
-- `family` questions must be safe and interesting for a 10-year-old.
-- Dark and spicy questions use `wild` only. Tone is separate from depth.
+- Assign depth 1–3 and precise form tags. Mark dark or sexual content explicitly;
+  depth 3 is controlled by Heavy. Retired `spicy` metadata needs human review.
 - Read your language's style guide: [`questions/en/STYLE.md`](questions/en/STYLE.md), [`questions/de/STYLE.md`](questions/de/STYLE.md).
 
 ### Adding a new language
@@ -29,8 +29,7 @@ By submitting a question you **dedicate it to the public domain under [CC0-1.0](
 Languages are independent editorial corpora; reviewed machine translations are
 optional and never create a completeness requirement (see
 [docs/languages.md](docs/languages.md)). New languages start in
-`questions/incubator/{lang}/` and graduate once they have ≥ 150 questions (≥
-20 eligible for each deck), a named fluent maintainer, a `STYLE.md`, and a
+`questions/incubator/{lang}/` and graduate once they have ≥ 150 questions with a varied default pool, a named fluent maintainer, a `STYLE.md`, and a
 `denylist.txt`. Never open a PR adding a top-level `questions/{lang}/` directory
 directly.
 
@@ -45,7 +44,7 @@ discussion yourself — an issue opened by the bot cannot be edited by the
 person who asked for it.
 
 Propose wording in your own words, or leave the wording empty and tick the
-metadata you want reconsidered: deck eligibility, depth, tags, or translation
+metadata you want reconsidered: depth, tags, or translation
 provenance. Either way an explanation is required. Proposed wording must be
 written by a person and dedicated to CC0. A fluent maintainer applies accepted
 wording or metadata changes in a normal pull request while preserving the
@@ -54,19 +53,19 @@ question's `id` and `added` values.
 ## Editing question files directly (developers)
 
 One corpus file per language: `questions/{lang}/questions.yaml`. Store a
-question once and list every deck where it is eligible.
+question once, with its depth and precise form/content tags.
 
 ### Writing a batch
 
 A draft file states the editorial metadata once per group and lists the
-questions under it, which is the cheaper way to write a deck in one sitting:
+questions under it, which is the cheaper way to draft several questions in one sitting:
 
 ```text
-# decks: new_people, close · depth: 1 · tags: icebreaker
+# depth: 1 · tags: icebreaker
 What's the most spontaneous thing you've ever done?
 Which song gets you on the dance floor every single time?
 
-# decks: family · depth: 2
+# depth: 2
 What did you believe about your parents that turned out to be wrong?
 ```
 
@@ -77,7 +76,7 @@ just draft en drafts/en.txt --dry-run    # show what it would append, write noth
 
 Fields are separated by `·` or `|`. A header replaces the previous one outright,
 so a group with no `tags` field has no tags. A `#` line that does not open with
-`decks:`, `depth:`, `tags:` or `author:` is a comment. A question may wrap over
+`depth:`, `tags:` or `author:` is a comment. A question may wrap over
 several lines and closes on the line that ends with `?`.
 
 The import applies the validator's own rules before it writes anything: a draft
@@ -95,7 +94,6 @@ Append the entry **without an `id` and without `added`**; CI assigns both:
 
 ```yaml
 - text: "When did you last change your mind about something important?"
-  decks: [new_people, close]
   depth: 2
   tags: [reflective]
   author: "your name" # optional
@@ -109,10 +107,10 @@ just validate   # must pass clean
 ```
 
 Rules the validator enforces: schema conformance, 10–140 chars ending in `?`,
-no duplicates within a language, one or more known decks, depth 1–3,
-Wild-only dark/spicy tone, per-language denylist, controlled tags, and origin
+no duplicates within a language, depth 1–3,
+explicit dark/sexual tags, per-language denylist, controlled tags, and origin
 references. Never hand-write or edit an `id`. Once assigned, IDs stay stable
-through text, deck, and depth edits.
+through text and depth edits.
 
 To edit an existing question, change its text or editorial metadata in a normal
 pull request and keep its `id` and `added` values. Only a person may make that

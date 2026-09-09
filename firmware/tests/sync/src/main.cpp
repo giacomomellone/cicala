@@ -78,7 +78,7 @@ ZTEST(cicala_sync, test_a_language_that_is_not_published_is_not_invented)
 ZTEST(cicala_sync, test_an_unsigned_development_bundle_is_marked_as_such)
 {
     static const char json[] =
-        "{\"schema\":3,\"version\":\"dev\",\"min_fw\":\"0.1.0\",\"languages\":{\"en\":{"
+        "{\"schema\":4,\"version\":\"dev\",\"min_fw\":\"0.1.0\",\"languages\":{\"en\":{"
         "\"url\":\"http://h/b.qdb\",\"size\":10,"
         "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
         "\"sig\":null,\"count\":1}}}";
@@ -109,7 +109,7 @@ ZTEST(cicala_sync, test_a_field_too_long_to_hold_is_refused)
 {
     static char json[1024];
     int n = snprintk(json, sizeof(json),
-                     "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
+                     "{\"schema\":4,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
                      "\"url\":\"http://h/");
 
     for (size_t i = 0; i < kMaxUrlBytes + 16 && n < (int) sizeof(json) - 8; i++) {
@@ -130,19 +130,19 @@ ZTEST(cicala_sync, test_a_malformed_digest_or_signature_is_refused)
     ManifestEntry e = {};
 
     static const char short_hex[] =
-        "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
+        "{\"schema\":4,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
         "\"url\":\"http://h/b.qdb\",\"size\":1,\"sha256\":\"abcd\",\"sig\":null,\"count\":1}}}";
     zassert_false(manifest_entry(short_hex, sizeof(short_hex) - 1, "en", e));
 
     static const char bad_hex[] =
-        "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
+        "{\"schema\":4,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
         "\"url\":\"http://h/b.qdb\",\"size\":1,"
         "\"sha256\":\"zz00000000000000000000000000000000000000000000000000000000000000\","
         "\"sig\":null,\"count\":1}}}";
     zassert_false(manifest_entry(bad_hex, sizeof(bad_hex) - 1, "en", e));
 
     static const char short_sig[] =
-        "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
+        "{\"schema\":4,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
         "\"url\":\"http://h/b.qdb\",\"size\":1,"
         "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
         "\"sig\":\"YWJj\",\"count\":1}}}";
@@ -152,7 +152,7 @@ ZTEST(cicala_sync, test_a_malformed_digest_or_signature_is_refused)
 ZTEST(cicala_sync, test_a_zero_sized_bundle_is_refused)
 {
     static const char json[] =
-        "{\"schema\":3,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
+        "{\"schema\":4,\"version\":\"1\",\"min_fw\":\"0\",\"languages\":{\"en\":{"
         "\"url\":\"http://h/b.qdb\",\"size\":0,"
         "\"sha256\":\"0000000000000000000000000000000000000000000000000000000000000000\","
         "\"sig\":null,\"count\":1}}}";
