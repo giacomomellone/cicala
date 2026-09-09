@@ -70,6 +70,15 @@ def apply_mark(board):
 
     artwork = json.loads((Path(__file__).parent / 'assets/cicala-mark.json').read_text())
     members = []
+    for i, polygon in enumerate(artwork['polygons']):
+        identity = str(uuid.uuid5(NAMESPACE, f'cicada-fill:{i}'))
+        board.append(node('gr_poly',
+                          node('pts', *[node('xy', number(61 - x), number(8.5 + y))
+                                        for x, y in polygon]),
+                          node('stroke', node('width', number(0)), node('type', Sym('default'))),
+                          node('fill', Sym('solid')), node('layer', 'B.SilkS'),
+                          node('uuid', identity)))
+        members.append(identity)
     for i, segment in enumerate(artwork['segments']):
         # Back silk is mirrored in board coordinates for underside reading.
         points = [(number(61 - x), number(8.5 + y)) for x, y in segment['points']]
@@ -81,7 +90,7 @@ def apply_mark(board):
             raise ValueError(f"Unsupported cicada segment: {segment['type']}")
         identity = str(uuid.uuid5(NAMESPACE, f'cicada:{i}'))
         shape.extend([
-            node('stroke', node('width', number(artwork['stroke_mm'])), node('type', Sym('default'))),
+            node('stroke', node('width', number(segment['stroke_mm'])), node('type', Sym('default'))),
             node('layer', 'B.SilkS'), node('uuid', identity),
         ])
         board.append(shape)

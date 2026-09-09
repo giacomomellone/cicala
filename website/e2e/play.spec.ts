@@ -5,7 +5,6 @@ const questionText = "#q-text";
 
 test.describe("play", () => {
   test("publishes the live lockup and identity assets", async ({ page }) => {
-    skipWithoutQuestions("en");
     await page.setViewportSize({ width: 375, height: 812 });
     await page.addInitScript(() => {
       (window as Window & { identityLayoutShift?: number }).identityLayoutShift = 0;
@@ -18,12 +17,14 @@ test.describe("play", () => {
         }
       }).observe({ type: "layout-shift", buffered: true });
     });
-    await page.goto(`/q/${payload("en")[0]!.id}`);
+    await page.goto("/");
 
     const wordmark = page.getByRole("link", { name: "Cicala home" });
-    await expect(wordmark).toHaveText("cicala");
+    await expect(wordmark.locator(":scope > span").last()).toHaveText("cicala");
     await expect(wordmark).toHaveCSS("font-family", /Literata/);
-    await expect(wordmark.locator("svg")).toHaveCount(0);
+    await expect(wordmark.locator("svg")).toHaveCount(1);
+    await expect(wordmark.locator("svg > g")).toHaveAttribute("fill", "currentColor");
+    await expect(wordmark.locator("svg > path")).toHaveAttribute("stroke-width", "10");
     // The separators are the first thing a narrow header drops; they must not.
     await expect(page.locator(".site-nav .nav-dot").first()).toBeVisible();
     await wordmark.focus();
@@ -31,14 +32,19 @@ test.describe("play", () => {
 
     await expect(page.locator("#q-text")).toHaveCSS("font-family", /Zilla Slab/);
 
-    const iconHrefs = await page
+    const icons = await page
       .locator('link[rel="icon"]')
-      .evaluateAll((links) => links.map((link) => (link as HTMLLinkElement).href));
-    expect(iconHrefs).toHaveLength(2);
-    for (const href of iconHrefs) {
+      .evaluateAll((links) =>
+        links.map((link) => ({
+          href: (link as HTMLLinkElement).href,
+          type: (link as HTMLLinkElement).type,
+        })),
+      );
+    expect(icons).toHaveLength(3);
+    for (const { href, type } of icons) {
       const response = await page.request.get(href);
       expect(response.ok()).toBe(true);
-      expect(response.headers()["content-type"]).toContain("image/png");
+      expect(response.headers()["content-type"]).toContain(type);
     }
 
     const touchHref = await page.locator('link[rel="apple-touch-icon"]').getAttribute("href");
