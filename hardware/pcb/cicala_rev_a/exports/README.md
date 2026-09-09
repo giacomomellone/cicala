@@ -1,9 +1,12 @@
 # Generated Rev A outputs
 
-The current fabrication files use **Filled wings with Round arch**, selected
-on 2026-09-09. The [logo update record](review/logo_2026_09_09/verification.json)
-fingerprints the artwork and regenerated exports, records the checks rerun,
-and confirms that all PCB items outside the cicada group are unchanged.
+The current fabrication files use **Matched 10 with a wider body**, the open
+outline mark selected on 2026-09-10. The
+[logo update record](review/logo_2026_09_10/verification.json) fingerprints the
+artwork and regenerated exports, records the checks rerun, and confirms that
+all PCB items outside the cicada group are unchanged. The
+[preceding record](review/logo_2026_09_09/verification.json) covers the filled
+mark it replaced.
 
 `cicala_rev_a_prototype_2026-09-08.zip` is a historical source/review snapshot.
 It retains the earlier logo and predates subsequent firmware, case-label and
@@ -21,7 +24,27 @@ mounts and DNP parts are excluded. The STEP export contains every fitted body.
 
 `review/` contains the schematic PDF, board/assembly views, independent Gerber
 views and validation evidence. These are generated conveniences; KiCad sources
-remain authoritative. See [the manufacturing specification](../../MANUFACTURING.md)
+remain authoritative. The board views and the independent Gerber views are made
+from the repository root with KiCad's renderer and Gerbonara, after
+`export_fab.sh` has refreshed the ZIP:
+
+```sh
+for side in top bottom; do
+  kicad-cli pcb render --side "$side" --width 1600 --height 1000 \
+      --quality high --floor --background opaque \
+      -o "hardware/pcb/cicala_rev_a/exports/review/board_$side.png" \
+      hardware/pcb/cicala_rev_a/cicala_rev_a.kicad_pcb
+  python3 -m gerbonara.cli render "--$side" \
+      hardware/pcb/cicala_rev_a/exports/cicala_rev_a_gerbers.zip \
+      "hardware/pcb/cicala_rev_a/exports/review/gerber_$side.svg"
+done
+cp hardware/pcb/cicala_rev_a/exports/assembly/assembly_*.pdf \
+   hardware/pcb/cicala_rev_a/exports/review/
+```
+
+KiCad trims the requested render size, so 1600 × 1000 writes the committed
+1568 × 984 images. Two runs of the same board differ in a few percent of
+pixels from anti-aliasing; that is not a design change. See [the manufacturing specification](../../MANUFACTURING.md)
 and [engineering review](../../REVIEW.md) for the factory handoff and the
 physical acceptance tests still required on engineering prototypes.
 

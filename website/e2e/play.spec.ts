@@ -23,7 +23,9 @@ test.describe("play", () => {
     await expect(wordmark.locator(":scope > span").last()).toHaveText("cicala");
     await expect(wordmark).toHaveCSS("font-family", /Literata/);
     await expect(wordmark.locator("svg")).toHaveCount(1);
-    await expect(wordmark.locator("svg > g")).toHaveAttribute("fill", "currentColor");
+    // One line weight throughout: open wings and head share the head's stroke.
+    await expect(wordmark.locator("svg > g")).toHaveAttribute("fill", "none");
+    await expect(wordmark.locator("svg > g")).toHaveAttribute("stroke-width", "10");
     await expect(wordmark.locator("svg > path")).toHaveAttribute("stroke-width", "10");
     // The separators are the first thing a narrow header drops; they must not.
     await expect(page.locator(".site-nav .nav-dot").first()).toBeVisible();
