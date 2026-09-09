@@ -124,3 +124,8 @@ Avoid patterns commonly recognized as "AI writing tells." When drafting or editi
 - **Match register to context.** Don't default to promotional or travel-brochure tone for neutral/informational writing; keep tone plain and matter-of-fact unless a different tone is requested.
 
 These are stylistic defaults to reduce generic-sounding output, not hard bans. Follow user-specific formatting requests over these defaults when they conflict.
+
+<!-- myrmo:start -->
+
+Read `.myrmo/STATUS.md` and run `myrmo context` to understand current goals, tasks, decisions, and evidence. Only the controller can acquire work; use the Myrmo client to Run an explicitly authorized task. Never edit generated records or infer a live claim from a cloned Running label.
+<!-- myrmo:end -->
