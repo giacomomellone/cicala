@@ -29,7 +29,7 @@ that measurement.
       ┌──────────────────────────────────────┐    │
       │        ESP32-S3-DevKitC-1            │    │
       │                                      │    │
-      │  GPIO4  ──── Category switch ────────┼────┤
+      │  GPIO4  ──── Filters switch ────────┼────┤
       │  GPIO17 ──── Next switch ────────────┼────┤
       │  GPIO15 ──── R ──►|── red ───────────┼────┤
       │  GPIO16 ──── R ──►|── green ─────────┼────┤
@@ -47,7 +47,7 @@ switches, LEDs, and panel.
 
 | GPIO | Function         | Direction      | Notes                            |
 | ---: | ---------------- | -------------- | -------------------------------- |
-|    4 | Category         | input, pull-up | active low; RTC-capable          |
+|    4 | Filters          | input, pull-up | active low; RTC-capable          |
 |   17 | Next             | input, pull-up | active low; RTC-capable          |
 |   10 | e-paper CS       | output         | SPI2                             |
 |   11 | e-paper MOSI     | output         | SPI2                             |
@@ -147,7 +147,7 @@ internally joined pair of a tactile switch:
    GPIO ───● 1        4 ●─── GND
 ```
 
-Connect Category to GPIO4 and Next to GPIO17. Continuity should be open when
+Connect Filters to GPIO4 and Next to GPIO17. Continuity should be open when
 released and closed when pressed.
 
 ## Status LEDs
@@ -268,8 +268,8 @@ just fw-flash
 just fw-monitor
 ```
 
-- Boot selects New People and shows its category name.
-- Category advances through all five categories and wraps.
+- Cold boot starts with Dark, Sexual, and Heavy excluded.
+- Filters opens the four-row menu; Next toggles the selected permission or applies Done.
 - Next shows one question per accepted press.
 - Holding and releasing a button produces one event.
 

@@ -45,35 +45,25 @@ test.describe("browse", () => {
     await expect(link).toHaveAttribute("href", /text=zzzzzzq-no-such-question/);
   });
 
-  test("a deck chip narrows the list to that deck", async ({ page }) => {
-    skipWithoutQuestions("en");
+  test("depth is available without category chips", async ({ page }) => {
     await page.goto("/browse");
     await islandReady(page);
-    await page.locator('#browse-chips [data-deck="work"]').click();
-    await expect(page.locator('#browse-chips [data-deck="work"]')).toHaveAttribute(
-      "aria-checked",
-      "true",
+    await expect(page.locator("#browse-chips")).toHaveCount(0);
+    await page.locator("#b-depth").selectOption("3");
+    await expect(page.locator(rows)).toHaveCount(
+      Math.min(100, payload("en").filter((q) => q.depth === 3).length),
     );
-
-    const eligible = new Set(
-      payload("en")
-        .filter((q) => q.decks.includes("work"))
-        .map((q) => q.text),
-    );
-    const shown = await page.locator(`${rows} .row-q`).allInnerTexts();
-    expect(shown.length).toBeGreaterThan(0);
-    for (const text of shown) expect(eligible).toContain(text);
   });
 
-  test("the tag filter composes with the deck chip", async ({ page }) => {
+  test("the tag filter composes with depth", async ({ page }) => {
     await page.goto("/browse");
     await islandReady(page);
-    await page.locator('#browse-chips [data-deck="close"]').click();
+    await page.locator("#b-depth").selectOption("2");
     await page.locator("#b-tag").selectOption("reflective");
 
     const eligible = new Set(
       payload("en")
-        .filter((q) => q.decks.includes("close") && q.tags.includes("reflective"))
+        .filter((q) => q.depth === 2 && q.tags.includes("reflective"))
         .map((q) => q.text),
     );
     const shown = await page.locator(`${rows} .row-q`).allInnerTexts();
@@ -84,7 +74,7 @@ test.describe("browse", () => {
   test("random sort keeps the same set of questions", async ({ page }) => {
     await page.goto("/browse");
     await islandReady(page);
-    await page.locator('#browse-chips [data-deck="here"]').click();
+    await page.locator("#b-depth").selectOption("1");
     const newest = await page.locator(`${rows} .row-q`).allInnerTexts();
 
     await page.locator("#b-sort").selectOption("random");

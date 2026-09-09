@@ -29,8 +29,8 @@ sync and update checks.
 
 ```mermaid
 flowchart LR
-    GPIO[Category and Next GPIO] --> WQ[system workqueue<br/>debounce]
-    WQ -->|chan_category / chan_next| APP[app thread<br/>tabletop policy]
+    GPIO[Filters and Next GPIO] --> WQ[system workqueue<br/>debounce]
+    WQ -->|chan_filters / chan_next| APP[app thread<br/>tabletop policy]
     APP --> QDB[qdb + shuffle bag]
     APP -->|chan_question| DISPLAY[display thread]
     DISPLAY --> PANEL[e-paper]
@@ -55,8 +55,8 @@ channels, and storage adapters live in `firmware/app/src/`.
 | Area                                         | Owns                                                                |
 | -------------------------------------------- | ------------------------------------------------------------------- |
 | `lib/fsm`                                    | table-driven state machine engine with an injectable clock          |
-| `lib/app_fsm`                                | Category, Next, render, and service-card policy                     |
-| `lib/qdb`                                    | QDB3 validation and draw-without-repeats state                      |
+| `lib/app_fsm`                                | Filters, Next, render, and service-card policy                      |
+| `lib/qdb`                                    | QDB4 validation and draw-without-repeats state                      |
 | `lib/layout`                                 | UTF-8 decoding, accent composition, and line wrapping               |
 | `lib/portal`                                 | portal state machine, form parsing, DNS replies, and HTML rendering |
 | `lib/power`                                  | battery and external-power states                                   |
@@ -64,7 +64,7 @@ channels, and storage adapters live in `firmware/app/src/`.
 | `lib/sync`                                   | manifest parsing and version comparison                             |
 | `lib/retained`                               | validation of the RTC-retained block                                |
 | `lib/ed25519`                                | detached-signature verification                                     |
-| `app/src/input.c`                            | Category and Next events from `gpio-keys`                           |
+| `app/src/input.c`                            | Filters and Next events from `gpio-keys`                            |
 | `app/src/app.c`, `app_logic.cpp`             | app thread, state machine effects, and corpus binding               |
 | `app/src/display.c`, `panel.cpp`             | display thread, layout, and refresh policy                          |
 | `app/src/net.c`, `net_logic.cpp`, `portal.c` | Wi-Fi, setup, and network events                                    |
@@ -82,15 +82,15 @@ small C APIs.
 `chan_question` and `chan_power` hold current state. The other channels carry
 events.
 
-| Channel         | Carries                            | Publisher       | Consumer |
-| --------------- | ---------------------------------- | --------------- | -------- |
-| `chan_category` | timestamp and press duration       | input work item | app      |
-| `chan_next`     | timestamp and press duration       | input work item | app      |
-| `chan_question` | sequence, category, and text       | app             | display  |
-| `chan_render`   | sequence, result, and refresh type | display         | app      |
-| `chan_service`  | setup or sync result card          | net             | app      |
-| `chan_corpus`   | active language change             | net             | app      |
-| `chan_power`    | power state, millivolts, and VBUS  | power work item | status   |
+| Channel         | Carries                                   | Publisher       | Consumer |
+| --------------- | ----------------------------------------- | --------------- | -------- |
+| `chan_filters`  | timestamp and press duration              | input work item | app      |
+| `chan_next`     | timestamp and press duration              | input work item | app      |
+| `chan_question` | sequence, permissions, cursor, kind, text | app             | display  |
+| `chan_render`   | sequence, result, and refresh type        | display         | app      |
+| `chan_service`  | setup or sync result card                 | net             | app      |
+| `chan_corpus`   | active language change                    | net             | app      |
+| `chan_power`    | power state, millivolts, and VBUS         | power work item | status   |
 
 Messages use subscribers, so publishers do not wait for consumers.
 `chan_question` copies the text into the message. This keeps it valid if sync
@@ -109,7 +109,7 @@ LittleFS takes precedence; the compiled copy remains the fallback.
 flowchart LR
     YAML[questions/*.yaml] --> BUILD[tools/build_bundle.py]
     BUILD --> GZIP[dist/bundles/*.qdb.gz]
-    GZIP --> RAW[firmware test fixtures<br/>raw QDB3]
+    GZIP --> RAW[firmware test fixtures<br/>raw QDB4]
     RAW --> EMBED[compiled corpora]
     HTTP[verified sync download] --> LFS[(LittleFS /corpus)]
     EMBED --> OPEN[qdb::open]
@@ -122,84 +122,62 @@ fingerprint clears indices that belong to the previous corpus.
 
 ### QDB reader
 
-`Qdb::open()` validates the whole QDB3 buffer: magic, record lengths, question
+`Qdb::open()` validates the whole QDB4 buffer: magic, record lengths, question
 count, and trailing bytes. Questions point into that buffer, so the buffer must
 outlive every returned view.
 
 `Qdb::at()` walks records from the start. The shipped corpora are small enough
 that an offset table would cost more RAM than the scan saves.
 
-A question is eligible when its category bit is set and its depth does not
-exceed `CONFIG_CICALA_PLAYBACK_DEPTH_MAX`. Corpus validation restricts dark and
-spicy questions to Wild.
+A question is eligible only when Dark permits its dark flag, Sexual permits its
+sexual flag, and Heavy permits depth 3. All applicable permissions are required.
 
 ### Shuffle bag
 
-The bag tracks drawn questions per category and keeps a recent-question ring
-shared by all categories. A draw applies these rules:
+Each installed language has one drawn bitmap and recent ring of 20 indices.
+Selection happens at draw time: eligible, unseen, non-recent if possible, then
+not current if possible. Only exhaustion reopens the eligible cycle. Excluded
+questions keep their seen bits. A depth-3 predecessor adds a cost of three to
+another depth-3 candidate; repeated depth band and overlapping form each add
+one. Random choice among the cheapest candidates therefore prefers a breather
+before texture, without forcing an early repeat. Restrictions never relax.
 
-```mermaid
-flowchart TB
-    START([draw]) --> A{eligible,<br/>undrawn,<br/>not recent?}
-    A -- yes --> PICK[pick uniformly]
-    A -- no --> B{eligible and undrawn?}
-    B -- yes --> PICK
-    B -- no --> RESET[clear this category's drawn bitmap]
-    RESET --> C{eligible and not recent?}
-    C -- yes --> PICK
-    C -- no --> D{any eligible question?}
-    D -- yes --> PICK
-    D -- no --> FAIL([no question])
-    PICK --> MARK[mark drawn and add to recent ring]
-```
-
-Every eligible question in a category is shown once before that category's
-bitmap resets. The recent ring is relaxed when it would prevent a draw. The bag
-state lives in RTC slow memory, so ordinary Next presses do not write flash.
-
-With `CONFIG_CICALA_TEXTURE` on, each uniform pick above becomes a preference.
-A candidate scores one point for repeating the depth band of the question just
-served and one for sharing a form tag with it, and the draw is uniform within
-the cheapest class, relaxing toward uniform when the pool offers nothing
-cheaper. The state this needs — last band and last form mask, two bytes,
-shared across categories like the ring — describes the panel rather than the
-table: texture decorrelates consecutive draws and never escalates.
+The fingerprint covers the full bundle bytes, so metadata or order changes
+invalidate old indices even if a development version string is unchanged.
 
 ## Tabletop state machine
 
-Category advances the active category and displays its name. Next draws a
-question from the active category. A cold boot displays the active category;
-a button wake replays the latched Category or Next action.
+Filters opens or advances the four-row menu. Next draws during play, toggles a
+menu row, or applies Done. A cold boot draws from default permissions; a valid
+retained menu, question, or empty state needs no redraw. A button wake replays
+its action once. The two-button service gesture remains unchanged.
 
 ```mermaid
 stateDiagram-v2
     [*] --> BOOT
-    BOOT --> SHOWING: retained question matches
-    BOOT --> DRAWING: Next wake
-    BOOT --> CATEGORY: cold boot or Category wake
-    CATEGORY --> REFRESHING: category card queued
-    CATEGORY --> FAIL: queue failed
+    BOOT --> SHOWING: retained view
+    BOOT --> DRAWING: cold boot or Next wake
+    BOOT --> FILTERS: Filters wake
     SHOWING --> DRAWING: Next
-    SHOWING --> CATEGORY: Category
-    SHOWING --> SERVICE: service card pending
-    DRAWING --> REFRESHING: question queued
-    DRAWING --> FAIL: no question
-    SERVICE --> REFRESHING: service card queued
-    SERVICE --> FAIL: queue failed
-    REFRESHING --> SHOWING: matching render result
+    SHOWING --> FILTERS: Filters
+    SHOWING --> SERVICE: service pending
+    DRAWING --> REFRESHING: card queued
+    FILTERS --> REFRESHING: menu queued
+    SERVICE --> REFRESHING: service queued
+    DRAWING --> FAIL: queue refused
+    FILTERS --> FAIL: queue refused
+    SERVICE --> FAIL: queue refused
+    REFRESHING --> SHOWING: commit matching successful render
     REFRESHING --> FAIL: error or timeout
-    FAIL --> SHOWING
+    FAIL --> SHOWING: discard pending state
 ```
 
-The following rules sit at the state-machine boundary:
-
-- Presses received during `REFRESHING` are discarded.
-- Service cards take priority when the machine returns to `SHOWING`.
-- Each draw, category card, or service card clears stale render state before it
-  queues a refresh.
-- A failed category or draw is considered settled until another input arrives.
-- `CONFIG_CICALA_REFRESH_TIMEOUT_MS` prevents a stalled panel from holding the
-  machine in `REFRESHING` forever.
+`AppIo` stages a copy of the bag and play state before publishing a card.
+`complete(true)` commits after the display succeeds. A low-power refusal,
+failed publication, display error, or timeout discards that copy. Both tabletop
+inputs are dropped while refreshing. Late render results cannot commit. Service
+cards wait until the current refresh finishes. If sync changes the corpus during
+a refresh, completion cannot revive indices into the old corpus.
 
 ## Display
 
@@ -229,25 +207,25 @@ RTC slow memory. It contains:
 
 - shuffle-bag state and the shared recent ring;
 - the partial-refresh counter;
-- active and displayed categories;
-- whether the panel holds a question;
+- committed permissions, menu draft and cursor;
+- a copied question and its restrictions, plus the displayed card kind;
 - the last question sequence number.
 
 The block carries a magic value, layout version, size, and payload hash. A
-failed check clears the whole block and selects New People. The block is sealed
+failed check clears the whole block and excludes Dark, Sexual, and Heavy. The block is sealed
 after each completed render.
 
 ```mermaid
 flowchart TB
     BOOT([boot]) --> CHECK{retained block valid?}
-    CHECK -- no --> COLD[clear state<br/>select New People]
-    CHECK -- yes --> MATCH{panel holds a question<br/>from the active category?}
+    CHECK -- no --> COLD[clear state<br/>permissions off]
+    CHECK -- yes --> MATCH{panel holds a retained<br/>question, menu, or empty state?}
     MATCH -- yes --> KEEP[keep panel unchanged]
-    MATCH -- no --> ACTION[replay wake action<br/>or show category]
+    MATCH -- no --> ACTION[replay wake action<br/>or draw from defaults]
     COLD --> ACTION
 ```
 
-Category and Next are active-low RTC-capable inputs. At sleep time, firmware
+Filters and Next are active-low RTC-capable inputs. At sleep time, firmware
 arms every input that currently reads high with EXT1 `ANY_LOW`. A held or stuck
 button is omitted from the mask, avoiding an immediate wake loop while leaving
 the other button usable. The EXT1 wake status is latched at `PRE_KERNEL_1` so
@@ -321,7 +299,7 @@ The red and green LEDs share one priority arbiter:
 | setup portal active                | steady amber     |
 | breadboard charged estimate        | steady green     |
 | charging                           | steady red       |
-| Rev A idle/disabled/unavailable     | slow amber pulse |
+| Rev A idle/disabled/unavailable    | slow amber pulse |
 | healthy battery or unknown reading | off              |
 
 Calls from app, network and power threads set atomic flags. The zbus power
@@ -331,7 +309,7 @@ cancels pending work, prevents rescheduling, then makes the final LED-off write.
 
 ## Setup, sync, and updates
 
-Holding Category and Next for `CONFIG_CICALA_PORTAL_ENTRY_HOLD_MS` during boot opens
+Holding Filters and Next for `CONFIG_CICALA_PORTAL_ENTRY_HOLD_MS` during boot opens
 the setup portal. The device scans first, starts a WPA2 access point with a
 fresh session password, serves DHCP/DNS/HTTP, stores submitted credentials, then
 joins the selected network. The password is generated from the device random
@@ -384,9 +362,9 @@ the installed version after a successful update. See
 
 ```mermaid
 flowchart LR
-    RTC[RTC slow memory<br/>bag · display · active category] -->|lost on total power loss| COLD[cold defaults]
+    RTC[RTC slow memory<br/>bags · display · permissions] -->|lost on total power loss| COLD[cold defaults]
     NVS[NVS<br/>Wi-Fi credentials · language · versions] -->|cleared by factory reset| EMPTY[unset]
-    LFS[LittleFS<br/>synced QDB3 files] -->|atomic rename| NEW[new corpus]
+    LFS[LittleFS<br/>synced QDB4 files] -->|atomic rename| NEW[new corpus]
     SLOT[MCUboot secondary slot<br/>candidate firmware] -->|verified boot| APP[running image]
 ```
 

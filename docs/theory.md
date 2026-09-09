@@ -197,7 +197,7 @@ more mundane task ([Aron et al.,
 2000](https://doi.org/10.1037/0022-3514.78.2.273)). This does not show that any
 novel outing repairs a relationship. It does support giving partners a third
 object to react to instead of demanding that they generate novelty from each
-other. That is the corpus reason for the `here` category: “Which object in this
+other. That is a reason to include questions about the surroundings: “Which object in this
 room would be hardest to explain to someone from 200 years ago?”
 
 ## What the research does and does not support
@@ -237,8 +237,7 @@ typical conversations with strangers as less intimate than they would ideally
 prefer. This supports making substantive questions available. It does not
 justify forcing them or assuming that every table wants the same depth.
 
-Research does not supply Cicala's deck taxonomy. Decks are UI affordances,
-not empirical kinds of conversation. Corpus-linguistic work on 2.3 million
+Research does not supply a product taxonomy for Cicala. Corpus-linguistic work on 2.3 million
 words of conversation classified stretches of talk by communicative purposes
 and found 16 discourse types; conventional genres such as jokes and personal
 narratives were rare ([Biber et al.,
@@ -246,45 +245,21 @@ narratives were rare ([Biber et al.,
 “chat” at the product level even though it contains local purposes such as
 evaluating, explaining, planning, and joking.
 
-Five current decks name a relationship or shared place: New People, Close,
-Family, Work, and Here. They change what the question may assume:
-
-- **New People** assumes no shared history. It should not test recall about the
-  relationship or ask for a biography on demand.
-- **Close** assumes familiarity. Basic archive questions are often exhausted,
-  so it asks about current change, interpretation, and things that may not have
-  been said yet.
-- **Family** permits shared history but keeps the whole prompt safe and
-  answerable for a 10-year-old.
-- **Work** recognizes a setting with status and consequences. A question that
-  is acceptable among friends may be coercive between colleagues.
-- **Here** uses the room, table, event, or visible surroundings as a third
-  object. Joint attention lets a group begin without making one person the
-  immediate object of disclosure.
-
-Wild is the deliberate exception to the relationship-or-place naming rule. It
-is an explicit opt-in to dark, spicy, macabre, or absurd tone. `random` would
-describe the sampling mechanism and `anything` would conceal the tone change.
-Wild is not evidence of depth and does not mean the heaviest available
-question.
-
-One question may be eligible for several decks. “What did you stop enjoying
-when it became work?” can fit Close and Work without being copied or assigned
-an objective category. Dark and spicy questions are Wild-only because
-eligibility overlap must not leak their tone into Family or Work.
+The mixed stream no longer asks the table to choose a relationship category.
+Questions should stand alone without relying on a particular relationship.
+“What did you stop enjoying when it became work?” can invite a personal answer
+without assigning it to a topic or audience bucket.
 
 ## Consequences for Cicala
 
-Depth remains editorial exposure-cost metadata, independent from tone. The
-first physical prototype has no depth control. Normal playback samples depths 1
-and 2 from the selected deck; depth 3 remains browseable and reviewable but is
-not served automatically.
+Depth remains editorial exposure-cost metadata, independent from tone. Ordinary
+play includes depths 1 and 2. Three independent permissions control Dark,
+Sexual, and Heavy; Heavy permits depth 3. These permissions are a product
+boundary under uncertainty, not empirical kinds of conversation. The exact
+interaction and selection priorities live in [Design](design.md).
 
-This is a consent decision under uncertainty, not a claim that shallow talk is
-better. A public slider might let someone set a boundary without speaking, but
-moving a date or work table toward “light” can also become a public verdict on
-the people present. That interaction needs observation before it earns a
-physical part. Until then, Next is the low-cost rejection mechanism.
+Next remains the low-cost way to skip. Neither changing a permission nor serving
+several questions tells the device that the table is ready for more disclosure.
 
 There is still no ramp. The device does not infer that the table is “ready”
 after several questions, and it has no reliable session boundary. “Which habit

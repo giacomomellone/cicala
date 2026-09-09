@@ -23,7 +23,7 @@ export async function initBrowse(): Promise<void> {
   const moreBtn = document.getElementById("b-more") as HTMLButtonElement;
   const emptyEl = document.getElementById("b-empty")!;
   const emptySuggest = document.getElementById("b-suggest-empty") as HTMLAnchorElement;
-  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#browse-chips .chip"));
+  const depthEl = document.getElementById("b-depth") as HTMLSelectElement;
 
   const lang = detectLang();
   let payload: Payload;
@@ -36,23 +36,19 @@ export async function initBrowse(): Promise<void> {
   // Question files are append-only, so reverse file order is newest first.
   const newestFirst: RowItem[] = payload.questions.map((q) => ({ q })).reverse();
 
-  let deck = "all";
+  let depth = "";
   let tag = "";
   let sort: "newest" | "random" = "newest";
   let query = "";
   let shown = PAGE;
   let randomOrder: RowItem[] = [];
 
-  const setActiveChip = () => {
-    for (const chip of chips) chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
-  };
-
   function filtered(): RowItem[] {
     const source = sort === "random" ? randomOrder : newestFirst;
     const q = fold(query.trim());
     return source.filter(
       (item) =>
-        (deck === "all" || item.q.decks.includes(deck)) &&
+        (depth === "" || item.q.depth === Number(depth)) &&
         (tag === "" || item.q.tags.includes(tag)) &&
         (q === "" || fold(item.q.text).includes(q)),
     );
@@ -72,7 +68,6 @@ export async function initBrowse(): Promise<void> {
     emptySuggest.href = `${suggestion.pathname}${suggestion.search}`;
   }
 
-  setActiveChip();
   render();
   bindHearts(rowsEl);
 
@@ -82,13 +77,11 @@ export async function initBrowse(): Promise<void> {
     render();
   });
 
-  for (const chip of chips)
-    chip.addEventListener("click", () => {
-      deck = chip.dataset.deck ?? "all";
-      setActiveChip();
-      shown = PAGE;
-      render();
-    });
+  depthEl.addEventListener("change", () => {
+    depth = depthEl.value;
+    shown = PAGE;
+    render();
+  });
 
   tagEl.addEventListener("change", () => {
     tag = tagEl.value;

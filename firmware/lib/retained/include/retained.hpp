@@ -10,6 +10,18 @@
 namespace cicala
 {
 
+/** Text snapshot survives a menu visit and replacement of the backing corpus. */
+struct PlayState {
+    uint8_t permissions;
+    uint8_t draft;
+    uint8_t cursor;
+    bool menu;
+    uint8_t kind;
+    uint8_t restrictions;
+    uint16_t len;
+    char text[CONFIG_CICALA_MAX_QUESTION_BYTES];
+};
+
 /** State preserved across a deep-sleep wake. */
 struct Retained {
     // `hash` covers every byte after this header.
@@ -19,19 +31,12 @@ struct Retained {
     uint32_t hash;
 
     /** Draw-without-repeats state. See lib/qdb. */
-    Bag::State bag;
+    Bag::State bags[3];
 
     /** Partial refreshes since the last full one. See app/src/panel.cpp. */
     uint16_t partial_since_full;
 
-    /** The deck the question on the glass was drawn from. */
-    uint8_t deck;
-
-    /** Active deck. Zero selects New People after a cold boot. */
-    uint8_t active_deck;
-
-    /** Whether the panel holds a question instead of a deck or service card. */
-    bool showing_question;
+    PlayState play;
 
     /** `seq` of the last question published, so a stale render is detectable. */
     uint32_t seq;

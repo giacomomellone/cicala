@@ -1,6 +1,9 @@
 /* E-paper rendering. */
 
 #include "panel.h"
+#include "channels.h"
+#include <stdio.h>
+#include <string.h>
 
 #include <zephyr/device.h>
 #include <zephyr/devicetree.h>
@@ -230,7 +233,7 @@ int draw_glyph(const Font &font, const cicala::Glyph &glyph, int16_t x, int16_t 
 }
 
 /* Pick the largest font the text fits in. */
-const Font *choose_font(const char *text, uint16_t len)
+const Font *choose_font(const char *text, uint16_t len, uint16_t height)
 {
     const Font *smallest = &fonts[ARRAY_SIZE(fonts) - 1];
 
@@ -251,7 +254,7 @@ const Font *choose_font(const char *text, uint16_t len)
             return nullptr;
         }
 
-        if (!layout.truncated && layout.count <= font.lines) {
+        if (!layout.truncated && layout.count <= height / font.height) {
             return &font;
         }
     }
@@ -331,6 +334,7 @@ int cicala_panel_init(void)
      * when the MCU's retained state and the visible image survive. */
     if (IS_ENABLED(CONFIG_CICALA_REV_A) || !cicala_retained_survived()) {
         partial_since_full = CONFIG_CICALA_FULL_REFRESH_INTERVAL;
+        cicala_retained_seal();
     }
 
     return 0;
@@ -351,13 +355,18 @@ uint8_t cicala_panel_last_font_height(void)
     return last_font_height;
 }
 
-int cicala_panel_render(const char *text, uint16_t len)
+static int render(const char *text, uint16_t len, const cicala_question_msg *card)
 {
     if (!ready) {
         return -ENODEV;
     }
 
-    const Font *font = choose_font(text, len);
+    const bool menu = card && card->kind == CICALA_CARD_FILTERS;
+    const bool header = card && card->kind != CICALA_CARD_SERVICE && !menu;
+    const uint16_t height = kUsableHeight - (header ? 20 : 0);
+    const Font *font = choose_font(text, len, height);
+    if (menu)
+        font = &fonts[ARRAY_SIZE(fonts) - 1];
 
     if (font == nullptr) {
         LOG_ERR("question does not lay out");
@@ -402,41 +411,74 @@ int cicala_panel_render(const char *text, uint16_t len)
         return err;
     }
 
-    /* Centre using pixel dimensions. */
-    /* Share unused line height above and below the text. */
-    const uint16_t solid = static_cast<uint16_t>(layout.count * font->height);
-    const uint8_t gaps = layout.count > 1 ? static_cast<uint8_t>(layout.count - 1) : 0;
-
-    uint16_t leading = 0;
-
-    if (gaps > 0 && kUsableHeight > solid) {
-        const uint16_t cap =
-            static_cast<uint16_t>(font->height * CONFIG_CICALA_PANEL_MAX_LEADING_PCT / 100);
-
-        leading = static_cast<uint16_t>((kUsableHeight - solid) / gaps);
-
-        if (leading > cap) {
-            leading = cap;
+    if (menu) {
+        const char *labels[] = {"Dark", "Sexual", "Heavy", "Done"};
+        err = cfb_draw_text(display, "Filters", kMargin, 0);
+        for (int i = 0; i < 4 && !err; i++) {
+            char row[32];
+            if (i < 3)
+                snprintf(row, sizeof(row), "%c %s: %s", card->cursor == i ? '>' : ' ', labels[i],
+                         card->permissions & (1u << i) ? "allowed" : "excluded");
+            else
+                snprintf(row, sizeof(row), "%c Done", card->cursor == i ? '>' : ' ');
+            err = cfb_draw_text(display, row, kMargin, 17 + 16 * i);
         }
-    }
+        if (!err)
+            err = cfb_draw_text(display, "Filters: move", kMargin, kPanelHeight - 32);
+        if (!err)
+            err = cfb_draw_text(display, "Next: change / done", kMargin, kPanelHeight - 16);
+        if (err)
+            return err;
+    } else {
+        /* Centre using pixel dimensions. */
+        /* Share unused line height above and below the text. */
+        const uint16_t solid = static_cast<uint16_t>(layout.count * font->height);
+        const uint8_t gaps = layout.count > 1 ? static_cast<uint8_t>(layout.count - 1) : 0;
 
-    const uint16_t block_height = static_cast<uint16_t>(solid + leading * gaps);
-    const int16_t top = static_cast<int16_t>(kMargin + (kUsableHeight - block_height) / 2);
+        uint16_t leading = 0;
 
-    for (uint8_t i = 0; i < layout.count; i++) {
-        const cicala::Line &line = layout.lines[i];
-        const uint16_t line_width = static_cast<uint16_t>(line.cells * font->width);
-        const int16_t left = static_cast<int16_t>(kMargin + (kUsableWidth - line_width) / 2);
-        const int16_t y = static_cast<int16_t>(top + i * (font->height + leading));
+        if (gaps > 0 && height > solid) {
+            const uint16_t cap =
+                static_cast<uint16_t>(font->height * CONFIG_CICALA_PANEL_MAX_LEADING_PCT / 100);
 
-        for (uint8_t c = 0; c < line.cells; c++) {
-            err = draw_glyph(*font, glyphs[line.offset + c],
-                             static_cast<int16_t>(left + c * font->width), y);
+            leading = static_cast<uint16_t>((height - solid) / gaps);
 
-            if (err != 0) {
-                LOG_ERR("draw at line %u column %u: %d", i, c, err);
-                return err;
+            if (leading > cap) {
+                leading = cap;
             }
+        }
+
+        const uint16_t block_height = static_cast<uint16_t>(solid + leading * gaps);
+        const int16_t top =
+            static_cast<int16_t>(kMargin + (header ? 20 : 0) + (height - block_height) / 2);
+
+        for (uint8_t i = 0; i < layout.count; i++) {
+            const cicala::Line &line = layout.lines[i];
+            const uint16_t line_width = static_cast<uint16_t>(line.cells * font->width);
+            const int16_t left = static_cast<int16_t>(kMargin + (kUsableWidth - line_width) / 2);
+            const int16_t y = static_cast<int16_t>(top + i * (font->height + leading));
+
+            for (uint8_t c = 0; c < line.cells; c++) {
+                err = draw_glyph(*font, glyphs[line.offset + c],
+                                 static_cast<int16_t>(left + c * font->width), y);
+
+                if (err != 0) {
+                    LOG_ERR("draw at line %u column %u: %d", i, c, err);
+                    return err;
+                }
+            }
+        }
+
+        if (header) {
+            char summary[32];
+            snprintf(summary, sizeof(summary), "Dark%c Sexual%c Heavy%c",
+                     card->permissions & 1 ? '+' : '-', card->permissions & 2 ? '+' : '-',
+                     card->permissions & 4 ? '+' : '-');
+            err = cfb_framebuffer_set_font(display, fonts[ARRAY_SIZE(fonts) - 1].index);
+            if (!err)
+                err = cfb_draw_text(display, summary, kMargin, kMargin);
+            if (err)
+                return err;
         }
     }
 
@@ -460,4 +502,20 @@ int cicala_panel_render(const char *text, uint16_t len)
     partial_since_full = full ? 0 : static_cast<uint16_t>(partial_since_full + 1);
 
     return 0;
+}
+
+int cicala_panel_render(const char *text, uint16_t len)
+{
+    return render(text, len, nullptr);
+}
+
+int cicala_panel_render_card(const cicala_question_msg *card)
+{
+    if (card->kind == CICALA_CARD_EMPTY) {
+        const char *empty = "No questions match. Filters to adjust.";
+        return render(empty, strlen(empty), card);
+    }
+    // A menu has no question text to lay out.
+    return render(card->kind == CICALA_CARD_FILTERS ? "Filters" : card->text,
+                  card->kind == CICALA_CARD_FILTERS ? 7 : card->len, card);
 }

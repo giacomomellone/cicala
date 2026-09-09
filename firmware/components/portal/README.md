@@ -1,6 +1,6 @@
 # portal
 
-Holding Category and Next during boot starts a password-protected setup access
+Holding Filters and Next during boot starts a password-protected setup access
 point. The e-paper service card shows the session password. The
 portal configures Wi-Fi credentials and the question language, rescans nearby
 networks, reports connection and update results, and can forget saved Wi-Fi.

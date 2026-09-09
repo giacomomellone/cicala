@@ -25,7 +25,7 @@ LOG_MODULE_REGISTER(cicala_sync, LOG_LEVEL_INF);
 #define MANIFEST_MAX 2048
 
 /* The version min_fw is compared against. */
-#define CICALA_SYNC_CONTRACT_VERSION "0.1.0"
+#define CICALA_SYNC_CONTRACT_VERSION "0.2.0"
 
 static char manifest_buf[MANIFEST_MAX];
 static size_t manifest_len;

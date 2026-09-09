@@ -45,7 +45,7 @@ static void display_thread(void *p1, void *p2, void *p3)
 
         const bool was_full = cicala_panel_next_is_full();
         const int64_t started = k_uptime_get();
-        const int result = cicala_panel_render(question.text, question.len);
+        const int result = cicala_panel_render_card(&question);
 
         LOG_INF("%s refresh of %s seq %u took %lld ms (%d)", was_full ? "full" : "partial",
                 cicala_card_name(question.kind), question.seq, k_uptime_get() - started, result);

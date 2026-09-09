@@ -201,48 +201,32 @@ ZTEST(cicala_integration, test_adc_switch_closes_after_success_and_failure)
     set_cell_mv(HEALTHY_MV);
 }
 
-ZTEST(cicala_integration, test_boot_names_the_remembered_deck)
+ZTEST(cicala_integration, test_boot_starts_the_mixed_stream)
 {
-    zassert_true(have_first, "boot should have put something on the panel");
-    zassert_equal(first_question.kind, CICALA_CARD_CATEGORY,
-                  "and on a cold boot that is a deck name");
-    zassert_equal(first_question.deck, 0, "New People is the cold default");
+    zassert_true(have_first);
+    zassert_equal(first_question.kind, CICALA_CARD_QUESTION);
+    zassert_equal(first_question.permissions, 0);
 }
 
-ZTEST(cicala_integration, test_category_advances_and_names_the_deck)
+ZTEST(cicala_integration, test_filters_edit_a_draft_and_done_resumes_the_question)
 {
-    const uint8_t before = last_question.deck;
-
-    questions = 0;
-    renders = 0;
-
-    press(&category);
-
-    zassert_equal(questions, 1, "one press is one card");
-    zassert_equal(last_question.kind, CICALA_CARD_CATEGORY, "pressing Category names a deck");
-    zassert_equal(last_question.deck, cicala_deck_cycle_next(before), "and advances by one");
-    zassert_equal(renders, 1, "the display should have been asked to draw it");
-    zassert_equal(last_render_result, 0);
-
-    k_sleep(PRESS_WAIT);
-    zassert_equal(questions, 1, "the name waits for a press rather than timing out");
-}
-
-ZTEST(cicala_integration, test_next_turns_the_deck_name_into_a_question)
-{
-    press(&category);
-    zassert_equal(last_question.kind, CICALA_CARD_CATEGORY);
-
-    const uint8_t deck = last_question.deck;
-
-    questions = 0;
-
     press(&next_button);
-
-    zassert_equal(questions, 1, "one press is one question");
-    zassert_equal(last_question.kind, CICALA_CARD_QUESTION, "and a press asks for a real question");
-    zassert_equal(last_question.deck, deck, "from the deck that was named");
-    zassert_true(last_question.len > 0);
+    struct cicala_question_msg before = last_question;
+    press(&category);
+    zassert_equal(last_question.kind, CICALA_CARD_FILTERS);
+    zassert_equal(last_question.cursor, 0);
+    press(&next_button);
+    zassert_equal(last_question.permissions, before.permissions ^ 1);
+    press(&next_button); // restore the draft
+    for (int i = 1; i <= 3; i++) {
+        press(&category);
+        zassert_equal(last_question.cursor, i);
+    }
+    press(&next_button);
+    zassert_equal(last_question.kind, CICALA_CARD_QUESTION);
+    zassert_equal(last_question.len, before.len);
+    zassert_mem_equal(last_question.text, before.text, before.len);
+    zassert_equal(last_render_result, 0);
 }
 
 ZTEST(cicala_integration, test_next_draws_a_different_question)
@@ -267,37 +251,6 @@ ZTEST(cicala_integration, test_next_draws_a_different_question)
         last_question.len == before_len && memcmp(last_question.text, before_text, before_len) == 0;
 
     zassert_false(same, "the bag must not hand back the question already on screen");
-}
-
-ZTEST(cicala_integration, test_the_deck_cycle_skips_work_and_wraps)
-{
-    press(&category);
-
-    const uint8_t start = last_question.deck;
-
-    for (int i = 0; i < CICALA_DECK_CYCLE_COUNT; i++) {
-        press(&category);
-        zassert_not_equal(last_question.deck, 3, "the device does not offer Work");
-    }
-
-    zassert_equal(last_question.deck, start, "five presses is a full turn");
-}
-
-ZTEST(cicala_integration, test_a_deck_returns_only_its_own_questions)
-{
-    while (last_question.deck != 5 || last_question.kind != CICALA_CARD_CATEGORY) {
-        press(&category);
-    }
-
-    for (int i = 0; i < 5; i++) {
-        questions = 0;
-
-        press(&next_button);
-
-        zassert_equal(questions, 1, "press %d produced %d questions", i, questions);
-        zassert_equal(last_question.deck, 5);
-        zassert_equal(last_render_result, 0);
-    }
 }
 
 ZTEST(cicala_integration, test_a_flat_cell_leaves_the_question_on_the_panel)

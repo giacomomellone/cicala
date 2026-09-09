@@ -19,7 +19,7 @@ from pathlib import Path
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
-MATERIAL_FIELDS = ("text", "decks", "depth", "tags")
+MATERIAL_FIELDS = ("text", "depth", "tags")
 MAX_TEXTS_PER_REQUEST = 128
 RETRYABLE_HTTP_CODES = {429, 500, 502, 503, 504}
 TRANSLATION_PROVIDER = "google"
@@ -228,7 +228,6 @@ def apply_translations(
         ]
         values = {
             "text": text,
-            "decks": list(source.entry["decks"]),
             "depth": source.entry["depth"],
             "origin": source.entry["id"],
             "translated_by": TRANSLATION_PROVIDER,

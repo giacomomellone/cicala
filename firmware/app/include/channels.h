@@ -11,14 +11,8 @@
 extern "C" {
 #endif
 
-/** Decks in the bundle mask, in schema order. */
-#define CICALA_DECK_COUNT 6
-
-/** The device cycles five of the six decks; Work stays on the website. */
-#define CICALA_DECK_CYCLE_COUNT 5
-
-/** Event channel: one Category press happened. */
-struct cicala_category_msg {
+/** Event channel: one Filters press happened. */
+struct cicala_filters_msg {
     /** Uptime at the moment the press started. */
     int64_t timestamp_ms;
     /** Press-to-release duration in milliseconds; telemetry only. */
@@ -37,17 +31,19 @@ struct cicala_next_msg {
 enum cicala_card {
     /** Something drawn from the corpus. */
     CICALA_CARD_QUESTION = 0,
-    /** The name of the deck Category just moved to. */
-    CICALA_CARD_CATEGORY,
+    /** The four-row Filters menu. */
+    CICALA_CARD_FILTERS,
     /** The setup portal, saying which network to join and how it went. */
     CICALA_CARD_SERVICE,
+    CICALA_CARD_EMPTY,
 };
 
 /** State channel. Text is copied so corpus replacement cannot invalidate it. */
 struct cicala_question_msg {
     /** Increments per draw, so a stale render can be told from a current one. */
     uint32_t seq;
-    uint8_t deck;
+    uint8_t permissions;
+    uint8_t cursor;
     /** One of `enum cicala_card`, stored as a byte. */
     uint8_t kind;
     uint16_t len;
@@ -108,7 +104,7 @@ struct cicala_power_msg {
     uint8_t charger;
 };
 
-ZBUS_CHAN_DECLARE(chan_category);
+ZBUS_CHAN_DECLARE(chan_filters);
 ZBUS_CHAN_DECLARE(chan_next);
 ZBUS_CHAN_DECLARE(chan_question);
 ZBUS_CHAN_DECLARE(chan_service);
@@ -116,23 +112,11 @@ ZBUS_CHAN_DECLARE(chan_corpus);
 ZBUS_CHAN_DECLARE(chan_render);
 ZBUS_CHAN_DECLARE(chan_power);
 
-/** Deck id for logs, or `?` when out of range. */
-const char *cicala_deck_name(uint8_t deck);
-
 /** Card name for logs, or `?` when out of range. */
 const char *cicala_card_name(uint8_t kind);
 
 /** Power-state name for logs, or `?` when out of range. */
 const char *cicala_power_name(uint8_t state);
-
-/** English deck label shown on the panel for every corpus language. */
-const char *cicala_deck_label(uint8_t deck);
-
-/** True when the device offers this deck in the Category cycle. */
-bool cicala_deck_on_device(uint8_t deck);
-
-/** The deck one Category press after `deck`; a deck outside the cycle restarts it. */
-uint8_t cicala_deck_cycle_next(uint8_t deck);
 
 #ifdef __cplusplus
 }

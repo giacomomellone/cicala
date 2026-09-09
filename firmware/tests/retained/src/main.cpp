@@ -13,16 +13,18 @@ cicala::Retained populated()
 {
     cicala::Retained block{};
 
-    block.bag.fingerprint = 0xABCD1234u;
-    block.bag.recent_len = 3;
-    block.bag.recent_next = 4;
-    block.bag.recent[0] = 11;
-    block.bag.recent[1] = 22;
-    block.bag.recent[2] = 33;
-    block.bag.drawn[2][0] = 0x0000'0005u;
+    block.bags[0].fingerprint = 0xABCD1234u;
+    block.bags[0].recent_len = 3;
+    block.bags[0].recent_next = 4;
+    block.bags[0].recent[0] = 11;
+    block.bags[0].recent[1] = 22;
+    block.bags[0].recent[2] = 33;
+    block.bags[0].drawn[0] = 0x0000'0005u;
     block.partial_since_full = 17;
-    block.deck = 4;
-    block.showing_question = true;
+    block.play.permissions = 4;
+    block.play.menu = true;
+    block.play.draft = 7;
+    block.play.cursor = 2;
     block.seq = 99;
 
     return block;
@@ -61,8 +63,8 @@ ZTEST(cicala_retained, test_garbage_is_not_mistaken_for_a_wake)
 
     zassert_false(cicala::retained_load(block), "garbage must not validate");
     zassert_true(is_zeroed(block), "and it must be cleared, not left to be read");
-    zassert_equal(block.bag.recent_len, 0);
-    zassert_equal(block.bag.recent_next, 0);
+    zassert_equal(block.bags[0].recent_len, 0);
+    zassert_equal(block.bags[0].recent_next, 0);
 }
 
 ZTEST(cicala_retained, test_a_sealed_block_survives_with_its_contents)
@@ -76,13 +78,15 @@ ZTEST(cicala_retained, test_a_sealed_block_survives_with_its_contents)
     zassert_true(cicala::retained_load(block), "a sealed block is a wake");
     zassert_mem_equal(&block, &before, sizeof(block), "and load() must not touch it");
 
-    zassert_equal(block.bag.fingerprint, 0xABCD1234u);
-    zassert_equal(block.bag.recent_len, 3);
-    zassert_equal(block.bag.recent[1], 22);
-    zassert_equal(block.bag.drawn[2][0], 0x0000'0005u);
+    zassert_equal(block.bags[0].fingerprint, 0xABCD1234u);
+    zassert_equal(block.bags[0].recent_len, 3);
+    zassert_equal(block.bags[0].recent[1], 22);
+    zassert_equal(block.bags[0].drawn[0], 0x0000'0005u);
     zassert_equal(block.partial_since_full, 17);
-    zassert_equal(block.deck, 4);
-    zassert_true(block.showing_question);
+    zassert_equal(block.play.permissions, 4);
+    zassert_true(block.play.menu);
+    zassert_equal(block.play.draft, 7);
+    zassert_equal(block.play.cursor, 2);
     zassert_equal(block.seq, 99);
 }
 
@@ -105,7 +109,7 @@ ZTEST(cicala_retained, test_a_changed_payload_is_rejected)
 
     cicala::retained_seal(block);
 
-    block.bag.drawn[3][1] ^= 1u;
+    block.bags[0].drawn[1] ^= 1u;
 
     zassert_false(cicala::retained_sealed(block), "the stamp must not still match");
     zassert_false(cicala::retained_load(block));

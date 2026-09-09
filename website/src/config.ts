@@ -10,19 +10,21 @@ export const LANGUAGES = [
   { code: "it", name: "Italiano" },
 ] as const;
 
-// Category cycle order from questions/schema.json.
-export const DECKS = ["new_people", "close", "family", "work", "here", "wild"] as const;
-export type Deck = (typeof DECKS)[number];
-
-// The decks the player offers, in the same order as the device's Category
-// cycle (firmware/app/src/channels.c). Work stays in the corpus and browse.
-export const DEVICE_DECKS = ["new_people", "close", "family", "here", "wild"] as const;
-export const PLAYBACK_DEPTH_MAX = 2;
+export const RECENT_WINDOW = 20;
+export const DEFAULT_PERMISSIONS = { dark: false, sexual: false, heavy: false };
+export type Permissions = typeof DEFAULT_PERMISSIONS;
+export const FORMS = [
+  "icebreaker",
+  "reflective",
+  "hypothetical",
+  "memory",
+  "wouldyourather",
+] as const;
 
 export const TAGS = [
   "icebreaker",
   "reflective",
-  "spicy",
+  "sexual",
   "dark",
   "hypothetical",
   "memory",

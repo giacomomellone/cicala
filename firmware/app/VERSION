@@ -1,7 +1,7 @@
 # Source for APP_VERSION_STRING and the MCUboot image header.
 # Release tags use fw-<version>.
 VERSION_MAJOR = 0
-VERSION_MINOR = 1
+VERSION_MINOR = 2
 PATCHLEVEL = 0
 VERSION_TWEAK = 0
 EXTRAVERSION =

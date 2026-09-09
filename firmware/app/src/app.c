@@ -20,7 +20,7 @@ BUILD_ASSERT(sizeof(struct cicala_service_msg) <=
              "raise CONFIG_ZBUS_MSG_SUBSCRIBER_NET_BUF_STATIC_DATA_SIZE");
 
 ZBUS_MSG_SUBSCRIBER_DEFINE(app_sub);
-ZBUS_CHAN_ADD_OBS(chan_category, app_sub, 3);
+ZBUS_CHAN_ADD_OBS(chan_filters, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_next, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_service, app_sub, 3);
 ZBUS_CHAN_ADD_OBS(chan_corpus, app_sub, 3);
@@ -36,13 +36,13 @@ static void app_thread(void *p1, void *p2, void *p3)
         return;
     }
 
-    /* Process the category posted during initialization. */
+    /* Apply the retained state or the captured wake press. */
     cicala_app_run();
 
     while (true) {
         const struct zbus_channel *chan;
         union {
-            struct cicala_category_msg category;
+            struct cicala_filters_msg category;
             struct cicala_next_msg next;
             struct cicala_service_msg service;
             struct cicala_corpus_msg corpus;
@@ -63,9 +63,9 @@ static void app_thread(void *p1, void *p2, void *p3)
             continue;
         }
 
-        if (chan == &chan_category) {
-            /* Category changes remain available during a refresh. */
-            cicala_app_post_category();
+        if (chan == &chan_filters) {
+            /* Tabletop presses during a refresh are dropped. */
+            cicala_app_post_filters();
         } else if (chan == &chan_next) {
             if (cicala_app_is_busy()) {
                 LOG_INF("press ignored: the panel is still refreshing");

@@ -1,6 +1,5 @@
 ---
 // Favorites and read-only shared decks from /deck#ids=….
-import Chips from "../components/Chips.astro";
 import { t } from "../i18n";
 import Base from "../layouts/Base.astro";
 ---
@@ -26,7 +25,6 @@ import Base from "../layouts/Base.astro";
   </div>
 
   <p class="hint" id="d-status" aria-live="polite"></p>
-  <Chips id="deck-chips" />
   <p class="hint" id="d-count" style="margin-top:1rem"></p>
 
   <ul class="rows" id="d-rows" style="margin-top:0.5rem"></ul>

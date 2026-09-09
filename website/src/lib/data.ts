@@ -5,7 +5,6 @@ import { getStoredLang, setStoredLang } from "./store";
 export interface Question {
   id: string;
   text: string;
-  decks: string[];
   depth: number;
   tags: string[];
   origin?: string;

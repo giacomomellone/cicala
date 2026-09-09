@@ -37,7 +37,6 @@ body:
     attributes:
       label: Metadata to reconsider (optional)
       options:
-        - label: Deck eligibility
         - label: Depth
         - label: Tags
         - label: Translation provenance or origin

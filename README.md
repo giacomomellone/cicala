@@ -8,7 +8,7 @@ Its three parts share one database:
 
 1. **[Question database](questions/)**: community-maintained YAML files in this repo.
 2. **[Website](website/)**: a static front-end to the database, no account needed. Anyone can play, save favorites, and suggest questions.
-3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Category and Next buttons. The first prototype is still in development.
+3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Filters and Next buttons. The first prototype is still in development.
 
 ## AI policy
 

@@ -14,14 +14,14 @@ static const struct gpio_dt_spec next_button = GPIO_DT_SPEC_GET(DT_ALIAS(cicala_
 
 static int category_publishes;
 static int next_publishes;
-static struct cicala_category_msg last_category;
+static struct cicala_filters_msg last_category;
 static struct cicala_next_msg last_next;
 
 static void observe(const struct zbus_channel *chan)
 {
-    if (chan == &chan_category) {
+    if (chan == &chan_filters) {
         category_publishes++;
-        last_category = *(const struct cicala_category_msg *) zbus_chan_const_msg(chan);
+        last_category = *(const struct cicala_filters_msg *) zbus_chan_const_msg(chan);
     } else if (chan == &chan_next) {
         next_publishes++;
         last_next = *(const struct cicala_next_msg *) zbus_chan_const_msg(chan);
@@ -29,7 +29,7 @@ static void observe(const struct zbus_channel *chan)
 }
 
 ZBUS_LISTENER_DEFINE(test_obs, observe);
-ZBUS_CHAN_ADD_OBS(chan_category, test_obs, 4);
+ZBUS_CHAN_ADD_OBS(chan_filters, test_obs, 4);
 ZBUS_CHAN_ADD_OBS(chan_next, test_obs, 4);
 
 static void press(const struct gpio_dt_spec *button, bool down)

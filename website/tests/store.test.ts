@@ -1,16 +1,7 @@
 // @vitest-environment happy-dom
 // Corrupt cicala.* storage values fall back to defaults.
 import { beforeEach, describe, expect, it } from "vitest";
-import {
-  getBag,
-  getDeck,
-  getFavs,
-  isFav,
-  setBag,
-  setDeck,
-  setFavs,
-  toggleFav,
-} from "../src/lib/store";
+import { getFavs, isFav, setFavs, toggleFav } from "../src/lib/store";
 
 beforeEach(() => localStorage.clear());
 
@@ -36,29 +27,5 @@ describe("favorites", () => {
   it("setFavs round-trips", () => {
     setFavs(["q-aaaaaaaa", "q-bbbbbbbb"]);
     expect(getFavs()).toEqual(["q-aaaaaaaa", "q-bbbbbbbb"]);
-  });
-});
-
-describe("bags", () => {
-  it("round-trips per lang+deck under the cicala.bag.* key", () => {
-    setBag("de", "wild", { b: ["q-00000001"], r: ["q-00000002"] });
-    expect(localStorage.getItem("cicala.bag.de.wild")).not.toBeNull();
-    expect(getBag("de", "wild")).toEqual({ b: ["q-00000001"], r: ["q-00000002"] });
-    // Preserve unrelated storage keys.
-    expect(getBag("en", "wild")).toEqual({ b: [], r: [] });
-  });
-
-  it("degrades corrupted bags to empty", () => {
-    localStorage.setItem("cicala.bag.en.all", "not json at all");
-    expect(getBag("en", "all")).toEqual({ b: [], r: [] });
-  });
-});
-
-describe("deck selection", () => {
-  it("defaults to new people and persists an absolute deck", () => {
-    expect(getDeck()).toBe("new_people");
-    setDeck("here");
-    expect(getDeck()).toBe("here");
-    expect(localStorage.getItem("cicala.deck")).toBe("here");
   });
 });

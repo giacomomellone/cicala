@@ -15,6 +15,7 @@ Fails if any single language payload exceeds 2 MB.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import datetime as dt
 import json
 import subprocess
@@ -90,7 +91,6 @@ def main(argv=None) -> int:
             question = {
                 "id": entry["id"],
                 "text": entry["text"],
-                "decks": entry["decks"],
                 "depth": entry["depth"],
                 "tags": entry.get("tags", []),
             }
@@ -102,6 +102,8 @@ def main(argv=None) -> int:
             index[entry["id"]] = lang
         count = len(entries)
 
+        fingerprint = hashlib.sha256(dump(payload["questions"]).encode()).hexdigest()[:16]
+        payload["version"] = f"{version}:{fingerprint}"
         blob = dump(payload)
         if len(blob.encode("utf-8")) > MAX_PAYLOAD_BYTES:
             print(

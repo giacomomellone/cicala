@@ -34,14 +34,6 @@ export function setStoredLang(lang: string): void {
   write("cicala.lang", lang);
 }
 
-export function getDeck(): string {
-  return read("cicala.deck") ?? "new_people";
-}
-
-export function setDeck(deck: string): void {
-  write("cicala.deck", deck);
-}
-
 export function getFavs(): string[] {
   const favs = readJson<string[]>("cicala.favs", []);
   return Array.isArray(favs) ? favs.filter((x) => typeof x === "string") : [];
@@ -67,31 +59,6 @@ export function toggleFav(id: string): boolean {
   favs.splice(i, 1);
   setFavs(favs);
   return false;
-}
-
-export function getLastShown(lang: string): string {
-  return read(`cicala.last.${lang}`) ?? "";
-}
-
-export function setLastShown(lang: string, id: string): void {
-  write(`cicala.last.${lang}`, id);
-}
-
-export interface Bag {
-  b: string[]; // remaining ids, popped from the end
-  r: string[]; // last 5 shown, excluded from the next reshuffle
-}
-
-export function getBag(lang: string, deck: string): Bag {
-  const bag = readJson<Bag>(`cicala.bag.${lang}.${deck}`, { b: [], r: [] });
-  return {
-    b: Array.isArray(bag.b) ? bag.b : [],
-    r: Array.isArray(bag.r) ? bag.r : [],
-  };
-}
-
-export function setBag(lang: string, deck: string, bag: Bag): void {
-  write(`cicala.bag.${lang}.${deck}`, JSON.stringify(bag));
 }
 
 /* How many tips the suggestion form has already shown this visitor. The count

@@ -1,246 +1,184 @@
-// Play controller: the device's Category/Next model, plus the web extras a
-// browser can support without adding state to the object — history,
-// favorites, and sharing.
-
-import { BAG_TEXTURE, DEVICE_DECKS, PLAYBACK_DEPTH_MAX } from "../config";
+// Filters / Next is the complete tabletop interaction, shared with the device.
+import { BAG_TEXTURE, type Permissions } from "../config";
 import { tr } from "./apply-i18n";
-import { drawFromBag } from "./bag";
-import { detectLang, loadPayload, type Payload, type Question } from "./data";
-import {
-  getBag,
-  getDeck,
-  getLastShown,
-  isFav,
-  setBag,
-  setDeck,
-  setLastShown,
-  toggleFav,
-} from "./store";
+import { drawFromBag, permitted } from "./bag";
+import { detectLang, loadPayload, type Payload } from "./data";
+import { getPlaySession, setPlaySession } from "./play-session";
+import { isFav, toggleFav } from "./store";
 
-interface Shown {
-  q: Question;
-  deck: string;
-}
-
-const HISTORY_MAX = 50;
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
+const FILTERS = ["dark", "sexual", "heavy"] as const;
 export async function initPlay(): Promise<void> {
   const root = document.getElementById("play-root");
   if (!root) return;
-
-  const qText = document.getElementById("q-text")!;
-  const qSwap = document.getElementById("q-swap")!;
-  const qMeta = document.getElementById("q-meta")!;
-  const deckName = document.getElementById("q-deck-name")!;
-  const originLink = document.getElementById("q-origin") as HTMLAnchorElement;
-  const editLink = document.getElementById("q-edit");
-  const favBtn = document.getElementById("q-fav") as HTMLButtonElement;
-  const favLabel = document.getElementById("q-fav-label")!;
-  const shareBtn = document.getElementById("q-share") as HTMLButtonElement;
-  const shareLabel = document.getElementById("q-share-label")!;
-  const nextBtn = document.getElementById("q-next") as HTMLButtonElement;
-  const categoryBtn = document.getElementById("q-category") as HTMLButtonElement;
-
+  const el = (id: string) => document.getElementById(id)!;
+  const qText = el("q-text"),
+    qSwap = el("q-swap"),
+    qMeta = el("q-meta");
+  const menu = el("q-menu"),
+    summary = el("q-permissions");
+  const origin = el("q-origin") as HTMLAnchorElement;
+  const fav = el("q-fav") as HTMLButtonElement;
+  const share = el("q-share") as HTMLButtonElement;
+  const next = el("q-next") as HTMLButtonElement;
+  const filters = el("q-filters") as HTMLButtonElement;
   const lang = detectLang();
-  const isPermalink = root.dataset.permalink === "1";
-  const seedId = root.dataset.seedId ?? "";
-
-  // The player offers the device cycle; anything else (e.g. a stored or
-  // permalink deck from before parity) lands on the cycle's first deck.
-  const playDeck = (name: string): string =>
-    (DEVICE_DECKS as readonly string[]).includes(name) ? name : DEVICE_DECKS[0];
-
-  let deck = playDeck(isPermalink ? (root.dataset.seedDeck ?? "new_people") : getDeck());
-
   let payload: Payload;
   try {
     payload = await loadPayload(lang);
   } catch {
-    return; // static page keeps working with its SSR question
+    return;
   }
-
   const byId = new Map(payload.questions.map((q) => [q.id, q]));
-
-  const idsFor = (selectedDeck: string): string[] =>
-    payload.questions
-      .filter((q) => q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(selectedDeck))
+  const state = getPlaySession(lang, payload.version);
+  let direct = root.dataset.permalink === "1";
+  if (direct) {
+    state.menu = false;
+    state.shown = root.dataset.seedId ?? "";
+    state.bag.last = state.shown;
+    state.bag.r = [...state.bag.r, state.shown].slice(-20);
+  }
+  const label = (key: string) => tr(lang, key as never);
+  function draw(): void {
+    const allowed = payload.questions
+      .filter((q) => permitted(q, state.permissions))
       .map((q) => q.id);
-
-  const deckLabel = (name: string): string => tr(lang, `deck.${name}` as never);
-
-  function drawNext(selectedDeck: string): Shown | null {
-    const bag = getBag(lang, selectedDeck);
-    const texture = BAG_TEXTURE
-      ? { seed: byId.get(getLastShown(lang)), meta: (id: string) => byId.get(id) }
-      : undefined;
-    const id = drawFromBag(bag, idsFor(selectedDeck), Math.random, texture);
-    if (id === null) return null;
-    setBag(lang, selectedDeck, bag);
-    setLastShown(lang, id);
-    const q = byId.get(id);
-    return q ? { q, deck: selectedDeck } : null;
+    state.shown =
+      drawFromBag(
+        state.bag,
+        allowed,
+        Math.random,
+        BAG_TEXTURE
+          ? {
+              seed: byId.get(state.bag.last),
+              meta: (id) => byId.get(id),
+            }
+          : undefined,
+      ) ?? "";
   }
-
-  let history: Shown[] = [];
-  let cursor = -1;
-
-  function record(entry: Shown): void {
-    history = history.slice(0, cursor + 1);
-    history.push(entry);
-    if (history.length > HISTORY_MAX) history.shift();
-    cursor = history.length - 1;
-  }
-
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  function renderMeta(entry: Shown): void {
-    const saved = isFav(entry.q.id);
-    favBtn.setAttribute("aria-pressed", String(saved));
-    favLabel.textContent = tr(lang, saved ? "play.saved" : "play.save");
-  }
-
-  /* Provenance belongs to the question on screen, not to the page: it appears
-     only on a machine translation, and links to the human-written original. */
-  function renderOrigin(entry: Shown): void {
-    const origin = entry.q.translated_by === "google" ? entry.q.origin : undefined;
-    originLink.hidden = !origin;
-    if (origin) originLink.href = `/q/${origin}`;
-  }
-
-  function renderQuestion(entry: Shown): void {
-    qText.classList.remove("is-name");
-    qMeta.style.visibility = "";
-    qText.textContent = entry.q.text;
-    deck = playDeck(entry.deck);
-    deckName.textContent = deckLabel(deck);
-    renderOrigin(entry);
-    renderMeta(entry);
+  function render(): void {
+    const q = byId.get(state.shown);
+    qText.hidden = state.menu;
+    menu.hidden = !state.menu;
+    qMeta.hidden = state.menu || !q;
+    const edit = el("q-edit");
+    if (edit) edit.hidden = state.menu;
+    origin.hidden = state.menu || !q?.origin || q.translated_by !== "google";
+    if (q?.origin) origin.href = `/q/${q.origin}`;
+    qText.textContent = q?.text ?? label("play.empty");
+    fav.setAttribute("aria-pressed", String(!!q && isFav(q.id)));
+    el("q-fav-label").textContent = label(q && isFav(q.id) ? "play.saved" : "play.save");
+    summary.textContent = FILTERS.map(
+      (key) => `${label(`filter.${key}`)} ${state.permissions[key] ? "+" : "−"}`,
+    ).join(" · ");
+    summary.setAttribute(
+      "aria-label",
+      FILTERS.map(
+        (key) =>
+          `${label(`filter.${key}`)}: ${label(state.permissions[key] ? "filter.allow" : "filter.exclude")}`,
+      ).join(", "),
+    );
+    filters.setAttribute("aria-expanded", String(state.menu));
+    for (let i = 0; i < 4; i++) {
+      const row = el(`q-filter-${i}`);
+      row.classList.toggle("is-selected", i === state.cursor);
+      row.setAttribute("aria-current", String(i === state.cursor));
+      const key = FILTERS[i];
+      row.setAttribute("aria-label", label(key ? `filter.${key}` : "filter.done"));
+      if (key) {
+        row.setAttribute("role", "switch");
+        row.setAttribute("aria-checked", String(state.draft[key]));
+      }
+      row.textContent = `${i === state.cursor ? "› " : ""}${key ? `${label(`filter.${key}`)} — ${label(state.draft[key] ? "filter.allow" : "filter.exclude")}` : label("filter.done")}`;
+    }
     document.documentElement.lang = lang;
+    setPlaySession(lang, state);
   }
-
-  /* The deck-name card, as on the device: the name replaces the question
-     until Next draws. */
-  function renderName(): void {
-    qText.classList.add("is-name");
-    qText.textContent = deckLabel(deck);
-    qMeta.style.visibility = "hidden";
+  function leaveDirect(): void {
+    direct = false;
+    if (location.pathname.startsWith("/q/")) window.history.replaceState({}, "", "/");
+    document.getElementById("q-edit")?.remove();
   }
-
-  async function swap(render: () => void, fade = true): Promise<void> {
-    if (fade && !reducedMotion) {
-      qSwap.classList.add("is-fading");
-      await sleep(120);
-      render();
-      qSwap.classList.remove("is-fading");
-    } else {
-      render();
-    }
-  }
-
-  async function show(entry: Shown, fade = true): Promise<void> {
-    await swap(() => renderQuestion(entry), fade);
-  }
-
-  // Replace the permalink entry when normal play begins.
-  function leavePermalink(): void {
-    if (!location.pathname.startsWith("/q/")) return;
-    window.history.replaceState({}, "", "/");
-    editLink?.remove();
-  }
-
-  async function next(): Promise<void> {
-    leavePermalink();
-    // Forward history only belongs to the deck it was drawn from; a Category
-    // change since makes Next a fresh draw, and record() drops the tail.
-    if (cursor < history.length - 1 && history[cursor + 1]!.deck === deck) {
-      cursor++;
-      await show(history[cursor]!);
-      return;
-    }
-    const entry = drawNext(deck);
-    if (!entry) {
-      qText.classList.remove("is-name");
-      qMeta.style.visibility = "";
-      qText.textContent = tr(lang, "play.empty");
-      return;
-    }
-    record(entry);
-    await show(entry);
-  }
-
-  async function prev(): Promise<void> {
-    if (cursor > 0) {
-      cursor--;
-      await show(history[cursor]!);
-    }
-  }
-
-  async function cycleCategory(): Promise<void> {
-    leavePermalink();
-    const i = (DEVICE_DECKS as readonly string[]).indexOf(deck);
-    deck = DEVICE_DECKS[(i + 1) % DEVICE_DECKS.length] ?? "new_people";
-    setDeck(deck);
-    await swap(renderName);
-  }
-
-  const seedQuestion = seedId ? (byId.get(seedId) ?? null) : null;
-  const seed = seedQuestion ? { q: seedQuestion, deck } : null;
-  if (seed && isPermalink) {
-    record(seed);
-    renderMeta(seed);
-    setLastShown(lang, seed.q.id); // the permalink is what is on screen
-  } else {
-    const entry = drawNext(deck);
-    if (entry) {
-      record(entry);
-      await show(entry, false);
-    }
-  }
-  deckName.textContent = deckLabel(deck);
-
-  nextBtn.addEventListener("click", () => void next());
-  categoryBtn.addEventListener("click", () => void cycleCategory());
-
-  favBtn.addEventListener("click", () => {
-    const entry = history[cursor];
-    if (!entry) return;
-    const saved = toggleFav(entry.q.id);
-    favBtn.setAttribute("aria-pressed", String(saved));
-    favLabel.textContent = tr(lang, saved ? "play.saved" : "play.save");
-  });
-
-  let shareTimer: ReturnType<typeof setTimeout> | undefined;
-  shareBtn.addEventListener("click", async () => {
-    const entry = history[cursor];
-    if (!entry) return;
-    const url = `${location.origin}/q/${entry.q.id}`;
+  let busy = false;
+  async function press(which: "filters" | "next", row?: number): Promise<void> {
+    if (busy || (row !== undefined && !state.menu)) return;
+    busy = true;
     try {
-      await navigator.clipboard.writeText(url);
-      shareLabel.textContent = tr(lang, "play.copied");
+      if (row === undefined && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        qSwap.classList.add("is-fading");
+        await new Promise((r) => setTimeout(r, 120));
+      }
+      if (which === "filters") {
+        if (!state.menu) {
+          state.menu = true;
+          state.draft = { ...state.permissions };
+          state.cursor = 0;
+        } else state.cursor = (state.cursor + 1) % 4;
+      } else if (state.menu) {
+        if (row !== undefined) state.cursor = row;
+        const key: keyof Permissions | undefined = FILTERS[state.cursor];
+        if (key) state.draft[key] = !state.draft[key];
+        else {
+          state.permissions = { ...state.draft };
+          state.menu = false;
+          const current = byId.get(state.shown);
+          if (!current || !permitted(current, state.permissions)) {
+            leaveDirect();
+            draw();
+          }
+        }
+      } else {
+        leaveDirect();
+        draw();
+      }
+      render();
+      if (row !== undefined && !state.menu) filters.focus();
+    } finally {
+      qSwap.classList.remove("is-fading");
+      busy = false;
+    }
+  }
+  if (!direct && !state.menu) {
+    const current = byId.get(state.shown);
+    if (!current || !permitted(current, state.permissions)) draw();
+  }
+  render();
+  filters.addEventListener("click", () => void press("filters"));
+  next.addEventListener("click", () => void press("next"));
+  for (let i = 0; i < 4; i++)
+    el(`q-filter-${i}`).addEventListener("click", () => void press("next", i));
+  fav.addEventListener("click", () => {
+    if (state.menu || !state.shown || busy) return;
+    toggleFav(state.shown);
+    render();
+  });
+  let shareTimer: ReturnType<typeof setTimeout> | undefined;
+  share.addEventListener("click", async () => {
+    if (state.menu || !state.shown || busy) return;
+    try {
+      await navigator.clipboard.writeText(`${location.origin}/q/${state.shown}`);
+      el("q-share-label").textContent = label("play.copied");
       clearTimeout(shareTimer);
       shareTimer = setTimeout(() => {
-        shareLabel.textContent = tr(lang, "play.share");
+        el("q-share-label").textContent = label("play.share");
       }, 1500);
     } catch {
-      /* Leave the label unchanged when clipboard access fails. */
+      /* Clipboard access is optional. */
     }
   });
-
   document.addEventListener("keydown", (e) => {
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-    const target = e.target as HTMLElement | null;
-    if (target && target.closest("input, textarea, select, button, a, [contenteditable]")) return;
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (
+      (e.target as HTMLElement | null)?.closest(
+        "input, textarea, select, button, a, [contenteditable]",
+      )
+    )
+      return;
     if (e.key === " " || e.key === "ArrowRight") {
       e.preventDefault();
-      void next();
-    } else if (e.key === "ArrowLeft") {
-      void prev();
-    } else if (e.key === "c" || e.key === "C") {
-      void cycleCategory();
-    } else if (e.key === "f" || e.key === "F") {
-      favBtn.click();
+      void press("next");
+    } else if (e.key.toLowerCase() === "f") {
+      e.preventDefault();
+      void press("filters");
     }
   });
 }

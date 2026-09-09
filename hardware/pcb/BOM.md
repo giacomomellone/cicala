@@ -25,7 +25,7 @@ voltage rating or capacitor dielectric on value alone.
 | Q1 | Si1308EDL-T1-GE3 | Display boost MOSFET |
 | D1–D3 | MBR0530-7-F | Display rail Schottky diodes |
 | D4 | APBA2006SURKCGKC | Red/green side-view status LED |
-| SW1, SW2 | KSC323GLFG | Gold-contact Category and Next switches; R21/R22 = 22 kΩ |
+| SW1, SW2 | KSC323GLFG | Gold-contact Filters and Next switches; R21/R22 = 22 kΩ |
 
 Resistors are Yageo RC0603, 1% except the 0 Ω links. Capacitors are Samsung
 MLCCs with exact purchasing suffixes in the schematic. The DLA0010A,

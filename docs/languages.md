@@ -33,7 +33,7 @@ New languages start in `questions/incubator/{lang}/` with the same file structur
 
 A language **graduates** (its directory moves to `questions/{lang}/` in a reviewed PR) when it has:
 
-1. **≥ 150 unique questions, with ≥ 20 eligible for each deck.**
+1. **≥ 150 unique questions, with a varied default pool.**
 2. **A named maintainer** listed below: a fluent speaker who commits to reviewing submissions in that language.
 3. Its own **`STYLE.md`** (tone and register decisions; German uses informal "du", for example) and **`denylist.txt`**.
 
@@ -60,7 +60,7 @@ Each draft must:
 - pass the target language's validator, denylist, and style guide; and
 - receive approval from a fluent maintainer before merge.
 
-The workflow copies the reviewed decks, depth, and tags from the source as a
+The workflow copies the reviewed depth and tags from the source as a
 starting point. The target maintainer owns the final wording and classification
 and may edit or reject the draft. It groups pending work into one bot branch and
 one pull request per target language, rather than opening a pull request per

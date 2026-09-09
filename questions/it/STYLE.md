@@ -1,7 +1,6 @@
 # Guida di stile italiana
 
-Come si scrive una domanda Cicala in italiano. Il criterio: si adatta a ogni
-mazzo scelto, non si esaurisce con un sì o un no, ed è abbastanza concreta da
+Come si scrive una domanda Cicala in italiano. Il criterio: funziona da sola, non si esaurisce con un sì o un no, ed è abbastanza concreta da
 far partire un racconto. Il ragionamento dietro queste regole sta nella
 [teoria](../../docs/theory.md).
 
@@ -9,7 +8,7 @@ far partire un racconto. Il ragionamento dietro queste regole sta nella
 
 - Rivolgiti a una persona sola: **tu**, mai "Lei", mai "si" impersonale.
 - **Niente anglicismi nelle domande.** Scrivi "appuntamento", non "date". Le
-  chiavi dei mazzi e le scritte del primo prototipo restano in inglese.
+  chiavi dei metadati restano in inglese.
 - Una buona domanda italiana suona come se qualcuno l'avesse posta a tavola,
   che sia stata scritta in italiano o tradotta da un'altra lingua.
 - Le traduzioni automatiche sono bozze. Devono conservare senso, presupposti,
@@ -32,21 +31,11 @@ far partire un racconto. Il ragionamento dietro queste regole sta nella
 - Evita i superlativi come "migliore", "peggiore", "di più" e "di meno":
   trasformano un ricordo in una classifica.
 
-## Assegnazione dei mazzi
+## Domande autonome
 
-- `new_people`: non presuppone un passato in comune. Niente verifiche su quanto
-  ci si conosce, niente biografie forzate.
-- `close`: presuppone familiarità. Chiedi di cambiamenti e interpretazioni più
-  che di dati anagrafici già noti.
-- `family`: deve essere sicura *e interessante* per una persona di dieci anni.
-  Intergenerazionale: nonna e nipote devono poter rispondere entrambe.
-- `work`: niente intimità forzata, pettegolezzi, diagnosi o risposte che
-  possano cambiare la posizione di qualcuno sul lavoro.
-- `here`: usa la stanza, il tavolo, l'occasione o ciò che si vede intorno.
-- `wild`: cupa, azzardata, macabra o assurda. Domande così non compaiono in
-  nessun altro mazzo.
-
-Una domanda si archivia una volta sola e può appartenere a più mazzi.
+Ogni domanda si archivia una volta nel corpus misto. Non deve dipendere da una
+relazione specifica o da una categoria scelta al tavolo. La stanza e ciò che si
+vede intorno restano possibili punti di partenza.
 
 ## Profondità
 
@@ -55,8 +44,8 @@ Una domanda si archivia una volta sola e può appartenere a più mazzi.
 - `3`: può toccare vulnerabilità, conflitto, paura, perdita o rivelazioni che
   hanno conseguenze.
 
-Profondità e tono sono indipendenti. La riproduzione normale usa per ora 1 e 2;
-il 3 resta nel corpus e nella vista di consultazione.
+Profondità e tono sono indipendenti. La riproduzione normale usa 1 e 2. Pesante permette il 3.
+Cupo e Sessuale sono permessi indipendenti.
 
 ## Etichette
 
@@ -66,8 +55,10 @@ chiavi restano in inglese ovunque:
 - `icebreaker`: sicura con estranei nei primi cinque minuti.
 - `reflective`: chiede uno sguardo all'interno; è normale una pausa di
   riflessione.
-- `spicy`: azzardata o socialmente rischiosa. Richiede `decks: [wild]`.
-- `dark`: tono cupo o macabro. Richiede `decks: [wild]`.
+- `sexual`: esperienze sessuali, desideri o materiale esplicito. Richiede
+  Sessuale. Essere audace non basta; le vecchie voci `spicy` richiedono
+  una riclassificazione umana esplicita.
+- `dark`: materiale cupo, macabro o disturbante. Richiede Cupo.
 - `hypothetical`: giochi mentali ("se…", "che cosa faresti…").
 - `memory`: chiede un momento preciso che si ricorda.
 - `wouldyourather`: una scelta forzata fra due sole possibilità.

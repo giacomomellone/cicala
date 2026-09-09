@@ -1,18 +1,16 @@
 ---
 // Play (spec §7.4).
 import PlayShell from "../components/PlayShell.astro";
-import { PLAYBACK_DEPTH_MAX, type Deck } from "../config";
+import { DEFAULT_PERMISSIONS } from "../config";
+import { permitted } from "../lib/bag";
 import Base from "../layouts/Base.astro";
 import payload from "../data/questions.en.json";
 import type { Question } from "../lib/data";
 
-const deck: Deck = "new_people";
-const all = (payload.questions as Question[]).filter(
-  (q) => q.depth <= PLAYBACK_DEPTH_MAX && q.decks.includes(deck),
-);
+const all = (payload.questions as Question[]).filter((q) => permitted(q, DEFAULT_PERMISSIONS));
 const seed = all[Math.floor(Math.random() * all.length)];
 ---
 
 <Base title="cicala · let's talk" lang="en">
-  <PlayShell question={seed} deck={deck} lang="en" />
+  <PlayShell question={seed} lang="en" />
 </Base>

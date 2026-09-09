@@ -1,13 +1,5 @@
 import { devices, expect, test } from "@playwright/test";
-import {
-  payload,
-  playable,
-  playReady,
-  schema,
-  seedStorage,
-  skipWithoutQuestions,
-  smallestDeck,
-} from "./fixtures";
+import { payload, playable, playReady, skipWithoutQuestions } from "./fixtures";
 
 const questionText = "#q-text";
 
@@ -114,7 +106,7 @@ test.describe("play", () => {
 
     await expect(skipNote).toContainText(/feel free to skip/i);
     await expect(panel).toHaveCSS("border-left-width", "1px");
-    await expect(page.locator("#q-fav-label")).toBeVisible();
+    if (payload("en").length) await expect(page.locator("#q-fav-label")).toBeVisible();
     await expect(language.locator(".lang-full")).toBeVisible();
     await expect(language.locator(".lang-code")).toBeHidden();
 
@@ -145,7 +137,7 @@ test.describe("play", () => {
     const next = page.locator("#q-next");
 
     await expect(next.locator(".key__kbd")).toHaveText("space");
-    await expect(page.locator("#q-category .key__kbd")).toHaveText("c");
+    await expect(page.locator("#q-filters .key__kbd")).toHaveText("f");
 
     // Absolute, so the label keeps the key's centre rather than shifting up.
     await expect(next.locator(".key__kbd")).toHaveCSS("position", "absolute");
@@ -159,7 +151,7 @@ test.describe("play", () => {
     await page.goto("/");
 
     await expect(page.locator("#q-next .key__kbd")).toBeHidden();
-    await expect(page.locator("#q-next")).toContainText(/next question/i);
+    await expect(page.locator("#q-next")).toContainText(/next/i);
 
     await context.close();
   });
@@ -169,11 +161,11 @@ test.describe("play", () => {
     await page.goto("/");
     await playReady(page);
     const first = await page.locator(questionText).innerText();
-    await page.getByRole("button", { name: /next question/i }).click();
+    await page.getByRole("button", { name: /^next/i }).click();
     await expect(page.locator(questionText)).not.toHaveText(first);
   });
 
-  test("space advances and arrow-left walks back through history", async ({ page }) => {
+  test("space advances and arrow-left does not replay history", async ({ page }) => {
     skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
@@ -181,82 +173,21 @@ test.describe("play", () => {
     await page.locator("body").press(" ");
     await expect(page.locator(questionText)).not.toHaveText(first);
     const second = await page.locator(questionText).innerText();
-
     await page.locator("body").press("ArrowLeft");
-    await expect(page.locator(questionText)).toHaveText(first);
-    await page.locator("body").press("ArrowRight");
     await expect(page.locator(questionText)).toHaveText(second);
   });
 
-  test("the shuffle bag never repeats before the deck is exhausted", async ({ page }) => {
-    skipWithoutQuestions("en");
-    const deck = smallestDeck("en");
-    const expected = playable("en", deck);
-    await seedStorage(page, { "cicala.deck": deck });
-    await page.goto("/");
-    await playReady(page);
-
-    const seen: string[] = [await page.locator(questionText).innerText()];
-    for (let i = 1; i < expected.length; i++) {
-      await page.getByRole("button", { name: /next question/i }).click();
-      await expect(page.locator(questionText)).not.toHaveText(seen.at(-1)!);
-      seen.push(await page.locator(questionText).innerText());
-    }
-
-    expect(new Set(seen).size).toBe(expected.length);
-    const texts = new Set(expected.map((q) => q.text));
-    for (const shown of seen) expect(texts).toContain(shown);
-  });
-
-  test("the category button cycles the five decks, skipping work, and wraps", async ({ page }) => {
+  test("the bag exhausts the permitted pool without a repeat", async ({ page }) => {
     skipWithoutQuestions("en");
     await page.goto("/");
     await playReady(page);
-    const category = page.getByRole("button", { name: /^category$/i });
-
-    // From the New People default, one full turn lands back on it.
-    for (const name of ["close", "family", "here", "wild", "new people"]) {
-      await category.click();
-      await expect(page.locator(questionText)).toHaveText(name);
-    }
-  });
-
-  test("a category choice sticks and only serves that deck", async ({ page }) => {
-    skipWithoutQuestions("en");
-    await page.goto("/");
-    await playReady(page);
-    const category = page.getByRole("button", { name: /^category$/i });
-    await category.click(); // close
-    await category.click(); // family
-    await expect(page.locator(questionText)).toHaveText("family");
-    await expect
-      .poll(() => page.evaluate(() => localStorage.getItem("cicala.deck")))
-      .toBe("family");
-
-    const eligible = new Set(playable("en", "family").map((q) => q.text));
-    for (let i = 0; i < 5; i++) {
-      await page.getByRole("button", { name: /next question/i }).click();
-      await expect
-        .poll(async () => eligible.has(await page.locator(questionText).innerText()))
-        .toBe(true);
-    }
-  });
-
-  test("the player never serves a question above the playback depth", async ({ page }) => {
-    const deck = smallestDeck("en");
-    const tooDeep = new Set(
-      payload("en")
-        .filter((q) => q.depth > schema.playbackDepthMax && q.decks.includes(deck))
-        .map((q) => q.text),
-    );
-    test.skip(tooDeep.size === 0, `no depth-3 question in the ${deck} deck`);
-
-    await seedStorage(page, { "cicala.deck": deck });
-    await page.goto("/");
-    await playReady(page);
-    for (let i = 0; i < playable("en", deck).length; i++) {
-      expect(tooDeep).not.toContain(await page.locator(questionText).innerText());
-      await page.getByRole("button", { name: /next question/i }).click();
+    const seen = new Set<string>();
+    for (let i = 0; i < playable("en").length; i++) {
+      const text = await page.locator(questionText).innerText();
+      expect(seen.has(text)).toBe(false);
+      seen.add(text);
+      await page.locator("#q-next").click();
+      if (playable("en").length > 1) await expect(page.locator(questionText)).not.toHaveText(text);
     }
   });
 
@@ -311,7 +242,7 @@ test.describe("permalink", () => {
     const question = payload("en")[0]!;
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);
-    await page.getByRole("button", { name: /next question/i }).click();
+    await page.getByRole("button", { name: /^next/i }).click();
     await expect.poll(() => new URL(page.url()).pathname).toBe("/");
   });
 

@@ -7,289 +7,241 @@
 
 - id: q-0084e1fc
   text: "What do you notice first about a new place, take 1?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-328303da
   text: "What do you notice first about a new place, take 2?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-607bffa6
   text: "What do you notice first about a new place, take 3?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-26f6552d
   text: "What do you notice first about a new place, take 4?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-7d781feb
   text: "What do you notice first about a new place, take 5?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-f6e0d11c
   text: "What do you notice first about a new place, take 6?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-cc9e54f4
   text: "What do you notice first about a new place, take 7?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-90712e0a
   text: "What do you notice first about a new place, take 8?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-408df048
   text: "What do you notice first about a new place, take 9?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-11f35226
   text: "What do you notice first about a new place, take 10?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-a8afce18
   text: "What do you notice first about a new place, take 11?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-8a3d8f0a
   text: "What do you notice first about a new place, take 12?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-1739fca0
   text: "What do you notice first about a new place, take 13?"
-  decks: [new_people]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-d44bf6d3
   text: "What do you notice first about a new place, take 14?"
-  decks: [new_people]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-c566ee53
   text: "What have you stopped apologising for, take 1?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-c1b3c842
   text: "What have you stopped apologising for, take 2?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-20723c4f
   text: "What have you stopped apologising for, take 3?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-31270e9a
   text: "What have you stopped apologising for, take 4?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-e9255af9
   text: "What have you stopped apologising for, take 5?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-4ca7a7b0
   text: "What have you stopped apologising for, take 6?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-951ddca5
   text: "What have you stopped apologising for, take 7?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-a5c6fc5e
   text: "What have you stopped apologising for, take 8?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-f5bd4d88
   text: "What have you stopped apologising for, take 9?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-ef9215c8
   text: "What have you stopped apologising for, take 10?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-3da3b949
   text: "What have you stopped apologising for, take 11?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-e4bca802
   text: "What have you stopped apologising for, take 12?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-dd88155b
   text: "What have you stopped apologising for, take 13?"
-  decks: [close]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-944d6798
   text: "What have you stopped apologising for, take 14?"
-  decks: [close]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-102871da
   text: "Which family story gets retold every year, take 1?"
-  decks: [family]
   depth: 2
   tags: [memory]
   added: "2026-09-05"
 - id: q-36b9e47b
   text: "Which family story gets retold every year, take 2?"
-  decks: [family]
   depth: 1
   tags: [memory]
   added: "2026-09-05"
 - id: q-7e12ad54
   text: "Which family story gets retold every year, take 3?"
-  decks: [family]
   depth: 2
   tags: [memory]
   added: "2026-09-05"
 - id: q-6634175f
   text: "Which family story gets retold every year, take 4?"
-  decks: [family]
   depth: 1
   tags: [memory]
   added: "2026-09-05"
 - id: q-c777f5e0
   text: "What part of your work would you keep unpaid, take 1?"
-  decks: [work]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-0bb9d314
   text: "What part of your work would you keep unpaid, take 2?"
-  decks: [work]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-12760210
   text: "What part of your work would you keep unpaid, take 3?"
-  decks: [work]
   depth: 2
   tags: [reflective]
   added: "2026-09-05"
 - id: q-adcc37ce
   text: "What part of your work would you keep unpaid, take 4?"
-  decks: [work]
   depth: 1
   tags: [reflective]
   added: "2026-09-05"
 - id: q-680ba4a6
   text: "What is the best thing within walking distance, take 1?"
-  decks: [here]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-b8ac1911
   text: "What is the best thing within walking distance, take 2?"
-  decks: [here]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-cdf25487
   text: "What is the best thing within walking distance, take 3?"
-  decks: [here]
   depth: 2
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-459ae9df
   text: "What is the best thing within walking distance, take 4?"
-  decks: [here]
   depth: 1
   tags: [icebreaker]
   added: "2026-09-05"
 - id: q-2424ea5a
   text: "Which rule would you break for a good enough reason, take 1?"
-  decks: [wild]
   depth: 2
   tags: [hypothetical]
   added: "2026-09-05"
 - id: q-dc454325
   text: "Which rule would you break for a good enough reason, take 2?"
-  decks: [wild]
   depth: 1
   tags: [hypothetical]
   added: "2026-09-05"
 - id: q-410bc2c1
   text: "Which rule would you break for a good enough reason, take 3?"
-  decks: [wild]
   depth: 2
   tags: [hypothetical]
   added: "2026-09-05"
 - id: q-c1a5dfb4
   text: "Which rule would you break for a good enough reason, take 4?"
-  decks: [wild]
   depth: 1
   tags: [hypothetical]
   added: "2026-09-05"
 - id: q-6cd8217d
   text: "What do you want more of that you rarely ask for?"
-  decks: [wild]
   depth: 2
-  tags: [spicy]
+  tags: [sexual]
   added: "2026-09-05"
 - id: q-4a23c552
   text: "What loss are you still carrying quietly?"
-  decks: [wild]
   depth: 2
   tags: [dark]
   added: "2026-09-05"
 - id: q-1ccbd0db
   text: "What would you need to forgive to feel light again?"
-  decks: [close]
   depth: 3
   tags: [reflective]
   added: "2026-09-05"
 - id: q-c9e4368b
   text: "Which version of yourself did you have to bury?"
-  decks: [wild]
   depth: 3
   tags: [reflective]
   added: "2026-09-05"

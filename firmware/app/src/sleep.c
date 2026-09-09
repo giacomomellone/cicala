@@ -261,7 +261,7 @@ static void on_activity(const struct zbus_channel *chan)
 ZBUS_LISTENER_DEFINE(cicala_sleep_obs, on_activity);
 ZBUS_CHAN_ADD_OBS(chan_render, cicala_sleep_obs, 6);
 ZBUS_CHAN_ADD_OBS(chan_next, cicala_sleep_obs, 6);
-ZBUS_CHAN_ADD_OBS(chan_category, cicala_sleep_obs, 6);
+ZBUS_CHAN_ADD_OBS(chan_filters, cicala_sleep_obs, 6);
 
 /* Let go of the pads held through the last sleep. */
 static int sleep_release_holds(void)

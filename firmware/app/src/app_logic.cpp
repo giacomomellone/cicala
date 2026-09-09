@@ -70,9 +70,6 @@ bool open_corpus(cicala::Qdb &qdb)
     return qdb.open(data, size);
 }
 
-/* Keep the no-repeat cycle across deep-sleep restarts. */
-cicala::Bag::State &bag_state = cicala_retained().bag;
-
 uint32_t random_u32(void *ctx)
 {
     ARG_UNUSED(ctx);
@@ -100,161 +97,150 @@ class Io : public cicala::AppIo
 {
 public:
     cicala::Qdb qdb;
-    cicala::Bag bag{bag_state, random_u32, nullptr};
 
-    bool draw(uint8_t deck) override
+    bool bind()
     {
-        // Check power before draw() mutates retained bag state.
-        if (!refresh_allowed()) {
+        char language[4] = {};
+        memcpy(language, qdb.language(), MIN(qdb.language_len(), sizeof(language) - 1));
+        const int index = cicala_corpus_find(language);
+        _slot = index >= 0 && index < 3 ? index : 0;
+        cicala::Bag bag(cicala_retained().bags[_slot], random_u32, nullptr);
+        const bool kept = bag.bind(qdb);
+        cicala_retained_seal();
+        return kept;
+    }
+
+    bool draw() override
+    {
+        if (!begin())
             return false;
+        if (_play.menu) {
+            if (_play.cursor < 3) {
+                _play.draft ^= 1u << _play.cursor;
+                return publish(CICALA_CARD_FILTERS);
+            }
+            _play.permissions = _play.draft;
+            _play.menu = false;
+            if (_play.len && !(_play.restrictions & ~_play.permissions)) {
+                return publish(CICALA_CARD_QUESTION);
+            }
         }
-
         uint16_t index = 0;
-        cicala::Question question;
-
+        cicala::Question question = {};
+        cicala::Bag bag(_bag, random_u32, nullptr);
 #ifdef CONFIG_CICALA_DEBUG_CHARSET
-        const char *const page = debug_pages[_page];
-
+        const char *page = debug_pages[_page];
         _page = (_page + 1) % ARRAY_SIZE(debug_pages);
-
         question.text = page;
-        question.len = static_cast<uint16_t>(strlen(page));
-
-        LOG_INF("charset page %u/%u: %s", _page, (unsigned int) ARRAY_SIZE(debug_pages), page);
+        question.len = strlen(page);
 #else
-        if (!bag.draw(qdb, deck, CONFIG_CICALA_PLAYBACK_DEPTH_MAX, index, question)) {
-            LOG_WRN("deck %u (%s) yielded nothing", deck, cicala_deck_name(deck));
-            return false;
+        if (!bag.draw(qdb, _play.permissions, index, question)) {
+            _play.len = 0;
+            _play.restrictions = 0;
+            return publish(CICALA_CARD_EMPTY);
         }
 #endif
-
-        struct cicala_question_msg msg = {};
-
-        msg.seq = ++_seq;
-        msg.deck = deck;
-        msg.len = question.len;
-
-        if (msg.len > sizeof(msg.text)) {
-            // Keep an invalid stored bundle from reaching the panel.
-            LOG_ERR("question %u is %u bytes", index, question.len);
+        if (question.len > sizeof(_play.text))
             return false;
-        }
-
-        for (uint16_t i = 0; i < msg.len; i++) {
-            msg.text[i] = question.text[i];
-        }
-
-        LOG_INF("deck %u %s: %.*s", deck, cicala_deck_name(deck), (int) msg.len, msg.text);
-
-        _last_deck = deck;
-        _last_was_question = true;
-
-        return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+        _play.len = question.len;
+        memcpy(_play.text, question.text, question.len);
+        _play.restrictions = (question.dark ? cicala::kAllowDark : 0) |
+                             (question.sexual ? cicala::kAllowSexual : 0) |
+                             (question.depth == 3 ? cicala::kAllowHeavy : 0);
+        return publish(CICALA_CARD_QUESTION);
     }
 
-    bool show_category(uint8_t deck) override
+    bool show_filters() override
     {
-        // Allocate a sequence number only for a queued card.
-        if (!refresh_allowed()) {
+        if (!begin())
             return false;
+        if (_play.menu)
+            _play.cursor = (_play.cursor + 1) % 4;
+        else {
+            _play.menu = true;
+            _play.cursor = 0;
+            _play.draft = _play.permissions;
         }
-
-        const char *label = cicala_deck_label(deck);
-
-        struct cicala_question_msg msg = {};
-
-        msg.seq = ++_seq;
-        msg.deck = deck;
-        msg.kind = CICALA_CARD_CATEGORY;
-
-        while (msg.len < sizeof(msg.text) && label[msg.len] != '\0') {
-            msg.text[msg.len] = label[msg.len];
-            msg.len++;
-        }
-
-        LOG_INF("deck %u %s: showing the name", deck, cicala_deck_name(deck));
-
-        _last_deck = deck;
-        _last_was_question = false;
-
-        return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+        return publish(CICALA_CARD_FILTERS);
     }
 
-    bool retained_matches(uint8_t deck) const override
+    bool retained_matches() const override
     {
-        const cicala::Retained &block = cicala_retained();
-
-        return cicala_retained_survived() && block.showing_question && block.deck == deck;
+        const auto &block = cicala_retained();
+        return cicala_retained_survived() && block.seq && block.play.kind != CICALA_CARD_SERVICE;
     }
 
     bool show_service() override
     {
-        if (!refresh_allowed()) {
+        if (!begin())
             return false;
-        }
-
-        struct cicala_question_msg msg = {};
-
-        msg.seq = ++_seq;
-        msg.deck = _last_deck;
-        msg.kind = CICALA_CARD_SERVICE;
-        msg.len = _service_len;
-
-        for (uint16_t i = 0; i < _service_len; i++) {
-            msg.text[i] = _service_text[i];
-        }
-
-        LOG_INF("service card: %.*s", (int) msg.len, msg.text);
-
-        // Service cards never satisfy retained_matches().
-        _last_was_question = false;
-
-        return zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+        _play.menu = false;
+        return publish(CICALA_CARD_SERVICE);
     }
 
-    /* Hold the portal's text until the machine reaches SERVICE. */
     void set_service(const char *text, uint16_t len)
     {
-        _service_len = len > sizeof(_service_text) ? sizeof(_service_text) : len;
-
-        for (uint16_t i = 0; i < _service_len; i++) {
-            _service_text[i] = text[i];
-        }
+        _service_len = MIN(len, sizeof(_service_text));
+        memcpy(_service_text, text, _service_len);
     }
 
     uint32_t last_seq() const { return _seq; }
-
     void adopt_seq(uint32_t seq) { _seq = seq; }
 
-    void remember()
+    void complete(bool ok) override
     {
-        cicala::Retained &block = cicala_retained();
-
-        block.deck = _last_deck;
-        block.showing_question = _last_was_question;
-        block.seq = _seq;
-
-        cicala_retained_seal();
+        if (ok && _pending) {
+            auto &block = cicala_retained();
+            // A sync during refresh must not revive indices into the old corpus.
+            if (block.bags[_pending_slot].fingerprint == _bag.fingerprint) {
+                block.bags[_pending_slot] = _bag;
+            }
+            block.play = _play;
+            block.seq = _seq;
+            cicala_retained_seal();
+        }
+        _pending = false;
     }
 
 private:
-    bool refresh_allowed()
+    bool begin()
     {
-        if (cicala_power_refresh_allowed()) {
-            return true;
+        _pending = false;
+        if (!cicala_power_refresh_allowed()) {
+            cicala_status_note_refresh_blocked();
+            return false;
         }
+        _play = cicala_retained().play;
+        _bag = cicala_retained().bags[_slot];
+        _pending_slot = _slot;
+        return true;
+    }
 
-        LOG_WRN("%u mV is under the %d mV floor; the panel keeps what it has",
-                cicala_power_millivolts(), CONFIG_CICALA_REFRESH_MIN_MV);
-
-        cicala_status_note_refresh_blocked();
-
-        return false;
+    bool publish(uint8_t kind)
+    {
+        struct cicala_question_msg msg = {};
+        msg.seq = ++_seq;
+        msg.kind = kind;
+        msg.permissions = kind == CICALA_CARD_FILTERS ? _play.draft : _play.permissions;
+        msg.cursor = _play.cursor;
+        if (kind == CICALA_CARD_QUESTION) {
+            msg.len = _play.len;
+            memcpy(msg.text, _play.text, msg.len);
+        } else if (kind == CICALA_CARD_SERVICE) {
+            msg.len = _service_len;
+            memcpy(msg.text, _service_text, msg.len);
+        }
+        _play.kind = kind;
+        _pending = zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
+        return _pending;
     }
 
     uint32_t _seq = 0;
-    uint8_t _last_deck = 0;
-    bool _last_was_question = false;
+    uint8_t _slot = 0;
+    uint8_t _pending_slot = 0;
+    bool _pending = false;
+    cicala::PlayState _play = {};
+    cicala::Bag::State _bag = {};
     char _service_text[CONFIG_CICALA_MAX_QUESTION_BYTES] = {};
     uint16_t _service_len = 0;
 #ifdef CONFIG_CICALA_DEBUG_CHARSET
@@ -274,12 +260,12 @@ int cicala_app_init(void)
 #endif
 
     if (!open_corpus(io.qdb)) {
-        LOG_ERR("the embedded corpus is not a valid QDB3 bundle");
+        LOG_ERR("the embedded corpus is not a valid QDB4 bundle");
         return -EINVAL;
     }
 
     /* bind() resets bag state when the corpus fingerprint changes. */
-    const bool kept = io.bag.bind(io.qdb);
+    const bool kept = io.bind();
 
     if (cicala_retained_survived()) {
         io.adopt_seq(cicala_retained().seq);
@@ -295,38 +281,18 @@ int cicala_app_init(void)
     const enum cicala_wake_source woke_by = cicala_wake_button();
 
     if (woke_by == CICALA_WAKE_CATEGORY) {
-        cicala::Retained &block = cicala_retained();
-
-        block.active_deck = cicala_deck_cycle_next(block.active_deck);
-        cicala_retained_seal();
-
-        LOG_INF("woken by Category");
+        fsm.post_filters();
     } else if (woke_by == CICALA_WAKE_NEXT) {
-        LOG_INF("woken by Next");
-
         fsm.post_next();
     }
-
-    const uint8_t stored_deck = cicala_retained().active_deck;
-    const uint8_t deck = cicala_deck_on_device(stored_deck) ? stored_deck : 0;
-
-    LOG_INF("active deck: %u %s", deck, cicala_deck_name(deck));
-
-    fsm.post_selector(deck, true);
+    fsm.post_ready();
 
     return 0;
 }
 
-void cicala_app_post_category(void)
+void cicala_app_post_filters(void)
 {
-    cicala::Retained &block = cicala_retained();
-
-    block.active_deck = cicala_deck_cycle_next(block.active_deck);
-    cicala_retained_seal();
-
-    LOG_INF("category: deck %u %s", block.active_deck, cicala_deck_name(block.active_deck));
-
-    fsm.post_selector(block.active_deck, true);
+    fsm.post_filters();
 }
 
 void cicala_app_post_next(void)
@@ -364,7 +330,7 @@ void cicala_app_reload_corpus(void)
     }
 
     /* A language change resets bag state through the corpus fingerprint. */
-    (void) io.bag.bind(io.qdb);
+    (void) io.bind();
 
     LOG_INF("corpus is now %s, %u questions", cicala_language(), io.qdb.count());
 }
@@ -380,11 +346,6 @@ void cicala_app_post_render(bool ok, uint32_t seq)
     if (seq != io.last_seq()) {
         LOG_WRN("late render for seq %u, waiting on %u — discarded", seq, io.last_seq());
         return;
-    }
-
-    if (ok) {
-        // Seal after the render updates both card and refresh state.
-        io.remember();
     }
 
     fsm.post_render(ok);

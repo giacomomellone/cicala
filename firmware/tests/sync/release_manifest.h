@@ -4,7 +4,7 @@
 
 static const char kReleaseManifest[] =
     "{\n"
-    "  \"schema\": 3,\n"
+    "  \"schema\": 4,\n"
     "  \"version\": \"2026.08.1\",\n"
     "  \"min_fw\": \"0.1.0\",\n"
     "  \"languages\": {\n"

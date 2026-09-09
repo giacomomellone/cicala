@@ -15,6 +15,10 @@ int cicala_panel_init(void);
 /** Draw `text`; return 0 or a negative errno after the panel finishes. */
 int cicala_panel_render(const char *text, uint16_t len);
 
+struct cicala_question_msg;
+/** Render a question with its permissions, a Filters menu, or a service card. */
+int cicala_panel_render_card(const struct cicala_question_msg *card);
+
 /** Partial refreshes since the last full one. */
 uint16_t cicala_panel_partial_count(void);
 

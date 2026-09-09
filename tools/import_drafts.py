@@ -2,9 +2,9 @@
 """Append plain-text question drafts to one language corpus.
 
 A draft file states editorial metadata once per group and lists the questions
-under it, so a deck costs one header instead of four YAML lines per question:
+under it, so a group needs one metadata header:
 
-    # decks: new_people, close · depth: 1 · tags: icebreaker
+    # depth: 1 · tags: icebreaker
     What's the most spontaneous thing you've ever done?
     Which song gets you on the dance floor every single time?
 
@@ -32,10 +32,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import validate  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
-KNOWN_FIELDS = ("decks", "depth", "tags", "author")
-LIST_FIELDS = ("decks", "tags")
+KNOWN_FIELDS = ("depth", "tags", "author")
+LIST_FIELDS = ("tags",)
 FIELD_SEPARATOR = re.compile(r"\s*[·|]\s*")
-HEADER_RE = re.compile(rf"({'|'.join(KNOWN_FIELDS)})\s*:", re.IGNORECASE)
+HEADER_RE = re.compile(rf"({'|'.join((*KNOWN_FIELDS, 'decks'))})\s*:", re.IGNORECASE)
 
 
 @dataclass
@@ -69,14 +69,9 @@ def parse_header(body: str, cfg: dict, where: str, errors: list[str]) -> dict:
         else:
             values[key] = raw
 
-    unknown = [deck for deck in values.get("decks", []) if deck not in cfg["decks"]]
-    if unknown:
-        errors.append(f"{where}: unknown deck(s) {', '.join(unknown)}; pick from {cfg['decks']}")
     unknown = [tag for tag in values.get("tags", []) if tag not in cfg["tags"]]
     if unknown:
         errors.append(f"{where}: unknown tag(s) {', '.join(unknown)}; pick from {cfg['tags']}")
-    if not values.get("decks"):
-        errors.append(f"{where}: the header needs at least one deck")
     if "depth" not in values:
         errors.append(f"{where}: the header needs a depth")
     return values
@@ -107,7 +102,7 @@ def parse_draft(path: Path, lang: str, cfg: dict, errors: list[str]) -> list[Dra
                     metadata = parse_header(body, cfg, where, errors)
             continue
         if metadata is None:
-            errors.append(f"{where}: no '# decks: … · depth: …' header before this question")
+            errors.append(f"{where}: no '# depth: …' header before this question")
             continue
         if not pending:
             opened = number
@@ -126,7 +121,6 @@ def parse_draft(path: Path, lang: str, cfg: dict, errors: list[str]) -> list[Dra
 def to_entry(draft: Draft) -> dict:
     entry = {
         "text": draft.text,
-        "decks": list(draft.metadata["decks"]),
         "depth": draft.metadata["depth"],
     }
     if draft.metadata.get("tags"):
@@ -164,7 +158,6 @@ def check_drafts(
             )
         validate.check_text_rules(draft.text, lang, cfg, draft.source, draft.line, rep)
         validate.check_denylist(draft.text, terms, draft.source, draft.line, rep)
-        validate.check_deck_rules(entry, draft.source, draft.line, rep)
     errors.extend(rep.errors)
 
 

@@ -1,6 +1,6 @@
 // Favorites and shared decks; shared IDs stay in the URL fragment.
 
-import { DECKS, MAX_SHARED_DECK } from "../config";
+import { MAX_SHARED_DECK } from "../config";
 import { tr } from "./apply-i18n";
 import { detectLang, findQuestion, loadIndex, loadPayload } from "./data";
 import { bindHearts, rowHtml, type RowItem } from "./rows";
@@ -71,7 +71,6 @@ export async function initDeck(): Promise<void> {
   const importFile = document.getElementById("d-file") as HTMLInputElement;
   const saveAllBtn = document.getElementById("d-saveall") as HTMLButtonElement;
   const ownActions = document.getElementById("d-own-actions")!;
-  const chips = Array.from(document.querySelectorAll<HTMLButtonElement>("#deck-chips .chip"));
 
   const lang = detectLang();
   const sharedIds = parseSharedIds();
@@ -85,10 +84,9 @@ export async function initDeck(): Promise<void> {
   }
 
   let items: DeckItem[] = await resolve(ids, lang);
-  let deck = "all";
 
   function render(): void {
-    const visible = deck === "all" ? items : items.filter((i) => i.q.decks.includes(deck));
+    const visible = items;
     rowsEl!.innerHTML = visible.map((i) => rowHtml(i, lang)).join("");
     countEl.textContent = `${visible.length} ${tr(lang, "deck.count")}`;
     const empty = items.length === 0;
@@ -100,25 +98,8 @@ export async function initDeck(): Promise<void> {
     }
   }
 
-  const setActiveChip = () => {
-    for (const chip of chips) chip.setAttribute("aria-checked", String(chip.dataset.deck === deck));
-  };
-
-  setActiveChip();
   render();
   if (!shared) bindHearts(rowsEl); // shared view is read-only
-
-  for (const chip of chips)
-    chip.addEventListener("click", () => {
-      deck =
-        chip.dataset.deck &&
-        chip.dataset.deck !== "all" &&
-        (DECKS as readonly string[]).includes(chip.dataset.deck)
-          ? chip.dataset.deck
-          : "all";
-      setActiveChip();
-      render();
-    });
 
   let statusTimer: ReturnType<typeof setTimeout> | undefined;
   function flash(msg: string): void {
