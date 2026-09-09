@@ -988,3 +988,16 @@ and phone accept a tap on Dark, Sexual, or Heavy to select and toggle that row,
 and a tap on Done to apply the draft. Filters and Next keep their existing
 actions, so both input methods can be used in the same menu. The physical
 device continues to use its two buttons.
+
+## 2026-09-09 — Filled wings and a round, open head
+
+The owner selected Filled wings with Round arch for the identity, including
+the PCB silkscreen. It keeps Quiet opening's wing contours and central gap,
+fills both wings, and rounds the lower left corner of a heavier open head.
+The live Literata wordmark and monochrome palette remain the same.
+
+The public SVG is the canonical source for the website, PNG lockups, favicons,
+avatar, social image and PCB artwork. The PCB converter carries each path's
+fill and stroke weight into native silkscreen geometry. The underside mark
+keeps its existing placement and size. See [Brand](brand.md) for usage and
+regeneration instructions.

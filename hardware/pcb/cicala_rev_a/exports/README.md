@@ -1,10 +1,17 @@
 # Generated Rev A outputs
 
-`cicala_rev_a_prototype_2026-09-08.zip` is the dated review snapshot containing
-the manufacturing files, current public source files (including firmware),
-enclosure sources/prints, instructions and checksums. Git metadata and downloaded
-dependencies are excluded. Unpack it first; upload its inner `cicala_rev_a_gerbers.zip`
-to the PCB service. The dated snapshot must be replaced after a design change.
+The current fabrication files use **Filled wings with Round arch**, selected
+on 2026-09-09. The [logo update record](review/logo_2026_09_09/verification.json)
+fingerprints the artwork and regenerated exports, records the checks rerun,
+and confirms that all PCB items outside the cicada group are unchanged.
+
+`cicala_rev_a_prototype_2026-09-08.zip` is a historical source/review snapshot.
+It retains the earlier logo and predates subsequent firmware, case-label and
+schematic-symbol changes. Its inner Gerber ZIP is superseded by the current
+`cicala_rev_a_gerbers.zip` beside it. The dated full-product evidence in
+`review/verification.json` and `review/source_sha256.json` belongs to that
+historical snapshot. A new complete snapshot requires a full review of the
+intervening changes; the logo update does not requalify them.
 
 Run `bash hardware/pcb/export_fab.sh` from the repository root after design
 changes. `cicala_rev_a_gerbers.zip` is the fabrication upload; the separate
@@ -21,11 +28,11 @@ physical acceptance tests still required on engineering prototypes.
 The complete build/flash guide is [Rev A firmware](../../../../docs/firmware_rev_a.md).
 `review/usb_audit.json` measures actual board routes; `review/contract.json`
 compares PCB/case datums and compiled application/MCUboot settings.
-`review/source_sha256.json` records the snapshot's file integrity. It does not
-stand in for running the checks. After a verified source revision and updated
+`review/source_sha256.json` records the historical snapshot's file integrity.
+It does not stand in for running the checks. After a verified source revision and updated
 `review/verification.json`, regenerate/check the archive from the repo root:
 
 ```sh
-python3 hardware/pcb/tools/package_prototype.py 2026-09-08
-python3 hardware/pcb/tools/package_prototype.py 2026-09-08 --check
+python3 hardware/pcb/tools/package_prototype.py YYYY-MM-DD
+python3 hardware/pcb/tools/package_prototype.py YYYY-MM-DD --check
 ```

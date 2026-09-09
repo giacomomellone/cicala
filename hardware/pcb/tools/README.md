@@ -14,7 +14,8 @@ both assembly drawings. `jlc_assembly.py` expands KiCad reference ranges,
 converts the headers and requires identical fitted-reference coverage in the
 BOM and CPL. It preserves explicit top/bottom placement and the common origin.
 
-Run tool regressions with Python that has NumPy and Shapely 2:
+Run tool regressions with the dependencies in `requirements.txt` (NumPy,
+Shapely 2 and fontTools):
 
 ```sh
 python3 -m unittest discover -s hardware/pcb/tools -p 'test_*.py'
@@ -46,7 +47,7 @@ are optional analysis dependencies; install them in a separate environment.
 | `check_assembly_bom.py` | Reject blank, unresolved or multiple MPNs |
 | `make_component_models.py` | CadQuery → six original STEP envelopes; drawings in `../cicala_rev_a/models/README.md` |
 | `apply_silkscreen.py` | Native cicada/wordmark/service legends and fab references; `--mark-only` preserves existing legends |
-| `make_cicada.py` | Public SVG → committed native stroke geometry for the cicada silkscreen |
+| `make_cicada.py` | Public SVG → committed filled wing polygons and native stroke geometry for the cicada silkscreen |
 
 The fabrication audit accounts for Excellon's 1 µm coordinate rounding.
 It also opens the compressed IPC-2581 exchange and checks its XML document;
@@ -96,6 +97,6 @@ DRC warning merely because the router finished.
 
 `unique_ids.py` assigns deterministic unique IDs to cloned footprint items;
 `apply_tracks.py` emits stable IDs for copper. Appearance uses native polygon
-artwork from `assets/cicala-wordmark.json` and stroke geometry from
+artwork from `assets/cicala-wordmark.json` and mixed fill/stroke geometry from
 `assets/cicala-mark.json`; their sources and regeneration are documented in
 `assets/README.md`.

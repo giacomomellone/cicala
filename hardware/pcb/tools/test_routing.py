@@ -164,7 +164,7 @@ class ArtifactTests(unittest.TestCase):
         first = copy.deepcopy(node)
         apply_mark(node)
         self.assertEqual(node, first)
-        for tag in ('gr_curve', 'gr_line'):
+        for tag in ('gr_curve', 'gr_line', 'gr_poly'):
             for shape in ksexp.children(node, tag):
                 self.assertEqual(str(ksexp.child(shape, 'layer')[1]), 'B.SilkS')
 
@@ -173,7 +173,22 @@ class ArtifactTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[3]
         art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
         self.assertEqual(art['source_sha256'], hashlib.sha256((root / art['source']).read_bytes()).hexdigest())
-        self.assertGreaterEqual(art['stroke_mm'], 0.15)
+        self.assertTrue(art['polygons'])
+        self.assertTrue(all(segment['stroke_mm'] >= 0.15 for segment in art['segments']))
+
+    def test_cicada_fills_are_solid_and_mirrored_for_the_underside(self):
+        art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
+        node = ksexp.parse('(kicad_pcb)')
+        apply_mark(node)
+        polygons = ksexp.children(node, 'gr_poly')
+        self.assertEqual(len(polygons), len(art['polygons']))
+        for shape, source in zip(polygons, art['polygons']):
+            self.assertEqual(str(ksexp.child(shape, 'fill')[1]), 'solid')
+            self.assertEqual(float(ksexp.child(ksexp.child(shape, 'stroke'), 'width')[1]), 0)
+            actual = ksexp.children(ksexp.child(shape, 'pts'), 'xy')
+            for point, (x, y) in zip(actual, source):
+                self.assertAlmostEqual(float(point[1]), 61 - x, places=6)
+                self.assertAlmostEqual(float(point[2]), 8.5 + y, places=6)
 
     def test_wordmark_counters_keep_their_area(self):
         from shapely.geometry import Polygon

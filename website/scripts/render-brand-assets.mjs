@@ -41,11 +41,10 @@ async function render(path, width, height, body, transparent = false) {
   await context.close();
 }
 
-const mark = (colour, size, small = false) =>
+const mark = (colour, size) =>
   cicada
     .replace("<svg ", `<svg style="width:${size}px;height:${size}px;flex:none" `)
-    .replaceAll("currentColor", colour)
-    .replace('stroke-width="7"', `stroke-width="${small ? 9.75 : 7}"`);
+    .replaceAll("currentColor", colour);
 
 async function renderMark(path, size) {
   const artworkSize = size <= 32 ? size : Math.round(size * 0.82);
@@ -54,7 +53,7 @@ async function renderMark(path, size) {
     size,
     size,
     `<main style="height:100%;display:flex;align-items:center;justify-content:center;background:${paper}">
-      ${mark(ink, artworkSize, size === 16)}
+      ${mark(ink, artworkSize)}
     </main>`,
   );
 }
