@@ -1,12 +1,17 @@
 # Silkscreen artwork
 
 `cicala-mark.json` is derived from the public
-`website/public/brand/cicala-mark.svg`. It stores the SVG's SHA256, filled wing
-polygons, and native cubic curves and lines, centred in an 8 mm square. Wing
-contours use a 0.359 mm stroke and the round, open head uses 0.513 mm. The wing
-fills are flattened within 0.002 mm; native curves preserve their stroked edges.
+`website/public/brand/cicala-mark.svg`. It stores the SVG's SHA256 and native
+cubic curves and lines, centred in an 8 mm square. The selected mark is stroked
+throughout: open wings and the round, open head all use 0.513 mm. The converter
+still emits filled polygons for any filled path, and flattens their curves
+within 0.002 mm; the current artwork has none.
 `apply_silkscreen.py` mirrors it onto `B.SilkS` at (61, 8.5) mm beside the
 wordmark. The group is named `Cicala cicada mark` in KiCad.
+
+The stroked mark is about 8.05 mm across because half of the outer stroke falls
+outside the nominal 8 mm square. Keep that in mind when judging clearance to
+the wordmark and the board edge; DRC checks the result.
 
 Regenerate with fontTools installed, then apply just the mark to preserve
 existing labels, reference positions and all electrical geometry:

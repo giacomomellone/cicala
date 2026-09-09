@@ -173,20 +173,34 @@ class ArtifactTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[3]
         art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
         self.assertEqual(art['source_sha256'], hashlib.sha256((root / art['source']).read_bytes()).hexdigest())
-        self.assertTrue(art['polygons'])
-        self.assertTrue(all(segment['stroke_mm'] >= 0.15 for segment in art['segments']))
+        self.assertTrue(art['segments'])
+        strokes = {segment['stroke_mm'] for segment in art['segments']}
+        # The selected mark draws wings and head at one weight, above the
+        # 0.15 mm silkscreen minimum the fabricator accepts.
+        self.assertEqual(len(strokes), 1)
+        self.assertGreaterEqual(min(strokes), 0.15)
 
-    def test_cicada_fills_are_solid_and_mirrored_for_the_underside(self):
+    def test_cicada_geometry_is_mirrored_for_the_underside(self):
         art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
         node = ksexp.parse('(kicad_pcb)')
         apply_mark(node)
-        polygons = ksexp.children(node, 'gr_poly')
-        self.assertEqual(len(polygons), len(art['polygons']))
-        for shape, source in zip(polygons, art['polygons']):
+        self.assertEqual(len(ksexp.children(node, 'gr_poly')), len(art['polygons']))
+        for shape, source in zip(ksexp.children(node, 'gr_poly'), art['polygons']):
             self.assertEqual(str(ksexp.child(shape, 'fill')[1]), 'solid')
             self.assertEqual(float(ksexp.child(ksexp.child(shape, 'stroke'), 'width')[1]), 0)
             actual = ksexp.children(ksexp.child(shape, 'pts'), 'xy')
             for point, (x, y) in zip(actual, source):
+                self.assertAlmostEqual(float(point[1]), 61 - x, places=6)
+                self.assertAlmostEqual(float(point[2]), 8.5 + y, places=6)
+        strokes = [item for item in node if isinstance(item, list)
+                   and str(item[0]) in ('gr_line', 'gr_curve')]
+        self.assertEqual(len(strokes), len(art['segments']))
+        for shape, segment in zip(strokes, art['segments']):
+            self.assertAlmostEqual(float(ksexp.child(ksexp.child(shape, 'stroke'), 'width')[1]),
+                                   segment['stroke_mm'], places=6)
+            actual = (ksexp.children(ksexp.child(shape, 'pts'), 'xy') if str(shape[0]) == 'gr_curve'
+                      else [ksexp.child(shape, 'start'), ksexp.child(shape, 'end')])
+            for point, (x, y) in zip(actual, segment['points']):
                 self.assertAlmostEqual(float(point[1]), 61 - x, places=6)
                 self.assertAlmostEqual(float(point[2]), 8.5 + y, places=6)
 

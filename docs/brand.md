@@ -6,11 +6,12 @@ easier, invite reflection, and break silence without becoming the conversation.
 
 ## Mark, wordmark and type
 
-The identity pairs the lowercase `cicala` wordmark with a minimal cicada.
-The selected mark, Filled wings with Round arch, has two solid tapered wings
-and a rounded, open head that suggests speech. It refines Quiet opening with
-more weight and a curved lower left corner in the head. The gap between the
-wings suggests the body.
+The identity pairs the lowercase `cicala` wordmark with a minimal outline
+cicada. The selected mark, Matched 10 with a wider body, draws two tapered
+wings and a rounded, open head that suggests speech. Wings and head share one
+10-unit stroke, so no line in the mark is heavier than another. The wings sit
+2.5 units further from the centre line than the wing geometry itself, which
+keeps the gap that suggests the body open at small sizes.
 The cicada alone represents the identity in square formats.
 
 The wordmark is Literata at normal weight with optical kerning and restrained
@@ -76,8 +77,8 @@ The website inlines it beside the live Literata wordmark. The source uses
 
 Regenerate the PNGs with `npm run brand-assets` in `website/`. Square assets
 use the cicada, and the social preview uses the cicada and wordmark together.
-Every size, including the 16 px favicon, retains the master paths, filled wings,
-and head weight. Transparent wordmark-only PNGs remain available alongside
+Every size, including the 16 px favicon, retains the master paths and the
+single stroke weight. Transparent wordmark-only PNGs remain available alongside
 the complete logo lockups.
 
 - [canonical SVG mark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-mark.svg)
@@ -103,9 +104,9 @@ font or image requests. If a physical mark is useful later, use only an
 optional small blind emboss on the underside or a concealed lower edge.
 
 The PCB carries the cicada beside the existing underside wordmark on
-`B.SilkS`, mirrored for reading from below. Its 8 mm square artwork uses filled
-wing polygons with 0.359 mm contours and a 0.513 mm head stroke. Native KiCad
-curves and lines preserve the SVG edges; wing fills are flattened within 0.002 mm.
+`B.SilkS`, mirrored for reading from below. Its 8 mm square artwork is stroked
+throughout at 0.513 mm, well above the 0.15 mm silkscreen minimum. Native KiCad
+curves and lines preserve the SVG geometry.
 Regeneration and the mark-only update command are documented in
 `hardware/pcb/tools/assets/README.md`.
 

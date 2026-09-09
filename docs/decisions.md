@@ -1001,3 +1001,23 @@ avatar, social image and PCB artwork. The PCB converter carries each path's
 fill and stroke weight into native silkscreen geometry. The underside mark
 keeps its existing placement and size. See [Brand](brand.md) for usage and
 regeneration instructions.
+
+## 2026-09-10 — Open wings at the head's line weight
+
+The owner asked for the wings to stop being solid and to carry the same line
+thickness as the head, and selected the variant that also widens the body gap.
+Both wings are now outlines at the head's 10-unit stroke, and each sits 2.5
+units further from the centre line than before, so the gap between them holds
+about 15 units of paper instead of 10. The head geometry, the live Literata
+wordmark and the monochrome palette are unchanged.
+
+Two costs were weighed. At one shared weight the head's arch and both wing
+edges meet at the top of the mark, and the body gap narrows enough to fall
+below a pixel in a 16 px render. The wider spread answers the second; masking
+the wings behind the head would answer the first, and was not selected because
+it cannot be expressed as silkscreen strokes without a boolean subtraction in
+`make_cicada.py`.
+
+The mark now has no filled geometry. The PCB converter keeps its fill support,
+and the silkscreen is a single 0.513 mm stroke throughout. See
+[Brand](brand.md) for usage and regeneration instructions.
