@@ -114,8 +114,14 @@ through text and depth edits.
 
 To edit an existing question, change its text or editorial metadata in a normal
 pull request and keep its `id` and `added` values. Only a person may make that
-edit. Once it merges, the Google Cloud Translation workflow refreshes any opted-in machine
-translations in review pull requests; it does not overwrite a human adaptation.
+edit. Once it merges, CI refreshes the other linked translations in review pull
+requests, including translations previously written by people. An edit to a
+translation never rewrites its human-written original. Keep `origin`,
+`translated_by`, and `translation_sync` intact: the latter records generated
+updates so their merges do not trigger another translation round. A fluent
+maintainer reviews each update before merge. If one push edits multiple versions
+of the same question, select the intended source using the workflow's manual
+run inputs; see [Languages](docs/languages.md#machine-translation-reviewed-synchronization).
 
 ## Website development
 

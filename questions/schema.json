@@ -16,6 +16,9 @@
     "dependentRequired": {
       "translated_by": [
         "origin"
+      ],
+      "translation_sync": [
+        "origin"
       ]
     },
     "properties": {
@@ -59,10 +62,34 @@
         "pattern": "^q-[0-9a-f]{8}$"
       },
       "translated_by": {
-        "description": "Machine-translation provenance. `google` marks a Google Cloud Translation draft or a reviewed descendant of one; it requires `origin` and is never a source for another machine translation.",
+        "description": "Machine-translation provenance. `google` marks a Google Cloud Translation draft or a reviewed descendant of one; it requires `origin`. A later human edit may seed synchronization of the linked translations.",
         "enum": [
           "google"
         ]
+      },
+      "translation_sync": {
+        "description": "CI synchronization receipt. origin retains the human-written lineage anchor; source identifies the version used for this update. Material revisions cover text, depth and tags and prevent generated updates from triggering another round.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source",
+          "source_revision",
+          "revision"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "pattern": "^q-[0-9a-f]{8}$"
+          },
+          "source_revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "revision": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        }
       },
       "author": {
         "description": "Optional free-text credit. Courtesy only, no legal claim; all questions are CC0.",
@@ -100,6 +127,7 @@
       "tags",
       "origin",
       "translated_by",
+      "translation_sync",
       "author",
       "added"
     ],
@@ -119,18 +147,30 @@
     "languages": {
       "en": {
         "name": "English",
+        "google": {
+          "source": "en",
+          "target": "en"
+        },
         "terminators": [
           "?"
         ]
       },
       "de": {
         "name": "Deutsch",
+        "google": {
+          "source": "de",
+          "target": "de"
+        },
         "terminators": [
           "?"
         ]
       },
       "it": {
         "name": "Italiano",
+        "google": {
+          "source": "it",
+          "target": "it"
+        },
         "terminators": [
           "?"
         ]

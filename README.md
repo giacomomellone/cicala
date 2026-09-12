@@ -12,20 +12,16 @@ Its three parts share one database:
 
 ## AI policy
 
-Cicala’s original questions are **Human Reserved**. Every original question is conceived, written, and submitted by a person, then reviewed by a human maintainer. Do not use generative AI to write or edit questions.
-The questions are for humans, not for machines. Since the humans will be the ones using the questions, let's keep this boundary clear.
+Cicala's questions are [**Human Reserved**](https://www.gatesnotes.com/home/home-page-topic/reader/a-turbulent-ai-era-and-critical-choices-to-make).
+Do not use generative AI to write or edit questions.
+The questions in this project are meant for humans, not for machines (unless machines start having consciousness and enjoy asking each other questions).
+For everything else in this repository, like code, documentation, tests, tooling, firmware, and hardware, use AI as much as you like.
 
-This does not mean that human writing is flawless. Questions may be imperfect or later revised by people, but their human origin matters more than synthetic polish.
-We borrow the term [Human Reserved](https://www.gatesnotes.com/home/home-page-topic/reader/a-turbulent-ai-era-and-critical-choices-to-make) for work that we willingly leave to people, even if it could be performed by machines.
+**Just make sure the questions are meant for people.**
 
-AI may translate an accepted human-written question into another supported language and may suggest editorial metadata such as tags. After an original merges, the Google Cloud Translation workflow may open or update one draft pull request for each opted-in target language. Every generated entry records its human-written `origin` and keeps `translated_by: google`, including after review. Translate from the human-written original, never from another translation.
+AI may translate an accepted human-written question into another supported language and may suggest metadata such as tags. After a new original question or a human edit in any language is merged, the Google Cloud Translation workflow opens or updates review pull requests for the other linked translations. Editing a translation never rewrites its human-written original. Every machine-translated entry retains that original's `origin` and keeps `translated_by: google`, including after review. `translation_sync` records the version used for each update and prevents generated updates from triggering another round.
 
-Machine translations do not merge automatically. A fluent maintainer must compare each draft with its original and may edit or reject it to preserve the original meaning and make it natural in the target language. Published machine translations remain labeled `translated_by: google` in the database, and the website marks them as automatically translated and human-reviewed wherever they appear, with a link to the original. A missing translation is not a defect, and languages without an active reviewer do not opt in. The full policy and workflow are in [docs/languages.md](docs/languages.md).
-
-For everything else in this repository—code, documentation, tests, tooling, firmware, and hardware. Use AI as much as you like, go wild!
-Explore, modify, and propose freely.
-
-**Just leave original question writing to humans.**
+Machine translations do not merge automatically. A maintainer compares each draft with the accepted source edit and its original, and may edit or reject it to preserve the intended meaning and make it read naturally in the target language. Published machine translations remain labeled `translated_by: google` in the database, and the website marks them as automatically translated and human-reviewed wherever they appear, with a link to the original.
 
 ### Some tips to write a good question
 

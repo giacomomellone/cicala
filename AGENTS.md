@@ -18,14 +18,7 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 ## AI policy
 
-The authoritative AI policy is in [README.md](README.md#ai-policy). Read and
-follow it before working with question text. AI must not originate, rewrite,
-expand, or propose original questions. AI translation and metadata suggestions
-are allowed only under the reviewed translation rules in the README and
-[docs/languages.md](docs/languages.md): start from an accepted human-written
-original, never another translation, record `origin` and
-`translated_by: google`, and never merge it without review from a fluent
-maintainer for the target language.
+The authoritative AI policy is in [README.md](README.md#ai-policy). Read and follow it before working with question text.
 
 ## Repository boundary
 

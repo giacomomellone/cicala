@@ -32,9 +32,15 @@ class LineLoader(yaml.SafeLoader):
     """SafeLoader that records the source line of every mapping."""
 
 
+class LineMapping(dict):
+    """Keep parser locations out of nested schema data."""
+
+    line: int
+
+
 def _construct_mapping(loader, node, deep=False):
-    mapping = yaml.SafeLoader.construct_mapping(loader, node, deep=deep)
-    mapping["__line__"] = node.start_mark.line + 1
+    mapping = LineMapping(yaml.SafeLoader.construct_mapping(loader, node, deep=deep))
+    mapping.line = node.start_mark.line + 1
     return mapping
 
 
@@ -128,6 +134,7 @@ def parse_file(path: Path, rep: Reporter):
             return None
         if isinstance(entry.get("added"), dt.date):
             entry["added"] = entry["added"].isoformat()
+        entry["__line__"] = entry.line
         entries.append(entry)
     return entries
 
@@ -198,6 +205,8 @@ def format_file(lang: str, entries: list[dict], key_order: list[str]) -> str:
                 rendered = "[" + ", ".join(value) + "]"
             elif key == "depth":
                 rendered = str(value)
+            elif key == "translation_sync":
+                rendered = json.dumps(value, sort_keys=True)
             elif key in ("id", "origin", "translated_by"):
                 rendered = str(value)
             else:
@@ -246,6 +255,7 @@ def main(argv=None) -> int:
     id_entries: dict[str, dict] = {}
     id_languages: dict[str, str] = {}
     origin_refs: list[tuple] = []
+    sync_refs: list[tuple] = []
     total = 0
 
     for lang, lang_dir, incubator in discover_languages(args.root):
@@ -334,6 +344,9 @@ def main(argv=None) -> int:
                         )
                     else:
                         seen_machine_origins[origin] = f"{rpath}:{line}"
+            sync = entry.get("translation_sync")
+            if isinstance(sync, dict) and isinstance(sync.get("source"), str):
+                sync_refs.append((rpath, line, lang, entry.get("origin"), sync["source"]))
 
         if args.fix and len(rep.errors) == file_error_count:
             formatted = format_file(lang, entries, key_order)
@@ -356,6 +369,15 @@ def main(argv=None) -> int:
                 line,
                 f"machine translation source {origin} is not a human-written original",
             )
+
+    for rpath, line, language, origin, source_id in sync_refs:
+        source = id_entries.get(source_id)
+        if source is None:
+            rep.error(rpath, line, f"translation_sync source {source_id} is missing")
+        elif id_languages[source_id] == language:
+            rep.error(rpath, line, "translation_sync source must refer to another language")
+        elif (source.get("origin") or source_id) != origin:
+            rep.error(rpath, line, "translation_sync source must belong to the same origin")
 
     for warning in rep.warnings:
         print(warning, file=sys.stderr)
