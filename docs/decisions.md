@@ -1021,3 +1021,24 @@ it cannot be expressed as silkscreen strokes without a boolean subtraction in
 The mark now has no filled geometry. The PCB converter keeps its fill support,
 and the silkscreen is a single 0.513 mm stroke throughout. See
 [Brand](brand.md) for usage and regeneration instructions.
+
+## 2026-09-12: Accepted edits synchronize linked translations
+
+Human edits to a question in any shipped language now refresh its other linked
+translations through the Google Cloud workflow. This includes human translations
+with an `origin` link. Editing a translation never rewrites the human-written
+original. English, German and Italian participate through their Google language
+codes; their existing CODEOWNERS remain responsible for review.
+
+`origin` stays a link to the human-written original. A `translation_sync`
+receipt records the actual source version and material revisions of the source
+and output. Generated updates whose text, depth and tags still match that
+receipt do not trigger another round when merged. Human changes to those
+fields do. Classification-only updates preserve reviewed wording and make no
+API request when a translation already exists.
+
+This supersedes the translation-source and independent-adaptation rules in the
+2026-08-31 decision. Fluent review remains required. Concurrent edits to multiple
+versions of one question require an explicit source selection through a manual
+workflow run, and multiple linked variants in a target language require
+editorial resolution. These cases fail instead of silently selecting wording.

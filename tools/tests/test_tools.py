@@ -287,7 +287,7 @@ class TestTranslationPlanning(unittest.TestCase):
         entry.update(extra)
         return entry
 
-    def test_only_new_or_materially_edited_human_originals_are_selected(self):
+    def test_new_originals_and_human_edits_in_any_language_are_selected(self):
         original = self.question("q-11111111", "What changed your mind?")
         machine = self.question(
             "q-22222222",
@@ -306,26 +306,29 @@ class TestTranslationPlanning(unittest.TestCase):
             ]
         }
 
-        selected = translate_question.changed_originals(before, after)
+        selected = translate_question.changed_questions(before, after)
 
-        self.assertEqual([item.entry["id"] for item in selected], ["q-11111111", "q-44444444"])
+        self.assertEqual(
+            [item.entry["id"] for item in selected],
+            ["q-11111111", "q-22222222", "q-33333333", "q-44444444"],
+        )
 
     def test_author_only_edits_do_not_spend_translation_quota(self):
         original = self.question("q-11111111", "What changed your mind?", author="A")
-        selected = translate_question.changed_originals(
+        selected = translate_question.changed_questions(
             {"en": [original]}, {"en": [{**original, "author": "Ada"}]}
         )
         self.assertEqual(selected, [])
 
     def test_editorial_edit_updates_descendants_without_retranslating_text(self):
         original = self.question("q-11111111", "What changed your mind?")
-        selected = translate_question.changed_originals(
+        selected = translate_question.changed_questions(
             {"en": [original]}, {"en": [{**original, "tags": ["reflective"]}]}
         )
         self.assertEqual(len(selected), 1)
         self.assertFalse(selected[0].text_changed)
 
-    def test_plan_uses_only_opted_in_targets_and_respects_human_adaptations(self):
+    def test_plan_uses_only_opted_in_targets_including_human_translations(self):
         source = translate_question.SourceQuestion(
             "en", self.question("q-11111111", "What changed your mind?")
         )
@@ -345,7 +348,7 @@ class TestTranslationPlanning(unittest.TestCase):
         plan = translate_question.translation_plan(
             [source], {"de": [human_adaptation], "fr": []}, config
         )
-        self.assertEqual(plan, {})
+        self.assertEqual(list(plan), ["de"])
 
     def test_apply_adds_provenance_and_copies_editorial_metadata(self):
         source = translate_question.SourceQuestion(
@@ -374,6 +377,17 @@ class TestTranslationPlanning(unittest.TestCase):
                     "tags": ["reflective"],
                     "origin": "q-11111111",
                     "translated_by": "google",
+                    "translation_sync": {
+                        "source": source.entry["id"],
+                        "source_revision": translate_question.material_revision(source.entry),
+                        "revision": translate_question.material_revision(
+                            {
+                                "text": "Was hat deine Meinung geändert?",
+                                "depth": 1,
+                                "tags": ["reflective"],
+                            }
+                        ),
+                    },
                 }
             ],
         )

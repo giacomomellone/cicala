@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import subprocess
@@ -34,6 +35,18 @@ class SourceQuestion:
     language: str
     entry: dict
     text_changed: bool = True
+
+    @property
+    def origin(self) -> str:
+        return self.entry.get("origin") or self.entry["id"]
+
+
+def material_revision(entry: dict) -> str:
+    values = {field: entry.get(field) for field in MATERIAL_FIELDS}
+    values["tags"] = sorted(entry.get("tags") or [])
+    return hashlib.sha256(
+        json.dumps(values, sort_keys=True, ensure_ascii=False).encode()
+    ).hexdigest()
 
 
 def load_config(root: Path) -> dict:
@@ -70,21 +83,22 @@ def is_human_original(entry: dict) -> bool:
     return not entry.get("origin") and not entry.get("translated_by")
 
 
-def changed_originals(
+def changed_questions(
     before: dict[str, list[dict]], after: dict[str, list[dict]]
 ) -> list[SourceQuestion]:
     changed = []
     for language, current_entries in after.items():
         previous_by_id = {entry.get("id"): entry for entry in before.get(language, [])}
         for entry in current_entries:
-            if not entry.get("id") or not is_human_original(entry):
+            if not entry.get("id"):
                 continue
             previous = previous_by_id.get(entry["id"])
             if previous is None:
-                changed.append(SourceQuestion(language, entry))
-            elif is_human_original(previous) and any(
-                previous.get(field) != entry.get(field) for field in MATERIAL_FIELDS
-            ):
+                if is_human_original(entry):
+                    changed.append(SourceQuestion(language, entry))
+            elif material_revision(previous) != material_revision(entry):
+                if entry.get("translation_sync", {}).get("revision") == material_revision(entry):
+                    continue
                 changed.append(
                     SourceQuestion(
                         language,
@@ -102,23 +116,32 @@ def translation_plan(
 ) -> dict[str, list[SourceQuestion]]:
     planned: dict[str, list[SourceQuestion]] = defaultdict(list)
     languages = config.get("languages", {})
+    families: dict[str, SourceQuestion] = {}
     for source in changes:
         source_api = languages.get(source.language, {}).get("google", {}).get("source")
         if not source_api:
             continue
+        if source.origin in families:
+            other = families[source.origin]
+            raise TranslationError(
+                f"conflicting edits for {source.origin}: {other.entry['id']} ({other.language}) "
+                f"and {source.entry['id']} ({source.language}); rerun with --source-id "
+                "to choose the accepted source"
+            )
+        families[source.origin] = source
         for target_language, target_config in languages.items():
             target_api = target_config.get("google", {}).get("target")
             if target_language == source.language or not target_api:
                 continue
-            existing = [
-                entry
-                for entry in target_corpora.get(target_language, [])
-                if entry.get("origin") == source.entry["id"]
-            ]
-            if existing and not any(
-                entry.get("translated_by") == TRANSLATION_PROVIDER for entry in existing
-            ):
+            entries = target_corpora.get(target_language, [])
+            if any(entry.get("id") == source.origin for entry in entries):
                 continue
+            existing = [entry for entry in entries if entry.get("origin") == source.origin]
+            if len(existing) > 1:
+                raise TranslationError(
+                    f"multiple translations of {source.origin} in {target_language}; "
+                    "keep one linked version before synchronizing"
+                )
             planned[target_language].append(source)
     return dict(planned)
 
@@ -220,20 +243,25 @@ def apply_translations(
         raise TranslationError("translation count does not match source count")
     changed = 0
     for source, text in zip(sources, translated_texts, strict=True):
-        candidates = [
-            entry
-            for entry in target_entries
-            if entry.get("origin") == source.entry["id"]
-            and entry.get("translated_by") == TRANSLATION_PROVIDER
-        ]
+        if any(entry.get("id") == source.origin for entry in target_entries):
+            raise TranslationError(f"cannot translate over human-written original {source.origin}")
+        candidates = [entry for entry in target_entries if entry.get("origin") == source.origin]
+        if len(candidates) > 1:
+            raise TranslationError(f"multiple translations of {source.origin} in target corpus")
         values = {
             "text": text,
             "depth": source.entry["depth"],
-            "origin": source.entry["id"],
-            "translated_by": TRANSLATION_PROVIDER,
+            "origin": source.origin,
         }
+        if source.text_changed or not candidates:
+            values["translated_by"] = TRANSLATION_PROVIDER
         if source.entry.get("tags"):
             values["tags"] = list(source.entry["tags"])
+        values["translation_sync"] = {
+            "source": source.entry["id"],
+            "source_revision": material_revision(source.entry),
+            "revision": material_revision(values),
+        }
         if candidates:
             candidate = candidates[0]
             if any(candidate.get(key) != value for key, value in values.items()) or (
@@ -261,11 +289,18 @@ def corpora_for_refs(root: Path, before_ref: str, after_ref: str, config: dict):
     return before, after
 
 
-def build_plan(root: Path, before_ref: str, after_ref: str, config: dict):
+def build_plan(
+    root: Path, before_ref: str, after_ref: str, config: dict, source_id: str | None = None
+):
     if before_ref and set(before_ref) == {"0"}:
         return {}
     before, after = corpora_for_refs(root, before_ref, after_ref, config)
-    return translation_plan(changed_originals(before, after), after, config)
+    changes = changed_questions(before, after)
+    if source_id:
+        changes = [source for source in changes if source.entry["id"] == source_id]
+        if not changes:
+            raise TranslationError(f"source {source_id} has no human edit in the selected range")
+    return translation_plan(changes, after, config)
 
 
 def main(argv=None) -> int:
@@ -276,16 +311,18 @@ def main(argv=None) -> int:
     plan_parser = subparsers.add_parser("plan", help="print target languages as a JSON array")
     plan_parser.add_argument("--before-ref", required=True)
     plan_parser.add_argument("--after-ref", required=True)
+    plan_parser.add_argument("--source-id", help="resolve simultaneous edits using this question")
 
     apply_parser = subparsers.add_parser("apply", help="translate and update one target corpus")
     apply_parser.add_argument("--before-ref", required=True)
     apply_parser.add_argument("--after-ref", required=True)
     apply_parser.add_argument("--target", required=True)
+    apply_parser.add_argument("--source-id", help="resolve simultaneous edits using this question")
 
     args = parser.parse_args(argv)
     try:
         config = load_config(args.root)
-        plan = build_plan(args.root, args.before_ref, args.after_ref, config)
+        plan = build_plan(args.root, args.before_ref, args.after_ref, config, args.source_id)
         if args.command == "plan":
             print(json.dumps(sorted(plan)))
             return 0
@@ -299,20 +336,11 @@ def main(argv=None) -> int:
             args.root / "questions" / args.target / config.get("questionFile", "questions.yaml")
         )
         target_entries = load_yaml(target_path.read_text(encoding="utf-8"))
-        client = GoogleTranslateClient(
-            os.environ.get("GOOGLE_TRANSLATE_API_KEY", ""),
-            api_url=os.environ.get("GOOGLE_TRANSLATE_API_URL"),
-        )
         translated_by_index = {}
         grouped = defaultdict(list)
         for index, source in enumerate(sources):
             existing = next(
-                (
-                    entry
-                    for entry in target_entries
-                    if entry.get("origin") == source.entry["id"]
-                    and entry.get("translated_by") == TRANSLATION_PROVIDER
-                ),
+                (entry for entry in target_entries if entry.get("origin") == source.origin),
                 None,
             )
             if existing and not source.text_changed:
@@ -320,6 +348,12 @@ def main(argv=None) -> int:
                 continue
             source_code = config["languages"][source.language]["google"]["source"]
             grouped[source_code].append((index, source))
+        client = None
+        if grouped:
+            client = GoogleTranslateClient(
+                os.environ.get("GOOGLE_TRANSLATE_API_KEY", ""),
+                api_url=os.environ.get("GOOGLE_TRANSLATE_API_URL"),
+            )
         for source_code, indexed_sources in grouped.items():
             texts = [source.entry["text"] for _, source in indexed_sources]
             results = client.translate(
@@ -336,7 +370,7 @@ def main(argv=None) -> int:
         )
         print(
             f"Updated {count} Google Cloud draft(s) for {args.target}; "
-            f"characters sent: {client.characters_sent}."
+            f"characters sent: {client.characters_sent if client else 0}."
         )
         return 0
     except (OSError, ValueError, KeyError, TranslationError) as exc:
