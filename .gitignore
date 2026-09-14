@@ -73,5 +73,3 @@ signing_key*
 # FIRMWARE_SIGNING_KEY secret instead. firmware/keys/README.md says so at
 # length; do not add a second exception here.
 !firmware/keys/firmware-signing-dev.pem
-
-.myrmo/runtime/
