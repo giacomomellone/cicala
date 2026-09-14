@@ -25,6 +25,7 @@ async function mockSubmissionApi(page: Page, post?: (route: Route) => Promise<vo
 
 async function fillValid(page: Page, question = GOOD) {
   await page.locator("#s-text").fill(question);
+  await page.locator("#s-human").check();
   await page.locator("#s-cc0").check();
 }
 
@@ -35,11 +36,23 @@ test.describe("native suggestion form", () => {
   });
 
   test("asks for the question and consent, not editorial metadata", async ({ page }) => {
+    const human = page.getByRole("checkbox", {
+      name: "I wrote this question myself, without generative AI.",
+      exact: true,
+    });
+    await expect(human).not.toBeChecked();
     await expect(page.locator("#s-submit")).toBeDisabled();
     await page.locator("#s-text").fill(GOOD);
     await expect(page.locator("#s-submit")).toBeDisabled();
     await page.locator("#s-cc0").check();
+    await expect(page.locator("#s-submit")).toBeDisabled();
+    await human.check();
     await expect(page.locator("#s-submit")).toBeEnabled();
+    await human.uncheck();
+    await expect(page.locator("#s-submit")).toBeDisabled();
+    await human.check();
+    await page.locator("#s-cc0").uncheck();
+    await expect(page.locator("#s-submit")).toBeDisabled();
 
     await expect(page.locator('input[name="decks"]')).toHaveCount(0);
     await expect(page.locator('[name="depth"], [name="tags"], [name="tag"]')).toHaveCount(0);
@@ -76,10 +89,22 @@ test.describe("native suggestion form", () => {
     await expect(page.locator("#s-received")).toBeVisible();
     await expect(page.locator("#s-received-question")).toHaveText(GOOD);
     await expect(page.locator("#s-reference")).toContainText("#42");
-    expect(submitted).toMatchObject({ question: GOOD, language: "en", credit: "Ada", cc0: true });
+    expect(submitted).toMatchObject({
+      question: GOOD,
+      language: "en",
+      credit: "Ada",
+      humanWritten: true,
+      cc0: true,
+    });
     expect(submitted).not.toHaveProperty("decks");
     expect(submitted).not.toHaveProperty("depth");
     expect(submitted).not.toHaveProperty("tags");
+
+    await page.locator("#s-again").click();
+    await expect(page.locator("#s-human")).not.toBeChecked();
+    await expect(page.locator("#s-cc0")).not.toBeChecked();
+    await page.locator("#s-text").fill(GOOD);
+    await expect(page.locator("#s-submit")).toBeDisabled();
   });
 
   test("opens with an empty box that suggests nothing", async ({ page }) => {
@@ -122,6 +147,7 @@ test.describe("native suggestion form", () => {
     await expect(page.locator("#s-rule")).toHaveText(/looks good/i);
     await expect(page.locator("#s-style")).toContainText(/ranking/i);
 
+    await page.locator("#s-human").check();
     await page.locator("#s-cc0").check();
     await expect(page.locator("#s-submit")).toBeEnabled();
 

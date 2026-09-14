@@ -9,6 +9,7 @@ export interface SuggestionDraft {
   question: string;
   language: string;
   credit: string;
+  humanWritten: boolean;
   cc0: boolean;
   consentVersion: string;
   submissionId: string;
@@ -50,6 +51,8 @@ export function validateSuggestion(
 
   const credit = typeof draft.credit === "string" ? collapse(draft.credit) : "";
   if (credit.length > 40) return { ok: false, error: "credit is too long" };
+  if (draft.humanWritten !== true)
+    return { ok: false, error: "Human Reserved confirmation is required" };
   if (draft.cc0 !== true || draft.consentVersion !== CC0_CONSENT_VERSION)
     return { ok: false, error: "CC0 consent is required" };
 

@@ -74,6 +74,7 @@ export async function initSuggest(): Promise<void> {
   const textEl = document.getElementById("s-text") as HTMLTextAreaElement;
   const nameEl = document.getElementById("s-name") as HTMLInputElement;
   const websiteEl = document.getElementById("s-website") as HTMLInputElement;
+  const humanEl = document.getElementById("s-human") as HTMLInputElement;
   const cc0El = document.getElementById("s-cc0") as HTMLInputElement;
   const ruleEl = document.getElementById("s-rule")!;
   const counterEl = document.getElementById("s-counter")!;
@@ -152,12 +153,18 @@ export async function initSuggest(): Promise<void> {
   function validate(): boolean {
     const { ok } = textState();
     const ready =
-      ok && index !== null && cc0El.checked && available && (!turnstileRequired || Boolean(token));
+      ok &&
+      index !== null &&
+      humanEl.checked &&
+      cc0El.checked &&
+      available &&
+      (!turnstileRequired || Boolean(token));
     submitEl.disabled = sending || !ready;
     return ready;
   }
 
   textEl.addEventListener("input", validate);
+  humanEl.addEventListener("change", validate);
   cc0El.addEventListener("change", validate);
   langEl.addEventListener("change", async () => {
     index = null;
@@ -232,6 +239,7 @@ export async function initSuggest(): Promise<void> {
           question,
           language: langEl.value,
           credit: nameEl.value,
+          humanWritten: humanEl.checked,
           cc0: cc0El.checked,
           consentVersion: CC0_CONSENT_VERSION,
           submissionId: crypto.randomUUID(),

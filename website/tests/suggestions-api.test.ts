@@ -38,6 +38,7 @@ const payload = {
   question: "Which ordinary day would you happily live again?",
   language: "en",
   credit: "Ada",
+  humanWritten: true,
   cc0: true,
   consentVersion: CC0_CONSENT_VERSION,
   submissionId: "4c527b9a-65a6-4c45-9a17-0b07620aebd0",
@@ -87,6 +88,18 @@ describe("suggestion endpoint", () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it("refuses missing Human Reserved confirmation before calling another service", async () => {
+    const fetcher = vi.fn();
+    const { humanWritten, ...unconfirmed } = payload;
+    const response = await handleSuggestionPost(request(unconfirmed), env(), {
+      fetch: fetcher as typeof fetch,
+      now: () => new Date("2026-08-31T12:00:00Z"),
+    });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Human Reserved confirmation is required" });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   it("verifies the person and creates a bot issue", async () => {
     const fetcher = vi
       .fn()
@@ -114,6 +127,7 @@ describe("suggestion endpoint", () => {
     const issue = JSON.parse(String(options.body));
     expect(issue.labels).toEqual(["question-submission"]);
     expect(issue.body).toContain("<!-- cicala-native:v1");
+    expect(issue.body).toContain("- [x] I wrote this question myself, without generative AI.");
     expect(options.headers).toMatchObject({ Authorization: "Bearer installation-token" });
   });
 

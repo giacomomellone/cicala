@@ -93,6 +93,13 @@ const example = tipExample(tip, "en");
 
     <div class="field">
       <label class="checks suggest-consent">
+        <input type="checkbox" id="s-human" required />
+        <span data-i18n="suggest.human">{t("en", "suggest.human")}</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label class="checks suggest-consent">
         <input type="checkbox" id="s-cc0" />
         <span>
           <span data-i18n="suggest.cc0">{t("en", "suggest.cc0")}</span>

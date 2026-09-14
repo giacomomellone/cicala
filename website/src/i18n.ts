@@ -94,6 +94,7 @@ const en = {
   "suggest.style.long": "under 95 characters reads better out loud",
   "suggest.review": "Questions are reviewed before they are added. Editors assign depth and tags.",
   "suggest.name": "name for public credit (optional)",
+  "suggest.human": "I wrote this question myself, without generative AI.",
   "suggest.cc0":
     "I dedicate this question to the public domain (CC0). Anyone may use it for any purpose, forever, without attribution.",
   "suggest.cc0.link": "what CC0 means",
@@ -288,6 +289,7 @@ const de: Record<StringKey, string> = {
   "suggest.review":
     "Fragen werden vor der Aufnahme geprüft. Tiefe und Schlagwörter ordnet die Redaktion zu.",
   "suggest.name": "name für die öffentliche nennung (optional)",
+  "suggest.human": "Ich habe diese Frage selbst geschrieben, ohne generative KI.",
   "suggest.cc0":
     "Ich übergebe diese Frage der Gemeinfreiheit (CC0). Alle dürfen sie für immer und jeden Zweck nutzen, ohne Namensnennung.",
   "suggest.cc0.link": "was CC0 bedeutet",
@@ -476,6 +478,7 @@ const it: Record<StringKey, string> = {
   "suggest.review":
     "Le domande sono esaminate prima di essere aggiunte. Chi cura la lingua assegna profondità ed etichette.",
   "suggest.name": "nome per il credito pubblico (facoltativo)",
+  "suggest.human": "Ho scritto io questa domanda, senza usare IA generativa.",
   "suggest.cc0":
     "Dedico questa domanda al pubblico dominio (CC0). Chiunque può usarla per qualsiasi scopo, per sempre, senza attribuzione.",
   "suggest.cc0.link": "che cosa significa CC0",

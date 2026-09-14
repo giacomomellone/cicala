@@ -2,6 +2,8 @@
 
 Astro 5, static output, vanilla TypeScript islands, and one Cloudflare Pages Function at `/api/suggestions`. No UI framework or Tailwind. Play and browse load no third-party scripts; the suggestion page loads Cloudflare Turnstile. See [docs/design.md](../docs/design.md) and [native submission setup](../docs/native_submission_setup.md).
 
+The suggestion form requires confirmation that the contributor wrote the question without generative AI, following the [Human Reserved policy](../README.md#ai-policy), alongside the CC0 dedication. The API requires `humanWritten: true` and records the confirmation in the review issue.
+
 ## Develop
 
 From the repo root: `just website` (dev server, available on the local network), `just website-build`, `just test-website`. Astro prints the network URL to open on a phone connected to the same network. Or directly in this directory:

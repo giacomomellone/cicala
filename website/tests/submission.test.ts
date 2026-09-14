@@ -5,6 +5,7 @@ const valid = {
   question: "Which ordinary day would you happily live again?",
   language: "en",
   credit: "Ada",
+  humanWritten: true,
   cc0: true,
   consentVersion: CC0_CONSENT_VERSION,
   submissionId: "4c527b9a-65a6-4c45-9a17-0b07620aebd0",
@@ -32,6 +33,16 @@ describe("validateSuggestion", () => {
       },
     });
   });
+
+  it.each([false, undefined, null, "true", 1])(
+    "requires explicit Human Reserved confirmation (%j)",
+    (humanWritten) => {
+      expect(validateSuggestion({ ...valid, humanWritten }, ["en"])).toEqual({
+        ok: false,
+        error: "Human Reserved confirmation is required",
+      });
+    },
+  );
 
   it("refuses missing consent and unsupported languages", () => {
     expect(validateSuggestion({ ...valid, cc0: false }, ["en", "de"])).toEqual({
