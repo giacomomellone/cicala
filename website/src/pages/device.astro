@@ -1,82 +1,441 @@
 ---
-// Device interaction and sync information.
+import { Image } from "astro:assets";
+import assembly from "../../../hardware/case/renders/rev_a/assembly.png";
+import exploded from "../../../hardware/case/renders/rev_a/exploded.png";
+import pcbTop from "../assets/device/pcb-top.webp";
+import pcbBottom from "../assets/device/pcb-bottom.webp";
 import { REPO_URL } from "../config";
 import { t } from "../i18n";
 import Base from "../layouts/Base.astro";
+
+const boardViews = [
+  { image: pcbTop, caption: "device.render.pcbTop", alt: "device.render.pcbTop.alt" },
+  { image: pcbBottom, caption: "device.render.pcbBottom", alt: "device.render.pcbBottom.alt" },
+] as const;
 ---
 
-<Base title="the device · cicala" lang="en">
-  <div class="prose">
-    <h1 data-i18n="device.title">the device</h1>
-    <p data-i18n="device.p1">{t("en", "device.p1")}</p>
-    <p data-i18n="device.p2">{t("en", "device.p2")}</p>
-    <p data-i18n="device.p3">{t("en", "device.p3")}</p>
-  </div>
+<Base
+  title="the device · cicala"
+  description="The Cicala device is a work in progress. See the Rev A enclosure CAD, PCB 3D renders and current prototype status."
+  lang="en"
+>
+  <article class="device-page">
+    <header class="device-hero">
+      <div class="device-width">
+        <div class="device-meta">
+          <span class="device-status" data-i18n="device.wip">{t("en", "device.wip")}</span>
+          <time datetime="2026-09-14" data-i18n="device.updated">{t("en", "device.updated")}</time>
+        </div>
+        <div class="device-intro">
+          <h1 data-i18n="device.title">{t("en", "device.title")}</h1>
+          <p data-i18n="device.p1">{t("en", "device.p1")}</p>
+          <a class="device-text-link" href="#progress" data-i18n="device.progress.link">
+            {t("en", "device.progress.link")}
+          </a>
+        </div>
+        <figure class="device-assembly">
+          <a class="device-image-link" href={assembly.src}>
+            <Image
+              src={assembly}
+              alt={t("en", "device.render.assembly.alt")}
+              data-i18n-alt="device.render.assembly.alt"
+              widths={[480, 800, 1200, 1600]}
+              sizes="(max-width: 48rem) 100vw, 800px"
+              loading="eager"
+              fetchpriority="high"
+            />
+          </a>
+          <figcaption data-i18n="device.render.assembly">
+            {t("en", "device.render.assembly")}
+          </figcaption>
+        </figure>
+      </div>
+    </header>
 
-  <h2 data-i18n="device.how">how it works</h2>
-  <table class="spec-table">
-    <thead>
-      <tr>
-        <th data-i18n="device.t.input">input</th>
-        <th data-i18n="device.t.action">action</th>
-        <th data-i18n="device.t.feedback">feedback</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td data-i18n="device.t.r1a">{t("en", "device.t.r1a")}</td>
-        <td data-i18n="device.t.r1b">{t("en", "device.t.r1b")}</td>
-        <td data-i18n="device.t.r1c">{t("en", "device.t.r1c")}</td>
-      </tr>
-      <tr>
-        <td data-i18n="device.t.r2a">{t("en", "device.t.r2a")}</td>
-        <td data-i18n="device.t.r2b">{t("en", "device.t.r2b")}</td>
-        <td data-i18n="device.t.r2c">{t("en", "device.t.r2c")}</td>
-      </tr>
-      <tr>
-        <td data-i18n="device.t.r3a">{t("en", "device.t.r3a")}</td>
-        <td data-i18n="device.t.r3b">{t("en", "device.t.r3b")}</td>
-        <td data-i18n="device.t.r3c">{t("en", "device.t.r3c")}</td>
-      </tr>
-      <tr>
-        <td data-i18n="device.t.r4a">{t("en", "device.t.r4a")}</td>
-        <td data-i18n="device.t.r4b">{t("en", "device.t.r4b")}</td>
-        <td data-i18n="device.t.r4c">{t("en", "device.t.r4c")}</td>
-      </tr>
-    </tbody>
-  </table>
+    <div class="device-width">
+      <section class="device-progress" id="progress" aria-labelledby="progress-title">
+        <div>
+          <h2 id="progress-title" data-i18n="device.progress.title">
+            {t("en", "device.progress.title")}
+          </h2>
+          <p data-i18n="device.progress.text">{t("en", "device.progress.text")}</p>
+          <a
+            class="device-text-link"
+            href={`${REPO_URL}/blob/main/docs/hardware_rev_a.md`}
+            rel="external"
+            data-i18n="device.progress.source"
+          >
+            {t("en", "device.progress.source")}
+          </a>
+        </div>
+        <div>
+          <dl class="device-milestones">
+            {
+              (["firmware", "pcb", "case"] as const).map((part) => (
+                <div>
+                  <dt data-i18n={`device.progress.${part}`}>
+                    {t("en", `device.progress.${part}`)}
+                  </dt>
+                  <dd data-i18n={`device.progress.${part}.text`}>
+                    {t("en", `device.progress.${part}.text`)}
+                  </dd>
+                </div>
+              ))
+            }
+          </dl>
+          <p class="device-next" data-i18n="device.progress.next">
+            {t("en", "device.progress.next")}
+          </p>
+        </div>
+      </section>
 
-  <h2 data-i18n="device.build">build one</h2>
-  <div class="prose">
-    <p data-i18n="device.build.text">{t("en", "device.build.text")}</p>
-    <p>
-      <a href={`${REPO_URL}/tree/main/firmware`} rel="external" data-i18n="device.link.firmware"
-        >firmware sources</a
-      >
-      <span aria-hidden="true"> · </span>
-      <a href={`${REPO_URL}/tree/main/hardware`} rel="external" data-i18n="device.link.hardware"
-        >hardware / PCB</a
-      >
-      <span aria-hidden="true"> · </span>
-      <a
-        href={`${REPO_URL}/blob/main/docs/hardware_wiring.md`}
-        rel="external"
-        data-i18n="device.link.guide">build guide</a
-      >
-      <span aria-hidden="true"> · </span>
-      <a href={`${REPO_URL}/releases`} rel="external" data-i18n="device.link.releases">releases</a>
-    </p>
-  </div>
+      <section class="device-renders" aria-labelledby="renders-title">
+        <h2 id="renders-title" data-i18n="device.renders.title">
+          {t("en", "device.renders.title")}
+        </h2>
+        <p class="prose" data-i18n="device.renders.text">{t("en", "device.renders.text")}</p>
+        <figure class="device-exploded">
+          <a class="device-image-link" href={exploded.src}>
+            <Image
+              src={exploded}
+              alt={t("en", "device.render.exploded.alt")}
+              data-i18n-alt="device.render.exploded.alt"
+              widths={[480, 800, 1200, 1600]}
+              sizes="(max-width: 48rem) 100vw, 800px"
+              loading="lazy"
+            />
+          </a>
+          <figcaption data-i18n="device.render.exploded">
+            {t("en", "device.render.exploded")}
+          </figcaption>
+        </figure>
+        <div class="device-board-views">
+          {
+            boardViews.map((view) => (
+              <figure>
+                <a class="device-image-link" href={view.image.src}>
+                  <Image
+                    src={view.image}
+                    alt={t("en", view.alt)}
+                    data-i18n-alt={view.alt}
+                    widths={[480, 800, 1200, 1600]}
+                    sizes="(max-width: 40rem) 100vw, (max-width: 66rem) 50vw, 512px"
+                    loading="lazy"
+                  />
+                </a>
+                <figcaption data-i18n={view.caption}>{t("en", view.caption)}</figcaption>
+              </figure>
+            ))
+          }
+        </div>
+      </section>
 
-  <h2 data-i18n="device.sync">sync</h2>
-  <div class="prose">
-    <p data-i18n="device.sync.text">{t("en", "device.sync.text")}</p>
-    <p>
-      <a
-        href={`${REPO_URL}/blob/main/docs/sync_protocol.md`}
-        rel="external"
-        data-i18n="device.sync.link">how sync works</a
-      >
-    </p>
-  </div>
+      <section class="device-details" aria-labelledby="how-title">
+        <h2 id="how-title" data-i18n="device.how">how it works</h2>
+        <div class="prose">
+          <p data-i18n="device.p2">{t("en", "device.p2")}</p>
+          <p data-i18n="device.p3">{t("en", "device.p3")}</p>
+        </div>
+
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th data-i18n="device.t.input">input</th>
+              <th data-i18n="device.t.action">action</th>
+              <th data-i18n="device.t.feedback">feedback</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td data-i18n="device.t.r1a">{t("en", "device.t.r1a")}</td>
+              <td data-i18n="device.t.r1b">{t("en", "device.t.r1b")}</td>
+              <td data-i18n="device.t.r1c">{t("en", "device.t.r1c")}</td>
+            </tr>
+            <tr>
+              <td data-i18n="device.t.r2a">{t("en", "device.t.r2a")}</td>
+              <td data-i18n="device.t.r2b">{t("en", "device.t.r2b")}</td>
+              <td data-i18n="device.t.r2c">{t("en", "device.t.r2c")}</td>
+            </tr>
+            <tr>
+              <td data-i18n="device.t.r3a">{t("en", "device.t.r3a")}</td>
+              <td data-i18n="device.t.r3b">{t("en", "device.t.r3b")}</td>
+              <td data-i18n="device.t.r3c">{t("en", "device.t.r3c")}</td>
+            </tr>
+            <tr>
+              <td data-i18n="device.t.r4a">{t("en", "device.t.r4a")}</td>
+              <td data-i18n="device.t.r4b">{t("en", "device.t.r4b")}</td>
+              <td data-i18n="device.t.r4c">{t("en", "device.t.r4c")}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2 data-i18n="device.build">build one</h2>
+        <div class="prose">
+          <p data-i18n="device.build.text">{t("en", "device.build.text")}</p>
+          <p>
+            <a
+              href={`${REPO_URL}/tree/main/firmware`}
+              rel="external"
+              data-i18n="device.link.firmware">firmware sources</a
+            >
+            <span aria-hidden="true"> · </span>
+            <a
+              href={`${REPO_URL}/tree/main/hardware`}
+              rel="external"
+              data-i18n="device.link.hardware">hardware / PCB</a
+            >
+            <span aria-hidden="true"> · </span>
+            <a
+              href={`${REPO_URL}/blob/main/docs/hardware_wiring.md`}
+              rel="external"
+              data-i18n="device.link.guide">build guide</a
+            >
+            <span aria-hidden="true"> · </span>
+            <a href={`${REPO_URL}/releases`} rel="external" data-i18n="device.link.releases"
+              >releases</a
+            >
+          </p>
+        </div>
+
+        <h2 data-i18n="device.sync">sync</h2>
+        <div class="prose">
+          <p data-i18n="device.sync.text">{t("en", "device.sync.text")}</p>
+          <p>
+            <a
+              href={`${REPO_URL}/blob/main/docs/sync_protocol.md`}
+              rel="external"
+              data-i18n="device.sync.link">how sync works</a
+            >
+          </p>
+        </div>
+      </section>
+    </div>
+  </article>
 </Base>
+
+<style>
+  :global(main:has(.device-page)) {
+    max-width: none;
+    padding: 0 0 3rem;
+  }
+
+  .device-page {
+    --cad-paper: #ffffe5;
+  }
+
+  .device-width {
+    width: min(100%, 66rem);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  .device-hero {
+    background: var(--cad-paper);
+    border-bottom: 1px solid var(--line);
+    padding-block: 1.5rem 1rem;
+  }
+
+  .device-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .device-status {
+    color: var(--ink);
+    font-weight: 500;
+  }
+
+  .device-status::before {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    margin-right: 0.6rem;
+    background: currentColor;
+  }
+
+  .device-intro {
+    max-width: 40rem;
+    margin-top: 1.5rem;
+    animation: device-enter 400ms ease-out both;
+  }
+
+  .device-intro h1 {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .device-text-link {
+    display: inline-block;
+    margin-top: 0.75rem;
+    padding-block: 0.35rem;
+    text-underline-offset: 0.25em;
+    transition: text-underline-offset 180ms ease;
+  }
+
+  .device-text-link:hover {
+    text-underline-offset: 0.4em;
+  }
+
+  .device-assembly {
+    animation: device-enter 500ms 100ms ease-out both;
+  }
+
+  .device-image-link {
+    display: block;
+    overflow: hidden;
+    background: var(--panel);
+    cursor: zoom-in;
+  }
+
+  .device-image-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    transition: transform 250ms ease;
+  }
+
+  .device-image-link:hover img,
+  .device-image-link:focus-visible img {
+    transform: scale(1.025);
+  }
+
+  .device-assembly .device-image-link,
+  .device-exploded .device-image-link {
+    background: var(--cad-paper);
+  }
+
+  .device-assembly img {
+    height: clamp(15rem, 43svh, 27rem);
+  }
+
+  figcaption {
+    margin-top: 0.65rem;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .device-assembly figcaption {
+    text-align: center;
+  }
+
+  .device-progress {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 3rem;
+    padding-block: 3rem;
+    scroll-margin-top: 1.5rem;
+  }
+
+  .device-progress h2,
+  .device-renders h2,
+  .device-details > h2:first-child {
+    margin-top: 0;
+  }
+
+  .device-progress p,
+  .device-milestones dd,
+  .device-renders > p {
+    color: var(--ink-soft);
+  }
+
+  .device-milestones > div {
+    padding-block: 1rem;
+    border-top: 1px solid var(--ink-faint);
+  }
+
+  .device-milestones > div:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .device-milestones dt {
+    margin-bottom: 0.25rem;
+    font-weight: 500;
+  }
+
+  .device-next {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .device-renders {
+    border-top: 1px solid var(--line);
+    padding-block: 2rem 3rem;
+  }
+
+  .device-exploded {
+    margin-block: 1.5rem 2rem;
+  }
+
+  .device-exploded img {
+    max-height: 34rem;
+  }
+
+  .device-board-views {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .device-details {
+    max-width: 44rem;
+    margin-inline: auto;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+  }
+
+  @keyframes device-enter {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 40rem) {
+    .device-assembly img {
+      height: auto;
+    }
+
+    .device-progress,
+    .device-board-views {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .device-progress {
+      padding-block: 2rem;
+    }
+
+    .spec-table {
+      font-size: 0.75rem;
+      overflow-wrap: anywhere;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .device-intro,
+    .device-assembly {
+      animation: none;
+    }
+
+    .device-text-link,
+    .device-image-link img {
+      transition: none;
+    }
+
+    .device-image-link:hover img,
+    .device-image-link:focus-visible img {
+      transform: none;
+    }
+  }
+</style>

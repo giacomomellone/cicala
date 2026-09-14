@@ -157,6 +157,39 @@ const en = {
 
   // device page
   "device.title": "the device",
+  "device.wip": "work in progress",
+  "device.updated": "updated 14 September 2026",
+  "device.progress.link": "where we are ↓",
+  "device.progress.title": "where we are",
+  "device.progress.text":
+    "Rev A is in prototype development. The breadboard works; the integrated board and enclosure still need physical validation.",
+  "device.progress.firmware": "firmware",
+  "device.progress.firmware.text":
+    "Running on the breadboard. The Rev A build has passed simulation tests; testing on the actual board is still ahead.",
+  "device.progress.pcb": "PCB · Rev A",
+  "device.progress.pcb.text":
+    "The four-layer board passes electrical, design-rule and schematic-to-board checks. Physical electrical and radio tests are pending.",
+  "device.progress.case": "enclosure",
+  "device.progress.case.text":
+    "Parametric CAD and printable fit files are available. Button travel, display fit and assembly still need checks on printed parts.",
+  "device.progress.next":
+    "Next: assemble Rev A prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
+  "device.progress.source": "Rev A hardware notes →",
+  "device.renders.title": "inside Rev A",
+  "device.renders.text":
+    "CAD renders from the current enclosure and PCB sources. Geometry and component models are provisional; the design may change after prototype testing.",
+  "device.render.assembly": "Rev A enclosure · CAD render",
+  "device.render.assembly.alt":
+    "CAD view of the Cicala enclosure with a display window and two buttons.",
+  "device.render.exploded": "Exploded enclosure · shell, board, battery and base",
+  "device.render.exploded.alt":
+    "Exploded CAD view showing the enclosure shell above the board, battery, base and steel underside.",
+  "device.render.pcbTop": "PCB top · buttons and display connector",
+  "device.render.pcbTop.alt":
+    "Angled KiCad 3D render of the Rev A board’s top side with two switches and the display connector.",
+  "device.render.pcbBottom": "PCB underside · controller, USB-C and battery power",
+  "device.render.pcbBottom.alt":
+    "Angled KiCad 3D render of the Rev A board’s underside with the Cicala mark, ESP32-S3, USB-C and battery connector.",
   "device.p1":
     "A pocket-sized object for the middle of the table: one e-paper display, a small Filters button, and a larger Next button. One mixed stream of questions.",
   "device.p2":
@@ -181,7 +214,7 @@ const en = {
   "device.t.r4c": "the question or menu remains readable at zero display power",
   "device.build": "build one",
   "device.build.text":
-    "Hardware (CERN-OHL-S) and firmware (MIT) live in this repository. The breadboard firmware works; the PCB and enclosure files are design contracts, not production files.",
+    "Hardware (CERN-OHL-S) and firmware (MIT) are open source. Start with the breadboard guide, or explore the Rev A PCB, enclosure CAD and prototype exports. Rev A still needs physical testing before the design can be accepted.",
   "device.link.firmware": "firmware sources",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "build guide",
@@ -349,6 +382,39 @@ const de: Record<StringKey, string> = {
   "deck.count": "fragen",
 
   "device.title": "das gerät",
+  "device.wip": "in Entwicklung",
+  "device.updated": "Stand: 14. September 2026",
+  "device.progress.link": "aktueller Stand ↓",
+  "device.progress.title": "aktueller Stand",
+  "device.progress.text":
+    "Rev A ist in der Prototypenentwicklung. Der Breadboard-Aufbau funktioniert; die integrierte Platine und das Gehäuse müssen noch am Prototyp geprüft werden.",
+  "device.progress.firmware": "Firmware",
+  "device.progress.firmware.text":
+    "Läuft auf dem Breadboard. Die Rev-A-Firmware hat Simulationstests bestanden; Tests auf der tatsächlichen Platine stehen noch aus.",
+  "device.progress.pcb": "Platine · Rev A",
+  "device.progress.pcb.text":
+    "Die vierlagige Platine besteht die elektrischen Prüfungen, die Designregelprüfung und den Abgleich mit dem Schaltplan. Elektrische Messungen und Funkmessungen am Prototyp stehen noch aus.",
+  "device.progress.case": "Gehäuse",
+  "device.progress.case.text":
+    "Parametrisches CAD und druckbare Passproben sind verfügbar. Tastenhub, Displaypassung und Montage müssen noch an gedruckten Teilen geprüft werden.",
+  "device.progress.next":
+    "Als Nächstes: Rev-A-Prototypen montieren und Ladeverhalten, Displaybetrieb, Ruhestrom, Funkleistung und Gehäusepassung prüfen.",
+  "device.progress.source": "Rev-A-Hardwarenotizen →",
+  "device.renders.title": "ein Blick in Rev A",
+  "device.renders.text":
+    "CAD-Renderings aus den aktuellen Gehäuse- und Platinenquellen. Geometrie und Bauteilmodelle sind vorläufig; der Entwurf kann sich nach den Prototypentests ändern.",
+  "device.render.assembly": "Rev-A-Gehäuse · CAD-Rendering",
+  "device.render.assembly.alt":
+    "CAD-Ansicht des Cicala-Gehäuses mit Displayfenster und zwei Tasten.",
+  "device.render.exploded": "Explosionsansicht · Gehäuse, Platine, Akku und Boden",
+  "device.render.exploded.alt":
+    "CAD-Explosionsansicht mit dem Gehäuse über Platine, Akku, Boden und Stahlunterseite.",
+  "device.render.pcbTop": "Platinenoberseite · Tasten und Displayanschluss",
+  "device.render.pcbTop.alt":
+    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenoberseite mit zwei Tastern und dem Displayanschluss.",
+  "device.render.pcbBottom": "Platinenunterseite · Controller, USB-C und Akkuversorgung",
+  "device.render.pcbBottom.alt":
+    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenunterseite mit Cicala-Zeichen, ESP32-S3, USB-C und Akkuanschluss.",
   "device.p1":
     "Ein kleines Objekt für die Tischmitte: ein E-Papier-Bildschirm, eine kleine Filter-Taste und eine größere Weiter-Taste. Ein gemischter Fragenstrom.",
   "device.p2":
@@ -373,7 +439,7 @@ const de: Record<StringKey, string> = {
   "device.t.r4c": "Frage oder Menü bleiben ohne Displaystrom lesbar",
   "device.build": "selbst bauen",
   "device.build.text":
-    "Hardware (CERN-OHL-S) und Firmware (MIT) liegen in diesem Repository. Die Breadboard-Firmware funktioniert; Platine und Gehäuse sind Entwurfsverträge, keine Produktionsdateien.",
+    "Hardware (CERN-OHL-S) und Firmware (MIT) sind Open Source. Beginne mit der Breadboard-Anleitung oder sieh dir die Rev-A-Platine, das Gehäuse-CAD und die Prototypenexporte an. Rev A braucht noch Tests am realen Prototyp, bevor der Entwurf abgenommen werden kann.",
   "device.link.firmware": "firmware-quellen",
   "device.link.hardware": "hardware / platine",
   "device.link.guide": "bauanleitung",
@@ -538,6 +604,39 @@ const it: Record<StringKey, string> = {
   "deck.count": "domande",
 
   "device.title": "il dispositivo",
+  "device.wip": "lavori in corso",
+  "device.updated": "aggiornato il 14 settembre 2026",
+  "device.progress.link": "a che punto siamo ↓",
+  "device.progress.title": "a che punto siamo",
+  "device.progress.text":
+    "Rev A è in fase di prototipazione. Il circuito su breadboard funziona; la scheda integrata e la scocca devono ancora essere verificate su prototipi fisici.",
+  "device.progress.firmware": "firmware",
+  "device.progress.firmware.text":
+    "Funziona sulla breadboard. La versione Rev A ha superato i test in simulazione; le prove sulla scheda reale devono ancora iniziare.",
+  "device.progress.pcb": "PCB · Rev A",
+  "device.progress.pcb.text":
+    "La scheda a quattro strati supera i controlli elettrici, delle regole di progetto e di corrispondenza con lo schema. Restano da svolgere le prove elettriche e radio sul prototipo.",
+  "device.progress.case": "scocca",
+  "device.progress.case.text":
+    "Sono disponibili il CAD parametrico e i file stampabili per le prove di accoppiamento. Corsa dei tasti, alloggiamento del display e montaggio vanno ancora verificati sui pezzi stampati.",
+  "device.progress.next":
+    "Il prossimo passo: assemblare i prototipi Rev A e verificare ricarica, display, consumo in sospensione, prestazioni radio e accoppiamento della scocca.",
+  "device.progress.source": "note sull’hardware Rev A →",
+  "device.renders.title": "dentro Rev A",
+  "device.renders.text":
+    "Render CAD dai sorgenti attuali della scocca e del PCB. Geometria e modelli dei componenti sono provvisori; il progetto può cambiare dopo le prove sui prototipi.",
+  "device.render.assembly": "Scocca Rev A · render CAD",
+  "device.render.assembly.alt":
+    "Vista CAD della scocca Cicala con una finestra per il display e due tasti.",
+  "device.render.exploded": "Vista esplosa · scocca, scheda, batteria e base",
+  "device.render.exploded.alt":
+    "Vista CAD esplosa con la scocca sopra la scheda, la batteria, la base e il fondo in acciaio.",
+  "device.render.pcbTop": "PCB superiore · tasti e connettore del display",
+  "device.render.pcbTop.alt":
+    "Render 3D inclinato da KiCad del lato superiore della scheda Rev A, con due pulsanti e il connettore del display.",
+  "device.render.pcbBottom": "PCB inferiore · controller, USB-C e alimentazione a batteria",
+  "device.render.pcbBottom.alt":
+    "Render 3D inclinato da KiCad del lato inferiore della scheda Rev A, con il marchio Cicala, ESP32-S3, USB-C e connettore della batteria.",
   "device.p1":
     "Un oggetto tascabile per il centro del tavolo: un display e-paper, un piccolo tasto Filtri e un tasto Avanti più grande. Un unico flusso di domande mescolate.",
   "device.p2":
@@ -562,7 +661,7 @@ const it: Record<StringKey, string> = {
   "device.t.r4c": "domanda o menu restano leggibili senza alimentare il display",
   "device.build": "costruiscine uno",
   "device.build.text":
-    "L'hardware (CERN-OHL-S) e il firmware (MIT) stanno in questo repository. Il firmware su breadboard funziona; i file di PCB e scocca sono contratti di progetto, non file di produzione.",
+    "Hardware (CERN-OHL-S) e firmware (MIT) sono open source. Parti dalla guida per la breadboard, oppure esplora il PCB Rev A, il CAD della scocca e i file per i prototipi. Rev A richiede ancora prove fisiche prima di poter essere approvata.",
   "device.link.firmware": "sorgenti del firmware",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "guida alla costruzione",

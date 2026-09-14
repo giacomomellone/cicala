@@ -17,6 +17,9 @@ export function applyI18n(lang: string): void {
   document.querySelectorAll<HTMLElement>("[data-i18n-aria]").forEach((el) => {
     el.setAttribute("aria-label", t(lang, el.dataset.i18nAria as StringKey));
   });
+  document.querySelectorAll<HTMLImageElement>("[data-i18n-alt]").forEach((el) => {
+    el.alt = t(lang, el.dataset.i18nAlt as StringKey);
+  });
   // Keep <html lang> aligned with the displayed content.
   document.documentElement.lang = lang;
 }
