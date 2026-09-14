@@ -3,7 +3,6 @@
 import copy
 import io
 import json
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -24,7 +23,13 @@ class TestTranslationSync(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        self.config = translation.load_config(TOOLS.parent)
+        self.schema = json.loads((TOOLS.parent / "questions/schema.json").read_text())
+        self.config = self.schema["x-cicala"]
+        for language in ("en", "de", "it"):
+            self.config["languages"][language]["google"] = {
+                "source": language,
+                "target": language,
+            }
         self.entries = {
             "en": [{"id": "q-11111111", "text": "What changed your mind?"}],
             "de": [
@@ -51,7 +56,7 @@ class TestTranslationSync(unittest.TestCase):
             (directory / "denylist.txt").write_text("# Empty test denylist\n")
             for entry in entries:
                 entry.update(depth=2, added="2026-01-01")
-        shutil.copy(TOOLS.parent / "questions/schema.json", self.root / "questions/schema.json")
+        (self.root / "questions/schema.json").write_text(json.dumps(self.schema))
         self.write()
 
     def write(self):
@@ -99,6 +104,44 @@ class TestTranslationSync(unittest.TestCase):
         self.assertEqual(set(plan), {"it"})
         self.assertEqual(plan["it"][0].language, "de")
         self.assertEqual(plan["it"][0].origin, "q-11111111")
+
+    def test_paused_targets_skip_api_and_resume_from_final_english_revision(self):
+        before = self.initialize_git()
+        enabled = copy.deepcopy(self.config)
+        for language in ("de", "it"):
+            del self.config["languages"][language]["google"]
+        (self.root / "questions/schema.json").write_text(json.dumps(self.schema))
+        self.entries["en"][0]["depth"] = 3
+        self.write()
+        self.commit()
+        self.entries["en"][0]["text"] = "What changed your mind most recently?"
+        self.write()
+        after = self.commit()
+
+        self.assertEqual(translation.build_plan(self.root, before, after, self.config), {})
+        with patch.object(translation, "GoogleTranslateClient") as client:
+            for language in ("de", "it"):
+                target = self.root / "questions" / language / "questions.yaml"
+                original = target.read_bytes()
+                self.run_tool(
+                    translation.main,
+                    "apply",
+                    "--before-ref",
+                    before,
+                    "--after-ref",
+                    after,
+                    "--target",
+                    language,
+                )
+                self.assertEqual(target.read_bytes(), original)
+            client.assert_not_called()
+
+        plan = translation.build_plan(self.root, before, after, enabled)
+        self.assertEqual(set(plan), {"de", "it"})
+        for sources in plan.values():
+            self.assertEqual(len(sources), 1)
+            self.assertEqual(sources[0].entry, self.entries["en"][0])
+            self.assertTrue(sources[0].text_changed)
 
     def test_human_translation_is_updated_in_place(self):
         source = translation.SourceQuestion("de", self.entries["de"][0])

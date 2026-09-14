@@ -20,6 +20,12 @@ The governing product principle (docs/design.md): minimize time-to-question, max
 
 The authoritative AI policy is in [README.md](README.md#ai-policy). Read and follow it before working with question text.
 
+German and Italian question decks are on editorial hold while the owner refines
+English. Do not update or synchronize those corpora until the owner explicitly
+approves the English revision and asks to resume alignment. Keep their Google
+translation opt-in blocks absent. The checkpoint and resume procedure are in
+[docs/languages.md](docs/languages.md#current-editing-hold).
+
 ## Repository boundary
 
 This is the public product and engineering repository. It owns the public website, firmware, hardware design sources, reproducible BOMs, protocols, technical documentation, build instructions, the public roadmap, contribution guidance, licenses, and public-facing project assets.

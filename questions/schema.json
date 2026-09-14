@@ -157,20 +157,12 @@
       },
       "de": {
         "name": "Deutsch",
-        "google": {
-          "source": "de",
-          "target": "de"
-        },
         "terminators": [
           "?"
         ]
       },
       "it": {
         "name": "Italiano",
-        "google": {
-          "source": "it",
-          "target": "it"
-        },
         "terminators": [
           "?"
         ]

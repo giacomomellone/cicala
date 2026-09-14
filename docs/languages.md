@@ -111,8 +111,9 @@ a language affects future merges and edits; it does not backfill the corpus or
 create a translation-completeness queue. The workflow expects a repository
 Actions secret named `GOOGLE_TRANSLATE_API_KEY`.
 
-English, German and Italian declare Google source and target codes. The plan is
-a diff between two commits, so enabling a language translates nothing that
+English currently declares Google source and target codes; German and Italian
+are on the [editing hold](#current-editing-hold) below. The plan is a diff
+between two commits, so enabling a language translates nothing that
 merged while its block was absent. To catch up on a gap, enable it first and run
 `tools/translate_question.py apply --before-ref <commit> --after-ref main
 --target <lang>`, which reads the language config from the working tree and both
@@ -130,17 +131,50 @@ does not name the translation vendor: a reader needs to know the text was
 machine-translated and checked, not which service produced it. The vendor stays
 recorded in `translated_by`.
 
+## Current editing hold
+
+German and Italian are on editorial hold from 2026-09-15 while the owner
+iterates on the English deck. Their `google` blocks are absent from
+`questions/schema.json`, so neither language sends or receives automated
+translation updates. Their corpora remain shipped and retain their existing
+content. English is the editing focus for this pass; the general policy of
+independent language corpora still applies.
+
+Do not edit, review for merge, or synchronize the German and Italian question
+decks until the owner approves the English revision and asks to resume
+alignment. Leave any existing translation draft pull requests unmerged during
+the hold. Source deletions still need their linked translations removed in the
+same change to satisfy lineage validation.
+
+The catch-up checkpoint is `c46fb6e70bc324e7d767301ca61bae9b60a013b3`, before
+the hold, when all three corpora were empty. Keep this checkpoint throughout
+the English editing pass. Re-enabling translation alone does not catch up on
+changes made during the hold.
+
+After the owner approves English:
+
+1. Restore `google: {"source": "de", "target": "de"}` under the German
+   language config and `google: {"source": "it", "target": "it"}` under
+   Italian, and merge the config change to `main`.
+2. Run **Google Cloud translation drafts** on `main` with `before_ref` set to
+   the checkpoint above and `source_id` empty. This compares the checkpoint
+   with the final English corpus and creates review drafts from the final
+   wording, without replaying intermediate revisions.
+3. Review both drafts against the approved English revision, resolve any stale
+   pending draft entries, and merge after fluent review. Remove this hold from
+   the language status table and `AGENTS.md` when alignment resumes.
+
 ## Per-language moderation
 
 Submissions (GitHub issue → `promote-question.yml` → PR) are routed to the language's maintainer via `CODEOWNERS` entries on `questions/{lang}/`. The per-language `denylist.txt` is a CI tripwire for obvious slurs and explicit content; a hit means a human looks, nothing more clever than that.
 
 ## Shipped languages
 
-| Language | Code | Maintainer                                           | Status                      |
-| -------- | ---- | ---------------------------------------------------- | --------------------------- |
-| English  | `en` | [@giacomomellone](https://github.com/giacomomellone) | shipped, corpus being built |
-| Deutsch  | `de` | [@giacomomellone](https://github.com/giacomomellone) | shipped, corpus being built |
-| Italiano | `it` | [@giacomomellone](https://github.com/giacomomellone) | shipped, corpus being built |
+| Language | Code | Maintainer                                           | Status                  |
+| -------- | ---- | ---------------------------------------------------- | ----------------------- |
+| English  | `en` | [@giacomomellone](https://github.com/giacomomellone) | shipped, active editing |
+| Deutsch  | `de` | [@giacomomellone](https://github.com/giacomomellone) | shipped, editorial hold |
+| Italiano | `it` | [@giacomomellone](https://github.com/giacomomellone) | shipped, editorial hold |
 
 All three corpora are currently empty. The seed questions were removed to build
 the database from scratch, so the site and the bundles carry no questions until
