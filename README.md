@@ -13,13 +13,12 @@ Its three parts share one database:
 ## AI policy
 
 Cicala's questions are [**Human Reserved**](https://www.gatesnotes.com/home/home-page-topic/reader/a-turbulent-ai-era-and-critical-choices-to-make).
-Do not use generative AI to write or edit questions.
+Do not use generative AI to write questions.
 The questions in this project are meant for humans, not for machines (unless machines start having consciousness and enjoy asking each other questions).
-For everything else in this repository, like code, documentation, tests, tooling, firmware, and hardware, use AI as much as you like.
+For everything else in this repository, like code, documentation, tests, tooling, firmware, and hardware, feel free to use AI.
+**Just make sure to leave questions to humans.**
 
-**Just make sure the questions are meant for people.**
-
-AI may translate an accepted human-written question into another supported language and may suggest metadata such as tags. After a new original question or a human edit in any language is merged, the Google Cloud Translation workflow opens or updates review pull requests for the other linked translations. Editing a translation never rewrites its human-written original. Every machine-translated entry retains that original's `origin` and keeps `translated_by: google`, including after review. `translation_sync` records the version used for each update and prevents generated updates from triggering another round.
+AI may translate an human-written question into another supported language and may suggest metadata such as tags. After a new question or a human edit in any language is merged, the Google Cloud Translation workflow opens or updates review pull requests for the other linked translations. Editing a translation never rewrites its human-written original. Every machine-translated entry retains that original's `origin` and keeps `translated_by: google`, including after review. `translation_sync` records the version used for each update and prevents generated updates from triggering another round.
 
 Machine translations do not merge automatically. A maintainer compares each draft with the accepted source edit and its original, and may edit or reject it to preserve the intended meaning and make it read naturally in the target language. Published machine translations remain labeled `translated_by: google` in the database, and the website marks them as automatically translated and human-reviewed wherever they appear, with a link to the original.
 
