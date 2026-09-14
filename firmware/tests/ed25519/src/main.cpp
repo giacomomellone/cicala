@@ -28,15 +28,15 @@ void reset()
 
 ZTEST_SUITE(cicala_ed25519, NULL, NULL, NULL, NULL, NULL);
 
-ZTEST(cicala_ed25519, test_the_real_release_signature_verifies)
+ZTEST(cicala_ed25519, test_the_manifest_signature_verifies)
 {
     reset();
 
     zassert_true(ed25519_verify(sig, digest, sizeof(digest), key),
-                 "the shipped db-2026.08.1 signature must verify against the committed key");
+                 "the firmware manifest signature must verify against the committed key");
 }
 
-ZTEST(cicala_ed25519, test_a_tampered_bundle_is_refused)
+ZTEST(cicala_ed25519, test_a_tampered_digest_is_refused)
 {
     const size_t at[] = {0, 1, sizeof(digest) / 2, sizeof(digest) - 1};
 
