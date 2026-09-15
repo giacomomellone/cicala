@@ -2,7 +2,7 @@
 
 `cicala_enclosure.scad` is the editable source. `contract.scad` and `pcb_component_bounds.scad` are generated from the numeric contract and KiCad placement.
 
-The core is 108 × 66 × 10.2 mm. Its active display is centered, the battery occupies the PCB's open corner, and two guided vertical controls sit on the beveled shoulder. The removable magnetic carrier adds 3.2 mm. Separate display supports keep assembly loads off the battery.
+The core is 112 × 66 × 10.2 mm. Its active display is centered, the battery occupies the PCB's open corner, and two broad, flat controls sit 0.4 mm above a recessed ledge. The removable magnetic carrier adds 3.2 mm. Separate display supports keep assembly loads off the battery.
 
 Run `just hw-rev-b-export --renders` for checked native exports, or `just hw-rev-b-fit-export` for a clearly labeled mechanical-only check. Printable parts include the shell, display supports, caps, removable keepers, carrier/cover, wedge, forming tool and tolerance coupons. `exports/assembly/` preserves assembly coordinates; `exports/print/` contains parts oriented and placed on the print bed, grouped by purpose. Reference components and cut patterns have separate folders. Print settings and assembly sequence are in [the engineering guide](../../../docs/hardware_rev_b.md).
 

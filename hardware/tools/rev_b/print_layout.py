@@ -3,7 +3,7 @@ import math
 
 
 REFERENCES = {'cap_pad','next_pad','pcb_reference','cell_reference','panel_reference'}
-ACCESSORIES = {'flat_cap','carrier','carrier_cover','wedge'}
+ACCESSORIES = {'carrier','carrier_cover','wedge'}
 
 
 def role(part):
@@ -18,10 +18,10 @@ def role(part):
     return 'core'
 
 
-def rotation(part, bevel_angle):
+def rotation(part):
     if part in {'category_cap','next_cap','coupon_cap'}:
-        return [0,180-bevel_angle,0]
-    if part in {'top_shell','flat_cap','coupon'}:
+        return [0,180,0]
+    if part in {'top_shell','coupon'}:
         return [0,180,0]
     if part == 'flex_former':
         return [0,-90,0]
@@ -44,3 +44,13 @@ def placement(faces, angles):
     upper = [max(p[i] for p in points) for i in range(3)]
     return {'rotation_degrees':angles,'translation_mm':[-v for v in lower],
             'size_mm':[b-a for a,b in zip(lower,upper)]}
+
+
+def check_flat_face(faces, height, minimum_area):
+    area = 0.0
+    for a,b,c in faces:
+        if all(abs(p[2]-height)<1e-4 for p in (a,b,c)):
+            area += abs((b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0]))/2
+    if area < minimum_area:
+        raise ValueError('Button lacks the required flat finger-contact area')
+    return area

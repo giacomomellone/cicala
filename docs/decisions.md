@@ -1095,3 +1095,22 @@ combinations without claiming force or durability validation. Print exports
 separate oriented parts, coupons, reference meshes and sheet-cutting patterns.
 The first prototype must establish switch operation, silicone behavior, printed
 fits, tightening torque and wear before a production configuration is selected.
+
+## 2026-09-15: Flat, larger Rev B buttons
+
+Replace the narrow beveled cap faces with flat R1.2 rounded rectangles: 8 × 14 mm
+Filters and 8 × 18 mm Next. A recessed ledge makes the faces stand 0.40 mm proud
+without increasing the 10.2 mm core height. Retain a 30° bevel on the outer edge.
+Widen the case symmetrically by 4 mm to 112 mm; its x origin is now −2 mm in the
+existing PCB datum, so the active display remains centered.
+
+The cap faces and keeper mounts move within the enclosure; underside contact
+tips still align with the original switches. Retain the PCB routing, silicone
+strips, return tabs and replaceable keepers. The larger cap faces increase
+off-center leverage; digital collision checks do not establish a light click
+or freedom from binding. Measure central and corner presses on first articles.
+
+The wider core lengthens the portrait carrier to 114.8 mm. Reposition its ring
+to balance the nominal iPhone 16 Plus camera and bottom gaps at 1.185 mm each.
+This prioritizes tabletop controls while reducing phone-fit tolerance. Cases,
+optical clearance and magnetic retention still require physical qualification.

@@ -171,7 +171,7 @@ const en = {
   "device.progress.link": "where we are ↓",
   "device.progress.title": "where we are",
   "device.progress.text":
-    "Rev B is a flatter landscape prototype, with a centered screen and two buttons on a beveled edge. The breadboard works; this integrated hardware still needs its first physical build.",
+    "Rev B is a flatter landscape prototype, with a centered screen and two large, flat buttons beside the screen. The breadboard works; this integrated hardware still needs its first physical build.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
     "Running on the breadboard. Display, charging and radio operation on the integrated Rev B hardware remain to be tested.",
@@ -187,9 +187,9 @@ const en = {
   "device.renders.title": "inside Rev B",
   "device.renders.text":
     "Views generated from the public engineering CAD. These are digital prototype models; no integrated Rev B unit has been built yet.",
-  "device.controls.title": "controls that come apart",
+  "device.controls.title": "bigger, flat buttons",
   "device.controls.text":
-    "The caps use 1.4 mm retaining tabs and removable keepers. Each silicone strip sits in pockets, and two screws secure each keeper. Printed fit and button feel still need prototype testing.",
+    "Flat 8 × 14 mm and 8 × 18 mm faces press straight down. They sit slightly above a recessed ledge; the bevel stays on the enclosure edge. Removable keepers retain the caps. Click feel and off-center presses still need prototype testing.",
   "device.controls.caption": "Button assembly · cap, captured silicone strip, keeper and screws",
   "device.controls.alt":
     "Exploded CAD view of the strengthened cap, silicone strip, removable keeper and two screws.",
@@ -202,9 +202,9 @@ const en = {
   "device.render.pcbBottom": "PCB underside · copper routing and test contacts",
   "device.render.pcbBottom.alt":
     "KiCad 3D render of the Rev B PCB underside, showing copper routing, vias, mounting holes and bare test contacts.",
-  "device.render.assembly": "Rev B · centered screen, beveled button edge",
+  "device.render.assembly": "Rev B · centered screen, large flat buttons",
   "device.render.assembly.alt":
-    "Landscape CAD view with a centered screen and two buttons on the right bevel.",
+    "Landscape CAD view with a centered screen and two flat rounded buttons on the right-hand ledge.",
   "device.render.exploded": "Exploded view · shell, lens, display supports, electronics and base",
   "device.render.exploded.alt":
     "Exploded Rev B CAD showing the thin battery beside the L-shaped PCB beneath the display.",
@@ -420,7 +420,7 @@ const de: Record<StringKey, string> = {
   "device.progress.link": "aktueller Stand ↓",
   "device.progress.title": "aktueller Stand",
   "device.progress.text":
-    "Rev B ist ein flacherer Prototyp im Querformat mit mittigem Display und zwei Tasten an einer abgeschrägten Kante. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
+    "Rev B ist ein flacherer Prototyp im Querformat mit mittigem Display und zwei großen, flachen Tasten neben dem Display. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
   "device.progress.firmware": "Firmware",
   "device.progress.firmware.text":
     "Läuft auf dem Steckbrett. Display, Ladefunktion und Funk müssen auf der integrierten Rev-B-Hardware noch getestet werden.",
@@ -436,9 +436,9 @@ const de: Record<StringKey, string> = {
   "device.renders.title": "im Inneren von Rev B",
   "device.renders.text":
     "Ansichten aus dem öffentlichen Konstruktions-CAD. Es sind digitale Prototypmodelle; ein integriertes Rev-B-Gerät wurde noch nicht gebaut.",
-  "device.controls.title": "zerlegbare Tasten",
+  "device.controls.title": "größere, flache Tasten",
   "device.controls.text":
-    "Die Tastenkappen haben 1,4 mm starke Haltelaschen und abnehmbare Haltebügel. Jeder Silikonstreifen sitzt in Taschen; zwei Schrauben befestigen den Bügel. Passform und Tastengefühl müssen am Prototyp geprüft werden.",
+    "Flache Tastenflächen von 8 × 14 und 8 × 18 mm werden senkrecht gedrückt. Sie stehen leicht über einer vertieften Auflage; die Schräge bleibt am Gehäuserand. Abnehmbare Haltebügel sichern die Kappen. Tastengefühl und außermittiges Drücken müssen am Prototyp geprüft werden.",
   "device.controls.caption":
     "Tastenbaugruppe · Kappe, eingefasster Silikonstreifen, Haltebügel und Schrauben",
   "device.controls.alt":
@@ -453,9 +453,9 @@ const de: Record<StringKey, string> = {
   "device.render.pcbBottom": "Platinenunterseite · Leiterbahnen und Testkontakte",
   "device.render.pcbBottom.alt":
     "KiCad-3D-Ansicht der Rev-B-Platinenunterseite mit Leiterbahnen, Durchkontaktierungen, Befestigungslöchern und Testkontakten.",
-  "device.render.assembly": "Rev B · mittiges Display, abgeschrägte Tastenkante",
+  "device.render.assembly": "Rev B · mittiges Display, große flache Tasten",
   "device.render.assembly.alt":
-    "CAD-Ansicht im Querformat mit mittigem Display und zwei Tasten an der rechten Schräge.",
+    "CAD-Ansicht im Querformat mit mittigem Display und zwei flachen, abgerundeten Tasten auf der rechten Auflage.",
   "device.render.exploded":
     "Explosionsansicht · Gehäuse, Scheibe, Displayhalterungen, Elektronik und Boden",
   "device.render.exploded.alt":
@@ -668,7 +668,7 @@ const it: Record<StringKey, string> = {
   "device.progress.link": "a che punto siamo ↓",
   "device.progress.title": "a che punto siamo",
   "device.progress.text":
-    "Rev B è un prototipo più piatto, orizzontale, con schermo centrato e due pulsanti sul bordo smussato. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
+    "Rev B è un prototipo più piatto, orizzontale, con schermo centrato e due grandi pulsanti piatti accanto allo schermo. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
     "Funziona sulla breadboard. Display, ricarica e radio restano da verificare sulla scheda Rev B integrata.",
@@ -684,9 +684,9 @@ const it: Record<StringKey, string> = {
   "device.renders.title": "dentro Rev B",
   "device.renders.text":
     "Viste generate dal CAD tecnico pubblico. Sono modelli digitali del prototipo: nessuna unità Rev B integrata è stata ancora costruita.",
-  "device.controls.title": "pulsanti smontabili",
+  "device.controls.title": "pulsanti più grandi e piatti",
   "device.controls.text":
-    "I copritasti hanno linguette di ritenuta spesse 1,4 mm e fermi rimovibili. Le strisce di silicone sono trattenute in apposite sedi; ogni fermo è fissato con due viti. Accoppiamenti e risposta dei pulsanti vanno verificati sul prototipo.",
+    "Le superfici piatte da 8 × 14 e 8 × 18 mm si premono verticalmente. Sporgono leggermente da un piano ribassato; lo smusso resta sul bordo della scocca. I fermi rimovibili trattengono i pulsanti. Scatto e pressioni decentrate vanno provati sul prototipo.",
   "device.controls.caption":
     "Pulsante esploso · copritasto, striscia di silicone trattenuta, fermo e viti",
   "device.controls.alt":
@@ -701,9 +701,9 @@ const it: Record<StringKey, string> = {
   "device.render.pcbBottom": "PCB, lato inferiore · piste e contatti di test",
   "device.render.pcbBottom.alt":
     "Vista 3D KiCad del lato inferiore del PCB Rev B con piste, via, fori di montaggio e contatti di test.",
-  "device.render.assembly": "Rev B · schermo centrato, bordo pulsanti smussato",
+  "device.render.assembly": "Rev B · schermo centrato, grandi pulsanti piatti",
   "device.render.assembly.alt":
-    "Vista CAD orizzontale con schermo centrato e due pulsanti sul bordo destro smussato.",
+    "Vista CAD orizzontale con schermo centrato e due pulsanti piatti e arrotondati sul piano destro.",
   "device.render.exploded":
     "Vista esplosa · scocca, lente, supporti del display, elettronica e base",
   "device.render.exploded.alt":

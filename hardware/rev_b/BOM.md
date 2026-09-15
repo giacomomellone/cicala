@@ -20,7 +20,7 @@ allowances are in [the engineering guide](../../docs/hardware_rev_b.md).
 | 1 set | Sensor wiring and insulation | Route without loading the sensor head; bond to the cell through electrical insulation |
 | 1 | Lens blank | Clear 0.8 mm sheet, cut to `case/exports/patterns/lens_cut.svg`; kerf and material fit to be established on a coupon |
 | 1 set | Printed core | Base, top shell, display frame, support bar, category and next caps, two keepers |
-| 2 | Captured silicone strips | Solid 0.50 mm silicone, nominal 50 Shore A; cut 1.6 × 8.8 mm and 1.6 × 11.8 mm using the patterns |
+| 2 | Captured silicone strips | Solid 0.50 mm silicone, nominal 50 Shore A; cut 1.6 × 12.8 mm and 1.6 × 16.8 mm using the patterns |
 | 4 | Keeper fasteners | M2 × 3 mm countersunk metal screws; nominal 4 mm head, qualify 1.65 mm printed pilot engagement |
 | 1 set | Display foam and attachment | Nominal 0.2 mm removable perimeter foam; keep the active screen and flex bond unloaded |
 | 1 set | Battery attachment and insulation | Within the 54 × 36 × 4.8 mm reservation; preserve the pack's protection board |

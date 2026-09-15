@@ -1,6 +1,6 @@
 # Rev B landscape hardware
 
-Rev B is an **engineering prototype**, with a centered screen, two controls on a 30° beveled edge and a thin battery beside an L-shaped PCB. Its standalone envelope is **108 × 66 × 10.2 mm**. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
+Rev B is an **engineering prototype**, with a centered screen, two large flat controls beside a 30° outer-edge bevel and a thin battery beside an L-shaped PCB. Its standalone envelope is **112 × 66 × 10.2 mm**. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
 
 ![Rev B assembly from the mechanical source](assets/images/hardware_rev_b/assembly.png)
 
@@ -25,7 +25,7 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 
 | Item              | Implemented arrangement                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
-| Enclosure         | 108 × 66 × 10.2 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
+| Enclosure         | 112 × 66 × 10.2 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
 | PCB               | Four layers, 1.2 mm nominal; lower arm and right arm, R1 reentrant corner; lower face z=2.635 mm |
 | Assembly          | Electronic components on the top face                                                            |
 | Controller        | ESP32-S3-WROOM-1-N16, antenna toward the left edge                                               |
@@ -34,7 +34,7 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 | Battery           | Protected Renata ICP303450PA-02, 500 mAh minimum; 54 × 36 × 4.8 mm assembly reservation          |
 | Display connector | Molex 503480-2400, 24 positions, 0.5 mm pitch, dual contacts                                     |
 | Battery header    | JST SH, BAT+/NTC/GND; AWG28 adapter harness                                                      |
-| Controls          | Alps SKRABCE010 under separate guided caps, 10 and 13 mm long                                    |
+| Controls          | Alps SKRABCE010 under separate guided caps, 8 × 14 and 8 × 18 mm                                 |
 | USB / recovery    | HRO TYPE-C-31-M-12 and six-contact Tag-Connect recovery interface                                |
 | Optional carrier  | 3.2 mm behind the core; 1.4 mm around its perimeter                                              |
 | Table stand       | Separate passive wedge, approximately 12°                                                        |
@@ -59,11 +59,11 @@ USB supplies charging and native USB recovery. The optional C1/C2 capacitor land
 
 ## Buttons and print preparation
 
-SKRABCE010 has a nominal 3.5 mm height, 0.4 mm travel and 1.2 N operating force. The caps move vertically on the sloping shoulder. Each cap has two **1.4 mm thick rounded end tabs**, supported outside the switch body. A **1.5 mm keeper**, attached to the empty shell with two M2 screws, captures the cap and provides the downward stops. The cap enters from underneath; no tab needs to bend during assembly. The upper pockets prevent the cap leaving through the front.
+SKRABCE010 has a nominal 3.5 mm height, 0.4 mm travel and 1.2 N operating force. The caps have flat faces parallel to the screen and move vertically. The 30° bevel is confined to the outer enclosure edge. Each cap has two **1.4 mm thick rounded end tabs**, supported outside the switch body. A **1.5 mm keeper**, attached to the empty shell with two M2 screws, captures the cap and provides the downward stops. The cap enters from underneath; no tab needs to bend during assembly. The upper pockets prevent the cap leaving through the front.
 
-The short cap is 10 mm long and Next is 13 mm. The cap's inner corner is clipped below the enclosure's top plane, so the nominal cap and its 0.05 mm upward allowance stay within **10.2 mm**. The longer guides take lateral load. The PCB-seat roots have tapered reinforcement. The nominal running clearance is 0.50 mm per side; test 0.30/0.40/0.50/0.60 mm coupons for the chosen printer or service. Smaller gaps require measured process capability.
+Filters has an **8 × 14 mm** face and Next an **8 × 18 mm** face, both with R1.2 corners. Their top plane is z=10.15 mm, 0.40 mm above the recessed control ledge; the 0.05 mm return allowance stays within **10.2 mm**. The case extends from x=−2 to 110 mm around the existing PCB datum, preserving the centered active screen. Cap centers differ from the switch centers; the underside contact tips remain directly over the existing switches. This preserves the routed PCB. Larger faces increase off-center leverage, so check edge presses, rocking and return physically. The longer guides take lateral load. The PCB-seat roots have tapered reinforcement. The nominal running clearance is 0.50 mm per side; test 0.30/0.40/0.50/0.60 mm coupons for the chosen printer or service. Smaller gaps require measured process capability.
 
-A rectangular **0.50 mm solid silicone strip, nominal 50 Shore A**, sits in end pockets under each cap. Cut 1.6 × 8.8 mm for Filters and 1.6 × 11.8 mm for Next. Use solid silicone sheet, not foam or a thermal interface pad. The central 1.6 mm tip presses through the strip. The pockets locate the insert without adhesive; verify insertion, creep and release on the coupon. Manufacturer sheet ranges include [0.5 mm / 50 Shore A silicone](https://www.siliconenab.com/wp-content/uploads/2025/08/HRS.pdf); the selected material specification does not establish a force curve or supplied thickness tolerance.
+A rectangular **0.50 mm solid silicone strip, nominal 50 Shore A**, sits in end pockets under each cap. Cut 1.6 × 12.8 mm for Filters and 1.6 × 16.8 mm for Next. Use solid silicone sheet, not foam or a thermal interface pad. The central 1.6 mm tip presses through the strip. The pockets locate the insert without adhesive; verify insertion, creep and release on the coupon. Manufacturer sheet ranges include [0.5 mm / 50 Shore A silicone](https://www.siliconenab.com/wp-content/uploads/2025/08/HRS.pdf); the selected material specification does not establish a force curve or supplied thickness tolerance.
 
 ### Tolerances and part selection
 
@@ -81,13 +81,13 @@ Exports are separated by purpose:
 | --------------------------------- | ------------------------------------------------------------------------ |
 | `case/exports/assembly/`          | Native assembly-coordinate STL/3MF models                                |
 | `case/exports/print/core/`        | Individually oriented housing, supports, caps and keepers                |
-| `case/exports/print/accessories/` | Carrier, cover, wedge and flat comparison cap                            |
+| `case/exports/print/accessories/` | Carrier, cover and wedge                                                 |
 | `case/exports/print/coupons/`     | Guides, graded caps and graded keepers; print selected trials            |
 | `case/exports/print/jigs/`        | Temporary flex former                                                    |
 | `case/exports/reference/`         | Battery, panel, PCB and silicone references; not installed plastic parts |
 | `case/exports/patterns/`          | Clear-sheet lens and silicone-strip cutting outlines                     |
 
-`print-layout.json` records each print orientation and bed translation. STL and 3MF carry geometry, not qualified slicer profiles. Start home trials with PETG, a 0.4 mm nozzle and 0.15 mm layers. The top shell and guide coupons face downward; caps rest on their main beveled faces, keepers on their flat undersides. Inspect overhangs and keep support scars out of the guides, strip pockets and screw seats. The base, supports and keepers have reinforced load paths; their thin details and broad spans still need process review. [JLC3DP guidelines](https://jlc3dp.com/help/article/3d-printing-design-guideline) and [PCBWay printing capabilities](https://www.pcbway.com/rapid-prototyping/3d-printing/) describe the service limits, not acceptance of these particular parts.
+`print-layout.json` records each print orientation and bed translation. STL and 3MF carry geometry, not qualified slicer profiles. Start home trials with PETG, a 0.4 mm nozzle and 0.15 mm layers. The top shell and guide coupons face downward; caps rest on their flat finger faces, keepers on their flat undersides. Inspect overhangs and keep support scars out of the guides, strip pockets and screw seats. The base, supports and keepers have reinforced load paths; their thin details and broad spans still need process review. [JLC3DP guidelines](https://jlc3dp.com/help/article/3d-printing-design-guideline) and [PCBWay printing capabilities](https://www.pcbway.com/rapid-prototyping/3d-printing/) describe the service limits, not acceptance of these particular parts.
 
 Use four **M2 × 3 mm countersunk screws** for the keepers, with nominal 4 mm heads and 1.65 mm printed pilots. The nominal thread engagement is 1.5 mm; qualify the pilot and tightening torque on the coupon. Four **M2.5 × 8 mm countersunk screws** close the core; use 10 mm with the optional carrier. Check actual head seating, engagement and tip clearance before installing electronics. The keeper heads sit above the PCB, and their shafts remain inside the shell posts.
 
@@ -139,9 +139,9 @@ The assembly BOM identifies exact MPNs. Blank LCSC fields require exact-part sou
 
 ## Removable phone carrier
 
-The core rotates for carrying, radio end downward. With the carrier it occupies **68.8 × 110.8 mm**, adding **13.4 mm** depth behind the phone before case/adhesive gaps. Its covered accessory-style magnetic array is a separate, made-to-drawing part, not a generic ring magnet.
+The core rotates for carrying, radio end downward. With the carrier it occupies **68.8 × 114.8 mm**, adding **13.4 mm** depth behind the phone before case/adhesive gaps. Its covered accessory-style magnetic array is a separate, made-to-drawing part, not a generic ring magnet.
 
-The nominal iPhone 16 Plus fit leaves 5.22 mm to the drawing's camera keepout and 1.15 mm at the phone bottom. [Selection evidence](hardware_rev_b_selection.md) gives the dimensions and source. This is a 2D fit screen, not a compatibility claim. Test actual cases, optical/flash cones, retention, slipping, removal and radio behavior. Detach for wireless charging. The carrier remains optional and does not alter the standalone electronics.
+The wider core makes the portrait carrier 114.8 mm long. Its ring is repositioned to leave **1.185 mm** both below the iPhone 16 Plus camera keepout and above the phone bottom. These small nominal margins leave little allowance for cases or alignment error. [Selection evidence](hardware_rev_b_selection.md) gives the dimensions and source. This is a 2D fit screen, not a compatibility claim. Test actual cases, optical/flash cones, retention, slipping, removal and radio behavior. Detach for wireless charging. The carrier remains optional and does not alter the standalone electronics.
 
 ## Reproduce validation
 

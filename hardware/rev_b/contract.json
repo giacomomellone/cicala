@@ -1,16 +1,23 @@
 {
-  "revision": "rev_b_proto_02",
+  "revision": "rev_b_proto_03",
   "status": "engineering prototype; digital validation required before export; physical qualification pending",
   "units": "mm",
   "case": {
-    "width": 108,
+    "width": 112,
     "depth": 66,
     "height": 10.2,
     "corner_radius": 4,
     "wall": 1.4,
     "base": 1.2,
-    "bevel_start": 101.3,
-    "bevel_angle": 30
+    "bevel_start": 108.8,
+    "bevel_angle": 30,
+    "origin": [
+      -2,
+      0,
+      0
+    ],
+    "control_ledge_x": 99.6,
+    "control_ledge_z": 9.75
   },
   "pcb": {
     "z": 2.635,
@@ -128,10 +135,10 @@
         52.3
       ]
     ],
-    "cap_width": 4.2,
+    "cap_width": 8,
     "cap_lengths": [
-      10,
-      13
+      14,
+      18
     ],
     "guide_width": 2,
     "radial_clearance": 0.5,
@@ -220,7 +227,28 @@
     ],
     "keeper_screws": "4 \u00d7 M2 \u00d7 3 mm countersunk metal screws, ISO 7046 / DIN 965 style; printed 1.65 mm pilots, qualify engagement on coupon",
     "face_recess": 0.05,
-    "return_clearance": 0.05
+    "return_clearance": 0.05,
+    "cap_centres": [
+      [
+        104.5,
+        17
+      ],
+      [
+        104.5,
+        51
+      ]
+    ],
+    "face_radius": 1.2,
+    "keeper_screw_offsets": [
+      [
+        3.2,
+        3.2
+      ],
+      [
+        3.2,
+        2.2
+      ]
+    ]
   },
   "rf_keepout": {
     "origin": [
@@ -257,7 +285,7 @@
     "ring_inner_diameter": 46,
     "ring_depth": 1.15,
     "ring_centre": [
-      77.9,
+      75.865,
       33
     ],
     "case_clearance": 0.3,
@@ -285,7 +313,7 @@
     "First power-up: polarity, 3V3 regulation and USB/UART programming",
     "Display refresh, power-down, rail voltages and flex fit on selected V1.1 panel",
     "Battery NTC veto, charging, pulse load and sleep current",
-    "Printed actuator shims, force, stroke and wear; assembly and cable access",
+    "Printed flat-cap fit, off-centre force, return, stroke and wear; assembly and cable access",
     "Optional phone carrier retention, camera interference and loaded antenna performance",
     "Factory confirmation of stack, stencil and tab-panel support at prototype order"
   ]

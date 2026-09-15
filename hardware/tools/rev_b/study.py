@@ -12,17 +12,17 @@ import sys
 from generate_contract import CONTRACT, ROOT, OUTPUT, render
 from check_contract import BOARD, BOUNDS, check
 from button_tolerances import audit as button_audit
-from print_layout import placement, role, rotation
+from print_layout import placement, role, rotation, check_flat_face
 
 sys.path.insert(0, str(ROOT / 'hardware/tools/case'))
 from check_mesh import check as check_mesh, triangles
 
 SOURCE = ROOT / 'hardware/rev_b/case/cicala_enclosure.scad'
 PARTS = ['base', 'top_shell', 'display_frame', 'display_support_bar', 'category_cap', 'next_cap',
-         'category_keeper', 'next_keeper', 'next_pad', 'flat_cap', 'carrier', 'carrier_cover', 'flex_former', 'cap_pad', 'wedge',
+         'category_keeper', 'next_keeper', 'next_pad', 'carrier', 'carrier_cover', 'flex_former', 'cap_pad', 'wedge',
          'pcb_reference', 'cell_reference', 'panel_reference']
 FIT = ['components_case', 'components_cell', 'pcb_cell', 'panel_case',
-       'flex_case', 'flex_components', 'harness', 'carrier', 'switches_case', 'keepers', 'strip', 'screws']
+       'flex_case', 'flex_components', 'harness', 'carrier', 'switches_case', 'keepers', 'strip', 'screws', 'carrier_fasteners']
 
 
 def tool(variable, name, mac):
@@ -137,14 +137,20 @@ def main():
             run([*scad,'--hardwarnings',*options,'-o',target,SOURCE],report/f'{name}-{ext}.log')
             if ext=='stl':
                 check_mesh(target)
+                if part in ('category_cap','next_cap','coupon_cap'):
+                    index = 1 if part=='next_cap' or name.startswith('coupon_next_') else 0
+                    b=contract['buttons']
+                    check_flat_face(triangles(target),contract['case']['height']-b['face_recess'],
+                                    b['cap_width']*b['cap_lengths'][index]-4*b['face_radius']**2)
                 if role(part)=='core':
                     points=[p for face in triangles(target)for p in face]
                     for axis,limit in enumerate((contract['case']['width'],contract['case']['depth'],contract['case']['height'])):
                         extra=contract['buttons']['return_clearance'] if axis==2 and part in ('category_cap','next_cap') else 0
-                        if min(p[axis]for p in points)<-.0001 or max(p[axis]for p in points)+extra>limit+.0001:
+                        lower=contract['case']['origin'][axis]
+                        if min(p[axis]for p in points)<lower-.0001 or max(p[axis]for p in points)+extra>lower+limit+.0001:
                             raise ValueError(f'{name} exceeds the core envelope on axis {axis}')
         if args.export and role(part)!='reference':
-            layout=placement(triangles(model_dir/f'{name}.stl'),rotation(part,contract['case']['bevel_angle']))
+            layout=placement(triangles(model_dir/f'{name}.stl'),rotation(part))
             directory=output/'print'/role(part);directory.mkdir(parents=True,exist_ok=True)
             orient=['-D','print_rotation='+json.dumps(layout['rotation_degrees']),
                     '-D','print_shift='+json.dumps(layout['translation_mm'])]

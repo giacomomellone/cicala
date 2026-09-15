@@ -111,7 +111,7 @@ def check(geometry, models_root):
     ring = Point(carrier['ring_centre']).buffer(carrier['ring_outer_diameter']/2)
     require(ring.intersection(rf_shape).area == 0, 'Carrier ring crosses antenna clearance')
     active = c['display']['active']; origin = c['display']['active_origin']
-    require(abs(origin[0]+active[0]/2-c['case']['width']/2) < .001
+    require(abs(origin[0]+active[0]/2-(c['case']['origin'][0]+c['case']['width']/2)) < .001
             and abs(origin[1]+active[1]/2-c['case']['depth']/2) < .001,
             'Active display must be centered on the case')
     buttons = c['buttons']

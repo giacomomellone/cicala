@@ -6,7 +6,7 @@ record the omitted electrical checks.
 
 - `assembly/`: native assembly coordinates for the installed parts and coupons.
 - `print/core/`: individually oriented enclosure, supports, caps and keepers.
-- `print/accessories/`: carrier, cover, wedge and flat comparison cap.
+- `print/accessories/`: carrier, cover and wedge.
 - `print/coupons/`: clearance, relief and stop trials for both buttons.
 - `print/jigs/`: the temporary flex former.
 - `reference/`: inert component and silicone reference models, not plastic parts to install.
