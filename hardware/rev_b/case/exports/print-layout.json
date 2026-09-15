@@ -1,0 +1,1042 @@
+{
+  "jobs": {
+    "print/core/base.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -0.0,
+        -0.0,
+        -0.0
+      ],
+      "size_mm": [
+        108.0,
+        66.0,
+        2.635
+      ]
+    },
+    "print/core/top_shell.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        108.0,
+        -0.0,
+        10.200000000000012
+      ],
+      "size_mm": [
+        108.0,
+        66.0,
+        9.00000000000001
+      ]
+    },
+    "print/core/display_frame.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -13.375,
+        -4.795,
+        -6.35
+      ],
+      "size_mm": [
+        86.425,
+        56.41,
+        0.7999999999999998
+      ]
+    },
+    "print/core/display_support_bar.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -30.5,
+        -58.335,
+        -6.35
+      ],
+      "size_mm": [
+        42.3,
+        2.8699999999999974,
+        0.7999999999999998
+      ]
+    },
+    "print/core/category_cap.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/core/next_cap.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/core/category_keeper.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/core/next_keeper.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/accessories/flat_cap.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        104.70000000298023,
+        -10.5,
+        8.350000001490129
+      ],
+      "size_mm": [
+        4.3000000029802266,
+        13.999999997019767,
+        1.8000000014901163
+      ]
+    },
+    "print/accessories/carrier.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        1.4,
+        1.4,
+        3.2
+      ],
+      "size_mm": [
+        110.79999999701977,
+        68.79999999701977,
+        5.19
+      ]
+    },
+    "print/accessories/carrier_cover.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -50.150000000000006,
+        -5.25,
+        3.2
+      ],
+      "size_mm": [
+        55.5,
+        55.5,
+        0.8500000000000001
+      ]
+    },
+    "print/jigs/flex_former.stl": {
+      "rotation_degrees": [
+        0,
+        -90,
+        0
+      ],
+      "translation_mm": [
+        7.249999999999994,
+        -26.75,
+        -99.475
+      ],
+      "size_mm": [
+        3.0,
+        12.5,
+        1.5
+      ]
+    },
+    "print/accessories/wedge.stl": {
+      "rotation_degrees": [
+        0,
+        90,
+        0
+      ],
+      "translation_mm": [
+        -0.0,
+        -0.0,
+        80.0
+      ],
+      "size_mm": [
+        10.000000000000005,
+        36.0,
+        80.0
+      ]
+    },
+    "print/coupons/coupon_category_clearance_0.30.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -5.5,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_category_clearance_0.40.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -5.5,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_category_clearance_0.50.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -5.5,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_category_clearance_0.60.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -5.5,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_category_relief_-0.40.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        87.05994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        5.099390181399215,
+        13.999999997019767,
+        3.712306699506236
+      ]
+    },
+    "print/coupons/coupon_category_relief_-0.30.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        87.00994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        5.049390181399218,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_-0.20.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.95994326248035,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.999390181399207,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_-0.10.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.90994326248035,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.94939018139921,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.00.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.85994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.8993901813992125,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.10.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.20.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.30.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.40.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.50.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_relief_0.60.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -10.5,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        13.999999997019767,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_category_stop_-0.40.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_category_stop_-0.30.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_category_stop_-0.20.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_category_stop_-0.10.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_category_stop_+0.00.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_category_stop_+0.10.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.5999999999999996
+      ]
+    },
+    "print/coupons/coupon_category_stop_+0.20.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.7000000000000002
+      ]
+    },
+    "print/coupons/coupon_category_stop_+0.30.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.7999999999999998
+      ]
+    },
+    "print/coupons/coupon_category_stop_+0.40.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -7.100000001490116,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        20.799999997019768,
+        1.9000000000000004
+      ]
+    },
+    "print/coupons/coupon_next_clearance_0.30.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -40.3,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_next_clearance_0.40.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -40.3,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_next_clearance_0.50.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -40.3,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_next_clearance_0.60.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        106.6,
+        -40.3,
+        9.738119784593595
+      ],
+      "size_mm": [
+        7.349999999999994,
+        24.0,
+        3.838119784593583
+      ]
+    },
+    "print/coupons/coupon_next_relief_-0.40.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        87.05994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        5.099390181399215,
+        16.99999999701977,
+        3.712306699506236
+      ]
+    },
+    "print/coupons/coupon_next_relief_-0.30.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        87.00994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        5.049390181399218,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_-0.20.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.95994326248035,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.999390181399207,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_-0.10.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.90994326248035,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.94939018139921,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.00.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.85994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.8993901813992125,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.10.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.20.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.30.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.40.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.50.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_relief_0.60.stl": {
+      "rotation_degrees": [
+        0,
+        150,
+        0
+      ],
+      "translation_mm": [
+        86.80994326248036,
+        -43.8,
+        59.5700616625913
+      ],
+      "size_mm": [
+        4.849390181399215,
+        16.99999999701977,
+        3.69759526780323
+      ]
+    },
+    "print/coupons/coupon_next_stop_-0.40.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_next_stop_-0.30.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_next_stop_-0.20.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_next_stop_-0.10.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_next_stop_+0.00.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5
+      ]
+    },
+    "print/coupons/coupon_next_stop_+0.10.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.5999999999999996
+      ]
+    },
+    "print/coupons/coupon_next_stop_+0.20.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.7000000000000002
+      ]
+    },
+    "print/coupons/coupon_next_stop_+0.30.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.7999999999999998
+      ]
+    },
+    "print/coupons/coupon_next_stop_+0.40.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -97.29999999701977,
+        -40.399999998509884,
+        -4.3999999999999995
+      ],
+      "size_mm": [
+        9.200000002980232,
+        23.80000000447035,
+        1.9000000000000004
+      ]
+    }
+  },
+  "notes": "Individually oriented meshes. Slicer supports, material and fit require qualification; do not print all graded coupon options for an assembled device."
+}

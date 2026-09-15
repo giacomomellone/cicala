@@ -6,12 +6,12 @@ name: hardware
 on:
   pull_request:
     paths:
-      - "hardware/pcb/**"
+      - "hardware/**"
       - ".github/workflows/hardware.yml"
   push:
     branches: [main]
     paths:
-      - "hardware/pcb/**"
+      - "hardware/**"
       - ".github/workflows/hardware.yml"
 
 permissions:
@@ -34,11 +34,27 @@ jobs:
       - name: Check the Rev A schematic and board
         env:
           CICALA_PCB_REPORT_DIR: ${{ github.workspace }}/pcb-reports
-        run: hardware/pcb/check_rev_a.sh
+        run: hardware/tools/rev_a/check_rev_a.sh
       - name: Upload the ERC and DRC reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: rev-a-pcb-reports
           path: pcb-reports/
+          if-no-files-found: warn
+
+      - name: Check button selection and print orientation logic
+        run: |
+          python3 -m unittest discover -s hardware/tools/rev_b -p 'test_button_tolerances.py'
+          python3 -m unittest discover -s hardware/tools/rev_b -p 'test_print_layout.py'
+      - name: Check the Rev B schematic and filled board
+        env:
+          CICALA_PCB_REPORT_DIR: ${{ github.workspace }}/rev-b-pcb-reports
+        run: hardware/tools/rev_b/check_pcb.sh
+      - name: Upload the Rev B electrical reports
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: rev-b-pcb-reports
+          path: rev-b-pcb-reports/
           if-no-files-found: warn

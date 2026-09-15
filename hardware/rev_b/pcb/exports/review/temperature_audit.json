@@ -1,0 +1,24 @@
+{
+  "cold_threshold_V": [
+    0.8071649034913108,
+    0.9295163584637269
+  ],
+  "hot_threshold_V": [
+    0.22321464382004944,
+    0.26675392670157066
+  ],
+  "nominal_charge_window_C": [
+    4.44,
+    37.05
+  ],
+  "reference_current_uA": 2.966292134831461,
+  "model_margins_V": {
+    "cold_stop_at_0C_V": 0.030981141536272627,
+    "hot_stop_at_45C_V": 0.020153171284017585,
+    "permission_at_10C_V": 0.0577116534913118,
+    "permission_at_30C_V": 0.021083248298429558
+  },
+  "floating_gpio_CE_max_V": 0.2516554695557462,
+  "sensor": "Semitec 103JT-025; published JT table, conservative \u00b15% R/T allowance",
+  "physical_tests": "Bonded sensor lag and actual cell temperature remain first-article measurements"
+}

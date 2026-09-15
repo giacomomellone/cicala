@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schemas.kicad.org/erc.v1.json",
+    "coordinate_units": "mm",
+    "date": "2026-09-15T21:42:14",
+    "ignored_checks": [
+        {
+            "description": "Global label only appears once in the schematic",
+            "key": "single_global_label"
+        },
+        {
+            "description": "Four connection points are joined together",
+            "key": "four_way_junction"
+        },
+        {
+            "description": "SPICE model issue",
+            "key": "simulation_model_issue"
+        },
+        {
+            "description": "Assigned footprint doesn't match footprint filters",
+            "key": "footprint_filter"
+        }
+    ],
+    "included_severities": [
+        "error",
+        "warning",
+        "exclusion"
+    ],
+    "kicad_version": "10.0.5",
+    "sheets": [
+        {
+            "path": "/",
+            "uuid_path": "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc",
+            "violations": []
+        },
+        {
+            "path": "/Power and USB/",
+            "uuid_path": "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/76abdd1f-1863-43cb-987e-b8bd556e1e12",
+            "violations": []
+        },
+        {
+            "path": "/Controller and user I/O/",
+            "uuid_path": "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5c37343c-ce2e-4af1-8c0e-7996e7e59814",
+            "violations": []
+        },
+        {
+            "path": "/E-paper display/",
+            "uuid_path": "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/9467d62a-f8ed-46c9-a7cb-f7af887ddb15",
+            "violations": []
+        },
+        {
+            "path": "/Charge temperature guard/",
+            "uuid_path": "/9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc/5a248222-0e79-4b8c-9e76-6b9920429c56",
+            "violations": []
+        }
+    ],
+    "source": "cicala_rev_b.kicad_sch"
+}

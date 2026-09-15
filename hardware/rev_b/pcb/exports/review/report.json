@@ -1,0 +1,20 @@
+{
+  "footprints": 115,
+  "component_envelopes": 87,
+  "outline_area_mm2": 3740.22,
+  "assembly_faces": 1,
+  "physical_gates": [
+    "First power-up: polarity, 3V3 regulation and USB/UART programming",
+    "Display refresh, power-down, rail voltages and flex fit on selected V1.1 panel",
+    "Battery NTC veto, charging, pulse load and sleep current",
+    "Printed actuator shims, force, stroke and wear; assembly and cable access",
+    "Optional phone carrier retention, camera interference and loaded antenna performance",
+    "Factory confirmation of stack, stencil and tab-panel support at prototype order"
+  ],
+  "unconnected_items": 0,
+  "mechanical_poses": 64,
+  "mesh_pairs": 66,
+  "printable_parts": 61,
+  "button_tolerance_corners": 192,
+  "status": "engineering prototype files checked; first-article physical measurements pending"
+}

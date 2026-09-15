@@ -40,7 +40,7 @@ documentation, and do not describe its contents here.
 
 ## Component prices are not commercial strategy
 
-`hardware/pcb/BOM.md` and `docs/prototype_bom.md` carry component price
+`hardware/rev_a/BOM.md` and `docs/prototype_bom.md` carry component price
 indications so a maker can reproduce the device and judge what it costs to
 build. Those stay public. A price appearing in a document is not by itself a
 reason to move it. What moves is negotiated pricing: quotations tied to a

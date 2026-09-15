@@ -44,14 +44,14 @@ The DevKitC power LED and WS2812 prevent a useful whole-device sleep-current mea
 
 ## Rev A integration
 
-| Part                                                        |               Quantity | Use                                                                            |
-| ----------------------------------------------------------- | ---------------------: | ------------------------------------------------------------------------------ |
-| ESP32-S3-WROOM-1U-N16, with WROOM-1-N16 gated               |                      1 | production module, antenna study and 16 MB partition layout                    |
-| **GDEY0213B74** bare panel                                  | 1, plus optional spare | final display stack                                                            |
-| 24-pin 0.5 mm FPC connector                                 |                      1 | panel connection                                                               |
-| C&K **KSC321GLFS**                                          |                      2 | Category and Next                                                              |
-| Protected 503035 LiPo                                       |                      1 | enclosure-sized product cell                                                   |
-| Charger, regulator, USB-C, ESD, load switches, and passives |                  1 set | rev A power and service path; exact parts remain open in `hardware/pcb/BOM.md` |
-| Printed shell, button caps, lens, ballast, and feet         |                  1 set | tabletop interaction and mechanical tests                                      |
+| Part                                                        |               Quantity | Use                                                                              |
+| ----------------------------------------------------------- | ---------------------: | -------------------------------------------------------------------------------- |
+| ESP32-S3-WROOM-1U-N16, with WROOM-1-N16 gated               |                      1 | production module, antenna study and 16 MB partition layout                      |
+| **GDEY0213B74** bare panel                                  | 1, plus optional spare | final display stack                                                              |
+| 24-pin 0.5 mm FPC connector                                 |                      1 | panel connection                                                                 |
+| C&K **KSC321GLFS**                                          |                      2 | Category and Next                                                                |
+| Protected 503035 LiPo                                       |                      1 | enclosure-sized product cell                                                     |
+| Charger, regulator, USB-C, ESD, load switches, and passives |                  1 set | rev A power and service path; exact parts remain open in `hardware/rev_a/BOM.md` |
+| Printed shell, button caps, lens, ballast, and feet         |                  1 set | tabletop interaction and mechanical tests                                        |
 
 Use [hardware wiring](hardware_wiring.md) to assemble and check the breadboard. The current validation state and remaining enclosure tests are in [device prototype](device_prototype.md).

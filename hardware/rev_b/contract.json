@@ -1,0 +1,292 @@
+{
+  "revision": "rev_b_proto_02",
+  "status": "engineering prototype; digital validation required before export; physical qualification pending",
+  "units": "mm",
+  "case": {
+    "width": 108,
+    "depth": 66,
+    "height": 10.2,
+    "corner_radius": 4,
+    "wall": 1.4,
+    "base": 1.2,
+    "bevel_start": 101.3,
+    "bevel_angle": 30
+  },
+  "pcb": {
+    "z": 2.635,
+    "thickness": 1.2,
+    "layers": 4,
+    "outline": [
+      [
+        3,
+        44
+      ],
+      [
+        65,
+        44
+      ],
+      [
+        66,
+        43
+      ],
+      [
+        66,
+        2
+      ],
+      [
+        106,
+        2
+      ],
+      [
+        106,
+        64
+      ],
+      [
+        3,
+        64
+      ]
+    ],
+    "inside_radius": 1,
+    "assembly_face": "F.Cu",
+    "copper_edge_clearance": 0.5
+  },
+  "display": {
+    "candidate": "Waveshare SKU22609, 3.52 inch V1.1",
+    "glass": [
+      84.7,
+      54.41,
+      1.18
+    ],
+    "glass_origin": [
+      14.375,
+      5.795,
+      7.35
+    ],
+    "active": [
+      74.51,
+      49.67
+    ],
+    "active_origin": [
+      16.745,
+      8.165
+    ],
+    "resolution": [
+      360,
+      240
+    ],
+    "flex_exit": "right",
+    "flex_width": 12.5,
+    "flex_length": 10,
+    "flex_stiffener": 3.65,
+    "flex_bend_radius_assumption": 1.55,
+    "lens_z": 8.65,
+    "lens_thickness": 0.8,
+    "thickness_basis": "1.18 mm reserved from product listing; V1.1 drawing says 0.92 +/-0.10 mm including edge adhesive",
+    "flex_nominal_spare_length": 0.923,
+    "flex_tolerance_status": "Prototype former R1.55. Worst length remainder 0.276 mm using 9.7 tail, 3.95 stiffener, 0.13 flex and 0.4 bonding straight. Verify contact datum and fold on first article.",
+    "connector": "Molex 503480-2400",
+    "connector_insertion": 1.58,
+    "connector_contact_bottom_z": 4.15
+  },
+  "battery": {
+    "candidate": "Renata ICP303450PA-02 (100701), protected; external Semitec 103JT-025 NTC",
+    "capacity_mah": 500,
+    "nominal_cell": [
+      52,
+      34.5,
+      3.6
+    ],
+    "reserved_origin": [
+      11,
+      7,
+      1.4
+    ],
+    "reserved_size": [
+      54,
+      36,
+      4.8
+    ],
+    "adhesive": 0.2,
+    "charge_current_ma": 100,
+    "connector": "JST SM03B-SRSS-TB(LF)(SN); SHR-03V-S housing; SSH-003T-P0.2 contacts; AWG28 pigtail spliced to protected pack AWG26 leads",
+    "pinout": [
+      "BAT+",
+      "NTC",
+      "GND"
+    ],
+    "harness": "Two 40 mm AWG28 power leads, plus NTC lead, separately insulated splices; stock pack protection retained."
+  },
+  "buttons": {
+    "mpn": "SKRABCE010",
+    "centres": [
+      [
+        102.6,
+        17.5
+      ],
+      [
+        102.6,
+        52.3
+      ]
+    ],
+    "cap_width": 4.2,
+    "cap_lengths": [
+      10,
+      13
+    ],
+    "guide_width": 2,
+    "radial_clearance": 0.5,
+    "tip_diameter": 1.6,
+    "tip_relief": 0.1,
+    "switch_height": 3.5,
+    "switch_height_tolerance": 0.15,
+    "switch_travel": 0.4,
+    "stop_travel": 0.65,
+    "coupon_clearances": [
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "coupon_reliefs": [
+      -0.4,
+      -0.3,
+      -0.2,
+      -0.1,
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6
+    ],
+    "compliant_pad_thickness": 0.5,
+    "retention_thickness": 1.4,
+    "retention_bottom_z": 6.55,
+    "retention_x": 100.4,
+    "retention_width": 2.5,
+    "retention_extension": 2,
+    "retention_root_overlap": 0.8,
+    "retention_radius": 0.4,
+    "keeper_thickness": 1.5,
+    "keeper_screw_x": 104.3,
+    "keeper_screw_offset": 3.2,
+    "keeper_screw_diameter": 2,
+    "keeper_screw_length": 3,
+    "keeper_pilot_diameter": 1.65,
+    "keeper_head_diameter": 4.2,
+    "pad_width": 1.6,
+    "pad_end_inset": 0.6,
+    "pad_slot_clearance": 0.1,
+    "guide_bottom_z": 6.35,
+    "cap_body_bottom_z": 7.8,
+    "cap_body_top_overlap": 8.1,
+    "strip_foot_bottom_z": 6.6,
+    "strip_foot_inner_inset": 1.2,
+    "minimum_tab_engagement": 0.7,
+    "compliant_pad": "0.50 mm solid silicone sheet, nominal 50 Shore A; rectangular strip with captured ends; not foam or a thermal pad; force and aging unqualified",
+    "tolerance_assumptions": {
+      "pcb_thickness_plus_minus": 0.13,
+      "switch_height_plus_minus": 0.15,
+      "printed_vertical_plus_minus": 0.13,
+      "printed_surface_plus_minus": 0.2,
+      "solder_height_plus_minus": 0.015,
+      "silicone_thickness_plus_minus": 0.05,
+      "measured_gap_target": [
+        0.05,
+        0.15
+      ],
+      "switch_travel_range": [
+        0.2,
+        0.6
+      ],
+      "nominal_pad_compression_budget": 0.15,
+      "status": "Bounds are design screening assumptions, not qualified process capabilities; choose relief and stop from the measured coupon.",
+      "pad_compression_range": [
+        0.05,
+        0.15
+      ]
+    },
+    "keeper_stop_adjustments": [
+      -0.4,
+      -0.3,
+      -0.2,
+      -0.1,
+      0,
+      0.1,
+      0.2,
+      0.3,
+      0.4
+    ],
+    "keeper_screws": "4 \u00d7 M2 \u00d7 3 mm countersunk metal screws, ISO 7046 / DIN 965 style; printed 1.65 mm pilots, qualify engagement on coupon",
+    "face_recess": 0.05,
+    "return_clearance": 0.05
+  },
+  "rf_keepout": {
+    "origin": [
+      3,
+      29
+    ],
+    "size": [
+      6.5,
+      35
+    ],
+    "scope": "no copper, battery, display, screws or carrier metal; validate phone-loaded RF"
+  },
+  "mounts": [
+    [
+      40,
+      61.7
+    ],
+    [
+      69,
+      4.2
+    ],
+    [
+      100,
+      4.2
+    ],
+    [
+      95,
+      61.7
+    ]
+  ],
+  "carrier": {
+    "thickness": 3.2,
+    "ring_outer_diameter": 54.1,
+    "ring_inner_diameter": 46,
+    "ring_depth": 1.15,
+    "ring_centre": [
+      77.9,
+      33
+    ],
+    "case_clearance": 0.3,
+    "retention": "Removable screw cradle; radio end down. First-article retention, camera and RF qualification required.",
+    "array": "CIC-MAG-01, made to drawing; N48H radial accessory array, supplier qualification pending",
+    "magnet_thickness": 1.1,
+    "adhesive_thickness": 0.05,
+    "steel_shield_thickness": 0.7,
+    "cover_thickness": 0.85,
+    "support_thickness": 0.5
+  },
+  "manufacturing": {
+    "route_min_width": 0.2,
+    "escape_min_width": 0.15,
+    "clearance": 0.2,
+    "via_drill": 0.3,
+    "via_diameter": 0.6,
+    "panel_rail": 5,
+    "panel_route_channel": 2,
+    "panel_method": "tab routing; factory to review supports and panel",
+    "impedance": "90 ohm USB; PCBWay published 1.2 mm four-layer entry 17, 0.1855 mm outer dielectric, er 4.74; confirm impedance with factory at order",
+    "release": false
+  },
+  "gates": [
+    "First power-up: polarity, 3V3 regulation and USB/UART programming",
+    "Display refresh, power-down, rail voltages and flex fit on selected V1.1 panel",
+    "Battery NTC veto, charging, pulse load and sleep current",
+    "Printed actuator shims, force, stroke and wear; assembly and cable access",
+    "Optional phone carrier retention, camera interference and loaded antenna performance",
+    "Factory confirmation of stack, stencil and tab-panel support at prototype order"
+  ]
+}

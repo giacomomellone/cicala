@@ -1,0 +1,25 @@
+net_name,gpio,direction,active_state,schematic_sheet,sleep_requirement,notes
+VBAT_SENSE,1,input,analog,battery_charger,divider_off,1 MΩ over 470 kΩ divider
+VBAT_SENSE_EN,2,output,high,battery_charger,low,Switch the complete divider
+BOOT_IO0,0,input,low,esp32_core,pulled_high,Concealed recovery pad
+BTN_CATEGORY,4,input,low,esp32_core,RTC wake,Preserve firmware mapping
+EPD_PWR_EN,5,output,high,epaper,low,Panel and boost off between refreshes
+CHG_STAT1,6,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT2
+CHG_STAT2,7,input,open-drain,battery_charger,input,10 kΩ pull-up to 3V3; decode with STAT1
+EPD_RESET,8,output,low,epaper,physical_low,Park low before switching the panel rail off
+EPD_BUSY,9,input,panel-defined,epaper,input,Preserve firmware mapping
+EPD_CS,10,output,low,epaper,physical_low,Park low before switching the panel rail off
+EPD_MOSI,11,output,high,epaper,physical_low,Park low before switching the panel rail off
+EPD_CLK,12,output,high,epaper,physical_low,Park low before switching the panel rail off
+CHG_ENABLE,14,output,low,battery_charger,low,Low requests charging; 4.7 kΩ pull-down defaults on; independent U7/Q2 temperature veto
+STATUS_RED,15,output,high,esp32_core,low,Both status outputs low means off
+STATUS_GREEN,16,output,high,esp32_core,low,Both status outputs low means off
+BTN_NEXT,17,input,low,esp32_core,RTC wake,Preserve firmware mapping
+EPD_DC,18,output,high,epaper,physical_low,Park low before switching the panel rail off
+USB_DN,19,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
+USB_DP,20,bidirectional,USB,battery_charger,USB-defined,Native USB Serial/JTAG
+VBUS_SENSE,21,input,high,battery_charger,input,Boot and polling path; optional EXT0 measurement
+FACTORY_RESET_OD,38,open-drain,low,esp32_core,released,Final factory use remains gated
+UART0_TX,43,output,high,esp32_core,inactive,Top-side recovery pad; access after opening
+UART0_RX,44,input,high,esp32_core,input,Top-side recovery pad; access after opening
+CHIP_EN,EN,input,low,esp32_core,pulled_high,Concealed reset and recovery pad

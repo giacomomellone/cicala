@@ -8,7 +8,7 @@ target. Run commands from the public repository containing `justfile`.
 
 The firmware has been built and tested in simulation. It has not been flashed
 to a physical Rev A board. The acceptance procedure in
-`hardware/pcb/REVIEW.md` covers first power, charging, display, radio and sleep
+`hardware/rev_a/REVIEW.md` covers first power, charging, display, radio and sleep
 measurements. Perform initial USB work with the battery disconnected.
 
 ## Install the toolchain

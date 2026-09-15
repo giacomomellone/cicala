@@ -402,20 +402,44 @@ fw-clean:
 
 # --------------------------------------------------------------- hardware
 
-# validate every printable enclosure selector
+# Check Rev B electrical connectivity, routing and nominal mechanical fit.
+[group('hardware')]
+hw-rev-b-check:
+    {{ python }} hardware/tools/rev_b/study.py
+
+# Regenerate printable Rev B geometry. CAD_PYTHON must provide CadQuery.
+[group('hardware')]
+hw-rev-b-export *args:
+    {{ python }} hardware/tools/rev_b/study.py --export {{ args }}
+
+# Generate the prototype factory package after electrical and CAD checks.
+[group('hardware')]
+hw-rev-b-fab-export:
+    {{ python }} hardware/tools/rev_b/export_fab.py
+
+# Mechanical-only iterations explicitly skip electrical acceptance.
+[group('hardware')]
+hw-rev-b-fit-check:
+    {{ python }} hardware/tools/rev_b/study.py --mechanical-only
+
+[group('hardware')]
+hw-rev-b-fit-export *args:
+    {{ python }} hardware/tools/rev_b/study.py --export --mechanical-only {{ args }}
+
+# validate every printable Rev A enclosure selector
 [group('hardware')]
 hw-case-check:
-    hardware/case/check_enclosure.sh
+    hardware/tools/rev_a/check_enclosure.sh
 
 # Regenerate printable files and sheet-material cutting outlines.
 [group('hardware')]
 hw-case-export:
-    bash hardware/case/export_parts.sh
+    bash hardware/tools/rev_a/export_parts.sh
 
 # validate the KiCad hierarchy, board skeleton and STEP export
 [group('hardware')]
 hw-pcb-check:
-    hardware/pcb/check_rev_a.sh
+    hardware/tools/rev_a/check_rev_a.sh
 
 # validate both Rev A hardware sources
 [group('hardware')]
@@ -424,12 +448,12 @@ hw-check: hw-case-check hw-pcb-check
 # Filled KiCad checks, independent placement/copper/USB audits and enclosure fit.
 [group('hardware')]
 hw-review report="build/hardware-review" *args:
-    bash hardware/pcb/review_rev_a.sh "{{ report }}" {{ args }}
+    bash hardware/tools/rev_a/review_rev_a.sh "{{ report }}" {{ args }}
 
 # Regenerate Gerber, drill and assembly outputs after the source review.
 [group('hardware')]
 hw-fab-export:
-    bash hardware/pcb/export_fab.sh
+    bash hardware/tools/rev_a/export_fab.sh
 
 # ------------------------------------------------------------------- tests
 

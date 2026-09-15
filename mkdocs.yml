@@ -16,6 +16,8 @@ nav:
   - theory: theory.md
   - device prototype: device_prototype.md
   - rev A hardware: hardware_rev_a.md
+  - rev B hardware: hardware_rev_b.md
+  - rev B component selections: hardware_rev_b_selection.md
   - rev A build and flash: firmware_rev_a.md
   - component guide: hardware_component_guide.md
   - prototype bom: prototype_bom.md

@@ -156,40 +156,64 @@ const en = {
   "deck.count": "questions",
 
   // device page
+  "device.size": "core dimensions",
+  "device.screen": "centered e-paper",
+  "device.cell": "protected rechargeable battery",
+  "device.carrier.title": "take it with you",
+  "device.carrier.text":
+    "An optional removable carrier adds a magnetic ring behind the device. Its portrait mounting position is sized around larger phone backs. Fit, camera clearance and retention remain to be tested; remove it for wireless charging.",
+  "device.carrier.caption": "Removable carrier · 3.2 mm added thickness",
+  "device.carrier.alt":
+    "CAD model of the removable phone carrier and its recessed magnetic ring cover.",
   "device.title": "the device",
   "device.wip": "work in progress",
-  "device.updated": "updated 14 September 2026",
+  "device.updated": "updated 15 September 2026",
   "device.progress.link": "where we are ↓",
   "device.progress.title": "where we are",
   "device.progress.text":
-    "Rev A is in prototype development. The breadboard works; the integrated board and enclosure still need physical validation.",
+    "Rev B is a flatter landscape prototype, with a centered screen and two buttons on a beveled edge. The breadboard works; this integrated hardware still needs its first physical build.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
-    "Running on the breadboard. The Rev A build has passed simulation tests; testing on the actual board is still ahead.",
-  "device.progress.pcb": "PCB · Rev A",
+    "Running on the breadboard. Display, charging and radio operation on the integrated Rev B hardware remain to be tested.",
+  "device.progress.pcb": "PCB · Rev B",
   "device.progress.pcb.text":
-    "The four-layer board passes electrical, design-rule and schematic-to-board checks. Physical electrical and radio tests are pending.",
+    "An L-shaped, four-layer board puts the battery beside the electronics. The ESP32-S3 and power circuit sit on one face.",
   "device.progress.case": "enclosure",
   "device.progress.case.text":
-    "Parametric CAD and printable fit files are available. Button travel, display fit and assembly still need checks on printed parts.",
+    "Parametric CAD includes the shell, display supports, button fit coupons and an optional magnetic phone carrier. Printed fit and button feel need physical checks.",
   "device.progress.next":
-    "Next: assemble Rev A prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
-  "device.progress.source": "Rev A hardware notes →",
-  "device.renders.title": "inside Rev A",
+    "Next: build the first Rev B prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
+  "device.progress.source": "Rev B hardware notes →",
+  "device.renders.title": "inside Rev B",
   "device.renders.text":
-    "CAD renders from the current enclosure and PCB sources. Geometry and component models are provisional; the design may change after prototype testing.",
-  "device.render.assembly": "Rev A enclosure · CAD render",
-  "device.render.assembly.alt":
-    "CAD view of the Cicala enclosure with a display window and two buttons.",
-  "device.render.exploded": "Exploded enclosure · shell, board, battery and base",
-  "device.render.exploded.alt":
-    "Exploded CAD view showing the enclosure shell above the board, battery, base and steel underside.",
-  "device.render.pcbTop": "PCB top · buttons and display connector",
+    "Views generated from the public engineering CAD. These are digital prototype models; no integrated Rev B unit has been built yet.",
+  "device.controls.title": "controls that come apart",
+  "device.controls.text":
+    "The caps use 1.4 mm retaining tabs and removable keepers. Each silicone strip sits in pockets, and two screws secure each keeper. Printed fit and button feel still need prototype testing.",
+  "device.controls.caption": "Button assembly · cap, captured silicone strip, keeper and screws",
+  "device.controls.alt":
+    "Exploded CAD view of the strengthened cap, silicone strip, removable keeper and two screws.",
+  "device.pcb.title": "the routed PCB",
+  "device.pcb.text":
+    "3D renders from the native KiCad board. All 89 fitted components sit on top; the underside carries routing and bare test contacts. Some component models show only their outer envelope. Open either image for the full-resolution view.",
+  "device.render.pcbTop": "PCB top · ESP32-S3, power, display connector and switches",
   "device.render.pcbTop.alt":
-    "Angled KiCad 3D render of the Rev A board’s top side with two switches and the display connector.",
-  "device.render.pcbBottom": "PCB underside · controller, USB-C and battery power",
+    "KiCad 3D render of the populated L-shaped Rev B PCB, with the ESP32-S3 on the lower arm and two switches on the right.",
+  "device.render.pcbBottom": "PCB underside · copper routing and test contacts",
   "device.render.pcbBottom.alt":
-    "Angled KiCad 3D render of the Rev A board’s underside with the Cicala mark, ESP32-S3, USB-C and battery connector.",
+    "KiCad 3D render of the Rev B PCB underside, showing copper routing, vias, mounting holes and bare test contacts.",
+  "device.render.assembly": "Rev B · centered screen, beveled button edge",
+  "device.render.assembly.alt":
+    "Landscape CAD view with a centered screen and two buttons on the right bevel.",
+  "device.render.exploded": "Exploded view · shell, lens, display supports, electronics and base",
+  "device.render.exploded.alt":
+    "Exploded Rev B CAD showing the thin battery beside the L-shaped PCB beneath the display.",
+  "device.render.inside": "Inside · battery beside the L-shaped board",
+  "device.render.inside.alt":
+    "CAD view of the battery bay and components on the L-shaped Rev B board.",
+  "device.render.section": "Section · the vertical assembly",
+  "device.render.section.alt":
+    "Cross section through the Rev B enclosure, battery, circuit board and display.",
   "device.p1":
     "A pocket-sized object for the middle of the table: one e-paper display, a small Filters button, and a larger Next button. One mixed stream of questions.",
   "device.p2":
@@ -214,7 +238,7 @@ const en = {
   "device.t.r4c": "the question or menu remains readable at zero display power",
   "device.build": "build one",
   "device.build.text":
-    "Hardware (CERN-OHL-S) and firmware (MIT) are open source. Start with the breadboard guide, or explore the Rev A PCB, enclosure CAD and prototype exports. Rev A still needs physical testing before the design can be accepted.",
+    "Hardware (CERN-OHL-S) and firmware (MIT) are open source. Start with the breadboard guide, or explore the Rev B PCB, enclosure CAD and engineering exports. Rev B needs physical testing on its first assembled prototypes.",
   "device.link.firmware": "firmware sources",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "build guide",
@@ -381,40 +405,66 @@ const de: Record<StringKey, string> = {
   "deck.saved": "in dein deck übernommen",
   "deck.count": "fragen",
 
+  "device.size": "Gehäusemaße",
+  "device.screen": "mittiges E-Paper",
+  "device.cell": "geschützter wiederaufladbarer Akku",
+  "device.carrier.title": "zum Mitnehmen",
+  "device.carrier.text":
+    "Eine abnehmbare Halterung ergänzt einen Magnetring auf der Rückseite. Die Position im Hochformat ist auf größere Handyrückseiten ausgelegt. Passform, Kameraabstand und Halt müssen noch geprüft werden; zum kabellosen Laden abnehmen.",
+  "device.carrier.caption": "Abnehmbare Halterung · 3,2 mm zusätzliche Dicke",
+  "device.carrier.alt":
+    "CAD-Modell der abnehmbaren Handyhalterung mit vertiefter Magnetringabdeckung.",
   "device.title": "das gerät",
   "device.wip": "in Entwicklung",
-  "device.updated": "Stand: 14. September 2026",
+  "device.updated": "Stand: 15. September 2026",
   "device.progress.link": "aktueller Stand ↓",
   "device.progress.title": "aktueller Stand",
   "device.progress.text":
-    "Rev A ist in der Prototypenentwicklung. Der Breadboard-Aufbau funktioniert; die integrierte Platine und das Gehäuse müssen noch am Prototyp geprüft werden.",
+    "Rev B ist ein flacherer Prototyp im Querformat mit mittigem Display und zwei Tasten an einer abgeschrägten Kante. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
   "device.progress.firmware": "Firmware",
   "device.progress.firmware.text":
-    "Läuft auf dem Breadboard. Die Rev-A-Firmware hat Simulationstests bestanden; Tests auf der tatsächlichen Platine stehen noch aus.",
-  "device.progress.pcb": "Platine · Rev A",
+    "Läuft auf dem Steckbrett. Display, Ladefunktion und Funk müssen auf der integrierten Rev-B-Hardware noch getestet werden.",
+  "device.progress.pcb": "Platine · Rev B",
   "device.progress.pcb.text":
-    "Die vierlagige Platine besteht die elektrischen Prüfungen, die Designregelprüfung und den Abgleich mit dem Schaltplan. Elektrische Messungen und Funkmessungen am Prototyp stehen noch aus.",
+    "Eine L-förmige Vierlagenplatine lässt neben der Elektronik Platz für den Akku. ESP32-S3 und Stromversorgung sitzen auf einer Seite.",
   "device.progress.case": "Gehäuse",
   "device.progress.case.text":
-    "Parametrisches CAD und druckbare Passproben sind verfügbar. Tastenhub, Displaypassung und Montage müssen noch an gedruckten Teilen geprüft werden.",
+    "Das parametrische CAD enthält Gehäuse, Displayhalterungen, Tastenproben und eine optionale magnetische Handyhalterung. Passform und Tastengefühl müssen am Druck geprüft werden.",
   "device.progress.next":
-    "Als Nächstes: Rev-A-Prototypen montieren und Ladeverhalten, Displaybetrieb, Ruhestrom, Funkleistung und Gehäusepassung prüfen.",
-  "device.progress.source": "Rev-A-Hardwarenotizen →",
-  "device.renders.title": "ein Blick in Rev A",
+    "Als Nächstes: erste Rev-B-Prototypen bauen und Laden, Display, Ruhestrom, Funk und Gehäusepassform prüfen.",
+  "device.progress.source": "Rev-B-Hardwaredokumentation →",
+  "device.renders.title": "im Inneren von Rev B",
   "device.renders.text":
-    "CAD-Renderings aus den aktuellen Gehäuse- und Platinenquellen. Geometrie und Bauteilmodelle sind vorläufig; der Entwurf kann sich nach den Prototypentests ändern.",
-  "device.render.assembly": "Rev-A-Gehäuse · CAD-Rendering",
-  "device.render.assembly.alt":
-    "CAD-Ansicht des Cicala-Gehäuses mit Displayfenster und zwei Tasten.",
-  "device.render.exploded": "Explosionsansicht · Gehäuse, Platine, Akku und Boden",
-  "device.render.exploded.alt":
-    "CAD-Explosionsansicht mit dem Gehäuse über Platine, Akku, Boden und Stahlunterseite.",
-  "device.render.pcbTop": "Platinenoberseite · Tasten und Displayanschluss",
+    "Ansichten aus dem öffentlichen Konstruktions-CAD. Es sind digitale Prototypmodelle; ein integriertes Rev-B-Gerät wurde noch nicht gebaut.",
+  "device.controls.title": "zerlegbare Tasten",
+  "device.controls.text":
+    "Die Tastenkappen haben 1,4 mm starke Haltelaschen und abnehmbare Haltebügel. Jeder Silikonstreifen sitzt in Taschen; zwei Schrauben befestigen den Bügel. Passform und Tastengefühl müssen am Prototyp geprüft werden.",
+  "device.controls.caption":
+    "Tastenbaugruppe · Kappe, eingefasster Silikonstreifen, Haltebügel und Schrauben",
+  "device.controls.alt":
+    "CAD-Explosionsansicht der verstärkten Tastenkappe mit Silikonstreifen, abnehmbarem Haltebügel und zwei Schrauben.",
+  "device.pcb.title": "die geroutete Platine",
+  "device.pcb.text":
+    "3D-Ansichten direkt aus der KiCad-Platine. Alle 89 bestückten Bauteile sitzen oben; unten liegen Leiterbahnen und unbestückte Testkontakte. Einige Bauteilmodelle zeigen nur die Außenkontur. Beide Bilder lassen sich in voller Auflösung öffnen.",
+  "device.render.pcbTop":
+    "Platinenoberseite · ESP32-S3, Stromversorgung, Displayanschluss und Taster",
   "device.render.pcbTop.alt":
-    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenoberseite mit zwei Tastern und dem Displayanschluss.",
-  "device.render.pcbBottom": "Platinenunterseite · Controller, USB-C und Akkuversorgung",
+    "KiCad-3D-Ansicht der bestückten L-förmigen Rev-B-Platine mit ESP32-S3 am unteren Arm und zwei Tastern rechts.",
+  "device.render.pcbBottom": "Platinenunterseite · Leiterbahnen und Testkontakte",
   "device.render.pcbBottom.alt":
-    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenunterseite mit Cicala-Zeichen, ESP32-S3, USB-C und Akkuanschluss.",
+    "KiCad-3D-Ansicht der Rev-B-Platinenunterseite mit Leiterbahnen, Durchkontaktierungen, Befestigungslöchern und Testkontakten.",
+  "device.render.assembly": "Rev B · mittiges Display, abgeschrägte Tastenkante",
+  "device.render.assembly.alt":
+    "CAD-Ansicht im Querformat mit mittigem Display und zwei Tasten an der rechten Schräge.",
+  "device.render.exploded":
+    "Explosionsansicht · Gehäuse, Scheibe, Displayhalterungen, Elektronik und Boden",
+  "device.render.exploded.alt":
+    "Explosionsansicht von Rev B: flacher Akku neben der L-förmigen Platine unter dem Display.",
+  "device.render.inside": "Innenansicht · Akku neben der L-förmigen Platine",
+  "device.render.inside.alt":
+    "CAD-Ansicht des Akkufachs und der Bauteile auf der L-förmigen Rev-B-Platine.",
+  "device.render.section": "Schnitt · Aufbau in der Höhe",
+  "device.render.section.alt": "Schnitt durch Rev-B-Gehäuse, Akku, Platine und Display.",
   "device.p1":
     "Ein kleines Objekt für die Tischmitte: ein E-Papier-Bildschirm, eine kleine Filter-Taste und eine größere Weiter-Taste. Ein gemischter Fragenstrom.",
   "device.p2":
@@ -439,7 +489,7 @@ const de: Record<StringKey, string> = {
   "device.t.r4c": "Frage oder Menü bleiben ohne Displaystrom lesbar",
   "device.build": "selbst bauen",
   "device.build.text":
-    "Hardware (CERN-OHL-S) und Firmware (MIT) sind Open Source. Beginne mit der Breadboard-Anleitung oder sieh dir die Rev-A-Platine, das Gehäuse-CAD und die Prototypenexporte an. Rev A braucht noch Tests am realen Prototyp, bevor der Entwurf abgenommen werden kann.",
+    "Hardware (CERN-OHL-S) und Firmware (MIT) sind Open Source. Beginne mit der Breadboard-Anleitung oder sieh dir die Rev-B-Platine, das Gehäuse-CAD und die Entwicklungsdateien an. Rev B braucht noch Tests an den ersten aufgebauten Prototypen.",
   "device.link.firmware": "firmware-quellen",
   "device.link.hardware": "hardware / platine",
   "device.link.guide": "bauanleitung",
@@ -603,40 +653,66 @@ const it: Record<StringKey, string> = {
   "deck.saved": "salvate nel tuo mazzo",
   "deck.count": "domande",
 
+  "device.size": "dimensioni della scocca",
+  "device.screen": "e-paper centrato",
+  "device.cell": "batteria ricaricabile protetta",
+  "device.carrier.title": "portalo con te",
+  "device.carrier.text":
+    "Un supporto rimovibile opzionale aggiunge un anello magnetico sul retro. La posizione verticale è dimensionata per telefoni più grandi. Compatibilità, spazio per la fotocamera e tenuta restano da verificare; rimuoverlo per la ricarica wireless.",
+  "device.carrier.caption": "Supporto rimovibile · 3,2 mm di spessore aggiuntivo",
+  "device.carrier.alt":
+    "Modello CAD del supporto rimovibile per telefono con copertura dell’anello magnetico incassata.",
   "device.title": "il dispositivo",
   "device.wip": "lavori in corso",
-  "device.updated": "aggiornato il 14 settembre 2026",
+  "device.updated": "aggiornato il 15 settembre 2026",
   "device.progress.link": "a che punto siamo ↓",
   "device.progress.title": "a che punto siamo",
   "device.progress.text":
-    "Rev A è in fase di prototipazione. Il circuito su breadboard funziona; la scheda integrata e la scocca devono ancora essere verificate su prototipi fisici.",
+    "Rev B è un prototipo più piatto, orizzontale, con schermo centrato e due pulsanti sul bordo smussato. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
-    "Funziona sulla breadboard. La versione Rev A ha superato i test in simulazione; le prove sulla scheda reale devono ancora iniziare.",
-  "device.progress.pcb": "PCB · Rev A",
+    "Funziona sulla breadboard. Display, ricarica e radio restano da verificare sulla scheda Rev B integrata.",
+  "device.progress.pcb": "PCB · Rev B",
   "device.progress.pcb.text":
-    "La scheda a quattro strati supera i controlli elettrici, delle regole di progetto e di corrispondenza con lo schema. Restano da svolgere le prove elettriche e radio sul prototipo.",
+    "Una scheda a L a quattro strati lascia la batteria accanto all’elettronica. ESP32-S3 e circuito di alimentazione sono su un solo lato.",
   "device.progress.case": "scocca",
   "device.progress.case.text":
-    "Sono disponibili il CAD parametrico e i file stampabili per le prove di accoppiamento. Corsa dei tasti, alloggiamento del display e montaggio vanno ancora verificati sui pezzi stampati.",
+    "Il CAD parametrico comprende scocca, supporti del display, provini per i pulsanti e un supporto magnetico opzionale per il telefono. Accoppiamenti e risposta dei pulsanti vanno verificati sulle stampe.",
   "device.progress.next":
-    "Il prossimo passo: assemblare i prototipi Rev A e verificare ricarica, display, consumo in sospensione, prestazioni radio e accoppiamento della scocca.",
-  "device.progress.source": "note sull’hardware Rev A →",
-  "device.renders.title": "dentro Rev A",
+    "Prossimo passo: costruire i primi prototipi Rev B e misurare ricarica, display, consumo in standby, radio e accoppiamento della scocca.",
+  "device.progress.source": "Documentazione hardware Rev B →",
+  "device.renders.title": "dentro Rev B",
   "device.renders.text":
-    "Render CAD dai sorgenti attuali della scocca e del PCB. Geometria e modelli dei componenti sono provvisori; il progetto può cambiare dopo le prove sui prototipi.",
-  "device.render.assembly": "Scocca Rev A · render CAD",
-  "device.render.assembly.alt":
-    "Vista CAD della scocca Cicala con una finestra per il display e due tasti.",
-  "device.render.exploded": "Vista esplosa · scocca, scheda, batteria e base",
-  "device.render.exploded.alt":
-    "Vista CAD esplosa con la scocca sopra la scheda, la batteria, la base e il fondo in acciaio.",
-  "device.render.pcbTop": "PCB superiore · tasti e connettore del display",
+    "Viste generate dal CAD tecnico pubblico. Sono modelli digitali del prototipo: nessuna unità Rev B integrata è stata ancora costruita.",
+  "device.controls.title": "pulsanti smontabili",
+  "device.controls.text":
+    "I copritasti hanno linguette di ritenuta spesse 1,4 mm e fermi rimovibili. Le strisce di silicone sono trattenute in apposite sedi; ogni fermo è fissato con due viti. Accoppiamenti e risposta dei pulsanti vanno verificati sul prototipo.",
+  "device.controls.caption":
+    "Pulsante esploso · copritasto, striscia di silicone trattenuta, fermo e viti",
+  "device.controls.alt":
+    "Vista CAD esplosa del copritasto rinforzato con striscia di silicone, fermo rimovibile e due viti.",
+  "device.pcb.title": "il PCB con le piste",
+  "device.pcb.text":
+    "Viste 3D generate dalla scheda KiCad nativa. Tutti gli 89 componenti montati sono sul lato superiore; sotto passano piste e contatti di test. Alcuni modelli dei componenti mostrano solo l’ingombro esterno. Apri un’immagine per vederla a piena risoluzione.",
+  "device.render.pcbTop":
+    "PCB, lato superiore · ESP32-S3, alimentazione, connettore display e pulsanti",
   "device.render.pcbTop.alt":
-    "Render 3D inclinato da KiCad del lato superiore della scheda Rev A, con due pulsanti e il connettore del display.",
-  "device.render.pcbBottom": "PCB inferiore · controller, USB-C e alimentazione a batteria",
+    "Vista 3D KiCad del PCB Rev B a L popolato, con ESP32-S3 sul braccio inferiore e due pulsanti a destra.",
+  "device.render.pcbBottom": "PCB, lato inferiore · piste e contatti di test",
   "device.render.pcbBottom.alt":
-    "Render 3D inclinato da KiCad del lato inferiore della scheda Rev A, con il marchio Cicala, ESP32-S3, USB-C e connettore della batteria.",
+    "Vista 3D KiCad del lato inferiore del PCB Rev B con piste, via, fori di montaggio e contatti di test.",
+  "device.render.assembly": "Rev B · schermo centrato, bordo pulsanti smussato",
+  "device.render.assembly.alt":
+    "Vista CAD orizzontale con schermo centrato e due pulsanti sul bordo destro smussato.",
+  "device.render.exploded":
+    "Vista esplosa · scocca, lente, supporti del display, elettronica e base",
+  "device.render.exploded.alt":
+    "Esploso CAD Rev B con la batteria sottile accanto al PCB a L sotto il display.",
+  "device.render.inside": "Interno · batteria accanto alla scheda a L",
+  "device.render.inside.alt":
+    "Vista CAD del vano batteria e dei componenti sulla scheda Rev B a L.",
+  "device.render.section": "Sezione · disposizione in altezza",
+  "device.render.section.alt": "Sezione della scocca Rev B con batteria, scheda e display.",
   "device.p1":
     "Un oggetto tascabile per il centro del tavolo: un display e-paper, un piccolo tasto Filtri e un tasto Avanti più grande. Un unico flusso di domande mescolate.",
   "device.p2":
@@ -661,7 +737,7 @@ const it: Record<StringKey, string> = {
   "device.t.r4c": "domanda o menu restano leggibili senza alimentare il display",
   "device.build": "costruiscine uno",
   "device.build.text":
-    "Hardware (CERN-OHL-S) e firmware (MIT) sono open source. Parti dalla guida per la breadboard, oppure esplora il PCB Rev A, il CAD della scocca e i file per i prototipi. Rev A richiede ancora prove fisiche prima di poter essere approvata.",
+    "Hardware (CERN-OHL-S) e firmware (MIT) sono open source. Parti dalla guida per la breadboard, oppure esplora il PCB Rev B, il CAD della scocca e i file di progetto. Rev B richiede ancora prove fisiche sui primi prototipi assemblati.",
   "device.link.firmware": "sorgenti del firmware",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "guida alla costruzione",

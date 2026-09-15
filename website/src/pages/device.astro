@@ -1,14 +1,23 @@
 ---
 import { Image } from "astro:assets";
-import assembly from "../../../hardware/case/renders/rev_a/assembly.png";
-import exploded from "../../../hardware/case/renders/rev_a/exploded.png";
-import pcbTop from "../assets/device/pcb-top.webp";
-import pcbBottom from "../assets/device/pcb-bottom.webp";
+import assembly from "../../../hardware/rev_b/case/renders/assembly.png";
+import exploded from "../../../hardware/rev_b/case/renders/exploded.png";
+import inside from "../../../hardware/rev_b/case/renders/inside.png";
+import section from "../../../hardware/rev_b/case/renders/section.png";
+import pcbTop from "../../../hardware/rev_b/pcb/renders/top.png";
+import pcbBottom from "../../../hardware/rev_b/pcb/renders/bottom.png";
+import buttonsExploded from "../../../hardware/rev_b/case/renders/buttons_exploded.png";
+import carrier from "../../../hardware/rev_b/case/renders/carrier.png";
+import hardware from "../../../hardware/rev_b/contract.json";
 import { REPO_URL } from "../config";
 import { t } from "../i18n";
 import Base from "../layouts/Base.astro";
 
-const boardViews = [
+const caseViews = [
+  { image: inside, caption: "device.render.inside", alt: "device.render.inside.alt" },
+  { image: section, caption: "device.render.section", alt: "device.render.section.alt" },
+] as const;
+const pcbViews = [
   { image: pcbTop, caption: "device.render.pcbTop", alt: "device.render.pcbTop.alt" },
   { image: pcbBottom, caption: "device.render.pcbBottom", alt: "device.render.pcbBottom.alt" },
 ] as const;
@@ -16,7 +25,7 @@ const boardViews = [
 
 <Base
   title="the device · cicala"
-  description="The Cicala device is a work in progress. See the Rev A enclosure CAD, PCB 3D renders and current prototype status."
+  description="Explore Cicala’s flatter Rev B prototype: a centered e-paper screen, L-shaped PCB, thin battery and optional magnetic phone carrier."
   lang="en"
 >
   <article class="device-page">
@@ -24,7 +33,7 @@ const boardViews = [
       <div class="device-width">
         <div class="device-meta">
           <span class="device-status" data-i18n="device.wip">{t("en", "device.wip")}</span>
-          <time datetime="2026-09-14" data-i18n="device.updated">{t("en", "device.updated")}</time>
+          <time datetime="2026-09-15" data-i18n="device.updated">{t("en", "device.updated")}</time>
         </div>
         <div class="device-intro">
           <h1 data-i18n="device.title">{t("en", "device.title")}</h1>
@@ -49,6 +58,21 @@ const boardViews = [
             {t("en", "device.render.assembly")}
           </figcaption>
         </figure>
+        <dl class="device-dimensions">
+          <div>
+            <dt data-i18n="device.size">{t("en", "device.size")}</dt><dd>
+              {hardware.case.width} × {hardware.case.depth} × {hardware.case.height} mm
+            </dd>
+          </div>
+          <div>
+            <dt data-i18n="device.screen">{t("en", "device.screen")}</dt><dd>3.52″ · 360 × 240</dd>
+          </div>
+          <div>
+            <dt data-i18n="device.cell">{t("en", "device.cell")}</dt><dd>
+              {hardware.battery.capacity_mah} mAh
+            </dd>
+          </div>
+        </dl>
       </div>
     </header>
 
@@ -61,7 +85,7 @@ const boardViews = [
           <p data-i18n="device.progress.text">{t("en", "device.progress.text")}</p>
           <a
             class="device-text-link"
-            href={`${REPO_URL}/blob/main/docs/hardware_rev_a.md`}
+            href={`${REPO_URL}/blob/main/docs/hardware_rev_b.md`}
             rel="external"
             data-i18n="device.progress.source"
           >
@@ -111,7 +135,7 @@ const boardViews = [
         </figure>
         <div class="device-board-views">
           {
-            boardViews.map((view) => (
+            caseViews.map((view) => (
               <figure>
                 <a class="device-image-link" href={view.image.src}>
                   <Image
@@ -128,6 +152,74 @@ const boardViews = [
             ))
           }
         </div>
+      </section>
+
+      <section class="device-renders" id="pcb" aria-labelledby="pcb-title">
+        <h2 id="pcb-title" data-i18n="device.pcb.title">{t("en", "device.pcb.title")}</h2>
+        <p class="prose" data-i18n="device.pcb.text">{t("en", "device.pcb.text")}</p>
+        <div class="device-board-views">
+          {
+            pcbViews.map((view) => (
+              <figure>
+                <a class="device-image-link" href={view.image.src}>
+                  <Image
+                    src={view.image}
+                    alt={t("en", view.alt)}
+                    data-i18n-alt={view.alt}
+                    widths={[480, 800, 1200, view.image.width]}
+                    sizes="(max-width: 40rem) 100vw, (max-width: 66rem) 50vw, 512px"
+                    loading="lazy"
+                  />
+                </a>
+                <figcaption data-i18n={view.caption}>{t("en", view.caption)}</figcaption>
+              </figure>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="device-renders" aria-labelledby="controls-title">
+        <h2 id="controls-title" data-i18n="device.controls.title">
+          {t("en", "device.controls.title")}
+        </h2>
+        <p class="prose" data-i18n="device.controls.text">{t("en", "device.controls.text")}</p>
+        <figure class="device-exploded">
+          <a class="device-image-link" href={buttonsExploded.src}>
+            <Image
+              src={buttonsExploded}
+              alt={t("en", "device.controls.alt")}
+              data-i18n-alt="device.controls.alt"
+              widths={[480, 800, 1200, 1600]}
+              sizes="(max-width: 48rem) 100vw, 800px"
+              loading="lazy"
+            />
+          </a>
+          <figcaption data-i18n="device.controls.caption">
+            {t("en", "device.controls.caption")}
+          </figcaption>
+        </figure>
+      </section>
+
+      <section class="device-carrier" aria-labelledby="carrier-title">
+        <div>
+          <h2 id="carrier-title" data-i18n="device.carrier.title">
+            {t("en", "device.carrier.title")}
+          </h2>
+          <p class="prose" data-i18n="device.carrier.text">{t("en", "device.carrier.text")}</p>
+        </div>
+        <figure>
+          <Image
+            src={carrier}
+            alt={t("en", "device.carrier.alt")}
+            data-i18n-alt="device.carrier.alt"
+            widths={[480, 800, 1200]}
+            sizes="(max-width: 48rem) 100vw, 512px"
+            loading="lazy"
+          />
+          <figcaption data-i18n="device.carrier.caption">
+            {t("en", "device.carrier.caption")}
+          </figcaption>
+        </figure>
       </section>
 
       <section class="device-details" aria-labelledby="how-title">
@@ -292,7 +384,8 @@ const boardViews = [
     cursor: zoom-in;
   }
 
-  .device-image-link img {
+  .device-image-link img,
+  .device-carrier img {
     display: block;
     width: 100%;
     height: auto;
@@ -383,6 +476,36 @@ const boardViews = [
     gap: 1.5rem;
   }
 
+  .device-dimensions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.25rem 2rem;
+    border-top: 1px solid var(--line);
+    padding-block: 1.5rem;
+    margin: 0;
+  }
+
+  .device-dimensions dt {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+  }
+
+  .device-dimensions dd {
+    margin: 0.35rem 0 0;
+    font-size: 1.25rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .device-carrier {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: center;
+    gap: 2rem;
+    padding-block: 2rem 3rem;
+    border-top: 1px solid var(--line);
+  }
+
   .device-details {
     max-width: 44rem;
     margin-inline: auto;
@@ -407,7 +530,8 @@ const boardViews = [
     }
 
     .device-progress,
-    .device-board-views {
+    .device-board-views,
+    .device-carrier {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
@@ -429,7 +553,8 @@ const boardViews = [
     }
 
     .device-text-link,
-    .device-image-link img {
+    .device-image-link img,
+    .device-carrier img {
       transition: none;
     }
 
