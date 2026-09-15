@@ -1,6 +1,6 @@
 # Rev B landscape hardware
 
-Rev B is an **engineering prototype**, with a centered screen, two large flat controls beside a 30° outer-edge bevel and a thin battery beside an L-shaped PCB. Its standalone envelope is **112 × 66 × 10.2 mm**. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
+Rev B is an **engineering prototype**, with a centered screen, two large flat controls beside a 30° outer-edge bevel and a thin battery beside an L-shaped PCB. The housing is **128 × 66 × 14.2 mm**; the purchased cap tops extend to **15.8 mm** overall. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
 
 ![Rev B assembly from the mechanical source](assets/images/hardware_rev_b/assembly.png)
 
@@ -25,8 +25,8 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 
 | Item              | Implemented arrangement                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
-| Enclosure         | 112 × 66 × 10.2 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
-| PCB               | Four layers, 1.2 mm nominal; lower arm and right arm, R1 reentrant corner; lower face z=2.635 mm |
+| Enclosure         | 128 × 66 × 14.2 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
+| PCB               | Four layers, 1.2 mm nominal; lower arm and right arm, R1 reentrant corner; lower face z=4.6 mm |
 | Assembly          | Electronic components on the top face                                                            |
 | Controller        | ESP32-S3-WROOM-1-N16, antenna toward the left edge                                               |
 | Display           | Waveshare 22609 V1.1, UC8253; 84.70 × 54.41 mm glass, 1.18 mm reserved thickness                 |
@@ -34,7 +34,7 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 | Battery           | Protected Renata ICP303450PA-02, 500 mAh minimum; 54 × 36 × 4.8 mm assembly reservation          |
 | Display connector | Molex 503480-2400, 24 positions, 0.5 mm pitch, dual contacts                                     |
 | Battery header    | JST SH, BAT+/NTC/GND; AWG28 adapter harness                                                      |
-| Controls          | Alps SKRABCE010 under separate guided caps, 8 × 14 and 8 × 18 mm                                 |
+| Controls          | 2 × Omron B3F-4050; B32-1200 ivory 9 × 9 mm / B32-1320 orange 12 × 12 mm                                 |
 | USB / recovery    | HRO TYPE-C-31-M-12 and six-contact Tag-Connect recovery interface                                |
 | Optional carrier  | 3.2 mm behind the core; 1.4 mm around its perimeter                                              |
 | Table stand       | Separate passive wedge, approximately 12°                                                        |
@@ -49,7 +49,7 @@ The antenna exclusion is x=3–9.5 mm, y=29–64 mm on all layers. It excludes t
 
 The circuit implements the V1.1 pin table, with pins 1/4 NC and pin 5 VDHR, and the reference HAT's 68 µH / BSS138 / 3 Ω boost arrangement. The selected reservoir capacitors are rated 50 V. [Selection evidence](hardware_rev_b_selection.md) explains the conflicting vendor documents and the exact BOM.
 
-The display fold has a nominal R1.55 mm inside radius and straight reinforced tip. The minimum-tail / maximum-stiffener length calculation leaves **0.276 mm**. The connector entry z=4.15 mm is an assembly assumption; its contact-plane height, latch access and actual bend must be checked on a sample. The printed former is an assembly jig and is removed after forming. Hold the glass independently, avoid tension at the bond and never bend the reinforced tip to force insertion.
+The display fold has a nominal R1.55 mm inside radius and straight reinforced tip. The minimum-tail / maximum-stiffener length calculation leaves **0.276 mm**. The connector entry z=6.115 mm is an assembly assumption; its contact-plane height, latch access and actual bend must be checked on a sample. The printed former is an assembly jig and is removed after forming. Hold the glass independently, avoid tension at the bond and never bend the reinforced tip to force insertion.
 
 The battery retains factory protection. Bond the insulated **103JT-025** NTC against the pouch following its lead and insulation instructions. Splice the stock AWG26 pack wires to short AWG28 JST SH pigtails, with separate insulation and strain relief. Pin 1 is protected BAT+, pin 2 NTC, pin 3 protected ground. Test polarity and NTC resistance before connecting J3.
 
@@ -59,53 +59,48 @@ USB supplies charging and native USB recovery. The optional C1/C2 capacitor land
 
 ## Buttons and print preparation
 
-SKRABCE010 has a nominal 3.5 mm height, 0.4 mm travel and 1.2 N operating force. The caps have flat faces parallel to the screen and move vertically. The 30° bevel is confined to the outer enclosure edge. Each cap has two **1.4 mm thick rounded end tabs**, supported outside the switch body. A **1.5 mm keeper**, attached to the empty shell with two M2 screws, captures the cap and provides the downward stops. The cap enters from underneath; no tab needs to bend during assembly. The upper pockets prevent the cap leaving through the front.
+Both controls use **Omron B3F-4050**, a through-hole switch with a 12 × 12 mm body, projected square plunger, 7.3 ±0.2 mm free height, 1.27 ±0.49 N operating force and 0.3 +0.2/−0.1 mm pretravel. **Filters is B32-1200, ivory, 9 × 9 mm. Next is B32-1320, orange, 12 × 12 mm**: 78% more face area. Both purchased caps fit directly onto the projected plunger. Their assembled height is 10.0 ±0.4 mm above the PCB. See the [switch drawing](https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf) and [cap drawing](https://omronfs.omron.com/en_US/ecb/products/pdf/en-b32.pdf).
 
-Filters has an **8 × 14 mm** face and Next an **8 × 18 mm** face, both with R1.2 corners. Their top plane is z=10.15 mm, 0.40 mm above the recessed control ledge; the 0.05 mm return allowance stays within **10.2 mm**. The case extends from x=−2 to 110 mm around the existing PCB datum, preserving the centered active screen. Cap centers differ from the switch centers; the underside contact tips remain directly over the existing switches. This preserves the routed PCB. Larger faces increase off-center leverage, so check edge presses, rocking and return physically. The longer guides take lateral load. The PCB-seat roots have tapered reinforcement. The nominal running clearance is 0.50 mm per side; test 0.30/0.40/0.50/0.60 mm coupons for the chosen printer or service. Smaller gaps require measured process capability.
+The controls remain flat; only the outer case edge is beveled. The board right edge is x=116 mm and both switch centers are x=108 mm. The case extends from x=−10 to 118 mm, preserving the centered active screen. The PCB and display stack move upward together by 1.965 mm; the flex bend and relative connector geometry remain unchanged. The lens is recessed below the taller housing roof.
 
-A rectangular **0.50 mm solid silicone strip, nominal 50 Shore A**, sits in end pockets under each cap. Cut 1.6 × 12.8 mm for Filters and 1.6 × 16.8 mm for Next. Use solid silicone sheet, not foam or a thermal interface pad. The central 1.6 mm tip presses through the strip. The pockets locate the insert without adhesive; verify insertion, creep and release on the coupon. Manufacturer sheet ranges include [0.5 mm / 50 Shore A silicone](https://www.siliconenab.com/wp-content/uploads/2025/08/HRS.pdf); the selected material specification does not establish a force curve or supplied thickness tolerance.
+### Clearances
 
-### Tolerances and part selection
+The openings are 9.8 × 9.8 mm and 12.8 × 12.8 mm, with 0.4 mm nominal clearance per side. These print allowances are larger than Omron's precision-panel cutouts. The geometric screen includes ±0.15 mm cap width, ±0.20 mm printed opening size and ±0.15 mm lateral alignment assumptions: minimum radial clearance is 0.075 mm. Measure the actual openings; adjust the print compensation if needed.
 
-The default CAD uses 0.10 mm tip relief and 0.65 mm travel to the keeper. **A fixed nominal pair does not guarantee actuation across the stack.** The displacement audit combines the declared PCB thickness, switch height, solder, print and silicone-thickness errors. Its unadjusted gap range is −0.375 to +0.575 mm, so both preload and excess clearance are possible.
+The cap tops are nominally z=15.8 mm, 1.6 mm above the control panel. At maximum specified 0.5 mm pretravel, including cap/PCB height tolerances and a independent ±0.20 mm printed panel-height and PCB-seat assumptions, at least 0.17 mm remains above the panel. The switch supplies its own tactile mechanism and cap retention. The housing does not preload the cap or act as a travel stop. Pretravel is not an allowable overtravel rating; test edge presses and return on the real parts.
 
-The export provides cap reliefs from −0.40 to +0.60 mm in 0.10 mm steps and keeper-stop adjustments from −0.40 to +0.40 mm in 0.10 mm steps, for both cap lengths. A positive keeper adjustment raises the stop and reduces travel; a negative adjustment recesses it and increases travel. The generated `button_tolerances.json` screens **192 corner combinations**. Each has a selectable geometric pairing within the assumed 0.05–0.15 mm rest-gap and 0.05–0.15 mm pad-displacement windows. This is a displacement allocation, not proof of switch force, silicone compression or life. Real parts must be selected using the measured coupon.
-
-Use the coupon with the actual switch. Check unpressed continuity, release, off-center pushes, electrical actuation before the hard stop, total travel and force. Fit the pair with no preload and a positive stop beyond actuation. Do not install a negative-relief cap merely because it is exported: its purpose is compensation for a measured stack. The silicone and switch force curves must be checked before treating any selected pair as a qualified assembly.
+The PCB underside is z=4.6 mm. Untrimmed 3.5 mm leads clear the 1.2 mm base by 1.10 mm nominally and 0.17 mm in the declared worst-case stack. Inspect solder fillets and lead ends; keep their full envelope inside this allowance. The datasheet's reference drilling example uses a 1.6 mm PCB; this design retains 1.2 mm and explicitly reserves the greater underside protrusion. Verify body seating on the first article.
 
 ### Print and assembly preparation
 
-Exports are separated by purpose:
+| Folder | Contents |
+| --- | --- |
+| `case/exports/assembly/` | Assembly-coordinate printed parts |
+| `case/exports/print/core/` | Base, top shell, display frame and support bar |
+| `case/exports/print/accessories/` | Carrier, cover and wedge |
+| `case/exports/print/jigs/` | Temporary flex former |
+| `case/exports/reference/` | Purchased caps, switch, battery, panel and PCB envelopes; do not print |
+| `case/exports/patterns/` | Clear-sheet lens cutting outline |
 
-| Folder                            | Contents                                                                 |
-| --------------------------------- | ------------------------------------------------------------------------ |
-| `case/exports/assembly/`          | Native assembly-coordinate STL/3MF models                                |
-| `case/exports/print/core/`        | Individually oriented housing, supports, caps and keepers                |
-| `case/exports/print/accessories/` | Carrier, cover and wedge                                                 |
-| `case/exports/print/coupons/`     | Guides, graded caps and graded keepers; print selected trials            |
-| `case/exports/print/jigs/`        | Temporary flex former                                                    |
-| `case/exports/reference/`         | Battery, panel, PCB and silicone references; not installed plastic parts |
-| `case/exports/patterns/`          | Clear-sheet lens and silicone-strip cutting outlines                     |
+`print-layout.json` records print orientations and bed translations. Start home trials with PETG, a 0.4 mm nozzle and 0.15 mm layers. The top shell prints face-down; inspect the recessed display ledge and use local supports if required by the slicer. The base and display supports have flat print orientations. Purchased caps eliminate printed sliding fits, elastomer inserts and cap-retaining screws. [JLC3DP guidelines](https://jlc3dp.com/help/article/3d-printing-design-guideline) and [PCBWay printing capabilities](https://www.pcbway.com/rapid-prototyping/3d-printing/) describe the service limits, not acceptance of these parts.
 
-`print-layout.json` records each print orientation and bed translation. STL and 3MF carry geometry, not qualified slicer profiles. Start home trials with PETG, a 0.4 mm nozzle and 0.15 mm layers. The top shell and guide coupons face downward; caps rest on their flat finger faces, keepers on their flat undersides. Inspect overhangs and keep support scars out of the guides, strip pockets and screw seats. The base, supports and keepers have reinforced load paths; their thin details and broad spans still need process review. [JLC3DP guidelines](https://jlc3dp.com/help/article/3d-printing-design-guideline) and [PCBWay printing capabilities](https://www.pcbway.com/rapid-prototyping/3d-printing/) describe the service limits, not acceptance of these particular parts.
+Four **M2.5 × 10 mm countersunk screws** close the core; use **M2.5 × 12 mm** with the optional 3.2 mm carrier. Verify head seating, pilot engagement and screw-tip clearance before installing electronics.
 
-Use four **M2 × 3 mm countersunk screws** for the keepers, with nominal 4 mm heads and 1.65 mm printed pilots. The nominal thread engagement is 1.5 mm; qualify the pilot and tightening torque on the coupon. Four **M2.5 × 8 mm countersunk screws** close the core; use 10 mm with the optional carrier. Check actual head seating, engagement and tip clearance before installing electronics. The keeper heads sit above the PCB, and their shafts remain inside the shell posts.
+1. Complete the 87-part SMT assembly. Seat and solder the two B3F-4050 switches from above, inspecting the underside joints and lead protrusion. B3F is unsealed and not washable; follow the manufacturer's soldering restrictions.
+2. Verify unpressed/open and pressed/closed continuity for both controls. Support the PCB beneath each switch and press on the matching cap **after soldering**: ivory on SW1/Filters, orange on SW2/Next. Do not load the display while seating a cap.
+3. Install the board, prepared protected-cell/NTC harness, display supports, formed and latched flex, glass, perimeter foam and lens. Verify battery polarity before connection.
+4. Lower the top shell over the fitted caps through its clearance openings. Close with the four core screws. Check full return and center/edge actuation again before powering the device.
 
-1. Invert the empty top shell. Fit each silicone strip into its cap pockets, insert the cap from below and screw on its keeper. Select relief and stop on the coupon before this step. Verify both controls release freely.
-2. Install and inspect the board in the base. Prepare the battery/NTC harness, verify polarity and fit the insulated battery reservation.
-3. Form the display tail without tension, insert and latch J2, then fit the display supports, perimeter foam, glass and lens.
-4. Lower the prepared top shell onto the assembly and tighten the core screws with the glass unloaded. Check the controls again before powering the device.
-
-The assembly-path checks cover vertical cap insertion, keeper insertion, operating motion, lateral-play corners, extreme graded parts, both retention directions and fasteners. Nominal zero-volume contact is allowed at the declared keeper/post and hard-stop interfaces. They do not simulate friction or deformation. Recovery and display-latch access still require opening the display stack; avoid repeatedly creasing the flex.
+The assembly checks cover cap insertion through the roof, 0–0.5 mm travel, lateral alignment corners, switch bodies/leads, electronics, glass, flex, supports and carrier fasteners. They do not simulate friction, spring force or cap extraction force. Recovery access still requires opening the display stack.
 
 ### What is printed, fabricated or purchased
 
 | Part or operation                                                | Practical route                                                                                       |
 | ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| L-shaped PCB and its 89 fitted components                        | PCB fabrication and assembly from Gerbers/BOM/CPL; confirm exact parts and the supported routed panel |
-| Shell, base, supports, caps, keepers, wedge and carrier plastics | Separate prints; qualify material, surface finish, fits and pilot threads                             |
-| E-paper panel, protected battery, switches, controller and NTC   | Purchase the selected components                                                                      |
-| Clear lens, silicone strips, foam and insulation                 | Cut purchased sheet materials using the patterns; reference meshes are not substitutes                |
+| L-shaped PCB: 87 SMT parts and two through-hole switches                        | PCB fabrication and assembly from Gerbers/BOM/CPL; confirm exact parts and the supported routed panel |
+| Shell, base, supports, wedge and carrier plastics | Separate prints; qualify material, surface finish, fits and pilot threads                             |
+| E-paper panel, protected battery, switches, caps, controller and NTC   | Purchase the selected components                                                                      |
+| Clear lens, foam and insulation                 | Cut purchased sheet materials using the patterns; reference meshes are not substitutes                |
 | Battery/NTC harness                                              | Crimp or source pigtails, splice and insulate, bond the sensor and verify polarity                    |
 | Fasteners, magnetic array and steel shield                       | Source separately; printing supplies their housing, not the functional materials                      |
 | Completed device                                                 | Install the controls, flex, glass and cell, close, program and test                                   |
@@ -114,7 +109,7 @@ PCBWay advertises complete product and cable-harness assembly, which needs a sep
 
 ## PCBWay / JLCPCB construction
 
-Use nominal **1.2 mm four-layer FR-4, 1 oz copper, ENIG**, one assembly face, through vias and tab routing. Check the current [PCBWay capabilities](https://www.pcbway.com/capabilities.html) and [JLCPCB capabilities](https://jlcpcb.com/capabilities/Capab) at order. No factory has reviewed or accepted an order for this revision.
+Use nominal **1.2 mm four-layer FR-4, 1 oz copper, ENIG**, top-side SMT assembly plus separate through-hole switch soldering, through vias and tab routing. Check the current [PCBWay capabilities](https://www.pcbway.com/capabilities.html) and [JLCPCB capabilities](https://jlcpcb.com/capabilities/Capab) at order. No factory has reviewed or accepted an order for this revision.
 
 | Constraint                           | Design limit                                                                                                                |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
@@ -155,6 +150,6 @@ just hw-rev-b-fab-export
 
 Reports are written under `build/hardware-rev-b/`. The checks cover the actual concave outline, component courts/models, one fitted assembly face and underside bare diagnostic contacts, mounting and pad-to-edge clearance, centered active screen, RF exclusion, source fingerprints, schematic/PCB netlist parity, ERC and DRC. The electrical check requires zero unconnected items.
 
-Mesh checks require closed, oriented single solids for each printable part. Intersection checks cover components, battery, PCB, display, supports, harness, flex, carrier and caps across their stroke. At the stop only zero-volume contact is allowed; an additional 0.02 mm must contact both stops. `--mechanical-only` explicitly skips electrical checks and labels its report accordingly.
+Mesh checks require closed, oriented single solids for each printable part. Intersection checks cover components, battery, PCB, display, supports, harness, flex, carrier and caps across their stroke. Purchased cap and lead clearance calculations include the declared print and component tolerances. `--mechanical-only` explicitly skips electrical checks and labels its report accordingly.
 
-Physical acceptance remains: first power and recovery; exact panel waveforms and fold; charge/NTC and pulse loads; printed actuator fit and wear; enclosure assembly and optical support; optional phone retention and loaded RF. These measurements follow fabrication of the engineering prototype.
+Physical acceptance remains: first power and recovery; exact panel waveforms and fold; charge/NTC and pulse loads; purchased-cap fit, actuation and retention; enclosure assembly and optical support; optional phone retention and loaded RF. These measurements follow fabrication of the engineering prototype.

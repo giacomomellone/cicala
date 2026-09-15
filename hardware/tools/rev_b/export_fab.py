@@ -1,4 +1,5 @@
 """Export a checked Rev B engineering prototype package from native KiCad files."""
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -42,7 +43,30 @@ def main():
         pos=out/'assembly'/f'{prefix}_pos.csv'
         cli(['pcb','export','pos','--format','csv','--units','mm','--side','both','--exclude-dnp',
              '--use-drill-file-origin','-o',pos,BOARD],'fab-position.log')
-        convert(bom,pos,out/'assembly',prefix)
+        # The two B3F switches are installed from the top and soldered separately.
+        manual_refs={'SW1','SW2'}
+        smt_bom=out/'assembly'/f'{prefix}_smt_bom.csv'
+        smt_pos=out/'assembly'/f'{prefix}_smt_pos.csv'
+        from jlc_assembly import references
+        for source,target,field in ((bom,smt_bom,'Refs'),(pos,smt_pos,'Ref')):
+            with source.open(newline='') as stream:
+                reader=csv.DictReader(stream); fields=reader.fieldnames; rows=list(reader)
+            seen=set()
+            with target.open('w',newline='') as stream:
+                writer=csv.DictWriter(stream,fieldnames=fields,lineterminator='\n');writer.writeheader()
+                for row in rows:
+                    refs=set(references(row[field]))
+                    if refs & manual_refs:
+                        if not refs <= manual_refs:raise ValueError('Mixed SMT/through-hole BOM group')
+                        seen |= refs
+                    else:writer.writerow(row)
+            if seen != manual_refs:raise ValueError('Through-hole assembly coverage differs')
+        convert(smt_bom,smt_pos,out/'assembly',prefix)
+        (out/'assembly'/'manual_assembly.csv').write_text(
+            'Refs,MPN,Qty,Method\n'
+            '"SW1,SW2",B3F-4050,2,"Through-hole; body seated on PCB; solder after SMT; no wash"\n'
+            'SW1 cap,B32-1200,1,"Ivory 9 mm; press onto plunger after soldering"\n'
+            'SW2 cap,B32-1320,1,"Orange 12 mm; press onto plunger after soldering"\n')
         for side,layer in [('top','F'),('bottom','B')]:
             cli(['pcb','export','pdf','--layers',f'{layer}.Fab,{layer}.SilkS,Edge.Cuts',
                  *(['--mirror'] if side=='bottom' else []),'--mode-single','--scale','0','--black-and-white',

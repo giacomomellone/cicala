@@ -1,20 +1,28 @@
 {
   "footprints": 115,
   "component_envelopes": 87,
-  "outline_area_mm2": 3740.22,
+  "outline_area_mm2": 4360.22,
   "assembly_faces": 1,
   "physical_gates": [
     "First power-up: polarity, 3V3 regulation and USB/UART programming",
     "Display refresh, power-down, rail voltages and flex fit on selected V1.1 panel",
     "Battery NTC veto, charging, pulse load and sleep current",
-    "Printed flat-cap fit, off-centre force, return, stroke and wear; assembly and cable access",
+    "Purchased cap seating, aperture clearance, off-centre force, full actuation and return; soldered through-hole lead clearance",
     "Optional phone carrier retention, camera interference and loaded antenna performance",
     "Factory confirmation of stack, stencil and tab-panel support at prototype order"
   ],
   "unconnected_items": 0,
-  "mechanical_poses": 65,
-  "mesh_pairs": 65,
-  "printable_parts": 60,
-  "button_tolerance_corners": 192,
+  "mechanical_poses": 37,
+  "mesh_pairs": 14,
+  "printable_parts": 8,
+  "button_clearance_audit": {
+    "kind": "Geometric screening using Omron drawing tolerances and declared print/assembly assumptions",
+    "minimum_radial_clearance_mm": 0.075,
+    "minimum_pressed_cap_proud_mm": 0.17,
+    "minimum_lead_base_clearance_mm": 0.17,
+    "nominal_cap_top_z_mm": 15.8,
+    "maximum_specified_pretravel_mm": 0.5,
+    "qualification": "Check cap seating, full return, off-centre actuation and finished solder-joint height on the first article. Pretravel is not an allowable overtravel or overload specification."
+  },
   "status": "engineering prototype files checked; first-article physical measurements pending"
 }

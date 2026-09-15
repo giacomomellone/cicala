@@ -2,7 +2,7 @@
 import math
 
 
-REFERENCES = {'cap_pad','next_pad','pcb_reference','cell_reference','panel_reference'}
+REFERENCES = {'pcb_reference','cell_reference','panel_reference','category_cap_reference','next_cap_reference','switch_reference'}
 ACCESSORIES = {'carrier','carrier_cover','wedge'}
 
 
@@ -13,15 +13,11 @@ def role(part):
         return 'accessories'
     if part == 'flex_former':
         return 'jigs'
-    if part.startswith('coupon') or part == 'keeper_coupon':
-        return 'coupons'
     return 'core'
 
 
 def rotation(part):
-    if part in {'category_cap','next_cap','coupon_cap'}:
-        return [0,180,0]
-    if part in {'top_shell','coupon'}:
+    if part in {'top_shell'}:
         return [0,180,0]
     if part == 'flex_former':
         return [0,-90,0]

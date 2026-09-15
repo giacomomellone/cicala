@@ -23,7 +23,7 @@ contacts. Both switches and the status LED are named.
 The underside is read with the board flipped over; its artwork is mirrored in
 KiCad coordinates. It provides:
 
-- Revision B.03, module/flash identification, four layers and 1.2 mm thickness.
+- Revision B.04, module/flash identification, four layers and 1.2 mm thickness.
 - USB/battery/system/3.3 V power flow, nominal 100 mA charging and the U7/Q2
   temperature veto.
 - The top-side test-point number key and direct labels for all seven bottom

@@ -4163,7 +4163,7 @@
 				)
 			)
 		)
-		(property "Value" "SKRABCE010"
+		(property "Value" "B3F-4050"
 			(at 168.91 46.482 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4173,7 +4173,7 @@
 				)
 			)
 		)
-		(property "Footprint" "cicala:SW_Alps_SKRABCE010"
+		(property "Footprint" "cicala:SW_Omron_B3F-4050"
 			(at 168.91 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -4184,7 +4184,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://tech.alpsalpine.com/e/products/detail/SKRABCE010/"
+		(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf"
 			(at 168.91 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -4206,7 +4206,7 @@
 				)
 			)
 		)
-		(property "MPN" "SKRABCE010"
+		(property "MPN" "B3F-4050"
 			(at 168.91 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -4231,7 +4231,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Alps Alpine"
+		(property "Manufacturer" "Omron"
 			(at 168.91 52.07 0)
 			(hide yes)
 			(show_name no)
@@ -6165,7 +6165,7 @@
 				)
 			)
 		)
-		(property "Value" "SKRABCE010"
+		(property "Value" "B3F-4050"
 			(at 27.94 55.88 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -6175,7 +6175,7 @@
 				)
 			)
 		)
-		(property "Footprint" "cicala:SW_Alps_SKRABCE010"
+		(property "Footprint" "cicala:SW_Omron_B3F-4050"
 			(at 27.94 62.23 0)
 			(hide yes)
 			(show_name no)
@@ -6186,7 +6186,7 @@
 				)
 			)
 		)
-		(property "Datasheet" "https://tech.alpsalpine.com/e/products/detail/SKRABCE010/"
+		(property "Datasheet" "https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf"
 			(at 27.94 62.23 0)
 			(hide yes)
 			(show_name no)
@@ -6208,7 +6208,7 @@
 				)
 			)
 		)
-		(property "MPN" "SKRABCE010"
+		(property "MPN" "B3F-4050"
 			(at 27.94 62.23 0)
 			(hide yes)
 			(show_name no)
@@ -6233,7 +6233,7 @@
 				)
 			)
 		)
-		(property "Manufacturer" "Alps Alpine"
+		(property "Manufacturer" "Omron"
 			(at 27.94 62.23 0)
 			(hide yes)
 			(show_name no)

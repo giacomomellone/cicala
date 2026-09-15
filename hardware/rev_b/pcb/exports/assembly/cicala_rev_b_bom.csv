@@ -40,7 +40,7 @@
 "R35","820k","Resistor_SMD:R_0603_1608Metric","RC0603FR-07820KL","Yageo","","1",""
 "R36","210k","Resistor_SMD:R_0603_1608Metric","RC0603FR-07210KL","Yageo","","1",""
 "R37","82.5k","Resistor_SMD:R_0603_1608Metric","RC0603FR-0782K5L","Yageo","","1",""
-"SW1,SW2","SKRABCE010","cicala:SW_Alps_SKRABCE010","SKRABCE010","Alps Alpine","","2",""
+"SW1,SW2","B3F-4050","cicala:SW_Omron_B3F-4050","B3F-4050","Omron","","2",""
 "U1","ESP32-S3-WROOM-1-N16","cicala:ESP32-S3-WROOM-1_NoEmbeddedVias","ESP32-S3-WROOM-1-N16","Espressif Systems","","1",""
 "U2","BQ25185DLH","cicala:Texas_DLH0010A_NoEmbeddedVias","BQ25185DLHR","Texas Instruments","","1",""
 "U3","TPS63802DLA","cicala:Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm","TPS63802DLAR","Texas Instruments","","1",""

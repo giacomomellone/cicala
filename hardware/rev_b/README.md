@@ -1,8 +1,8 @@
 # Rev B
 
 Landscape prototype with a centered 3.52-inch display, ESP32-S3 module,
-L-shaped PCB, 500 mAh battery and two flat buttons on a recessed right-hand ledge.
-The core envelope is 112 × 66 × 10.2 mm. The phone carrier is removable.
+L-shaped PCB, 500 mAh battery and two purchased Omron caps above a flat right-hand control area.
+The core envelope is 128 × 66 × 14.2 mm (15.8 mm including caps). The phone carrier is removable.
 
 The routed board and nominal mechanical design pass the digital checks.
 This is an engineering prototype; physical qualification and factory order

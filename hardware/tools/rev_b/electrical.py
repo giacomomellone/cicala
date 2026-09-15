@@ -26,7 +26,7 @@ def audit(netlist, board):
         if not pins.get(('J2',pin),'').startswith('unconnected-'):raise ValueError(f'J2.{pin} must remain unconnected')
     if not(pins['U3','4']==pins['R14','2']==pins['R15','1']):raise ValueError('Feedback divider connectivity changed')
     fps={k.ref_of(f):f for f in k.children(k.load(board),'footprint')}
-    chosen={'U1':'ESP32-S3-WROOM-1-N16','J2':'503480-2400','SW1':'SKRABCE010','SW2':'SKRABCE010'}
+    chosen={'U1':'ESP32-S3-WROOM-1-N16','J2':'503480-2400','SW1':'B3F-4050','SW2':'B3F-4050'}
     for ref,mpn in chosen.items():
         props={p[1]:p[2]for p in k.children(fps[ref],'property')}
         if props.get('MPN')!=mpn:raise ValueError(f'{ref}: selected MPN changed')

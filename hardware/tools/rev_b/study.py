@@ -18,11 +18,11 @@ sys.path.insert(0, str(ROOT / 'hardware/tools/case'))
 from check_mesh import check as check_mesh, triangles
 
 SOURCE = ROOT / 'hardware/rev_b/case/cicala_enclosure.scad'
-PARTS = ['base', 'top_shell', 'display_frame', 'display_support_bar', 'category_cap', 'next_cap',
-         'category_keeper', 'next_keeper', 'next_pad', 'carrier', 'carrier_cover', 'flex_former', 'cap_pad', 'wedge',
-         'pcb_reference', 'cell_reference', 'panel_reference']
-FIT = ['components_case', 'components_cell', 'pcb_cell', 'panel_case',
-       'flex_case', 'flex_components', 'harness', 'carrier', 'switches_case', 'keepers', 'strip', 'screws', 'carrier_fasteners']
+PARTS = ['base','top_shell','display_frame','display_support_bar','carrier','carrier_cover',
+         'flex_former','wedge','pcb_reference','cell_reference','panel_reference',
+         'category_cap_reference','next_cap_reference','switch_reference']
+FIT = ['components_case','components_cell','pcb_cell','panel_case','flex_case',
+       'flex_components','harness','carrier','switches_case','carrier_fasteners']
 
 
 def tool(variable, name, mac):
@@ -116,16 +116,6 @@ def main():
     output = ROOT/'hardware/rev_b/case/exports' if args.export else report/'meshes'
     output.mkdir(parents=True,exist_ok=True)
     jobs = [(part,part,[]) for part in PARTS]
-    for index,label in enumerate(('category','next')):
-        for clearance in contract['buttons']['coupon_clearances']:
-            jobs.append((f'coupon_{label}_clearance_{clearance:.2f}','coupon',
-                         [f'coupon_clearance={clearance}',f'coupon_index={index}']))
-        for relief in contract['buttons']['coupon_reliefs']:
-            jobs.append((f'coupon_{label}_relief_{relief:.2f}','coupon_cap',
-                         [f'coupon_relief={relief}',f'coupon_index={index}']))
-        for adjustment in contract['buttons']['keeper_stop_adjustments']:
-            jobs.append((f'coupon_{label}_stop_{adjustment:+.2f}','keeper_coupon',
-                         [f'keeper_adjustment={adjustment}',f'coupon_index={index}']))
     print_jobs={}
     for name,part,defines in jobs:
         model_dir=output/('reference' if role(part)=='reference' else 'assembly') if args.export else output
@@ -136,16 +126,15 @@ def main():
             target=model_dir/f'{name}.{ext}'
             run([*scad,'--hardwarnings',*options,'-o',target,SOURCE],report/f'{name}-{ext}.log')
             if ext=='stl':
-                check_mesh(target)
-                if part in ('category_cap','next_cap','coupon_cap'):
-                    index = 1 if part=='next_cap' or name.startswith('coupon_next_') else 0
+                check_mesh(target, expected_solids=5 if part=='switch_reference' else 1)
+                if part in ('category_cap_reference','next_cap_reference'):
+                    index=0 if part=='category_cap_reference' else 1
                     b=contract['buttons']
-                    check_flat_face(triangles(target),contract['case']['height']-b['face_recess'],
-                                    b['cap_width']*b['cap_lengths'][index]-4*b['face_radius']**2)
+                    check_flat_face(triangles(target),contract['pcb']['z']+contract['pcb']['thickness']+b['assembled_height'],b['cap_sizes'][index]**2-1)
                 if role(part)=='core':
                     points=[p for face in triangles(target)for p in face]
                     for axis,limit in enumerate((contract['case']['width'],contract['case']['depth'],contract['case']['height'])):
-                        extra=contract['buttons']['return_clearance'] if axis==2 and part in ('category_cap','next_cap') else 0
+                        extra=0
                         lower=contract['case']['origin'][axis]
                         if min(p[axis]for p in points)<lower-.0001 or max(p[axis]for p in points)+extra>lower+limit+.0001:
                             raise ValueError(f'{name} exceeds the core envelope on axis {axis}')
@@ -164,17 +153,12 @@ def main():
             print_jobs[str((directory/f'{name}.stl').relative_to(output))]=layout
     failures=[]
     poses = [(name,0,[]) for name in FIT]
-    poses += [(name,s,[]) for name in ('caps_motion','caps_switch_body') for s in (0,.1,.2,.3,.4,.5,.6,.65)]
-    poses += [(name,s,[]) for name in ('cap_insert','keeper_insert') for s in (0,1,2,3,4,5,6)]
-    for relief in (min(contract['buttons']['coupon_reliefs']),max(contract['buttons']['coupon_reliefs'])):
-        for stroke in (0,.65,1.05):
-            poses.append(('caps_motion',stroke,[f'cap_relief={relief}','keeper_adjustment=-.4']))
-            poses.append(('caps_switch_body',stroke,[f'cap_relief={relief}','keeper_adjustment=-.4']))
-        poses.append(('strip',0,[f'cap_relief={relief}']))
-    play=contract['buttons']['radial_clearance']-.02
+    poses += [(name,s,[]) for name in ('caps_motion','caps_switch_body') for s in (0,.1,.2,.3,.4,.5)]
+    poses += [('cap_insert',s,[]) for s in (0,1,2,3,4,5,6)]
+    play=contract['buttons']['alignment_tolerance']
     for x,y in ((-play,-play),(-play,play),(play,-play),(play,play)):
-        for stroke in (0,.65):
-            poses.append(('caps_lateral',stroke,[f'side_shift=[{x},{y},0]']))
+        for stroke in (0,.5):
+            poses.append(('caps_motion',stroke,[f'side_shift=[{x},{y},0]']))
     for pose_index,(name,stroke,defines) in enumerate(poses):
         target=report/f'fit_{pose_index}_{name}_{stroke}.stl'
         target.unlink(missing_ok=True)
@@ -184,24 +168,13 @@ def main():
         process=subprocess.run(list(map(str,command)),cwd=ROOT,capture_output=True,text=True)
         log=process.stdout+process.stderr
         (report/f'fit_{pose_index}_{name}_{stroke}.log').write_text(log)
-        at_stop = (name in ('caps_motion','caps_lateral') and stroke == contract['buttons']['stop_travel']
-                   or name in ('keepers','keeper_insert') and stroke == 0)
-        contact_only = False
-        if at_stop and process.returncode == 0:
-            volume = sum(a[0]*(b[1]*c[2]-b[2]*c[1])+a[1]*(b[2]*c[0]-b[0]*c[2])
-                         +a[2]*(b[0]*c[1]-b[1]*c[0]) for a,b,c in triangles(target))/6
-            contact_only = abs(volume) < 1e-6
-        if (not contact_only and (process.returncode==0 or 'Current top level object is empty.' not in log)
+        if (process.returncode==0 or 'Current top level object is empty.' not in log
                 or 'WARNING:' in log or 'ERROR:' in log): failures.append(f'{name} at {stroke}')
-    run([*scad,'--hardwarnings','-D','part="fit_stop_contact"','-o',report/'stop_contact.stl',SOURCE],report/'stop_contact.log')
-    check_mesh(report/'stop_contact.stl',expected_solids=4)
-    run([*scad,'--hardwarnings','-D','part="fit_return_contact"','-o',report/'return_contact.stl',SOURCE],report/'return_contact.log')
-    check_mesh(report/'return_contact.stl',expected_solids=4)
     result['mechanical_poses']=len(poses)
     if failures:raise ValueError('Mechanical intersections: '+', '.join(failures))
     result['mesh_pairs']=len(jobs)
     result['printable_parts']=sum(role(part)!='reference' for _,part,_ in jobs)
-    result['button_tolerance_corners']=192
+    result['button_clearance_audit']=button_audit(contract)
     result['status']=('mechanical files checked; electrical checks not run' if args.mechanical_only else
                       'engineering prototype files checked; first-article physical measurements pending')
     (report/'report.json').write_text(json.dumps(result,indent=2)+'\n')
@@ -212,14 +185,7 @@ def main():
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}mm" height="{h}mm" viewBox="0 0 {w} {h}">\n'
             '<title>Rev B 0.8 mm lens blank; nominal outline, no kerf compensation</title>\n'
             f'<path d="M0 0H{w}V{h}H0Z" fill="none" stroke="black" stroke-width="0.01"/>\n</svg>\n')
-        b=contract['buttons']
-        for index,label in enumerate(('category','next')):
-            width=b['pad_width'];length=b['cap_lengths'][index]-2*b['pad_end_inset']
-            (output/'patterns'/f'{label}_silicone_strip.svg').write_text(
-                f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}mm" height="{length}mm" viewBox="0 0 {width} {length}">'
-                f'<title>Cut {b["compliant_pad_thickness"]} mm solid silicone sheet; do not 3D print</title>'
-                f'<path d="M0 0H{width}V{length}H0Z" fill="none" stroke="black" stroke-width="0.01"/></svg>\n')
-        (output/'print-layout.json').write_text(json.dumps({'jobs':print_jobs,'notes':'Individually oriented meshes. Slicer supports, material and fit require qualification; do not print all graded coupon options for an assembled device.'},indent=2)+'\n')
+        (output/'print-layout.json').write_text(json.dumps({'jobs':print_jobs,'notes':'Individually oriented meshes. Slicer supports, material and fit require qualification; purchased caps and switch are reference meshes, never print jobs.'},indent=2)+'\n')
         source_paths=[CONTRACT,SOURCE,OUTPUT,BOARD,BOUNDS,BOARD.with_suffix('.kicad_pro'),
                       BOARD.with_suffix('.kicad_dru'),*BOARD.parent.rglob('*.kicad_sch'),
                       *BOARD.parent.glob('models/*.step'),*BOARD.parent.glob('cicala.pretty/*.kicad_mod'),
@@ -232,12 +198,12 @@ def main():
         for part in ['assembly','inside','exploded','section','carrier','wedge','buttons_exploded']:
             run([*scad,'--hardwarnings','-D',f'part="{"carrier_assembly" if part == "carrier" else part}"','--imgsize=1600,1000','--viewall','--autocenter',
                  '--render','--colorscheme=Tomorrow',
-                 '--camera='+('125,115,55,54,25,4' if part=='section' else '124,-18,35,102,17,7' if part=='buttons_exploded' else '130,-110,130,54,33,3'),
+                 '--camera='+('125,115,55,54,25,4' if part=='section' else '148,-28,70,108,35,11' if part=='buttons_exploded' else '130,-110,130,54,33,3'),
                  '-o',renders/f'{part}.png',SOURCE],report/f'render-{part}.log')
         docs_image = ROOT/'docs/assets/images/hardware_rev_b/assembly.png'
         docs_image.parent.mkdir(parents=True,exist_ok=True)
         shutil.copy2(renders/'assembly.png',docs_image)
-    print('Printable meshes, nominal travel/stop and empty collision checks passed. Physical tests remain open.',flush=True)
+    print('Printable meshes, purchased-cap clearances and empty collision checks passed. Physical tests remain open.',flush=True)
 
 
 if __name__=='__main__':

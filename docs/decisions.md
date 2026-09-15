@@ -1114,3 +1114,23 @@ The wider core lengthens the portrait carrier to 114.8 mm. Reposition its ring
 to balance the nominal iPhone 16 Plus camera and bottom gaps at 1.185 mm each.
 This prioritizes tabletop controls while reducing phone-fit tolerance. Cases,
 optical clearance and magnetic retention still require physical qualification.
+
+## 2026-09-15: Purchased Omron controls simplify Rev B assembly
+
+Rev B.04 uses two B3F-4050 projected-plunger through-hole switches. Filters has
+an ivory 9 × 9 mm B32-1200 cap; Next has an orange 12 × 12 mm B32-1320 cap.
+Omron's B3F/B32 drawings establish compatibility and a 10 mm fitted height above
+the PCB. Caps are installed after soldering, with the PCB supported.
+
+This supersedes the printed caps, silicone strips, keepers, keeper screws and
+graded actuator coupons. Four prints form the core housing/display supports.
+The PCB right arm widens and its mounting plane rises to clear untrimmed switch
+leads. The housing is 128 × 66 × 14.2 mm, 15.8 mm including the cap tops. The
+active display stays centered; its lens is recessed below the taller roof.
+
+Accepted costs: a separate through-hole soldering step, greater size, and loss
+of the previous iPhone 16 Plus nominal carrier fit. The 87-part SMT BOM/CPL is
+separate from the manual switch/cap assembly list. The carrier remains an
+experimental accessory. Cap seating, low-current contact reliability, edge
+presses, printed aperture fit and underside solder clearance require a first
+article. See [selection evidence](hardware_rev_b_selection.md).

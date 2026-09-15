@@ -1,11 +1,11 @@
 # Rev B enclosure
 
-`cicala_enclosure.scad` is the editable source. `contract.scad` and `pcb_component_bounds.scad` are generated from the numeric contract and KiCad placement.
+`cicala_enclosure.scad` is editable. `contract.scad` and `pcb_component_bounds.scad` are generated from the contract and native KiCad placement.
 
-The core is 112 × 66 × 10.2 mm. Its active display is centered, the battery occupies the PCB's open corner, and two broad, flat controls sit 0.4 mm above a recessed ledge. The removable magnetic carrier adds 3.2 mm. Separate display supports keep assembly loads off the battery.
+The housing is 128 × 66 × 14.2 mm; the purchased cap tops reach 15.8 mm overall. The active screen remains centered. Filters uses a 9 × 9 mm ivory B32-1200 cap; Next uses a 12 × 12 mm orange B32-1320 cap. Both seat directly on B3F-4050 switches. The enclosure supplies clearance openings, with no printed actuators or retaining mechanism.
 
-Run `just hw-rev-b-export --renders` for checked native exports, or `just hw-rev-b-fit-export` for a clearly labeled mechanical-only check. Printable parts include the shell, display supports, caps, removable keepers, carrier/cover, wedge, forming tool and tolerance coupons. `exports/assembly/` preserves assembly coordinates; `exports/print/` contains parts oriented and placed on the print bed, grouped by purpose. Reference components and cut patterns have separate folders. Print settings and assembly sequence are in [the engineering guide](../../../docs/hardware_rev_b.md).
+Run `just hw-rev-b-export --renders` for checked native exports. `exports/assembly/` preserves assembly coordinates; `exports/print/` contains eight individually oriented printed parts, grouped by purpose. Purchased cap, switch, battery, panel and PCB models stay in `exports/reference/` and must not be printed. The clear lens outline is in `exports/patterns/`.
 
-Each cap has 1.4 mm retaining tabs, a captured 0.5 mm silicone strip and a keeper attached with two M2 screws. Install these in the empty top shell. Clearance, cap-relief and keeper-stop grades support selection from first-article measurements; the default parts do not guarantee actuation across the tolerance stack.
+Four core prints form the housing and display supports. The other prints are the optional carrier, ring cover, wedge and temporary flex former. See [the assembly guide](../../../docs/hardware_rev_b.md#buttons-and-print-preparation) for soldering, cap installation, print tolerances and screws.
 
-The R1.55 inside flex radius and connector entry height are assembly assumptions. The R1.5 forming tool is temporary and must be removed. Verify the actual flex, lens/support tolerances, battery clearance, button travel, fasteners and phone fit on first articles. Native CAD intersection checks describe nominal geometry, not a complete tolerance qualification.
+The carrier adds 3.2 mm. Its increased portrait length fails the former iPhone 16 Plus fit target; phone compatibility is unqualified. The R1.55 flex bend and connector entry height remain first-article checks. No integrated Rev B prototype has been assembled.

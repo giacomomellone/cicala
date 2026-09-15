@@ -57,6 +57,8 @@ def check(geometry, models_root):
         require(rules[name] >= limit, f'KiCad manufacturing rule relaxed: {name}')
     from silkscreen import check_signals
     check_signals(board)
+    from switch_footprint import check as check_switches
+    check_switches(board, c)
     shape = check_outline(geometry, c)
     stack = ksexp.child(ksexp.child(board, 'setup'), 'stackup')
     thickness = sum(float(ksexp.child(layer, 'thickness')[1])
@@ -117,10 +119,8 @@ def check(geometry, models_root):
     require(abs(origin[0]+active[0]/2-(c['case']['origin'][0]+c['case']['width']/2)) < .001
             and abs(origin[1]+active[1]/2-c['case']['depth']/2) < .001,
             'Active display must be centered on the case')
-    buttons = c['buttons']
-    require(buttons['switch_travel'] + buttons['tip_relief'] <= buttons['stop_travel']
-            <= buttons['switch_travel'] + buttons['tip_relief'] + buttons['compliant_pad_thickness'],
-            'Nominal travel must reach actuation with overtravel within the compliant pad allowance')
+    from button_tolerances import audit as button_audit
+    button_audit(c)
     return {'footprints': len(fps), 'component_envelopes': len(rows),
             'outline_area_mm2': round(shape.area, 2), 'assembly_faces': 1,
             'physical_gates': c['gates']}

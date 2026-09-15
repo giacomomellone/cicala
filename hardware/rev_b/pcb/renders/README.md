@@ -26,3 +26,8 @@ The basic raytracing preset avoids offset shadows on the transparent background.
 It records the actual pixel dimensions, projection, source and output hashes
 in `provenance.json`. Regenerate all four files whenever the board or its models
 change. No perspective transform or CSS rotation is applied by the website.
+
+The exporter uses temporary KiCad viewer settings that show both SMT and
+through-hole models. Local viewer preferences cannot hide the two switches.
+The PCB views show switches without the separately fitted purchased caps;
+the enclosure renders show ivory Filters and larger orange Next caps.

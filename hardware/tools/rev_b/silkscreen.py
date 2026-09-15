@@ -77,8 +77,8 @@ def apply(board):
         identity = k.child(item, 'uuid')
         if identity and str(identity[1]) in old_ids:
             board.remove(item)
-        elif item[0] == 'gr_text' and item[1] == 'REV B FIT ONLY - UNROUTED - DO NOT FABRICATE':
-            item[1] = 'REV B.03 ENGINEERING PROTOTYPE - PHYSICAL QUALIFICATION PENDING'
+        elif item[0] == 'gr_text' and (item[1] == 'REV B FIT ONLY - UNROUTED - DO NOT FABRICATE' or str(item[1]).startswith('REV B.03 ENGINEERING PROTOTYPE')):
+            item[1] = 'REV B.04 ENGINEERING PROTOTYPE - PHYSICAL QUALIFICATION PENDING'
 
     members = []
 
@@ -125,15 +125,15 @@ def apply(board):
                           node('type', k.Sym('default'))), node('layer', side + '.SilkS')]
             add(item, f'{side}:cicada:{i}')
 
-    brand(84.5, 6, 101.5, 9.2, 'F')
+    brand(84.5, 6, 110, 7, 'F')
     brand(83, 8.3, 100, 9, 'B')
     front = [
         ('01 DISPLAY / BOOST', 70, 18, 1, 90),
         ('U6', 73, 12, .8, 0), ('L1', 83, 11.8, .8, 0),
         ('J2 E-PAPER', 98.2, 33, 1, 90),
         ('CONTACTS DOWN', 101, 33, .8, 90),
-        ('SW1 FILTERS', 101.5, 24.2, .8, 0),
-        ('SW2 NEXT', 101.7, 46.1, .8, 0),
+        ('SW1 FILTERS', 108, 25.5, .8, 0),
+        ('SW2 NEXT', 108, 44.3, .8, 0),
         ('J3 BAT', 69.8, 29, .8, 0),
         ('+', 73.3, 31.8, .8, 0),
         ('T', 73.3, 33, .8, 0),
@@ -148,7 +148,7 @@ def apply(board):
         ('D4 STATUS', 89, 60, .8, 0),
         ('J4', 52, 45.3, .8, 0),
         ('DEBUG', 61, 46, .8, 0),
-        ('B.03', 102, 61.5, 1, 0),
+        ('B.04', 110, 61.5, 1, 0),
     ]
     for row in front:
         text(*row)
@@ -165,7 +165,7 @@ def apply(board):
     line([(63.5, 47.5), (63.5, 60.5), (53, 60.5)], 'debug-bracket')
 
     back = [
-        ('REV B.03 / ESP32-S3 / 16MB', 85, 14, 1),
+        ('REV B.04 / ESP32-S3 / 16MB', 85, 14, 1),
         ('4 LAYERS / 1.2mm / PROTOTYPE', 85, 16.5, 1),
         ('POWER: USB 5V -> U2 -> VSYS', 86, 21, 1),
         ('LiPo <-> U2 / VSYS -> U3 -> 3V3', 86, 23.3, 1),

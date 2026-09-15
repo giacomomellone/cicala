@@ -22,7 +22,7 @@ class PrintLayoutTests(unittest.TestCase):
             check_flat_face(faces,10,110)
 
     def test_sheet_and_component_references_are_never_print_jobs(self):
-        for part in ('cap_pad','next_pad','pcb_reference','cell_reference','panel_reference'):
+        for part in ('category_cap_reference','next_cap_reference','switch_reference','pcb_reference','cell_reference','panel_reference'):
             self.assertEqual(role(part),'reference')
 
 

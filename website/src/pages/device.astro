@@ -35,7 +35,7 @@ const pcbViews = [
       <div class="device-width">
         <div class="device-meta">
           <span class="device-status" data-i18n="device.wip">{t("en", "device.wip")}</span>
-          <time datetime="2026-09-15" data-i18n="device.updated">{t("en", "device.updated")}</time>
+          <time datetime="2026-09-16" data-i18n="device.updated">{t("en", "device.updated")}</time>
         </div>
         <div class="device-intro">
           <h1 data-i18n="device.title">{t("en", "device.title")}</h1>
@@ -63,7 +63,7 @@ const pcbViews = [
         <dl class="device-dimensions">
           <div>
             <dt data-i18n="device.size">{t("en", "device.size")}</dt><dd>
-              {hardware.case.width} × {hardware.case.depth} × {hardware.case.height} mm
+              {hardware.case.width} × {hardware.case.depth} × {hardware.case.height} mm / {(hardware.pcb.z + hardware.pcb.thickness + hardware.buttons.assembled_height).toFixed(1)} mm
             </dd>
           </div>
           <div>
