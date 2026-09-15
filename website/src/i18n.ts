@@ -195,13 +195,14 @@ const en = {
     "Exploded CAD view of the strengthened cap, silicone strip, removable keeper and two screws.",
   "device.pcb.title": "the routed PCB",
   "device.pcb.text":
-    "3D renders from the native KiCad board. All 89 fitted components sit on top; the underside carries routing and bare test contacts. Some component models show only their outer envelope. Open either image for the full-resolution view.",
+    "Straight top and bottom views from the native KiCad board. All 89 fitted components sit on top. The silkscreen names the circuit groups, probe signals and connectors; the back includes a recovery pinout and power guide. Some component models show only their outer envelope. Open either image for the full-resolution view.",
+  "device.pcb.silkscreen": "Open silkscreen drawing (SVG)",
   "device.render.pcbTop": "PCB top · ESP32-S3, power, display connector and switches",
   "device.render.pcbTop.alt":
-    "KiCad 3D render of the populated L-shaped Rev B PCB, with the ESP32-S3 on the lower arm and two switches on the right.",
-  "device.render.pcbBottom": "PCB underside · copper routing and test contacts",
+    "Straight overhead KiCad view of the populated L-shaped Rev B PCB with Cicala branding, circuit boundaries, labelled test points and two switches on the right.",
+  "device.render.pcbBottom": "PCB underside · power guide, recovery pinout and test-point key",
   "device.render.pcbBottom.alt":
-    "KiCad 3D render of the Rev B PCB underside, showing copper routing, vias, mounting holes and bare test contacts.",
+    "Straight underside KiCad view of the Rev B PCB with the Cicala logo, power-flow guide, recovery pinout and labelled test contacts.",
   "device.render.assembly": "Rev B · centered screen, large flat buttons",
   "device.render.assembly.alt":
     "Landscape CAD view with a centered screen and two flat rounded buttons on the right-hand ledge.",
@@ -445,14 +446,15 @@ const de: Record<StringKey, string> = {
     "CAD-Explosionsansicht der verstärkten Tastenkappe mit Silikonstreifen, abnehmbarem Haltebügel und zwei Schrauben.",
   "device.pcb.title": "die geroutete Platine",
   "device.pcb.text":
-    "3D-Ansichten direkt aus der KiCad-Platine. Alle 89 bestückten Bauteile sitzen oben; unten liegen Leiterbahnen und unbestückte Testkontakte. Einige Bauteilmodelle zeigen nur die Außenkontur. Beide Bilder lassen sich in voller Auflösung öffnen.",
+    "Gerade Draufsichten auf beide Seiten der KiCad-Platine. Alle 89 bestückten Bauteile sitzen oben. Der Bestückungsdruck erklärt Schaltungsgruppen, Messsignale und Anschlüsse; die Rückseite zeigt die Recovery-Pinbelegung und Stromversorgung. Einige Bauteilmodelle zeigen nur die Außenkontur. Beide Bilder lassen sich in voller Auflösung öffnen.",
+  "device.pcb.silkscreen": "Bestückungsdruck öffnen (SVG)",
   "device.render.pcbTop":
     "Platinenoberseite · ESP32-S3, Stromversorgung, Displayanschluss und Taster",
   "device.render.pcbTop.alt":
-    "KiCad-3D-Ansicht der bestückten L-förmigen Rev-B-Platine mit ESP32-S3 am unteren Arm und zwei Tastern rechts.",
-  "device.render.pcbBottom": "Platinenunterseite · Leiterbahnen und Testkontakte",
+    "Gerade KiCad-Draufsicht der bestückten L-förmigen Rev-B-Platine mit Cicala-Logo, Schaltungsgruppen, beschrifteten Testpunkten und zwei Tastern rechts.",
+  "device.render.pcbBottom": "Platinenunterseite · Stromversorgung, Recovery-Pinbelegung und Testpunktlegende",
   "device.render.pcbBottom.alt":
-    "KiCad-3D-Ansicht der Rev-B-Platinenunterseite mit Leiterbahnen, Durchkontaktierungen, Befestigungslöchern und Testkontakten.",
+    "Gerade KiCad-Ansicht der Rev-B-Platinenunterseite mit Cicala-Logo, Stromversorgungsübersicht, Recovery-Pinbelegung und beschrifteten Testkontakten.",
   "device.render.assembly": "Rev B · mittiges Display, große flache Tasten",
   "device.render.assembly.alt":
     "CAD-Ansicht im Querformat mit mittigem Display und zwei flachen, abgerundeten Tasten auf der rechten Auflage.",
@@ -693,14 +695,15 @@ const it: Record<StringKey, string> = {
     "Vista CAD esplosa del copritasto rinforzato con striscia di silicone, fermo rimovibile e due viti.",
   "device.pcb.title": "il PCB con le piste",
   "device.pcb.text":
-    "Viste 3D generate dalla scheda KiCad nativa. Tutti gli 89 componenti montati sono sul lato superiore; sotto passano piste e contatti di test. Alcuni modelli dei componenti mostrano solo l’ingombro esterno. Apri un’immagine per vederla a piena risoluzione.",
+    "Viste dritte dei due lati della scheda KiCad nativa. Tutti gli 89 componenti montati sono sul lato superiore. La serigrafia identifica gruppi funzionali, segnali di test e connettori; il retro include la piedinatura di ripristino e una guida all’alimentazione. Alcuni modelli mostrano solo l’ingombro esterno. Apri un’immagine per vederla a piena risoluzione.",
+  "device.pcb.silkscreen": "Apri il disegno della serigrafia (SVG)",
   "device.render.pcbTop":
     "PCB, lato superiore · ESP32-S3, alimentazione, connettore display e pulsanti",
   "device.render.pcbTop.alt":
-    "Vista 3D KiCad del PCB Rev B a L popolato, con ESP32-S3 sul braccio inferiore e due pulsanti a destra.",
-  "device.render.pcbBottom": "PCB, lato inferiore · piste e contatti di test",
+    "Vista KiCad dall’alto del PCB Rev B a L popolato, con logo Cicala, gruppi funzionali, punti di test etichettati e due pulsanti a destra.",
+  "device.render.pcbBottom": "PCB, lato inferiore · alimentazione, ripristino e legenda dei test point",
   "device.render.pcbBottom.alt":
-    "Vista 3D KiCad del lato inferiore del PCB Rev B con piste, via, fori di montaggio e contatti di test.",
+    "Vista KiCad diritta del lato inferiore del PCB Rev B con logo Cicala, guida all’alimentazione, piedinatura di ripristino e contatti di test etichettati.",
   "device.render.assembly": "Rev B · schermo centrato, grandi pulsanti piatti",
   "device.render.assembly.alt":
     "Vista CAD orizzontale con schermo centrato e due pulsanti piatti e arrotondati sul piano destro.",

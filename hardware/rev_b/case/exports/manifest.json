@@ -4,9 +4,9 @@
     "hardware/rev_b/contract.json": "4a705393764b7e96bdfc94640ee75c63df433e239fe802b46c30e2f911d89215",
     "hardware/rev_b/case/cicala_enclosure.scad": "ca012181ad55f5d5ff944a9f54b1a5e08d9e9f4153a6fe6613a948d45ff50819",
     "hardware/rev_b/case/contract.scad": "18dd051eb88dc3f000a237cb68cfc5e7d71bbc5c07e8ad34c7226ec37555433e",
-    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "c8af79e510da22b78de36c2f9599b3f3402eb6edc88056f17661369d62c8576b",
+    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "b342cf77a0633d71af6d8ee4343f450bac7d398e387ae6ac5f3fc677de9ef7d8",
     "hardware/rev_b/case/pcb_component_bounds.scad": "3c7c86770d1f53ceb46669b0982a4f4364e254205b9c3a369cc0f239a3418cff",
-    "hardware/rev_b/pcb/cicala_rev_b.kicad_pro": "ce70b311af6ee958bbfcb91bfbe6251c1c4778e37a62d137fc381222c517ab71",
+    "hardware/rev_b/pcb/cicala_rev_b.kicad_pro": "4a5e865cb97733198fded0da349e9d9dc1531f4cc938918a9fe51f88cadb4cde",
     "hardware/rev_b/pcb/cicala_rev_b.kicad_dru": "735f6942d88d3739df72cdf7884f369452f8a4ff8c427465b851b7f49b0f670b",
     "hardware/rev_b/pcb/cicala_rev_b.kicad_sch": "4331ccbec616ccf8dc9b537bf6c97ceff584742d41a1a3a35160dd42efe47583",
     "hardware/rev_b/pcb/sheets/esp32_core.kicad_sch": "c95ca8d24ddf8c24320fd8afb01278a7d50d65d94a1d340eccf29487bf8bc848",
@@ -25,13 +25,15 @@
     "hardware/rev_b/pcb/cicala.pretty/Molex_503480-2400_1x24_P0.5mm.kicad_mod": "9a5709348e134f49e16639e0ea613b3307b5f0c3049286868bfcc39ce1a6eb2f",
     "hardware/rev_b/pcb/cicala.pretty/Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm.kicad_mod": "db7f8ff2b43e78b080b70b2a98df91d22bc321e3f2a2ee555016fa4d59f8993d",
     "hardware/rev_b/pcb/cicala.pretty/USB_C_Receptacle_HRO_TYPE-C-31-M-12_EdgeOverhang.kicad_mod": "2bff5a6261bfcd370d4a1567ea9bcf1e4b6b3b00af7d9b79ef4903f2866d1268",
-    "hardware/rev_b/pcb/cicala.pretty/L_TDK_VLS4012.kicad_mod": "3adb2b65178d6a82b31265235f90f50721f4e5b467144a593418bc77130ae210",
+    "hardware/rev_b/pcb/cicala.pretty/L_TDK_VLS4012.kicad_mod": "2feed8bdba37264221aa58362d10cb23a6c2ce7a9be243acb79bb3f9c11ab19a",
     "hardware/rev_b/pcb/cicala.pretty/SW_Alps_SKRABCE010.kicad_mod": "7c1ee230ebe08d0da78bbffd274f35ccecc3a26c2648d52d94849aebab1089bc",
     "hardware/rev_b/pcb/cicala.pretty/L_Coilcraft_XFL4015.kicad_mod": "01293398bf500f3813cfd6fedbdc9a028c5bd24a463b41472d8a8ebbd8bc2a77",
     "hardware/rev_b/pcb/cicala.pretty/LED_Kingbright_APBA2006SURKCGKC.kicad_mod": "85f8e10b8f7a7b497696312431bffc336bf0646ce598f840e4da00766b714418",
     "hardware/tools/rev_b/electrical.py": "341db715e15055d470c6214235fd4acf41eca10bc22f758eaae8f5638fa3e122",
     "hardware/tools/rev_b/button_tolerances.py": "82f80f7fa75198968a9a304ba2f110770bfdff0e8037139a2586333b7ba8de51",
-    "hardware/tools/rev_b/check_contract.py": "87b2e17edeee0f7b5a46bf35975a6fab319c5527382b18b9e877f39d5d621d7e",
+    "hardware/tools/rev_b/render_pcb.py": "f97606de73f1f07a7ede12b68cd313f4a089a63b55b49b46f4b5ed0636bfe4ca",
+    "hardware/tools/rev_b/check_contract.py": "020adc671fc709a0af7f6e544c218504c36ec6f428278b04f277be162f4f73d9",
+    "hardware/tools/rev_b/test_silkscreen.py": "78497fda5464b1935e910dbac057ee39549cd82a420d62bb5f4cc653e97f3897",
     "hardware/tools/rev_b/print_layout.py": "1a2d5d84dd244b83d5b949652a06cf3794c736c19de106acb4a4dd6ac26e4a27",
     "hardware/tools/rev_b/make_switch_model.py": "ec2676628e39da6e3f86f9c96fc29d11f73615a173b1fb74b69be8cffcb051a0",
     "hardware/tools/rev_b/planes.py": "b99ea41c54faaa03a7d252da2f23e97b233bd6f3dfc9d4874b637f3eb46eab8b",
@@ -43,6 +45,7 @@
     "hardware/tools/rev_b/route_board.py": "b5fbb51b535faa79526c57c08b67e67221b4ba2965afa9f83e28b0a0ba324cb9",
     "hardware/tools/rev_b/export_geometry.py": "9dc0b0a287df8b8ea1ab455851bba9712c356703e1ed601ee25b897caffaaa0d",
     "hardware/tools/rev_b/test_electrical.py": "3593fa89e2343939e0058ddd3b42fbf8a6c639935db667ebfad0667c83fb4e38",
+    "hardware/tools/rev_b/silkscreen.py": "358c3a64e342e6d2096535a5fc6fa0547c397c828dc7b6151a7aa7b33cb28d3b",
     "hardware/tools/rev_b/study.py": "7cfc2d11c987a81f34fbccff928e6f902a9934b23f332b6511fb65d2981e6e21",
     "hardware/tools/rev_b/usb_review.py": "8cd436fddfa1db937c0e5925c54994d471d07e5a29c6f04f5a7aecc4d69dd569",
     "hardware/tools/case/export_component_bounds.py": "653139a6b10a775d2f4f3b4dcfe2b4b1855111fdc28b3bd3146978923bd181e5"
@@ -302,5 +305,6 @@
     "print/coupons/coupon_next_relief_0.60.3mf": "8990f579a7d4899af3b72344c78c381daacdf4b4e143f8f400bb8f6cec054fe9",
     "print/jigs/flex_former.stl": "e71892e93aab93c9faa51a116d1c0edd31c3d2187c09fd50b8614174aa78cfd0",
     "print/jigs/flex_former.3mf": "b7a9756bd418043e4da8526616b917930a2f96be6c4975c498cf8c8f25a90134"
-  }
+  },
+  "revalidation_note": "Silkscreen update: electrical and mechanical geometry match the preceding board. Re-exported and checked all meshes; preserved preceding 3MF bytes after verifying all archive contents match except generated creation dates and UUIDs. Silkscreen regression tests passed. PCB render framing and shadow preset were refreshed independently of mechanical exports. Final L1 silkscreen line was shortened with copper, component and mechanical geometry again verified identical."
 }

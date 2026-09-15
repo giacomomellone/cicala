@@ -417,6 +417,11 @@ hw-rev-b-export *args:
 hw-rev-b-fab-export:
     {{ python }} hardware/tools/rev_b/export_fab.py
 
+# Regenerate straight KiCad board renders and zoomable silkscreen drawings.
+[group('hardware')]
+hw-rev-b-pcb-renders:
+    {{ python }} hardware/tools/rev_b/render_pcb.py
+
 # Mechanical-only iterations explicitly skip electrical acceptance.
 [group('hardware')]
 hw-rev-b-fit-check:

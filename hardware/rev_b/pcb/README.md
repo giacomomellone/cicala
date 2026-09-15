@@ -11,3 +11,9 @@ Run `just hw-rev-b-check` for native electrical and mechanical checks. `just hw-
 [`renders/`](renders/README.md) contains top and bottom KiCad 3D exports used by
 the public device page. The mechanical board model is
 `exports/cicala_rev_b_board.step`.
+
+[Reading the board](silkscreen.md) explains its native silkscreen: Cicala
+branding, circuit brackets, connector polarity, every test point, and the
+underside power/recovery guide. Main text is 1 mm, compact labels are 0.8 mm,
+with 0.15 mm minimum strokes and silk clearance. The render directory also
+contains both silkscreen drawings as SVGs.

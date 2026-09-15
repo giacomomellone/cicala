@@ -1,28 +1,28 @@
 # Rev B PCB 3D renders
 
-`top.png` and `bottom.png` are 1768 × 1176 exports from native KiCad 10.0.5,
-generated on 15 September 2026. They show the routed board with its installed
+`top.png` and `bottom.png` are straight orthographic exports from native KiCad
+10.0.5, with zero rotation and matching scale on both sides. They show the
+routed, labelled board with its installed
 KiCad models and local component envelopes. Some local models describe only
 the component's outside dimensions. Colors, pin markings and surfaces are
 illustrative; these are not photographs of an assembled board.
 
-The device page imports these PNGs directly; Astro generates responsive WebP
-variants and links to each full-size PNG. Hardware-derived images use
+`silkscreen_top.svg` and `silkscreen_bottom.svg` are native KiCad plots of the
+silkscreen, solder openings and board edge. The bottom plot is mirrored for
+reading from below. Use these scalable drawings to inspect small legends.
+
+The device page imports the PNGs directly; Astro generates responsive WebP
+variants and links to each full-size PNG and SVG. Hardware-derived images use
 [CERN-OHL-S-2.0](../../../../LICENSE-HARDWARE).
 
-From the repository root, with KiCad and its model libraries installed (the
-requested viewport is 1800 × 1200; this renderer produced 1768 × 1176 PNGs):
+From the repository root, with KiCad and its model libraries installed:
 
 ```sh
-kicad-cli pcb render --output hardware/rev_b/pcb/renders/top.png \
-  --width 1800 --height 1200 --side top --rotate '25,0,-20' \
-  --background transparent --quality high \
-  hardware/rev_b/pcb/cicala_rev_b.kicad_pcb
-kicad-cli pcb render --output hardware/rev_b/pcb/renders/bottom.png \
-  --width 1800 --height 1200 --side bottom --rotate '25,0,-20' \
-  --background transparent --quality high \
-  hardware/rev_b/pcb/cicala_rev_b.kicad_pcb
+just hw-rev-b-pcb-renders
 ```
 
-`provenance.json` records source and output hashes for this export. Regenerate
-both images and update the provenance whenever the board or its models change.
+The exporter requests 2400 × 1560 pixels, `--rotate 0,0,0` and `--zoom 1.4`.
+The basic raytracing preset avoids offset shadows on the transparent background.
+It records the actual pixel dimensions, projection, source and output hashes
+in `provenance.json`. Regenerate all four files whenever the board or its models
+change. No perspective transform or CSS rotation is applied by the website.

@@ -18,31 +18,31 @@
   "pair_skew_mm": 1.398798588070349e-08,
   "reference_checked_mm": {
     "USB_DN / F.Cu": 1.0250000000000057,
-    "Net-(J1-D+-PadA6) / F.Cu": 1.6499563424884727,
+    "Net-(R4-Pad1) / F.Cu": 1.2375000000000043,
     "Net-(J1-D--PadA7) / F.Cu": 1.7299563424884852,
     "Net-(R3-Pad1) / F.Cu": 3.178278310028243,
+    "Net-(J1-D+-PadA6) / F.Cu": 1.6499563424884727,
     "USB_DP / F.Cu": 3.9856601717798217,
-    "Net-(R4-Pad1) / F.Cu": 1.2375000000000043,
     "USB_DN / B.Cu": 4.103883476483188,
-    "Net-(J1-D+-PadA6) / B.Cu": 0.0,
+    "Net-(R4-Pad1) / B.Cu": 56.54833479364041,
     "Net-(J1-D--PadA7) / B.Cu": 2.023735650590112,
     "Net-(R3-Pad1) / B.Cu": 46.68337228564849,
-    "USB_DP / B.Cu": 0.0,
-    "Net-(R4-Pad1) / B.Cu": 56.54833479364041
+    "Net-(J1-D+-PadA6) / B.Cu": 0.0,
+    "USB_DP / B.Cu": 0.0
   },
   "centreline_without_ground_mm": {
     "USB_DN / F.Cu": 0.0,
-    "Net-(J1-D+-PadA6) / F.Cu": 0.0,
+    "Net-(R4-Pad1) / F.Cu": 0.0,
     "Net-(J1-D--PadA7) / F.Cu": 0.0,
     "Net-(R3-Pad1) / F.Cu": 0.0,
+    "Net-(J1-D+-PadA6) / F.Cu": 0.0,
     "USB_DP / F.Cu": 0.0,
-    "Net-(R4-Pad1) / F.Cu": 0.0,
     "USB_DN / B.Cu": 0.0,
-    "Net-(J1-D+-PadA6) / B.Cu": 0.0,
+    "Net-(R4-Pad1) / B.Cu": 0.0,
     "Net-(J1-D--PadA7) / B.Cu": 0.0,
     "Net-(R3-Pad1) / B.Cu": 0.0,
-    "USB_DP / B.Cu": 0.0,
-    "Net-(R4-Pad1) / B.Cu": 0.0
+    "Net-(J1-D+-PadA6) / B.Cu": 0.0,
+    "USB_DP / B.Cu": 0.0
   },
   "limitations": "Geometric audit only. Factory impedance confirmation and USB signal testing required."
 }

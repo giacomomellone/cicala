@@ -1,36 +1,41 @@
 {
   "generated": "2026-09-15",
-  "generator": "KiCad 10.0.5 pcb render",
+  "generator": "KiCad 10.0.5",
+  "projection": "orthographic",
   "rotation_degrees": [
-    25,
     0,
-    -20
+    0,
+    0
   ],
+  "zoom": 1.4,
   "background": "transparent",
-  "quality": "high",
+  "quality": "basic",
+  "requested_viewport_px": [
+    2400,
+    1560
+  ],
+  "output_size_px": [
+    2384,
+    1544
+  ],
   "inputs": {
-    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "c8af79e510da22b78de36c2f9599b3f3402eb6edc88056f17661369d62c8576b",
-    "hardware/rev_b/pcb/cicala_rev_b.kicad_pro": "ce70b311af6ee958bbfcb91bfbe6251c1c4778e37a62d137fc381222c517ab71",
+    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "b342cf77a0633d71af6d8ee4343f450bac7d398e387ae6ac5f3fc677de9ef7d8",
+    "hardware/rev_b/pcb/cicala_rev_b.kicad_pro": "4a5e865cb97733198fded0da349e9d9dc1531f4cc938918a9fe51f88cadb4cde",
     "hardware/rev_b/pcb/models/Alps_SKRABCE010_envelope.step": "ad17b0c084b68a2d0698911ae0108a54f796c97ce4064e2f1e1f408d53593eb7",
     "hardware/rev_b/pcb/models/Coilcraft_XFL4015_envelope.step": "4270c2a879fe8804b01041f95c47164ad5f938d5892164140be347a939cab209",
     "hardware/rev_b/pcb/models/HRO_TYPE_C_31_M_12_envelope.step": "27b848e100493808d14b518e236d721d171ca15146dc5581edafb04fe49f97e3",
     "hardware/rev_b/pcb/models/Kingbright_APBA2006_envelope.step": "1d3c3425ee42055b9014b739a97e99094e030acbd25de20514feda6c77c3f66d",
     "hardware/rev_b/pcb/models/Molex_503480-2400_envelope.step": "02565d07c6f13a977f5deff9128cc2c8b36cd0bca919f4e86ae2b8fc01988eee",
     "hardware/rev_b/pcb/models/TDK_VLS4012CX_envelope.step": "45d0550e0d0f980627ff3abcdadf62eba70d751cbad7ffcced33e73ea33247f2",
-    "hardware/rev_b/pcb/models/TPS63802_DLA0010A_envelope.step": "a4d65c7b6f397bd2253b8d8d5398c1039cc2b68ef7d8691993cf588e372d0ae8"
+    "hardware/rev_b/pcb/models/TPS63802_DLA0010A_envelope.step": "a4d65c7b6f397bd2253b8d8d5398c1039cc2b68ef7d8691993cf588e372d0ae8",
+    "hardware/tools/rev_b/render_pcb.py": "f97606de73f1f07a7ede12b68cd313f4a089a63b55b49b46f4b5ed0636bfe4ca"
   },
   "outputs": {
-    "top.png": "c0b3558e9adbed26268f07a8ffd4bef92bb336abb6ff6d84d0637cead23497b7",
-    "bottom.png": "31ec932ed871ac8c74b22fbe1cd6276283b9d59c06a7258d2885b5083a48ea66"
+    "top.png": "6b466601cccb97cbcefda2a8046166fcec65158febe25e13a65317b7ffe8ae1f",
+    "bottom.png": "adc7e6849046d9ca1b062bdcd9aa0d5ff5449a8e7e3553532ac08be0ce596575",
+    "silkscreen_top.svg": "bf767c82c833b3697fe1d561da54cdf5ece2f969c12aea0cd7a508ed9a75fb46",
+    "silkscreen_bottom.svg": "26655dffc53e298e85bcba011e7c078ae938da8b98f3b6317e0fd1df82ac2416"
   },
   "model_libraries": "Installed KiCad 10 models plus project-local STEP envelopes; standard library files are not vendored or fingerprinted here.",
-  "limitations": "Digital board render, not a physical prototype; some component models are bounding envelopes.",
-  "requested_viewport_px": [
-    1800,
-    1200
-  ],
-  "output_size_px": [
-    1768,
-    1176
-  ]
+  "limitations": "Digital board render, not a physical prototype; some component models are bounding envelopes."
 }

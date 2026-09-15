@@ -6,6 +6,8 @@ import inside from "../../../hardware/rev_b/case/renders/inside.png";
 import section from "../../../hardware/rev_b/case/renders/section.png";
 import pcbTop from "../../../hardware/rev_b/pcb/renders/top.png";
 import pcbBottom from "../../../hardware/rev_b/pcb/renders/bottom.png";
+import silkTop from "../../../hardware/rev_b/pcb/renders/silkscreen_top.svg?url";
+import silkBottom from "../../../hardware/rev_b/pcb/renders/silkscreen_bottom.svg?url";
 import buttonsExploded from "../../../hardware/rev_b/case/renders/buttons_exploded.png";
 import carrier from "../../../hardware/rev_b/case/renders/carrier.png";
 import hardware from "../../../hardware/rev_b/contract.json";
@@ -18,8 +20,8 @@ const caseViews = [
   { image: section, caption: "device.render.section", alt: "device.render.section.alt" },
 ] as const;
 const pcbViews = [
-  { image: pcbTop, caption: "device.render.pcbTop", alt: "device.render.pcbTop.alt" },
-  { image: pcbBottom, caption: "device.render.pcbBottom", alt: "device.render.pcbBottom.alt" },
+  { image: pcbTop, silk: silkTop, caption: "device.render.pcbTop", alt: "device.render.pcbTop.alt" },
+  { image: pcbBottom, silk: silkBottom, caption: "device.render.pcbBottom", alt: "device.render.pcbBottom.alt" },
 ] as const;
 ---
 
@@ -172,6 +174,9 @@ const pcbViews = [
                   />
                 </a>
                 <figcaption data-i18n={view.caption}>{t("en", view.caption)}</figcaption>
+                <a href={view.silk} data-i18n="device.pcb.silkscreen">
+                  {t("en", "device.pcb.silkscreen")}
+                </a>
               </figure>
             ))
           }

@@ -47,6 +47,7 @@ jobs:
         run: |
           python3 -m unittest discover -s hardware/tools/rev_b -p 'test_button_tolerances.py'
           python3 -m unittest discover -s hardware/tools/rev_b -p 'test_print_layout.py'
+          python3 -m unittest discover -s hardware/tools/rev_b -p 'test_silkscreen.py'
       - name: Check the Rev B schematic and filled board
         env:
           CICALA_PCB_REPORT_DIR: ${{ github.workspace }}/rev-b-pcb-reports

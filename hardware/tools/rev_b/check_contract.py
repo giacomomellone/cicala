@@ -51,9 +51,12 @@ def check(geometry, models_root):
               'min_clearance':c['manufacturing']['clearance'],
               'min_track_width':c['manufacturing']['escape_min_width'],
               'min_via_diameter':c['manufacturing']['via_diameter'],
-              'min_through_hole_diameter':c['manufacturing']['via_drill']}
+              'min_through_hole_diameter':c['manufacturing']['via_drill'],
+              'min_silk_clearance':.15, 'min_text_height':.8, 'min_text_thickness':.15}
     for name, limit in limits.items():
         require(rules[name] >= limit, f'KiCad manufacturing rule relaxed: {name}')
+    from silkscreen import check_signals
+    check_signals(board)
     shape = check_outline(geometry, c)
     stack = ksexp.child(ksexp.child(board, 'setup'), 'stackup')
     thickness = sum(float(ksexp.child(layer, 'thickness')[1])
