@@ -156,12 +156,12 @@ const en = {
   "deck.count": "questions",
 
   // device page
-  "device.size": "housing / with caps",
+  "device.size": "housing / including buttons",
   "device.screen": "centered e-paper",
   "device.cell": "protected rechargeable battery",
   "device.carrier.title": "take it with you",
   "device.carrier.text":
-    "The removable carrier adds a magnetic ring. The wider housing makes it 130.8 mm long in portrait: it no longer fits the previous iPhone 16 Plus camera-to-bottom space. Another mounting position or phone needs checking. Retention and radio performance remain untested; detach for wireless charging.",
+    "An optional magnetic carrier is being developed for attaching Cicala to a phone. It measures 68.8 × 130.8 mm in portrait. The current model overlaps the camera area and bottom edge of an iPhone 16 Plus; phone compatibility, magnetic hold and radio performance remain untested. Detach for wireless charging.",
   "device.carrier.caption": "Removable carrier · 3.2 mm added thickness",
   "device.carrier.alt":
     "CAD model of the removable phone carrier and its recessed magnetic ring cover.",
@@ -171,7 +171,7 @@ const en = {
   "device.progress.link": "where we are ↓",
   "device.progress.title": "where we are",
   "device.progress.text":
-    "Rev B is a flatter landscape prototype, with a centered screen and two large, flat buttons beside the screen. The breadboard works; this integrated hardware still needs its first physical build.",
+    "Rev B is a landscape prototype with a centered screen and two flat buttons beside it. The breadboard works; this integrated hardware still needs its first physical build.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
     "Running on the breadboard. Display, charging and radio operation on the integrated Rev B hardware remain to be tested.",
@@ -180,22 +180,22 @@ const en = {
     "An L-shaped, four-layer board puts the battery beside the electronics. The ESP32-S3 and power circuit sit on one face.",
   "device.progress.case": "enclosure",
   "device.progress.case.text":
-    "Parametric CAD includes four core housing/support prints and purchased button caps. The optional carrier remains experimental. Printed fit and button feel need physical checks.",
+    "A beveled enclosure with a flat control area and an optional table stand. Fit and button feel still need physical checks.",
   "device.progress.next":
     "Next: build the first Rev B prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
   "device.progress.source": "Rev B hardware notes →",
   "device.renders.title": "inside Rev B",
   "device.renders.text":
     "Views generated from the public engineering CAD. These are digital prototype models; no integrated Rev B unit has been built yet.",
-  "device.controls.title": "purchased caps, simpler assembly",
+  "device.controls.title": "two tactile controls",
   "device.controls.text":
-    "Filters uses a 9 × 9 mm ivory B32-1200 cap. Next uses a clearly larger 12 × 12 mm orange B32-1320 cap. Both fit directly onto Omron B3F-4050 switches. The flat control area stays clear of the edge bevel. Cap fit and click feel still need a physical prototype.",
-  "device.controls.caption": "Two switches, two caps · solder first, fit caps afterward",
+    "The ivory Filters button opens your choices. The larger orange Next button brings the next question. Both have flat faces and press straight down, for use on the table.",
+  "device.controls.caption": "Filters · 9 × 9 mm ivory / Next · 12 × 12 mm orange",
   "device.controls.alt":
-    "Exploded CAD showing a small ivory Filters cap and larger orange Next cap above two purchased switches.",
+    "Exploded CAD showing the small ivory Filters button and larger orange Next button above their switches.",
   "device.pcb.title": "the routed PCB",
   "device.pcb.text":
-    "Straight top and bottom views from the native KiCad board. 87 SMT parts and two through-hole switches install from the top; the switch joints sit underneath. The silkscreen names the circuit groups, probe signals and connectors; the back includes a recovery pinout and power guide. The switches are shown without caps; some other models show only their outer envelope. Open either image for the full-resolution view.",
+    "The L-shaped board holds the ESP32-S3, power circuit, display connector and two switches. Printed labels identify the circuit groups, connections and test points. These top and bottom views come from the KiCad design; some components are shown as simplified models. Open either image for the full-resolution view.",
   "device.pcb.silkscreen": "Open silkscreen drawing (SVG)",
   "device.render.pcbTop": "PCB top · ESP32-S3, power, display connector and switches",
   "device.render.pcbTop.alt":
@@ -406,12 +406,12 @@ const de: Record<StringKey, string> = {
   "deck.saved": "in dein deck übernommen",
   "deck.count": "fragen",
 
-  "device.size": "Gehäuse / mit Kappen",
+  "device.size": "Gehäuse / einschließlich Tasten",
   "device.screen": "mittiges E-Paper",
   "device.cell": "geschützter wiederaufladbarer Akku",
   "device.carrier.title": "zum Mitnehmen",
   "device.carrier.text":
-    "Die abnehmbare Halterung ergänzt einen Magnetring. Mit dem breiteren Gehäuse ist sie im Hochformat 130,8 mm lang und passt nicht mehr zwischen Kamera und Unterkante des bisherigen iPhone-16-Plus-Referenzmodells. Eine andere Position oder ein anderes Handy muss geprüft werden. Halt und Funk bleiben ungetestet; zum kabellosen Laden abnehmen.",
+    "Eine optionale Magnethalterung zur Befestigung am Handy ist in Entwicklung. Sie misst 68,8 × 130,8 mm im Hochformat. Das aktuelle Modell ragt beim iPhone 16 Plus in den Kamerabereich und über die Unterkante; Handykompatibilität, Magnethalt und Funk müssen noch geprüft werden. Zum kabellosen Laden abnehmen.",
   "device.carrier.caption": "Abnehmbare Halterung · 3,2 mm zusätzliche Dicke",
   "device.carrier.alt":
     "CAD-Modell der abnehmbaren Handyhalterung mit vertiefter Magnetringabdeckung.",
@@ -421,7 +421,7 @@ const de: Record<StringKey, string> = {
   "device.progress.link": "aktueller Stand ↓",
   "device.progress.title": "aktueller Stand",
   "device.progress.text":
-    "Rev B ist ein flacherer Prototyp im Querformat mit mittigem Display und zwei großen, flachen Tasten neben dem Display. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
+    "Rev B ist ein Prototyp im Querformat mit mittigem Display und zwei flachen Tasten daneben. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
   "device.progress.firmware": "Firmware",
   "device.progress.firmware.text":
     "Läuft auf dem Steckbrett. Display, Ladefunktion und Funk müssen auf der integrierten Rev-B-Hardware noch getestet werden.",
@@ -430,23 +430,23 @@ const de: Record<StringKey, string> = {
     "Eine L-förmige Vierlagenplatine lässt neben der Elektronik Platz für den Akku. ESP32-S3 und Stromversorgung sitzen auf einer Seite.",
   "device.progress.case": "Gehäuse",
   "device.progress.case.text":
-    "Das parametrische CAD enthält vier Gehäuse- und Halterungsteile zum Drucken und gekaufte Tastenkappen. Die optionale Handyhalterung bleibt experimentell. Passform und Tastengefühl müssen praktisch geprüft werden.",
+    "Ein Gehäuse mit abgeschrägtem Rand, flachem Tastenbereich und optionalem Tischständer. Passform und Tastengefühl müssen noch praktisch geprüft werden.",
   "device.progress.next":
     "Als Nächstes: erste Rev-B-Prototypen bauen und Laden, Display, Ruhestrom, Funk und Gehäusepassform prüfen.",
   "device.progress.source": "Rev-B-Hardwaredokumentation →",
   "device.renders.title": "im Inneren von Rev B",
   "device.renders.text":
     "Ansichten aus dem öffentlichen Konstruktions-CAD. Es sind digitale Prototypmodelle; ein integriertes Rev-B-Gerät wurde noch nicht gebaut.",
-  "device.controls.title": "gekaufte Kappen, einfache Montage",
+  "device.controls.title": "zwei fühlbare Tasten",
   "device.controls.text":
-    "Filters nutzt eine elfenbeinfarbene B32-1200-Kappe mit 9 × 9 mm. Next hat eine deutlich größere orange B32-1320-Kappe mit 12 × 12 mm. Beide sitzen direkt auf Omron-B3F-4050-Tastern. Die flache Tastenfläche bleibt außerhalb der Randschräge. Passform und Tastengefühl müssen am Prototyp geprüft werden.",
+    "Die elfenbeinfarbene Taste Filters öffnet deine Auswahl. Die größere orange Taste Next zeigt die nächste Frage. Beide haben flache Oberflächen und lassen sich senkrecht nach unten drücken, zur Bedienung auf dem Tisch.",
   "device.controls.caption":
-    "Zwei Taster, zwei Kappen · erst löten, dann Kappen aufsetzen",
+    "Filters · 9 × 9 mm, elfenbeinfarben / Next · 12 × 12 mm, orange",
   "device.controls.alt":
-    "CAD-Explosionsansicht: kleine elfenbeinfarbene Filters-Kappe und größere orange Next-Kappe über zwei gekauften Tastern.",
+    "CAD-Explosionsansicht mit der kleinen elfenbeinfarbenen Taste Filters und der größeren orangefarbenen Taste Next über ihren Tastern.",
   "device.pcb.title": "die geroutete Platine",
   "device.pcb.text":
-    "Gerade Draufsichten auf beide Seiten der KiCad-Platine. 87 SMT-Bauteile und zwei bedrahtete Taster werden von oben eingesetzt; die Taster werden unten verlötet. Der Bestückungsdruck erklärt Schaltungsgruppen, Messsignale und Anschlüsse; die Rückseite zeigt die Recovery-Pinbelegung und Stromversorgung. Die Taster sind ohne Kappen dargestellt; einige andere Modelle zeigen nur die Außenkontur. Beide Bilder lassen sich in voller Auflösung öffnen.",
+    "Die L-förmige Platine trägt den ESP32-S3, die Stromversorgung, den Displayanschluss und zwei Taster. Aufgedruckte Beschriftungen kennzeichnen Schaltungsgruppen, Anschlüsse und Messpunkte. Diese Ansichten beider Seiten stammen aus dem KiCad-Entwurf; einige Bauteile sind vereinfacht dargestellt. Beide Bilder lassen sich in voller Auflösung öffnen.",
   "device.pcb.silkscreen": "Bestückungsdruck öffnen (SVG)",
   "device.render.pcbTop":
     "Platinenoberseite · ESP32-S3, Stromversorgung, Displayanschluss und Taster",
@@ -655,12 +655,12 @@ const it: Record<StringKey, string> = {
   "deck.saved": "salvate nel tuo mazzo",
   "deck.count": "domande",
 
-  "device.size": "scocca / con copritasti",
+  "device.size": "scocca / pulsanti inclusi",
   "device.screen": "e-paper centrato",
   "device.cell": "batteria ricaricabile protetta",
   "device.carrier.title": "portalo con te",
   "device.carrier.text":
-    "Il supporto rimovibile aggiunge un anello magnetico. La scocca più larga lo porta a 130,8 mm in verticale: non entra più nello spazio fra fotocamera e bordo inferiore dell’iPhone 16 Plus usato come riferimento. Serve verificare un’altra posizione o un altro telefono. Tenuta e radio restano da provare; staccare per la ricarica wireless.",
+    "È in sviluppo un supporto magnetico opzionale per agganciare Cicala al telefono. Misura 68,8 × 130,8 mm in verticale. Il modello attuale invade l’area della fotocamera e sporge dal bordo inferiore di un iPhone 16 Plus; compatibilità, tenuta magnetica e radio restano da verificare. Staccare per la ricarica wireless.",
   "device.carrier.caption": "Supporto rimovibile · 3,2 mm di spessore aggiuntivo",
   "device.carrier.alt":
     "Modello CAD del supporto rimovibile per telefono con copertura dell’anello magnetico incassata.",
@@ -670,7 +670,7 @@ const it: Record<StringKey, string> = {
   "device.progress.link": "a che punto siamo ↓",
   "device.progress.title": "a che punto siamo",
   "device.progress.text":
-    "Rev B è un prototipo più piatto, orizzontale, con schermo centrato e due grandi pulsanti piatti accanto allo schermo. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
+    "Rev B è un prototipo orizzontale con schermo centrato e due pulsanti piatti accanto. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
     "Funziona sulla breadboard. Display, ricarica e radio restano da verificare sulla scheda Rev B integrata.",
@@ -679,23 +679,23 @@ const it: Record<StringKey, string> = {
     "Una scheda a L a quattro strati lascia la batteria accanto all’elettronica. ESP32-S3 e circuito di alimentazione sono su un solo lato.",
   "device.progress.case": "scocca",
   "device.progress.case.text":
-    "Il CAD comprende quattro parti da stampare per scocca e supporti, con copritasti commerciali. Il supporto magnetico resta sperimentale. Accoppiamenti e risposta dei pulsanti vanno verificati fisicamente.",
+    "Una scocca dal bordo smussato, con zona comandi piatta e supporto da tavolo opzionale. Accoppiamenti e risposta dei pulsanti vanno ancora verificati fisicamente.",
   "device.progress.next":
     "Prossimo passo: costruire i primi prototipi Rev B e misurare ricarica, display, consumo in standby, radio e accoppiamento della scocca.",
   "device.progress.source": "Documentazione hardware Rev B →",
   "device.renders.title": "dentro Rev B",
   "device.renders.text":
     "Viste generate dal CAD tecnico pubblico. Sono modelli digitali del prototipo: nessuna unità Rev B integrata è stata ancora costruita.",
-  "device.controls.title": "copritasti pronti, montaggio semplice",
+  "device.controls.title": "due pulsanti tattili",
   "device.controls.text":
-    "Filters usa un copritasto B32-1200 avorio da 9 × 9 mm. Next usa un B32-1320 arancione, chiaramente più grande: 12 × 12 mm. Entrambi si montano direttamente sugli interruttori Omron B3F-4050. Il piano dei pulsanti resta fuori dallo smusso. Accoppiamento e scatto vanno verificati sul prototipo.",
+    "Il pulsante avorio Filters apre le tue scelte. Il pulsante arancione Next, più grande, mostra la prossima domanda. Entrambi hanno una superficie piatta e si premono dall’alto, per usarli sul tavolo.",
   "device.controls.caption":
-    "Due interruttori, due copritasti · prima saldare, poi montare i copritasti",
+    "Filters · 9 × 9 mm avorio / Next · 12 × 12 mm arancione",
   "device.controls.alt":
-    "Vista CAD esplosa: copritasto Filters piccolo avorio e Next più grande arancione sopra due interruttori commerciali.",
+    "Vista CAD esplosa con il piccolo pulsante avorio Filters e il pulsante arancione Next, più grande, sopra i rispettivi interruttori.",
   "device.pcb.title": "il PCB con le piste",
   "device.pcb.text":
-    "Viste dritte dei due lati della scheda KiCad nativa. 87 componenti SMT e due interruttori a foro passante si montano dall’alto; le saldature degli interruttori sono sotto. La serigrafia identifica gruppi funzionali, segnali di test e connettori; il retro include la piedinatura di ripristino e una guida all’alimentazione. Gli interruttori sono mostrati senza copritasti; alcuni altri modelli mostrano solo l’ingombro esterno. Apri un’immagine per vederla a piena risoluzione.",
+    "La scheda a L ospita ESP32-S3, circuito di alimentazione, connettore del display e due interruttori. La serigrafia identifica gruppi funzionali, collegamenti e punti di test. Queste viste dei due lati provengono dal progetto KiCad; alcuni componenti sono rappresentati con modelli semplificati. Apri un’immagine per vederla a piena risoluzione.",
   "device.pcb.silkscreen": "Apri il disegno della serigrafia (SVG)",
   "device.render.pcbTop":
     "PCB, lato superiore · ESP32-S3, alimentazione, connettore display e pulsanti",
