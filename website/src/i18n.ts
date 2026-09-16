@@ -156,40 +156,65 @@ const en = {
   "deck.count": "questions",
 
   // device page
+  "device.size": "overall size",
+  "device.screen": "centered e-paper",
+  "device.cell": "protected rechargeable battery",
+  "device.carrier.title": "take it with you",
+  "device.carrier.text":
+    "An optional magnetic carrier is being developed for attaching Cicala to a phone. It measures 68.8 × 130.8 mm in portrait. The current model overlaps the camera area and bottom edge of an iPhone 16 Plus; phone compatibility, magnetic hold and radio performance remain untested. Detach for wireless charging.",
+  "device.carrier.caption": "Removable carrier · 3.2 mm added thickness",
+  "device.carrier.alt":
+    "CAD model of the removable phone carrier and its recessed magnetic ring cover.",
   "device.title": "the device",
   "device.wip": "work in progress",
-  "device.updated": "updated 14 September 2026",
+  "device.updated": "updated 16 September 2026",
   "device.progress.link": "where we are ↓",
   "device.progress.title": "where we are",
   "device.progress.text":
-    "Rev A is in prototype development. The breadboard works; the integrated board and enclosure still need physical validation.",
+    "Rev B is a landscape prototype with a centered screen and two flat buttons beside it. The breadboard works; this integrated hardware still needs its first physical build.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
-    "Running on the breadboard. The Rev A build has passed simulation tests; testing on the actual board is still ahead.",
-  "device.progress.pcb": "PCB · Rev A",
+    "Running on the breadboard. Display, charging and radio operation on the integrated Rev B hardware remain to be tested.",
+  "device.progress.pcb": "PCB · Rev B",
   "device.progress.pcb.text":
-    "The four-layer board passes electrical, design-rule and schematic-to-board checks. Physical electrical and radio tests are pending.",
+    "An L-shaped, four-layer board puts the battery beside the electronics. The ESP32-S3 and power circuit sit on one face.",
   "device.progress.case": "enclosure",
   "device.progress.case.text":
-    "Parametric CAD and printable fit files are available. Button travel, display fit and assembly still need checks on printed parts.",
+    "A beveled enclosure with a flat control area and an optional table stand. Fit and button feel still need physical checks.",
   "device.progress.next":
-    "Next: assemble Rev A prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
-  "device.progress.source": "Rev A hardware notes →",
-  "device.renders.title": "inside Rev A",
+    "Next: build the first Rev B prototypes and measure charging, display operation, sleep current, radio performance and enclosure fit.",
+  "device.progress.source": "Rev B hardware notes →",
+  "device.renders.title": "inside Rev B",
   "device.renders.text":
-    "CAD renders from the current enclosure and PCB sources. Geometry and component models are provisional; the design may change after prototype testing.",
-  "device.render.assembly": "Rev A enclosure · CAD render",
-  "device.render.assembly.alt":
-    "CAD view of the Cicala enclosure with a display window and two buttons.",
-  "device.render.exploded": "Exploded enclosure · shell, board, battery and base",
-  "device.render.exploded.alt":
-    "Exploded CAD view showing the enclosure shell above the board, battery, base and steel underside.",
-  "device.render.pcbTop": "PCB top · buttons and display connector",
+    "Views generated from the public engineering CAD. These are digital prototype models; no integrated Rev B unit has been built yet.",
+  "device.controls.title": "two tactile controls",
+  "device.controls.text":
+    "Filters sits at the upper right. The larger orange Next button sits below it and brings the next question. Both flat faces sit 1 mm below the housing, with flared openings for pressing from above.",
+  "device.controls.caption": "Filters above · 9 × 9 mm ivory / Next below · 12 × 12 mm orange",
+  "device.controls.alt":
+    "Exploded CAD showing the small ivory Filters button and larger orange Next button above their switches.",
+  "device.pcb.title": "the routed PCB",
+  "device.pcb.text":
+    "The L-shaped board holds the ESP32-S3, power circuit, display connector and two switches. Printed labels identify the circuit groups, connections and test points. These top and bottom views come from the KiCad design; some components are shown as simplified models. Open either image for the full-resolution view.",
+  "device.pcb.silkscreen": "Open silkscreen drawing (SVG)",
+  "device.render.pcbTop": "PCB top · ESP32-S3, power, display connector and switches",
   "device.render.pcbTop.alt":
-    "Angled KiCad 3D render of the Rev A board’s top side with two switches and the display connector.",
-  "device.render.pcbBottom": "PCB underside · controller, USB-C and battery power",
+    "Straight overhead KiCad view of the populated L-shaped Rev B PCB with Cicala branding, circuit boundaries, labelled test points and two switches on the right.",
+  "device.render.pcbBottom": "PCB underside · power guide, recovery pinout and test-point key",
   "device.render.pcbBottom.alt":
-    "Angled KiCad 3D render of the Rev A board’s underside with the Cicala mark, ESP32-S3, USB-C and battery connector.",
+    "Straight underside KiCad view of the Rev B PCB with the Cicala logo, power-flow guide, recovery pinout and labelled test contacts.",
+  "device.render.assembly": "Rev B · centered screen, recessed buttons",
+  "device.render.assembly.alt":
+    "Straight front CAD view: centered screen, recessed ivory Filters button at the upper right and larger orange Next button below.",
+  "device.render.exploded": "Exploded view · shell, lens, display supports, electronics and base",
+  "device.render.exploded.alt":
+    "Exploded Rev B CAD showing the thin battery beside the L-shaped PCB beneath the display.",
+  "device.render.inside": "Inside · battery beside the L-shaped board",
+  "device.render.inside.alt":
+    "CAD view of the battery bay and components on the L-shaped Rev B board.",
+  "device.render.section": "Section · the vertical assembly",
+  "device.render.section.alt":
+    "Cross section through the Rev B enclosure, battery, circuit board and display.",
   "device.p1":
     "A pocket-sized object for the middle of the table: one e-paper display, a small Filters button, and a larger Next button. One mixed stream of questions.",
   "device.p2":
@@ -214,7 +239,7 @@ const en = {
   "device.t.r4c": "the question or menu remains readable at zero display power",
   "device.build": "build one",
   "device.build.text":
-    "Hardware (CERN-OHL-S) and firmware (MIT) are open source. Start with the breadboard guide, or explore the Rev A PCB, enclosure CAD and prototype exports. Rev A still needs physical testing before the design can be accepted.",
+    "Hardware (CERN-OHL-S) and firmware (MIT) are open source. Start with the breadboard guide, or explore the Rev B PCB, enclosure CAD and engineering exports. Rev B needs physical testing on its first assembled prototypes.",
   "device.link.firmware": "firmware sources",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "build guide",
@@ -381,40 +406,67 @@ const de: Record<StringKey, string> = {
   "deck.saved": "in dein deck übernommen",
   "deck.count": "fragen",
 
+  "device.size": "Gesamtmaße",
+  "device.screen": "mittiges E-Paper",
+  "device.cell": "geschützter wiederaufladbarer Akku",
+  "device.carrier.title": "zum Mitnehmen",
+  "device.carrier.text":
+    "Eine optionale Magnethalterung zur Befestigung am Handy ist in Entwicklung. Sie misst 68,8 × 130,8 mm im Hochformat. Das aktuelle Modell ragt beim iPhone 16 Plus in den Kamerabereich und über die Unterkante; Handykompatibilität, Magnethalt und Funk müssen noch geprüft werden. Zum kabellosen Laden abnehmen.",
+  "device.carrier.caption": "Abnehmbare Halterung · 3,2 mm zusätzliche Dicke",
+  "device.carrier.alt":
+    "CAD-Modell der abnehmbaren Handyhalterung mit vertiefter Magnetringabdeckung.",
   "device.title": "das gerät",
   "device.wip": "in Entwicklung",
-  "device.updated": "Stand: 14. September 2026",
+  "device.updated": "Stand: 16. September 2026",
   "device.progress.link": "aktueller Stand ↓",
   "device.progress.title": "aktueller Stand",
   "device.progress.text":
-    "Rev A ist in der Prototypenentwicklung. Der Breadboard-Aufbau funktioniert; die integrierte Platine und das Gehäuse müssen noch am Prototyp geprüft werden.",
+    "Rev B ist ein Prototyp im Querformat mit mittigem Display und zwei flachen Tasten daneben. Der Aufbau auf dem Steckbrett funktioniert; die integrierte Hardware muss noch gebaut und erprobt werden.",
   "device.progress.firmware": "Firmware",
   "device.progress.firmware.text":
-    "Läuft auf dem Breadboard. Die Rev-A-Firmware hat Simulationstests bestanden; Tests auf der tatsächlichen Platine stehen noch aus.",
-  "device.progress.pcb": "Platine · Rev A",
+    "Läuft auf dem Steckbrett. Display, Ladefunktion und Funk müssen auf der integrierten Rev-B-Hardware noch getestet werden.",
+  "device.progress.pcb": "Platine · Rev B",
   "device.progress.pcb.text":
-    "Die vierlagige Platine besteht die elektrischen Prüfungen, die Designregelprüfung und den Abgleich mit dem Schaltplan. Elektrische Messungen und Funkmessungen am Prototyp stehen noch aus.",
+    "Eine L-förmige Vierlagenplatine lässt neben der Elektronik Platz für den Akku. ESP32-S3 und Stromversorgung sitzen auf einer Seite.",
   "device.progress.case": "Gehäuse",
   "device.progress.case.text":
-    "Parametrisches CAD und druckbare Passproben sind verfügbar. Tastenhub, Displaypassung und Montage müssen noch an gedruckten Teilen geprüft werden.",
+    "Ein Gehäuse mit abgeschrägtem Rand, flachem Tastenbereich und optionalem Tischständer. Passform und Tastengefühl müssen noch praktisch geprüft werden.",
   "device.progress.next":
-    "Als Nächstes: Rev-A-Prototypen montieren und Ladeverhalten, Displaybetrieb, Ruhestrom, Funkleistung und Gehäusepassung prüfen.",
-  "device.progress.source": "Rev-A-Hardwarenotizen →",
-  "device.renders.title": "ein Blick in Rev A",
+    "Als Nächstes: erste Rev-B-Prototypen bauen und Laden, Display, Ruhestrom, Funk und Gehäusepassform prüfen.",
+  "device.progress.source": "Rev-B-Hardwaredokumentation →",
+  "device.renders.title": "im Inneren von Rev B",
   "device.renders.text":
-    "CAD-Renderings aus den aktuellen Gehäuse- und Platinenquellen. Geometrie und Bauteilmodelle sind vorläufig; der Entwurf kann sich nach den Prototypentests ändern.",
-  "device.render.assembly": "Rev-A-Gehäuse · CAD-Rendering",
-  "device.render.assembly.alt":
-    "CAD-Ansicht des Cicala-Gehäuses mit Displayfenster und zwei Tasten.",
-  "device.render.exploded": "Explosionsansicht · Gehäuse, Platine, Akku und Boden",
-  "device.render.exploded.alt":
-    "CAD-Explosionsansicht mit dem Gehäuse über Platine, Akku, Boden und Stahlunterseite.",
-  "device.render.pcbTop": "Platinenoberseite · Tasten und Displayanschluss",
+    "Ansichten aus dem öffentlichen Konstruktions-CAD. Es sind digitale Prototypmodelle; ein integriertes Rev-B-Gerät wurde noch nicht gebaut.",
+  "device.controls.title": "zwei fühlbare Tasten",
+  "device.controls.text":
+    "Filters sitzt oben rechts. Die größere orange Taste Next liegt darunter und zeigt die nächste Frage. Beide flachen Oberflächen liegen 1 mm unter dem Gehäuse, mit aufgeweiteten Öffnungen zum Drücken von oben.",
+  "device.controls.caption":
+    "Filters oben · 9 × 9 mm, elfenbeinfarben / Next unten · 12 × 12 mm, orange",
+  "device.controls.alt":
+    "CAD-Explosionsansicht mit der kleinen elfenbeinfarbenen Taste Filters und der größeren orangefarbenen Taste Next über ihren Tastern.",
+  "device.pcb.title": "die geroutete Platine",
+  "device.pcb.text":
+    "Die L-förmige Platine trägt den ESP32-S3, die Stromversorgung, den Displayanschluss und zwei Taster. Aufgedruckte Beschriftungen kennzeichnen Schaltungsgruppen, Anschlüsse und Messpunkte. Diese Ansichten beider Seiten stammen aus dem KiCad-Entwurf; einige Bauteile sind vereinfacht dargestellt. Beide Bilder lassen sich in voller Auflösung öffnen.",
+  "device.pcb.silkscreen": "Bestückungsdruck öffnen (SVG)",
+  "device.render.pcbTop":
+    "Platinenoberseite · ESP32-S3, Stromversorgung, Displayanschluss und Taster",
   "device.render.pcbTop.alt":
-    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenoberseite mit zwei Tastern und dem Displayanschluss.",
-  "device.render.pcbBottom": "Platinenunterseite · Controller, USB-C und Akkuversorgung",
+    "Gerade KiCad-Draufsicht der bestückten L-förmigen Rev-B-Platine mit Cicala-Logo, Schaltungsgruppen, beschrifteten Testpunkten und zwei Tastern rechts.",
+  "device.render.pcbBottom": "Platinenunterseite · Stromversorgung, Recovery-Pinbelegung und Testpunktlegende",
   "device.render.pcbBottom.alt":
-    "Schräge KiCad-3D-Ansicht der Rev-A-Platinenunterseite mit Cicala-Zeichen, ESP32-S3, USB-C und Akkuanschluss.",
+    "Gerade KiCad-Ansicht der Rev-B-Platinenunterseite mit Cicala-Logo, Stromversorgungsübersicht, Recovery-Pinbelegung und beschrifteten Testkontakten.",
+  "device.render.assembly": "Rev B · mittiges Display, versenkte Tasten",
+  "device.render.assembly.alt":
+    "Gerade CAD-Frontansicht: mittiges Display, versenkte elfenbeinfarbene Filters-Taste oben rechts und größere orange Next-Taste darunter.",
+  "device.render.exploded":
+    "Explosionsansicht · Gehäuse, Scheibe, Displayhalterungen, Elektronik und Boden",
+  "device.render.exploded.alt":
+    "Explosionsansicht von Rev B: flacher Akku neben der L-förmigen Platine unter dem Display.",
+  "device.render.inside": "Innenansicht · Akku neben der L-förmigen Platine",
+  "device.render.inside.alt":
+    "CAD-Ansicht des Akkufachs und der Bauteile auf der L-förmigen Rev-B-Platine.",
+  "device.render.section": "Schnitt · Aufbau in der Höhe",
+  "device.render.section.alt": "Schnitt durch Rev-B-Gehäuse, Akku, Platine und Display.",
   "device.p1":
     "Ein kleines Objekt für die Tischmitte: ein E-Papier-Bildschirm, eine kleine Filter-Taste und eine größere Weiter-Taste. Ein gemischter Fragenstrom.",
   "device.p2":
@@ -439,7 +491,7 @@ const de: Record<StringKey, string> = {
   "device.t.r4c": "Frage oder Menü bleiben ohne Displaystrom lesbar",
   "device.build": "selbst bauen",
   "device.build.text":
-    "Hardware (CERN-OHL-S) und Firmware (MIT) sind Open Source. Beginne mit der Breadboard-Anleitung oder sieh dir die Rev-A-Platine, das Gehäuse-CAD und die Prototypenexporte an. Rev A braucht noch Tests am realen Prototyp, bevor der Entwurf abgenommen werden kann.",
+    "Hardware (CERN-OHL-S) und Firmware (MIT) sind Open Source. Beginne mit der Breadboard-Anleitung oder sieh dir die Rev-B-Platine, das Gehäuse-CAD und die Entwicklungsdateien an. Rev B braucht noch Tests an den ersten aufgebauten Prototypen.",
   "device.link.firmware": "firmware-quellen",
   "device.link.hardware": "hardware / platine",
   "device.link.guide": "bauanleitung",
@@ -603,40 +655,67 @@ const it: Record<StringKey, string> = {
   "deck.saved": "salvate nel tuo mazzo",
   "deck.count": "domande",
 
+  "device.size": "dimensioni esterne",
+  "device.screen": "e-paper centrato",
+  "device.cell": "batteria ricaricabile protetta",
+  "device.carrier.title": "portalo con te",
+  "device.carrier.text":
+    "È in sviluppo un supporto magnetico opzionale per agganciare Cicala al telefono. Misura 68,8 × 130,8 mm in verticale. Il modello attuale invade l’area della fotocamera e sporge dal bordo inferiore di un iPhone 16 Plus; compatibilità, tenuta magnetica e radio restano da verificare. Staccare per la ricarica wireless.",
+  "device.carrier.caption": "Supporto rimovibile · 3,2 mm di spessore aggiuntivo",
+  "device.carrier.alt":
+    "Modello CAD del supporto rimovibile per telefono con copertura dell’anello magnetico incassata.",
   "device.title": "il dispositivo",
   "device.wip": "lavori in corso",
-  "device.updated": "aggiornato il 14 settembre 2026",
+  "device.updated": "aggiornato il 16 settembre 2026",
   "device.progress.link": "a che punto siamo ↓",
   "device.progress.title": "a che punto siamo",
   "device.progress.text":
-    "Rev A è in fase di prototipazione. Il circuito su breadboard funziona; la scheda integrata e la scocca devono ancora essere verificate su prototipi fisici.",
+    "Rev B è un prototipo orizzontale con schermo centrato e due pulsanti piatti accanto. Il circuito sulla breadboard funziona; questa versione integrata deve ancora essere costruita e provata.",
   "device.progress.firmware": "firmware",
   "device.progress.firmware.text":
-    "Funziona sulla breadboard. La versione Rev A ha superato i test in simulazione; le prove sulla scheda reale devono ancora iniziare.",
-  "device.progress.pcb": "PCB · Rev A",
+    "Funziona sulla breadboard. Display, ricarica e radio restano da verificare sulla scheda Rev B integrata.",
+  "device.progress.pcb": "PCB · Rev B",
   "device.progress.pcb.text":
-    "La scheda a quattro strati supera i controlli elettrici, delle regole di progetto e di corrispondenza con lo schema. Restano da svolgere le prove elettriche e radio sul prototipo.",
+    "Una scheda a L a quattro strati lascia la batteria accanto all’elettronica. ESP32-S3 e circuito di alimentazione sono su un solo lato.",
   "device.progress.case": "scocca",
   "device.progress.case.text":
-    "Sono disponibili il CAD parametrico e i file stampabili per le prove di accoppiamento. Corsa dei tasti, alloggiamento del display e montaggio vanno ancora verificati sui pezzi stampati.",
+    "Una scocca dal bordo smussato, con zona comandi piatta e supporto da tavolo opzionale. Accoppiamenti e risposta dei pulsanti vanno ancora verificati fisicamente.",
   "device.progress.next":
-    "Il prossimo passo: assemblare i prototipi Rev A e verificare ricarica, display, consumo in sospensione, prestazioni radio e accoppiamento della scocca.",
-  "device.progress.source": "note sull’hardware Rev A →",
-  "device.renders.title": "dentro Rev A",
+    "Prossimo passo: costruire i primi prototipi Rev B e misurare ricarica, display, consumo in standby, radio e accoppiamento della scocca.",
+  "device.progress.source": "Documentazione hardware Rev B →",
+  "device.renders.title": "dentro Rev B",
   "device.renders.text":
-    "Render CAD dai sorgenti attuali della scocca e del PCB. Geometria e modelli dei componenti sono provvisori; il progetto può cambiare dopo le prove sui prototipi.",
-  "device.render.assembly": "Scocca Rev A · render CAD",
-  "device.render.assembly.alt":
-    "Vista CAD della scocca Cicala con una finestra per il display e due tasti.",
-  "device.render.exploded": "Vista esplosa · scocca, scheda, batteria e base",
-  "device.render.exploded.alt":
-    "Vista CAD esplosa con la scocca sopra la scheda, la batteria, la base e il fondo in acciaio.",
-  "device.render.pcbTop": "PCB superiore · tasti e connettore del display",
+    "Viste generate dal CAD tecnico pubblico. Sono modelli digitali del prototipo: nessuna unità Rev B integrata è stata ancora costruita.",
+  "device.controls.title": "due pulsanti tattili",
+  "device.controls.text":
+    "Filters è in alto a destra. Il pulsante arancione Next, più grande, è sotto e mostra la prossima domanda. Le due superfici piatte sono incassate di 1 mm nella scocca, con aperture svasate per premerle dall’alto.",
+  "device.controls.caption":
+    "Filters sopra · 9 × 9 mm avorio / Next sotto · 12 × 12 mm arancione",
+  "device.controls.alt":
+    "Vista CAD esplosa con il piccolo pulsante avorio Filters e il pulsante arancione Next, più grande, sopra i rispettivi interruttori.",
+  "device.pcb.title": "il PCB con le piste",
+  "device.pcb.text":
+    "La scheda a L ospita ESP32-S3, circuito di alimentazione, connettore del display e due interruttori. La serigrafia identifica gruppi funzionali, collegamenti e punti di test. Queste viste dei due lati provengono dal progetto KiCad; alcuni componenti sono rappresentati con modelli semplificati. Apri un’immagine per vederla a piena risoluzione.",
+  "device.pcb.silkscreen": "Apri il disegno della serigrafia (SVG)",
+  "device.render.pcbTop":
+    "PCB, lato superiore · ESP32-S3, alimentazione, connettore display e pulsanti",
   "device.render.pcbTop.alt":
-    "Render 3D inclinato da KiCad del lato superiore della scheda Rev A, con due pulsanti e il connettore del display.",
-  "device.render.pcbBottom": "PCB inferiore · controller, USB-C e alimentazione a batteria",
+    "Vista KiCad dall’alto del PCB Rev B a L popolato, con logo Cicala, gruppi funzionali, punti di test etichettati e due pulsanti a destra.",
+  "device.render.pcbBottom": "PCB, lato inferiore · alimentazione, ripristino e legenda dei test point",
   "device.render.pcbBottom.alt":
-    "Render 3D inclinato da KiCad del lato inferiore della scheda Rev A, con il marchio Cicala, ESP32-S3, USB-C e connettore della batteria.",
+    "Vista KiCad diritta del lato inferiore del PCB Rev B con logo Cicala, guida all’alimentazione, piedinatura di ripristino e contatti di test etichettati.",
+  "device.render.assembly": "Rev B · schermo centrato, pulsanti incassati",
+  "device.render.assembly.alt":
+    "Vista CAD frontale dritta: schermo centrato, Filters avorio incassato in alto a destra e Next arancione più grande sotto.",
+  "device.render.exploded":
+    "Vista esplosa · scocca, lente, supporti del display, elettronica e base",
+  "device.render.exploded.alt":
+    "Esploso CAD Rev B con la batteria sottile accanto al PCB a L sotto il display.",
+  "device.render.inside": "Interno · batteria accanto alla scheda a L",
+  "device.render.inside.alt":
+    "Vista CAD del vano batteria e dei componenti sulla scheda Rev B a L.",
+  "device.render.section": "Sezione · disposizione in altezza",
+  "device.render.section.alt": "Sezione della scocca Rev B con batteria, scheda e display.",
   "device.p1":
     "Un oggetto tascabile per il centro del tavolo: un display e-paper, un piccolo tasto Filtri e un tasto Avanti più grande. Un unico flusso di domande mescolate.",
   "device.p2":
@@ -661,7 +740,7 @@ const it: Record<StringKey, string> = {
   "device.t.r4c": "domanda o menu restano leggibili senza alimentare il display",
   "device.build": "costruiscine uno",
   "device.build.text":
-    "Hardware (CERN-OHL-S) e firmware (MIT) sono open source. Parti dalla guida per la breadboard, oppure esplora il PCB Rev A, il CAD della scocca e i file per i prototipi. Rev A richiede ancora prove fisiche prima di poter essere approvata.",
+    "Hardware (CERN-OHL-S) e firmware (MIT) sono open source. Parti dalla guida per la breadboard, oppure esplora il PCB Rev B, il CAD della scocca e i file di progetto. Rev B richiede ancora prove fisiche sui primi prototipi assemblati.",
   "device.link.firmware": "sorgenti del firmware",
   "device.link.hardware": "hardware / PCB",
   "device.link.guide": "guida alla costruzione",

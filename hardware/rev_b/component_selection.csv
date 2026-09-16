@@ -1,0 +1,17 @@
+function,selected_parts,rationale,status
+MCU / radio,Espressif ESP32-S3-WROOM-1-N16,"Retain module, native USB and 16 MB flash. Avoid introducing bare-chip RF work in this revision.",Applied to Rev B native schematic / PCB; physical qualification pending
+Display,"Waveshare SKU 22609, 3.52-inch V1.1, UC8253",Retain 360 × 240 landscape image and centered active area; specify revision on the assembly drawing.,Applied to Rev B native schematic / PCB; physical qualification pending
+Display connector,Molex 503480-2400,"Dual contacts, 0.3 mm FPC, 1 mm nominal body, 1.58 mm insertion; accepts the panel contact and stiffener lengths.",Applied to Rev B native schematic / PCB; physical qualification pending
+Display boost inductor,TDK VLS4012CX-680M-1,Change 47 µH to the vendor HAT's 68 µH. 4 × 4 × 1.2 mm maximum package.,Applied to Rev B native schematic / PCB; physical qualification pending
+Display boost MOSFET,Diodes BSS138-7-F,Match the HAT's BSS138 circuit; replace the provisional Si1308 footprint and check pin mapping.,Applied to Rev B native schematic / PCB; physical qualification pending
+Display rectifiers,3 × Diodes MBR0530-7-F,Retain the reference circuit's diode family.,Applied to Rev B native schematic / PCB; physical qualification pending
+Boost sense / gate pull-down,Yageo RC0603FR-073RL / RC0603FR-0710KL,"3 Ω / 10 kΩ, matching the HAT reference.",Applied to Rev B native schematic / PCB; physical qualification pending
+High-voltage reservoir capacitors,Samsung CL21B105KBFNNNE,"1 µF, 50 V, X7R, 0805. Replace provisional 25 V rail capacitors; check capacitance under DC bias.",Applied to Rev B native schematic / PCB; physical qualification pending
+Boost 4.7 µF capacitors,Murata GRM31CR71H475KA12L,"4.7 µF, 50 V, X7R, 1206; allow the larger footprint.",Applied to Rev B native schematic / PCB; physical qualification pending
+Protected battery,Renata ICP303450PA-02 / 100701,"Standard pack, 500 mAh minimum / 510 mAh nominal; maximum 52 × 34.5 × 3.6 mm.",Applied to Rev B native schematic / PCB; physical qualification pending
+Battery temperature sensor,Semitec 103JT-025,"Insulated film sensor, 10 kΩ, B3435, 0.5 mm maximum thickness; replace the bulky 103AT-2 assembly proposal.",Applied to Rev B native schematic / PCB; physical qualification pending
+Battery connection,"JST SM03B-SRSS-TB(LF)(SN), SHR-03V-S, SSH-003T-P0.2",Low-profile 1 mm interface; short AWG28 adapter spliced to the stock protected pack AWG26 leads. BAT+/NTC/GND.,Applied to Rev B native schematic / PCB; physical qualification pending
+Charger / converter / panel switch,BQ25185DLHR / TPS63802DLAR / TPS22917DBVR,"Retain the power path, 4.2 V regulation, 100 mA charge setting and panel power isolation.",Applied to Rev B native schematic / PCB; physical qualification pending
+Charge-temperature veto,TLV9022DGKR and existing discrete circuit,Retain independent hardware inhibition; recheck thresholds with the selected thermistor tolerances.,Applied to Rev B native schematic / PCB; physical qualification pending
+Two controls,2 × Omron B3F-4050; B32-1200 ivory / B32-1320 orange,Compatible projected plungers; 9 × 9 and 12 × 12 mm purchased caps; 10 mm assembled height; no printed cap mechanism.,Applied to Rev B native schematic / PCB; physical qualification pending
+USB / recovery,"HRO TYPE-C-31-M-12, USBLC6-2SC6, existing six-pad Tag-Connect interface",Retain USB-C charging and native recovery. Reposition the port cutout with the board.,Applied to Rev B native schematic / PCB; physical qualification pending

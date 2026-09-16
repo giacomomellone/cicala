@@ -1,0 +1,12 @@
+{
+  "ipc2581": {
+    "compressed": true,
+    "xml_root": "IPC-2581",
+    "revision": "C"
+  },
+  "graphic_layers": 11,
+  "matched_plated_drills_and_slots": 454,
+  "matched_nonplated_drills": 13,
+  "comparison_tolerance_mm": 0.00051,
+  "all_drill_positions_sizes_and_slot_axes_match": true
+}

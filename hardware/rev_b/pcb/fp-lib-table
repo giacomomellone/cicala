@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "cicala") (type "KiCad") (uri "${KIPRJMOD}/cicala.pretty") (options "") (descr "Cicala Rev B FIT STUDY custom footprints (parts absent from the KiCad library)"))
+)

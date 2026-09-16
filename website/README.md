@@ -17,6 +17,8 @@ npm test       # vitest suite in tests/
 
 `src/data/*.json` is generated and gitignored; if the build complains about missing data, run `npm run data` again.
 
+The shipped corpora are currently empty, so play, browse and deck render nothing. `just website-placeholder` (dev server) and `just website-build-placeholder` (production build) run the same pages against [placeholder-corpus/](placeholder-corpus/README.md), which is layout filler and never shipped content. Plain `just website` and `just website-build` rebuild the payloads from `questions/`, so running one of them after a placeholder build drops the fixtures again.
+
 ## Budgets (spec §7.1)
 
 - ≤ 60 KB gzipped JS total per page

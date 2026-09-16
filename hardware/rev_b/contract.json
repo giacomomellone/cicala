@@ -1,0 +1,268 @@
+{
+  "revision": "rev_b_proto_05",
+  "status": "engineering prototype; digital validation required before export; physical qualification pending",
+  "units": "mm",
+  "case": {
+    "width": 128,
+    "depth": 66,
+    "height": 16.8,
+    "corner_radius": 4,
+    "wall": 1.4,
+    "base": 1.2,
+    "bevel_start": 116.8,
+    "bevel_angle": 30,
+    "origin": [
+      -10,
+      0,
+      0
+    ],
+    "control_ledge_x": 100,
+    "control_ledge_z": 16.8
+  },
+  "pcb": {
+    "z": 4.6,
+    "thickness": 1.2,
+    "layers": 4,
+    "outline": [
+      [
+        3,
+        44
+      ],
+      [
+        65,
+        44
+      ],
+      [
+        66,
+        43
+      ],
+      [
+        66,
+        2
+      ],
+      [
+        116,
+        2
+      ],
+      [
+        116,
+        64
+      ],
+      [
+        3,
+        64
+      ]
+    ],
+    "inside_radius": 1,
+    "assembly_face": "F.Cu",
+    "copper_edge_clearance": 0.5
+  },
+  "display": {
+    "candidate": "Waveshare SKU22609, 3.52 inch V1.1",
+    "glass": [
+      84.7,
+      54.41,
+      1.18
+    ],
+    "glass_origin": [
+      14.375,
+      5.795,
+      9.315
+    ],
+    "active": [
+      74.51,
+      49.67
+    ],
+    "active_origin": [
+      16.745,
+      8.165
+    ],
+    "resolution": [
+      360,
+      240
+    ],
+    "flex_exit": "right",
+    "flex_width": 12.5,
+    "flex_length": 10,
+    "flex_stiffener": 3.65,
+    "flex_bend_radius_assumption": 1.55,
+    "lens_z": 10.615,
+    "lens_thickness": 0.8,
+    "thickness_basis": "1.18 mm reserved from product listing; V1.1 drawing says 0.92 +/-0.10 mm including edge adhesive",
+    "flex_nominal_spare_length": 0.923,
+    "flex_tolerance_status": "Prototype former R1.55. Worst length remainder 0.276 mm using 9.7 tail, 3.95 stiffener, 0.13 flex and 0.4 bonding straight. Verify contact datum and fold on first article.",
+    "connector": "Molex 503480-2400",
+    "connector_insertion": 1.58,
+    "connector_contact_bottom_z": 6.115,
+    "assembly_lift": 1.9649999999999999
+  },
+  "battery": {
+    "candidate": "Renata ICP303450PA-02 (100701), protected; external Semitec 103JT-025 NTC",
+    "capacity_mah": 500,
+    "nominal_cell": [
+      52,
+      34.5,
+      3.6
+    ],
+    "reserved_origin": [
+      11,
+      7,
+      1.4
+    ],
+    "reserved_size": [
+      54,
+      36,
+      4.8
+    ],
+    "adhesive": 0.2,
+    "charge_current_ma": 100,
+    "connector": "JST SM03B-SRSS-TB(LF)(SN); SHR-03V-S housing; SSH-003T-P0.2 contacts; AWG28 pigtail spliced to protected pack AWG26 leads",
+    "pinout": [
+      "BAT+",
+      "NTC",
+      "GND"
+    ],
+    "harness": "Two 40 mm AWG28 power leads, plus NTC lead, separately insulated splices; stock pack protection retained."
+  },
+  "buttons": {
+    "mpn": "B3F-4050",
+    "centres": [
+      [
+        108,
+        17.5
+      ],
+      [
+        108,
+        52.3
+      ]
+    ],
+    "caps": [
+      "B32-1200",
+      "B32-1320"
+    ],
+    "cap_sizes": [
+      9,
+      12
+    ],
+    "cap_colors": [
+      "ivory",
+      "orange"
+    ],
+    "cap_height": 5.5,
+    "assembled_height": 10,
+    "assembled_height_tolerance": 0.4,
+    "switch_height": 7.3,
+    "switch_height_tolerance": 0.2,
+    "switch_body_size": [
+      12,
+      12,
+      3.5
+    ],
+    "switch_travel": 0.3,
+    "switch_travel_range": [
+      0.2,
+      0.5
+    ],
+    "radial_clearance": 0.5,
+    "cap_size_tolerance": 0.15,
+    "printed_aperture_tolerance": 0.3,
+    "alignment_tolerance": 0.15,
+    "vertical_print_tolerance": 0.2,
+    "pcb_thickness_tolerance": 0.13,
+    "lead_length": 3.5,
+    "lead_length_tolerance": 0.4,
+    "terminal_pitch": [
+      12.5,
+      5
+    ],
+    "terminal_drill": 1.2,
+    "boss_pitch": 9,
+    "boss_drill": 1.8,
+    "force_n": 1.27,
+    "force_tolerance_n": 0.49,
+    "retention": "Purchased caps press directly onto the projected plungers. Fit only after soldering; no printed cap, keeper or elastomer.",
+    "sources": [
+      "https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf",
+      "https://omronfs.omron.com/en_US/ecb/products/pdf/en-b32.pdf"
+    ],
+    "pcb_seat_height_tolerance": 0.2,
+    "nominal_recess": 1.0,
+    "well_flare": 1.4,
+    "well_depth": 2.5,
+    "access_probe_radius": 6.0,
+    "maximum_pressed_recess": 2.5,
+    "max_solder_projection": 2.6
+  },
+  "rf_keepout": {
+    "origin": [
+      3,
+      29
+    ],
+    "size": [
+      6.5,
+      35
+    ],
+    "scope": "no copper, battery, display, screws or carrier metal; validate phone-loaded RF"
+  },
+  "mounts": [
+    [
+      40,
+      61.7
+    ],
+    [
+      69,
+      4.2
+    ],
+    [
+      100,
+      4.2
+    ],
+    [
+      95,
+      61.7
+    ]
+  ],
+  "carrier": {
+    "thickness": 3.2,
+    "ring_outer_diameter": 54.1,
+    "ring_inner_diameter": 46,
+    "ring_depth": 1.15,
+    "ring_centre": [
+      75.865,
+      33
+    ],
+    "case_clearance": 0.3,
+    "retention": "Experimental removable screw cradle; radio end down. The 130.8 mm portrait carrier exceeds the prior iPhone 16 Plus camera-to-bottom space; no fit claim. Qualify another phone or mounting position.",
+    "array": "CIC-MAG-01, made to drawing; N48H radial accessory array, supplier qualification pending",
+    "magnet_thickness": 1.1,
+    "adhesive_thickness": 0.05,
+    "steel_shield_thickness": 0.7,
+    "cover_thickness": 0.85,
+    "support_thickness": 0.5
+  },
+  "manufacturing": {
+    "route_min_width": 0.2,
+    "escape_min_width": 0.15,
+    "clearance": 0.2,
+    "via_drill": 0.3,
+    "via_diameter": 0.6,
+    "panel_rail": 5,
+    "panel_route_channel": 2,
+    "panel_method": "tab routing; factory to review supports and panel",
+    "impedance": "90 ohm USB; PCBWay published 1.2 mm four-layer entry 17, 0.1855 mm outer dielectric, er 4.74; confirm impedance with factory at order",
+    "release": false
+  },
+  "gates": [
+    "First power-up: polarity, 3V3 regulation and USB/UART programming",
+    "Display refresh, power-down, rail voltages and flex fit on selected V1.1 panel",
+    "Battery NTC veto, charging, pulse load and sleep current",
+    "Purchased cap seating, aperture clearance, off-centre force, full actuation and return; soldered through-hole lead clearance",
+    "Optional phone carrier retention, camera interference and loaded antenna performance",
+    "Factory confirmation of stack, stencil and tab-panel support at prototype order"
+  ],
+  "coordinate_system": {
+    "layout": "KiCad top view: X right, Y down, Z above the base",
+    "mechanical_export": "Right-handed millimetres: X = layout X, Y = -layout Y, Z = layout Z; PCB STEP translated upward by pcb.z",
+    "button_order": "SW1 / Filters at upper right; SW2 / Next at lower right"
+  }
+}

@@ -13,7 +13,7 @@ _Parametric CAD, 7 September 2026; this is not a photograph of built hardware._
 
 ## Files and commands
 
-Open `hardware/pcb/cicala_rev_a/cicala_rev_a.kicad_pro` in KiCad 10. The five
+Open `hardware/rev_a/pcb/cicala_rev_a.kicad_pro` in KiCad 10. The five
 schematic pages separate power/USB, controller/recovery, display and the charge
 temperature guard beneath a system diagram. Project-local models restore
 USB-C, JST, regulator, inductors and the status LED in 3D. Test contacts and
@@ -23,8 +23,8 @@ The red circles in KiCad's project tree indicate files modified in Git, not
 electrical-check failures. See [KiCad Git integration](https://docs.kicad.org/10.0/en/kicad/kicad.html#_git_integration).
 ERC and DRC have their own reports. Saving a file does not commit it to Git.
 
-The mechanical source is `hardware/case/cicala_enclosure.scad`; STL/3MF and
-sheet-cutting outlines are under `hardware/case/exports/rev_a/`. OpenSCAD owns
+The mechanical source is `hardware/rev_a/case/cicala_enclosure.scad`; STL/3MF and
+sheet-cutting outlines are under `hardware/rev_a/case/exports/`. OpenSCAD owns
 the enclosure; KiCad owns PCB placement and copper. Change shared dimensions
 together and regenerate the component-envelope fingerprint.
 
@@ -32,7 +32,7 @@ together and regenerate the component-envelope fingerprint.
 just hw-check
 just hw-review
 just hw-case-export
-bash hardware/pcb/export_fab.sh
+bash hardware/tools/rev_a/export_fab.sh
 just hw=rev_a fw-build debug
 just hw=rev_a fw-flash debug
 just hw=rev_a fw-debugserver
@@ -118,9 +118,9 @@ USB/JTAG/UART recovery, battery/NTC charge behavior, display refresh, sleep
 current, button fit and assembled radio results before accepting the prototypes.
 
 Detailed BOM, manufacturing settings and electrical acceptance steps are in
-`hardware/pcb/BOM.md`, `hardware/pcb/MANUFACTURING.md` and
-`hardware/pcb/REVIEW.md`. Print settings, fasteners, cutting tolerances,
-harness construction and assembly order are in `hardware/case/README.md`.
+`hardware/rev_a/BOM.md`, `hardware/rev_a/MANUFACTURING.md` and
+`hardware/rev_a/REVIEW.md`. Print settings, fasteners, cutting tolerances,
+harness construction and assembly order are in `hardware/rev_a/case/README.md`.
 No IP rating or production certification is claimed.
 
 ![Exploded Rev A CAD](assets/images/hardware_rev_a/enclosure_exploded.png)

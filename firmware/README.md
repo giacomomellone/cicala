@@ -40,7 +40,7 @@ still veto it. GPIO5 enables the panel before driver initialization. Deep
 sleep parks physical display-bus levels low before disabling the rail and
 holds those pins. The first refresh after power restoration is full because
 the display controller RAM has been lost. The PCB recovery pinout and first
-power checks are in [the hardware review](../hardware/pcb/REVIEW.md).
+power checks are in [the hardware review](../hardware/rev_a/REVIEW.md).
 
 The [Rev A build and flash guide](../docs/firmware_rev_a.md) covers toolchain
 installation, first USB download, JTAG, UART recovery and hardware acceptance.

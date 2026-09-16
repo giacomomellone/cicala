@@ -108,7 +108,7 @@ The PCB carries the cicada beside the existing underside wordmark on
 throughout at 0.513 mm, well above the 0.15 mm silkscreen minimum. Native KiCad
 curves and lines preserve the SVG geometry.
 Regeneration and the mark-only update command are documented in
-`hardware/pcb/tools/assets/README.md`.
+`hardware/tools/pcb/assets/README.md`.
 
 ## Prohibited treatments
 

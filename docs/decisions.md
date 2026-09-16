@@ -603,11 +603,11 @@ The whole procedure, from buying the domain to the first device that updates its
 
 The charger board is the better bench part for a reason that has nothing to do with the charger: it brings its own regulated 3.3 V at 1 A, so the rig runs off a cell without a second regulator to build or a devkit LDO to burn a volt in. It also breaks out USB D+ and D-, which makes the single-connector arrangement rev A wants testable now rather than after a PCB.
 
-The cell is not the product cell and is not meant to be. At roughly 61 x 42 x 5.2 mm it does not fit the 30 x 35 x 5 mm slot in [device prototype](device_prototype.md), let alone the 84 x 56 x 16 mm envelope; `hardware/pcb/BOM.md` keeps the 503035 and this branch does not touch the enclosure. Its job is to make the discharge long enough to measure.
+The cell is not the product cell and is not meant to be. At roughly 61 x 42 x 5.2 mm it does not fit the 30 x 35 x 5 mm slot in [device prototype](device_prototype.md), let alone the 84 x 56 x 16 mm envelope; `hardware/rev_a/BOM.md` keeps the 503035 and this branch does not touch the enclosure. Its job is to make the discharge long enough to measure.
 
 Charge current is cut to 500 mA with the jumper on the back, which is 0.33C. Inside EEMB's standard rate, and a full charge lands near three and a half hours — clear of the chip's unmodifiable six-hour safety timeout, which would otherwise stop a slow charge part-way and look like a fault.
 
-The rev A charger stays open. `hardware/pcb/BOM.md` still says "BQ2407x class, exact part open", and the 6092's onboard buck overlaps the XC6220 already chosen there. That is a decision the bench should inform rather than one this purchase makes.
+The rev A charger stays open. `hardware/rev_a/BOM.md` still says "BQ2407x class, exact part open", and the 6092's onboard buck overlaps the XC6220 already chosen there. That is a decision the bench should inform rather than one this purchase makes.
 
 Accepted cost: the runtime figures this bench produces are for a cell three times the size of the one the product is designed around, so they scale and cannot be quoted.
 
@@ -667,7 +667,7 @@ Accepted cost: two separate packages on the bench do not blend into amber — th
 
 The ESP32-S3 has a USB Serial/JTAG controller in silicon on GPIO19 and GPIO20. It presents two interfaces at once — a vendor JTAG interface OpenOCD claims and a CDC-ACM the host sees as a serial port — which `app/debug.overlay` already uses for the debug console, and esptool can drive the ROM download mode through the same CDC interface.
 
-So rev A needs no CP2102, no auto-reset transistor pair, and no second connector. One USB-C: VBUS to the bq25185 input, D+ and D- to GPIO19 and GPIO20. `hardware/pcb/BOM.md` already lists a USB-C with 5.1 kOhm CC pulldowns and no bridge chip, so this confirms an assumption that was made without being written down.
+So rev A needs no CP2102, no auto-reset transistor pair, and no second connector. One USB-C: VBUS to the bq25185 input, D+ and D- to GPIO19 and GPIO20. `hardware/rev_a/BOM.md` already lists a USB-C with 5.1 kOhm CC pulldowns and no bridge chip, so this confirms an assumption that was made without being written down.
 
 It obliges one thing the current board gets for free. Download mode over USB Serial/JTAG is normally entered by command, but an image that reconfigures those two pins, or that crashes before USB enumerates, can only be recovered by strapping IO0 low at reset. The two product buttons are on GPIO4 and GPIO17. Rev A therefore wants a test point or an internal button on IO0, and that is the difference between a board somebody can rescue and a brick.
 
@@ -789,7 +789,7 @@ The schematic passes ERC. It is not a fabrication release: the regulator, two in
 
 ## 2026-08-19: Rev A footprints assigned and two circuit errors corrected
 
-Every symbol now carries a footprint. Parts with a suitable KiCad library land use it, including the KSC6xxG land for the KSC321G switches, whose 3.1 × 1.0 mm pads match the C&K KSC drawing. Four parts had no library match and get project land patterns in `hardware/pcb/cicala_rev_a/cicala.pretty`: `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm`, `L_Coilcraft_XFL4015`, `L_TDK_VLS4012` and the preliminary `LED_Kingbright_APBA2006SURKCGKC`. These are review drafts, not qualified lands.
+Every symbol now carries a footprint. Parts with a suitable KiCad library land use it, including the KSC6xxG land for the KSC321G switches, whose 3.1 × 1.0 mm pads match the C&K KSC drawing. Four parts had no library match and get project land patterns in `hardware/rev_a/pcb/cicala.pretty`: `Texas_DLA0010A_VSON-HR-10_2x3mm_P0.5mm`, `L_Coilcraft_XFL4015`, `L_TDK_VLS4012` and the preliminary `LED_Kingbright_APBA2006SURKCGKC`. These are review drafts, not qualified lands.
 
 The TPS63802 DLA0010A symbol keeps ten pins with no exposed thermal pad. The DLA package is a HotRod VSON-HR with only ten perimeter leads; heat leaves through the AGND and GND pins, so the land carries no centre pad.
 
@@ -1042,3 +1042,99 @@ This supersedes the translation-source and independent-adaptation rules in the
 versions of one question require an explicit source selection through a manual
 workflow run, and multiple linked variants in a target language require
 editorial resolution. These cases fail instead of silently selecting wording.
+
+## 2026-09-15: Rev B landscape engineering prototype
+
+Retain the ESP32-S3-WROOM module and power/recovery architecture in an
+independent revision. Put a protected Renata 500 mAh pack beside an L-shaped,
+1.2 mm four-layer board. Center the active 3.52-inch display and use vertically
+guided controls on a 30-degree shoulder. The 108 × 66 × 10.2 mm enclosure
+accommodates the real glass offset, antenna reserve and controls without a U arm.
+
+Select the Waveshare 22609 V1.1 UC8253 panel, Molex 503480-2400 dual-contact FPC
+connector, Alps SKRABCE010 switches and JST SH battery harness. The panel table
+sets pins 1 and 4 unused and pin 5 decoupled; the HAT circuit's conflicting labels
+are recorded in the selection document. The connector accepts the short tip.
+An R1.55 inside flex fold has 0.276 mm calculated worst-case length remainder;
+entry height and actual fold durability require a sample assembly.
+
+All fitted parts use the top face. Bare underside test contacts may use ordinary
+unfilled through-vias. In1 is mostly ground with local signal crossings outside
+reserved top USB and converter regions; the bottom USB pair references a
+protected In2 ground region. Use ordinary through-vias, 0.2 mm general clearance,
+0.5 mm edge clearance and 0.15 mm fine-pin escapes. The final manufacturer must
+confirm its stack, differential impedance and supported tab-routed panel.
+
+Keep the offset magnet array in a removable carrier and use a separate wedge.
+The carrier adds 3.2 mm and targets iPhone 16 Plus plan-view clearance with the
+radio end down. Phone/case fit, retention and attached radio behavior need
+measurements. Reducing battery capacity alone cannot remove the height set by
+the module, glass support and printed controls.
+
+Engineering exports precede physical qualification. First articles must establish
+battery transient limits, thermal behavior, flex and button tolerances, USB
+operation and panel refresh. See [Rev B hardware](hardware_rev_b.md) and the
+[component selection record](hardware_rev_b_selection.md).
+
+## 2026-09-15: Removable keepers retain the Rev B caps
+
+The 0.30 mm flange required thin printed retention features and obstructed a
+straight assembly path. Rev B now uses two 1.4 mm rounded end tabs per cap and a
+separate 1.5 mm keeper fastened with two M2 screws. The caps enter from the empty
+shell's underside. The keeper carries the downward stops; upper pockets retain
+the caps toward the front. The silicone contact is a captured 0.5 mm strip.
+
+Filters remains 10 mm long; Next is 13 mm to make space for the keeper mounts.
+The inner cap corner is clipped to keep its return allowance inside the 10.2 mm
+nominal envelope. Longer guides and tapered PCB-seat roots reinforce loaded
+areas. These changes use the existing board and switch locations.
+
+A fixed relief/stop pair cannot cover the declared stack tolerances. Graded caps
+and keepers support measured selection; a displacement audit covers 192 corner
+combinations without claiming force or durability validation. Print exports
+separate oriented parts, coupons, reference meshes and sheet-cutting patterns.
+The first prototype must establish switch operation, silicone behavior, printed
+fits, tightening torque and wear before a production configuration is selected.
+
+## 2026-09-15: Flat, larger Rev B buttons
+
+Replace the narrow beveled cap faces with flat R1.2 rounded rectangles: 8 × 14 mm
+Filters and 8 × 18 mm Next. A recessed ledge makes the faces stand 0.40 mm proud
+without increasing the 10.2 mm core height. Retain a 30° bevel on the outer edge.
+Widen the case symmetrically by 4 mm to 112 mm; its x origin is now −2 mm in the
+existing PCB datum, so the active display remains centered.
+
+The cap faces and keeper mounts move within the enclosure; underside contact
+tips still align with the original switches. Retain the PCB routing, silicone
+strips, return tabs and replaceable keepers. The larger cap faces increase
+off-center leverage; digital collision checks do not establish a light click
+or freedom from binding. Measure central and corner presses on first articles.
+
+The wider core lengthens the portrait carrier to 114.8 mm. Reposition its ring
+to balance the nominal iPhone 16 Plus camera and bottom gaps at 1.185 mm each.
+This prioritizes tabletop controls while reducing phone-fit tolerance. Cases,
+optical clearance and magnetic retention still require physical qualification.
+
+## 2026-09-15: Purchased Omron controls simplify Rev B assembly
+
+Rev B.04 uses two B3F-4050 projected-plunger through-hole switches. Filters has
+an ivory 9 × 9 mm B32-1200 cap; Next has an orange 12 × 12 mm B32-1320 cap.
+Omron's B3F/B32 drawings establish compatibility and a 10 mm fitted height above
+the PCB. Caps are installed after soldering, with the PCB supported.
+
+This supersedes the printed caps, silicone strips, keepers, keeper screws and
+graded actuator coupons. Four prints form the core housing/display supports.
+The PCB right arm widens and its mounting plane rises to clear untrimmed switch
+leads. The housing is 128 × 66 × 14.2 mm, 15.8 mm including the cap tops. The
+active display stays centered; its lens is recessed below the taller roof.
+
+Accepted costs: a separate through-hole soldering step, greater size, and loss
+of the previous iPhone 16 Plus nominal carrier fit. The 87-part SMT BOM/CPL is
+separate from the manual switch/cap assembly list. The carrier remains an
+experimental accessory. Cap seating, low-current contact reliability, edge
+presses, printed aperture fit and underside solder clearance require a first
+article. See [selection evidence](hardware_rev_b_selection.md).
+
+## 2026-09-16 — Recessed controls and mechanical coordinate datum
+
+Rev B.05 retains B3F-4050 switches and B32 caps, with Filters upper right and the larger Next below. Raise the roof to 16.8 mm for a nominal 1 mm recess and add flared access wells; retain the board/display/flex datum. Export mechanical geometry in KiCad STEP handedness (layout Y negated), checked using the asymmetric PCB outline and mounts. Remove the Next approach's backtracking bend and consolidate straight routing vertices. Specify a 2.60 mm maximum underside solder envelope. Factory acceptance and physical first-article qualification remain required; no production release is implied.

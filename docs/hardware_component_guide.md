@@ -3,7 +3,7 @@
 Why each part on the Rev A schematic is there. It walks the three functional
 sheets — Power and USB, Controller and user I/O, E-paper display — and gives the
 role of every component, not just the ICs. The selected part numbers and
-sourcing notes are in [hardware/pcb/BOM.md](https://github.com/giacomomellone/cicala/blob/main/hardware/pcb/BOM.md);
+sourcing notes are in [hardware/rev_a/BOM.md](https://github.com/giacomomellone/cicala/blob/main/hardware/rev_a/BOM.md);
 the coordinate, pin and validation contracts are in [rev A hardware](hardware_rev_a.md).
 
 This is an electrical-review baseline, not a fabrication release. The wiring

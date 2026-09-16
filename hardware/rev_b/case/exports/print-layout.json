@@ -1,0 +1,141 @@
+{
+  "jobs": {
+    "print/core/base.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        10.0,
+        66.0,
+        -0.0
+      ],
+      "size_mm": [
+        128.0,
+        66.0,
+        4.6
+      ]
+    },
+    "print/core/top_shell.stl": {
+      "rotation_degrees": [
+        0,
+        180,
+        0
+      ],
+      "translation_mm": [
+        118.0,
+        66.0,
+        16.800000000000015
+      ],
+      "size_mm": [
+        128.0,
+        66.0,
+        15.600000000000016
+      ]
+    },
+    "print/core/display_frame.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -13.375,
+        61.205,
+        -8.315
+      ],
+      "size_mm": [
+        86.425,
+        56.41,
+        0.7999999999999989
+      ]
+    },
+    "print/core/display_support_bar.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -30.5,
+        61.205,
+        -8.315
+      ],
+      "size_mm": [
+        42.3,
+        2.8699999999999974,
+        0.7999999999999989
+      ]
+    },
+    "print/accessories/carrier.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        11.4,
+        67.39999999701976,
+        3.2
+      ],
+      "size_mm": [
+        130.79999999701977,
+        68.79999999701977,
+        5.19
+      ]
+    },
+    "print/accessories/carrier_cover.stl": {
+      "rotation_degrees": [
+        0,
+        0,
+        0
+      ],
+      "translation_mm": [
+        -48.114999999999995,
+        60.75,
+        3.2
+      ],
+      "size_mm": [
+        55.5,
+        55.5,
+        0.8500000000000001
+      ]
+    },
+    "print/jigs/flex_former.stl": {
+      "rotation_degrees": [
+        0,
+        -90,
+        0
+      ],
+      "translation_mm": [
+        9.214999999999995,
+        39.25,
+        -99.475
+      ],
+      "size_mm": [
+        3.000000000000001,
+        12.5,
+        1.5
+      ]
+    },
+    "print/accessories/wedge.stl": {
+      "rotation_degrees": [
+        0,
+        90,
+        0
+      ],
+      "translation_mm": [
+        -0.0,
+        36.0,
+        80.0
+      ],
+      "size_mm": [
+        10.000000000000005,
+        36.0,
+        80.0
+      ]
+    }
+  },
+  "notes": "Individually oriented meshes. Slicer supports, material and fit require qualification; purchased caps and switch are reference meshes, never print jobs."
+}
