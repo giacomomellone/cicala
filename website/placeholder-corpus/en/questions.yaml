@@ -1,0 +1,65 @@
+# website/placeholder-corpus/en/questions.yaml — fixtures, not shipped content.
+#
+# `just website-placeholder` builds the site payloads from this corpus so the
+# play, browse and deck pages have something to render while questions/ is
+# empty. These lines were written to fill a layout. Never copy one into
+# questions/en/: that corpus is Human Reserved (README.md#ai-policy).
+
+- id: q-874efaff
+  text: "What is something small you changed your mind about this year?"
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-01-01"
+- id: q-8de76636
+  text: "What were you doing an hour before you got here?"
+  depth: 1
+  added: "2026-01-01"
+- id: q-390ee353
+  text: "Which habit of yours would a stranger notice first, and what would they get wrong about it?"
+  depth: 2
+  tags: [reflective]
+  added: "2026-01-01"
+- id: q-cdbf8ed1
+  text: "Which place can you still walk through in your memory, room by room?"
+  depth: 2
+  tags: [memory]
+  added: "2026-01-01"
+- id: q-2d498d3b
+  text: "Would you rather know how you die or when, and what would you do differently afterwards?"
+  depth: 2
+  tags: [hypothetical, wouldyourather]
+  added: "2026-01-01"
+- id: q-faa381e7
+  text: "What are you still carrying from a conversation that ended badly?"
+  depth: 3
+  added: "2026-01-01"
+- id: q-7f29b5b7
+  text: "What do you want done with your body afterwards, and who have you actually told?"
+  depth: 3
+  tags: [dark]
+  added: "2026-01-01"
+- id: q-0232df4a
+  text: "What did you learn about desire from a relationship that did not last?"
+  depth: 2
+  tags: [sexual]
+  added: "2026-01-01"
+- id: q-a74a7044
+  text: "What connection do you see between sex and death that you rarely say out loud?"
+  depth: 3
+  tags: [dark, sexual]
+  added: "2026-01-01"
+- id: q-303f965a
+  text: "If someone followed you through an ordinary Tuesday, which ten minutes would tell them the most about how you actually live?"
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-01-01"
+- id: q-56899d72
+  text: "What advice have you given more than once and never managed to follow yourself, and what does that cost you?"
+  depth: 2
+  tags: [reflective]
+  added: "2026-01-01"
+- id: q-cb1c724a
+  text: "What is on your kitchen counter right now that says something about the week you are having?"
+  depth: 1
+  tags: [icebreaker]
+  added: "2026-01-01"

@@ -579,6 +579,44 @@ class TestSiteData(TmpDb):
         index = json.loads((out / "index.json").read_text())
         self.assertEqual(list(index.values()), ["en"])
 
+    def test_corpus_override_builds_from_another_tree(self):
+        self.write("questions/en/questions.yaml", "")
+        fixture = self.tmp / "fixtures/en"
+        fixture.mkdir(parents=True)
+        (fixture / "questions.yaml").write_text(
+            "- id: q-deadbeef\n"
+            '  text: "Placeholder question 1 - short line, depth 1?"\n'
+            "  depth: 1\n"
+            '  added: "2026-01-01"\n',
+            encoding="utf-8",
+        )
+        out = self.tmp / "site_data"
+        code, _, _ = run_quiet(
+            build_site_data.main,
+            ["--root", str(self.tmp), "--corpus", str(self.tmp / "fixtures"), "--out", str(out)],
+        )
+        self.assertEqual(code, 0)
+        payload = json.loads((out / "questions.en.json").read_text())
+        self.assertEqual([q["id"] for q in payload["questions"]], ["q-deadbeef"])
+
+    def test_shipped_placeholder_corpus_builds(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            code, _, _ = run_quiet(
+                build_site_data.main,
+                [
+                    "--root",
+                    str(REPO),
+                    "--corpus",
+                    str(REPO / "website" / "placeholder-corpus"),
+                    "--out",
+                    tmp,
+                ],
+            )
+            self.assertEqual(code, 0)
+            langs = json.loads((Path(tmp) / "languages.json").read_text())
+            self.assertEqual([language["code"] for language in langs], ["de", "en", "it"])
+            self.assertTrue(all(language["count"] for language in langs))
+
     def test_translation_provenance_reaches_the_site_payload(self):
         (self.tmp / "questions/de").mkdir()
         (self.tmp / "questions/de/STYLE.md").write_text("# stil\n")

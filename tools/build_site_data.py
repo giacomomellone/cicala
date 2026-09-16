@@ -7,8 +7,9 @@ Emits into website/src/data/ (override with --out):
   languages.json          shipped languages with names and question counts
   index.json              id -> lang, for permalinks and cross-language links
 
-Only shipped languages are built — the incubator is excluded by design
-(docs/languages.md). Strips author and added from the main payloads.
+Reads the shipped `questions/` tree, or another corpus of language directories
+with --corpus. Only shipped languages are built — the incubator is excluded by
+design (docs/languages.md). Strips author and added from the main payloads.
 Fails if any single language payload exceeds 2 MB.
 """
 
@@ -52,6 +53,13 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
     parser.add_argument(
+        "--corpus",
+        type=Path,
+        default=None,
+        help="directory of language directories (default: <root>/questions); the schema and "
+        "the language names still come from <root>",
+    )
+    parser.add_argument(
         "--out", type=Path, default=None, help="output directory (default: <root>/website/src/data)"
     )
     args = parser.parse_args(argv)
@@ -72,7 +80,7 @@ def main(argv=None) -> int:
     index: dict[str, str] = {}
     failed = False
 
-    for lang, lang_dir, incubator in validate.discover_languages(args.root):
+    for lang, lang_dir, incubator in validate.discover_languages(args.root, args.corpus):
         if incubator:
             continue
         payload = {"version": version, "generated": generated, "questions": []}

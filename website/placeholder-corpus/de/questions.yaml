@@ -1,0 +1,30 @@
+# website/placeholder-corpus/de/questions.yaml — fixtures, not shipped content.
+#
+# `just website-placeholder` builds the site payloads from this corpus so the
+# play, browse and deck pages have something to render while questions/ is
+# empty. These lines were written to fill a layout. Never copy one into
+# questions/de/: that corpus is Human Reserved (README.md#ai-policy).
+
+- id: q-e2ac4fa4
+  text: "Was hast du dieses Jahr in einer Kleinigkeit anders gesehen als vorher?"
+  depth: 1
+  tags: [icebreaker]
+  origin: q-874efaff
+  translated_by: google
+  added: "2026-01-01"
+- id: q-1c368cd2
+  text: "Welche deiner Gewohnheiten fällt Fremden zuerst auf, und was verstehen sie daran falsch?"
+  depth: 2
+  tags: [reflective]
+  origin: q-390ee353
+  translated_by: google
+  added: "2026-01-01"
+- id: q-fdbe92c2
+  text: "Was trägst du noch mit dir aus einem Gespräch, das schlecht geendet ist?"
+  depth: 3
+  added: "2026-01-01"
+- id: q-5e9d4bcd
+  text: "Welchen Ort kannst du in Gedanken noch Raum für Raum abgehen?"
+  depth: 2
+  tags: [memory]
+  added: "2026-01-01"

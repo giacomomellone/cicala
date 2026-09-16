@@ -91,6 +91,11 @@ draft lang +files:
 data:
     {{ python }} tools/build_site_data.py
 
+# same payloads from website/placeholder-corpus/ — layout filler, not shipped content
+[group('database')]
+data-placeholder:
+    {{ python }} tools/build_site_data.py --corpus website/placeholder-corpus
+
 # build per-language device bundles + manifest (unsigned dev build)
 [group('database')]
 bundle:
@@ -115,6 +120,21 @@ website: data
 # production build of the website into website/dist
 [group('website')]
 website-build: data
+    cd website && npm run build
+
+# The shipped corpora are empty, which leaves play, browse and deck with
+# nothing to render. website/placeholder-corpus/ is layout filler, never
+# shipped content. Both recipes below overwrite website/src/data/*.json, and
+# plain `just website` / `just website-build` put the real payloads back.
+
+# dev server against the placeholder corpus
+[group('website')]
+website-placeholder: data-placeholder
+    cd website && npm run dev -- --host
+
+# production build against the placeholder corpus, for UI work on an empty database
+[group('website')]
+website-build-placeholder: data-placeholder
     cd website && npm run build
 
 # ---------------------------------------------------------------- firmware
