@@ -64,7 +64,7 @@ const cicalaConfig = {
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const current = (p: string) => (path === p || path.startsWith(p + "/") ? "page" : undefined);
-const ogImage = new URL("/og.png?v=open-wings", SITE_URL).href;
+const ogImage = new URL("/og.png?v=cuneo", SITE_URL).href;
 ---
 
 <!doctype html>
@@ -86,10 +86,10 @@ const ogImage = new URL("/og.png?v=open-wings", SITE_URL).href;
     <link rel="preload" href={literataLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin400} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={plexLatin500} as="font" type="font/woff2" crossorigin />
-    <link rel="icon" href="/brand/cicala-mark.svg?v=open-wings" type="image/svg+xml" />
-    <link rel="icon" href="/favicon-32.png?v=open-wings" type="image/png" sizes="32x32" />
-    <link rel="icon" href="/favicon-16.png?v=open-wings" type="image/png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=open-wings" sizes="180x180" />
+    <link rel="icon" href="/brand/cicala-mark.svg?v=cuneo" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png?v=cuneo" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png?v=cuneo" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=cuneo" sizes="180x180" />
     <script type="application/json" id="cicala-config" set:html={JSON.stringify(cicalaConfig)} />
   </head>
   <body data-seed-lang={seedLang}>

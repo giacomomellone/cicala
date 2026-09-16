@@ -1,8 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="32 46 156 156" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="21 32 158 158" fill="none">
   <title>Cicala</title>
-  <g fill="none" stroke="currentColor" stroke-width="10" stroke-linejoin="round">
-    <path d="M97.5 108C84.5 91 63.5 88 49.5 99c-13 12 7 51 44 92 5-29 6-58 4-83Z" />
-    <path d="M122.5 108c13-17 34-20 48-9 13 12-7 51-44 92-5-29-6-58-4-83Z" />
-  </g>
-  <path d="M130 65c-4-9-11-13-20-13-13 0-21 9-21 21 0 8 5 12 13 12h28" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+  <path fill="currentColor" fill-rule="evenodd" d="M100 104C101 134 106 168 116 190C120 190 124 188 127 184C160 146 176 104 150 78C142 71 132 70 132 58C132 44 118 32 100 32C82 32 68 44 68 58C68 70 58 71 50 78C24 104 40 146 73 184C76 188 80 190 84 190C94 168 99 134 100 104ZM72.5 54C72.5 49.8579 75.8579 46.5 80 46.5C84.1421 46.5 87.5 49.8579 87.5 54C87.5 58.1421 84.1421 61.5 80 61.5C75.8579 61.5 72.5 58.1421 72.5 54ZM112.5 54C112.5 49.8579 115.8579 46.5 120 46.5C124.1421 46.5 127.5 49.8579 127.5 54C127.5 58.1421 124.1421 61.5 120 61.5C115.8579 61.5 112.5 58.1421 112.5 54Z" />
 </svg>

@@ -1,17 +1,26 @@
 # Silkscreen artwork
 
 `cicala-mark.json` is derived from the public
-`website/public/brand/cicala-mark.svg`. It stores the SVG's SHA256 and native
-cubic curves and lines, centred in an 8 mm square. The selected mark is stroked
-throughout: open wings and the round, open head all use 0.513 mm. The converter
-still emits filled polygons for any filled path, and flattens their curves
-within 0.002 mm; the current artwork has none.
-`apply_silkscreen.py` mirrors it onto `B.SilkS` at (61, 8.5) mm beside the
-wordmark. The group is named `Cicala cicada mark` in KiCad.
+`website/public/brand/cicala-mark.svg`. It stores the SVG's SHA256 and the
+artwork centred in an 8 mm square. The selected mark is one filled silhouette,
+so the file carries a single polygon and no stroked segments; the converter
+still emits cubic curves and lines for any stroked path.
 
-The stroked mark is about 8.05 mm across because half of the outer stroke falls
-outside the nominal 8 mm square. Keep that in mind when judging clearance to
-the wordmark and the board edge; DRC checks the result.
+Filled paths are stored as an `outline` and the `holes` it encloses, nested by
+the SVG's own even-odd fill rule, and their curves are flattened within
+0.002 mm. `apply_silkscreen.py` bridges each hole to its outline with
+`keyhole()` before writing the polygon, because KiCad's `gr_poly` is flat and
+cannot express a counter. The two eye counters are 0.759 mm across, well above
+the 0.15 mm silkscreen minimum.
+
+`apply_silkscreen.py` mirrors the mark onto `B.SilkS` at (61, 8.5) mm beside
+the wordmark. The group is named `Cicala cicada mark` in KiCad. Rev B places
+the same artwork at 0.7 scale on both sides through
+`hardware/tools/rev_b/silkscreen.py`.
+
+The filled mark is 6.374 mm wide and fills the nominal 8 mm height exactly, so
+nothing falls outside the square; DRC checks clearance to the wordmark and the
+board edge.
 
 Regenerate with fontTools installed, then apply just the mark to preserve
 existing labels, reference positions and all electrical geometry:
@@ -23,7 +32,12 @@ python3 hardware/tools/pcb/make_cicada.py \
 python3 hardware/tools/pcb/apply_silkscreen.py \
   hardware/rev_a/pcb/cicala_rev_a.kicad_pcb \
   hardware/rev_a/pcb/cicala_rev_a.kicad_pcb --mark-only
+python3 hardware/tools/rev_b/silkscreen.py
 ```
+
+Rev B has no `--mark-only` path: `silkscreen.py` rewrites the whole silkscreen
+group and `test_silkscreen.py` fails until the committed board matches it
+again.
 
 `cicala-wordmark.json` is polygon artwork for the public lowercase wordmark,
 set in Literata Latin 400 normal with -0.035 em tracking at 22 mm ink width.

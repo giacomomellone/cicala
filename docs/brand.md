@@ -6,13 +6,19 @@ easier, invite reflection, and break silence without becoming the conversation.
 
 ## Mark, wordmark and type
 
-The identity pairs the lowercase `cicala` wordmark with a minimal outline
-cicada. The selected mark, Matched 10 with a wider body, draws two tapered
-wings and a rounded, open head that suggests speech. Wings and head share one
-10-unit stroke, so no line in the mark is heavier than another. The wings sit
-2.5 units further from the centre line than the wing geometry itself, which
-keeps the gap that suggests the body open at small sizes.
+The identity pairs the lowercase `cicala` wordmark with a filled cicada. The
+selected mark, Cuneo, is one closed silhouette in a 158-unit square: a broad
+head and thorax, and two wings cut apart by a notch that runs 86 units up from
+the bottom edge, leaving 32 units between the tips. Two 15-unit eyes are the
+only other counters, cut with an even-odd fill rule so they read on any ground.
+Nothing in the mark is stroked, so it has no line weight to lose as it shrinks.
 The cicada alone represents the identity in square formats.
+
+The mark it replaces was stroked at 10 units in a 156-unit box — the same 6.4%
+in the head, the wings and the tips. With no weight contrast there was no
+hierarchy to notice, and at the 16 px favicon that stroke resolved to 1.0 px
+against counters that swallowed the rest, so the mark greyed out instead of
+shrinking.
 
 The wordmark is Literata at normal weight with optical kerning and restrained
 negative tracking, over a 50% dither rule the width of the lockup. The rule
@@ -30,8 +36,8 @@ mirrors the website's tone and not its typeface.
 
 Keep clear space around the lockup at least equal to the height of its `c`.
 Where a name will not fit, use the cicada alone. Keep the logo subordinate to
-the question. Preserve the open head, the separation between the wings and
-the round stroke ends; use the supplied artwork rather than redrawing it.
+the question. Preserve the notch between the wings and both eye counters; use
+the supplied artwork rather than redrawing it.
 
 ## Colour
 
@@ -71,15 +77,15 @@ needs it.
 ## Assets
 
 The canonical vector source is `website/public/brand/cicala-mark.svg`.
-Its three paths are shared by the website and the PCB artwork generator.
+Its single path is shared by the website and the PCB artwork generator.
 The website inlines it beside the live Literata wordmark. The source uses
-`currentColor` so the mark follows its surrounding ink colour.
+`currentColor` so the mark follows its surrounding ink colour, and
+`fill-rule="evenodd"` so the eyes stay transparent rather than paper-coloured.
 
 Regenerate the PNGs with `npm run brand-assets` in `website/`. Square assets
 use the cicada, and the social preview uses the cicada and wordmark together.
-Every size, including the 16 px favicon, retains the master paths and the
-single stroke weight. Transparent wordmark-only PNGs remain available alongside
-the complete logo lockups.
+Every size, including the 16 px favicon, retains the master path. Transparent
+wordmark-only PNGs remain available alongside the complete logo lockups.
 
 - [canonical SVG mark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-mark.svg)
 - [dark transparent logo](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-logo-dark.png)
@@ -104,17 +110,20 @@ font or image requests. If a physical mark is useful later, use only an
 optional small blind emboss on the underside or a concealed lower edge.
 
 The PCB carries the cicada beside the existing underside wordmark on
-`B.SilkS`, mirrored for reading from below. Its 8 mm square artwork is stroked
-throughout at 0.513 mm, well above the 0.15 mm silkscreen minimum. Native KiCad
-curves and lines preserve the SVG geometry.
-Regeneration and the mark-only update command are documented in
+`B.SilkS`, mirrored for reading from below. It is one native KiCad polygon in
+an 8 mm square, and its eye counters are 0.759 mm across, well above the
+0.15 mm silkscreen minimum. Because `gr_poly` cannot express a counter, each
+eye is bridged to the outline with a zero-width slit, the same treatment the
+wordmark's letterforms already use.
+Regeneration, including the Rev B step, is documented in
 `hardware/tools/pcb/assets/README.md`.
 
 ## Prohibited treatments
 
-Do not add speech bubbles, sound waves, faces or other details to the approved
-cicada. Do not close the opening in its head. Do not introduce a brand colour, add
-gradients or glow, round a corner the device could not round, distort the
-letterforms, or make the wordmark larger than the current question. Do not lay
-the dither under a question at any density. The questions remain visually
-dominant.
+Do not add speech bubbles, sound waves, legs, antennae or wing venation to the
+approved cicada. The two eyes are the only interior detail it carries; do not
+fill them, and do not add a mouth or any other feature that would turn them
+into a face. Do not introduce a brand colour, add gradients or glow, round a
+corner the device could not round, distort the letterforms, or make the
+wordmark larger than the current question. Do not lay the dither under a
+question at any density. The questions remain visually dominant.
