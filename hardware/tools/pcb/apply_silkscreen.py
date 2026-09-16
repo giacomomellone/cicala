@@ -74,7 +74,7 @@ def apply_mark(board):
         identity = str(uuid.uuid5(NAMESPACE, f'cicada-fill:{i}'))
         board.append(node('gr_poly',
                           node('pts', *[node('xy', number(61 - x), number(8.5 + y))
-                                        for x, y in polygon]),
+                                        for x, y in keyhole(polygon['outline'], polygon['holes'])]),
                           node('stroke', node('width', number(0)), node('type', Sym('default'))),
                           node('fill', Sym('solid')), node('layer', 'B.SilkS'),
                           node('uuid', identity)))

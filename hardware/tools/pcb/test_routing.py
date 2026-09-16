@@ -173,12 +173,17 @@ class ArtifactTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[3]
         art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
         self.assertEqual(art['source_sha256'], hashlib.sha256((root / art['source']).read_bytes()).hexdigest())
-        self.assertTrue(art['segments'])
-        strokes = {segment['stroke_mm'] for segment in art['segments']}
-        # The selected mark draws wings and head at one weight, above the
-        # 0.15 mm silkscreen minimum the fabricator accepts.
-        self.assertEqual(len(strokes), 1)
-        self.assertGreaterEqual(min(strokes), 0.15)
+        # The selected mark is one filled silhouette, so no stroke has to clear
+        # the 0.15 mm silkscreen minimum. Its counters do.
+        self.assertTrue(art['polygons'])
+        self.assertFalse(art['segments'])
+        for polygon in art['polygons']:
+            for hole in polygon['holes']:
+                span = [max(axis) - min(axis) for axis in zip(*hole)]
+                self.assertGreaterEqual(min(span), 0.15)
+        extent = max(abs(value) for polygon in art['polygons']
+                     for point in polygon['outline'] for value in point)
+        self.assertLessEqual(extent, art['size_mm'] / 2 + 1e-6)
 
     def test_cicada_geometry_is_mirrored_for_the_underside(self):
         art = json.loads(Path(__file__).with_name('assets').joinpath('cicala-mark.json').read_text())
@@ -189,7 +194,9 @@ class ArtifactTests(unittest.TestCase):
             self.assertEqual(str(ksexp.child(shape, 'fill')[1]), 'solid')
             self.assertEqual(float(ksexp.child(ksexp.child(shape, 'stroke'), 'width')[1]), 0)
             actual = ksexp.children(ksexp.child(shape, 'pts'), 'xy')
-            for point, (x, y) in zip(actual, source):
+            points = keyhole(source['outline'], source['holes'])
+            self.assertEqual(len(actual), len(points))
+            for point, (x, y) in zip(actual, points):
                 self.assertAlmostEqual(float(point[1]), 61 - x, places=6)
                 self.assertAlmostEqual(float(point[2]), 8.5 + y, places=6)
         strokes = [item for item in node if isinstance(item, list)

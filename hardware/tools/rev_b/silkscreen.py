@@ -114,6 +114,14 @@ def apply(board):
                 f'{side}:wordmark:{i}')
         art = json.loads((ART / 'cicala-mark.json').read_text())
         scale = .7
+        for i, polygon in enumerate(art['polygons']):
+            points = keyhole(polygon['outline'], polygon['holes'])
+            add(node('gr_poly', node('pts', *[node('xy', number(mark_x + sign * scale * px),
+                                                   number(mark_y + scale * py))
+                                              for px, py in points]),
+                     node('stroke', node('width', number(0)), node('type', k.Sym('default'))),
+                     node('fill', k.Sym('solid')), node('layer', side + '.SilkS')),
+                f'{side}:cicada-fill:{i}')
         for i, segment in enumerate(art['segments']):
             points = [(number(mark_x + sign * scale * px), number(mark_y + scale * py))
                       for px, py in segment['points']]

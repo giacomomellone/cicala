@@ -22,7 +22,7 @@ class CicadaTests(unittest.TestCase):
             '<path d="M6 1C4 1 4 3 6 3" fill="none" stroke="currentColor" '
             'stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"/>')
         self.assertEqual(len(art['polygons']), 1)
-        self.assertAlmostEqual(Polygon(art['polygons'][0]).area, 3)
+        self.assertAlmostEqual(Polygon(art['polygons'][0]['outline']).area, 3)
         self.assertEqual([s['stroke_mm'] for s in art['segments']], [.3, .3, .3, .5])
         self.assertEqual(art['segments'][-1]['points'], [[2, -3], [0, -3], [0, -1], [2, -1]])
 
@@ -38,6 +38,20 @@ class CicadaTests(unittest.TestCase):
         art = self.convert('<path fill="currentColor" d="M1 1L3 1L2 4Z"/>')
         self.assertEqual(len(art['polygons']), 1)
         self.assertEqual(art['segments'], [])
+
+    def test_counters_are_nested_inside_the_outline_they_cut(self):
+        art = self.convert('<path fill="currentColor" fill-rule="evenodd" '
+                           'd="M1 1L7 1L7 7L1 7Z M3 3L5 3L5 5L3 5Z"/>')
+        self.assertEqual(len(art['polygons']), 1)
+        polygon = art['polygons'][0]
+        self.assertEqual(len(polygon['holes']), 1)
+        self.assertAlmostEqual(Polygon(polygon['outline'], polygon['holes']).area, 32)
+
+    def test_disjoint_contours_stay_separate_outlines(self):
+        art = self.convert('<path fill="currentColor" fill-rule="evenodd" '
+                           'd="M1 1L3 1L3 3L1 3Z M5 5L7 5L7 7L5 7Z"/>')
+        self.assertEqual(len(art['polygons']), 2)
+        self.assertEqual([len(polygon['holes']) for polygon in art['polygons']], [0, 0])
 
     def test_unsupported_geometry_is_rejected_instead_of_dropped(self):
         for body, attributes in [

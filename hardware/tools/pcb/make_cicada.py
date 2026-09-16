@@ -80,6 +80,27 @@ class StrokePen(BasePen):
         self.open_contours += 1
 
 
+def ring_contains(ring, point):
+    """Even-odd crossing test, matching the SVG's own fill-rule."""
+    x, y = point
+    inside = False
+    for (x0, y0), (x1, y1) in zip(ring, ring[1:]):
+        if (y0 > y) != (y1 > y) and x < x0 + (y - y0) * (x1 - x0) / (y1 - y0):
+            inside = not inside
+    return inside
+
+
+def nest(contours):
+    """Split closed contours into outlines and the counters they enclose."""
+    depths = [sum(ring_contains(other, ring[0])
+                  for j, other in enumerate(contours) if j != i)
+              for i, ring in enumerate(contours)]
+    return [{'outline': ring,
+             'holes': [contours[j] for j, depth in enumerate(depths)
+                       if depth == depths[i] + 1 and ring_contains(ring, contours[j][0])]}
+            for i, ring in enumerate(contours) if depths[i] % 2 == 0]
+
+
 def svg_paths(element, inherited):
     if any(key in element.attrib for key in ('transform', 'style', 'opacity', 'fill-opacity', 'stroke-opacity')):
         raise ValueError('Cicada artwork must use untransformed, opaque SVG attributes')
@@ -106,9 +127,17 @@ def cicada(source, size=8.0):
         pen = StrokePen((x + width / 2, y + height / 2), scale)
         parse_path(path['d'], pen)
         if path['fill'] != 'none':
-            if len(pen.contours) != 1 or pen.open_contours:
-                raise ValueError('Filled cicada paths must have one closed contour without holes')
-            polygons.append([[round(value, 6) for value in point] for point in pen.contours[0]])
+            if not pen.contours or pen.open_contours:
+                raise ValueError('Filled cicada paths must be built from closed contours')
+            if len(pen.contours) > 1 and path.get('fill-rule') != 'evenodd':
+                raise ValueError('Cicada counters need an explicit evenodd fill-rule')
+
+            def rounded(ring):
+                return [[round(value, 6) for value in point] for point in ring]
+
+            polygons.extend({'outline': rounded(polygon['outline']),
+                             'holes': [rounded(hole) for hole in polygon['holes']]}
+                            for polygon in nest(pen.contours))
         if path['stroke'] != 'none':
             stroke = round(float(path['stroke-width']) * scale, 6)
             if stroke <= 0 or path.get('stroke-linejoin') != 'round':
