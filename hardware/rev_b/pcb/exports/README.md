@@ -2,7 +2,7 @@
 
 `cicala_rev_b_engineering_prototype.zip` contains checked Gerbers, Excellon drills,
 assembly BOM and positions, JLCPCB BOM/CPL, assembly drawings, schematic PDF,
-IPC-2581, STEP and review reports. Its SHA-256 file is alongside it. `manifest.json`
+IPC-2581, STEP, fabrication notes and review reports. Its SHA-256 file is alongside it. `manifest.json`
 records source/output hashes; native KiCad remains the editable source.
 
 Generate with `just hw-rev-b-fab-export`. The export requires passing electrical,

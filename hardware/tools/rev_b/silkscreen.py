@@ -77,8 +77,8 @@ def apply(board):
         identity = k.child(item, 'uuid')
         if identity and str(identity[1]) in old_ids:
             board.remove(item)
-        elif item[0] == 'gr_text' and (item[1] == 'REV B FIT ONLY - UNROUTED - DO NOT FABRICATE' or str(item[1]).startswith('REV B.03 ENGINEERING PROTOTYPE')):
-            item[1] = 'REV B.04 ENGINEERING PROTOTYPE - PHYSICAL QUALIFICATION PENDING'
+        elif item[0] == 'gr_text' and (item[1] == 'REV B FIT ONLY - UNROUTED - DO NOT FABRICATE' or (str(item[1]).startswith('REV B.') and 'ENGINEERING PROTOTYPE' in str(item[1]))):
+            item[1] = 'REV B.05 ENGINEERING PROTOTYPE - PHYSICAL QUALIFICATION PENDING'
 
     members = []
 
@@ -148,7 +148,7 @@ def apply(board):
         ('D4 STATUS', 89, 60, .8, 0),
         ('J4', 52, 45.3, .8, 0),
         ('DEBUG', 61, 46, .8, 0),
-        ('B.04', 110, 61.5, 1, 0),
+        ('B.05', 110, 61.5, 1, 0),
     ]
     for row in front:
         text(*row)
@@ -165,7 +165,7 @@ def apply(board):
     line([(63.5, 47.5), (63.5, 60.5), (53, 60.5)], 'debug-bracket')
 
     back = [
-        ('REV B.04 / ESP32-S3 / 16MB', 85, 14, 1),
+        ('REV B.05 / ESP32-S3 / 16MB', 85, 14, 1),
         ('4 LAYERS / 1.2mm / PROTOTYPE', 85, 16.5, 1),
         ('POWER: USB 5V -> U2 -> VSYS', 86, 21, 1),
         ('LiPo <-> U2 / VSYS -> U3 -> 3V3', 86, 23.3, 1),

@@ -64,7 +64,7 @@ def main():
         convert(smt_bom,smt_pos,out/'assembly',prefix)
         (out/'assembly'/'manual_assembly.csv').write_text(
             'Refs,MPN,Qty,Method\n'
-            '"SW1,SW2",B3F-4050,2,"Through-hole; body seated on PCB; solder after SMT; no wash"\n'
+            '"SW1,SW2",B3F-4050,2,"Through-hole; body seated; solder after SMT; no wash; lead/fillet <=2.60 mm below B.Cu"\n'
             'SW1 cap,B32-1200,1,"Ivory 9 mm; press onto plunger after soldering"\n'
             'SW2 cap,B32-1320,1,"Orange 12 mm; press onto plunger after soldering"\n')
         for side,layer in [('top','F'),('bottom','B')]:
@@ -86,7 +86,8 @@ def main():
         step = out/f'{prefix}_board.step'
         step.write_text('\n'.join(line.rstrip() for line in step.read_text().splitlines()) + '\n')
         for name in ('erc.json','drc.json','geometry.json','report.json','temperature_audit.json','usb_audit.json','button_tolerances.json'):shutil.copy2(report/name,out/'review'/name)
-        sources=[BOARD,BOARD.with_suffix('.kicad_pro'),BOARD.with_suffix('.kicad_dru'),
+        shutil.copy2(BOARD.parent/'fabrication_notes.md',out/'fabrication_notes.md')
+        sources=[Path(__file__), BOARD.parent/'fabrication_notes.md', BOARD,BOARD.with_suffix('.kicad_pro'),BOARD.with_suffix('.kicad_dru'),
                  *BOARD.parent.rglob('*.kicad_sch'),*BOARD.parent.glob('*.kicad_sym'),
                  *BOARD.parent.glob('cicala.pretty/*.kicad_mod'),ROOT/'hardware/rev_b/contract.json']
         manifest={'status':'engineering prototype; physical qualification pending',

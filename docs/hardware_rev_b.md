@@ -1,6 +1,6 @@
 # Rev B landscape hardware
 
-Rev B is an **engineering prototype**, with a centered screen, two large flat controls beside a 30° outer-edge bevel and a thin battery beside an L-shaped PCB. The housing is **128 × 66 × 14.2 mm**; the purchased cap tops extend to **15.8 mm** overall. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
+Rev B is an **engineering prototype**, with a centered screen, two large flat controls beside a 30° outer-edge bevel and a thin battery beside an L-shaped PCB. The housing is **128 × 66 × 16.8 mm**. Filters is at the upper right and the larger Next button is below it; both flat faces are nominally **1 mm recessed**. The breadboard firmware works; the integrated Rev B hardware has not been built or powered. Read [component selection evidence](hardware_rev_b_selection.md) for the manufacturer drawings and the remaining first-article measurements.
 
 ![Rev B assembly from the mechanical source](assets/images/hardware_rev_b/assembly.png)
 
@@ -25,7 +25,7 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 
 | Item              | Implemented arrangement                                                                          |
 | ----------------- | ------------------------------------------------------------------------------------------------ |
-| Enclosure         | 128 × 66 × 14.2 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
+| Enclosure         | 128 × 66 × 16.8 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
 | PCB               | Four layers, 1.2 mm nominal; lower arm and right arm, R1 reentrant corner; lower face z=4.6 mm |
 | Assembly          | Electronic components on the top face                                                            |
 | Controller        | ESP32-S3-WROOM-1-N16, antenna toward the left edge                                               |
@@ -61,15 +61,15 @@ USB supplies charging and native USB recovery. The optional C1/C2 capacitor land
 
 Both controls use **Omron B3F-4050**, a through-hole switch with a 12 × 12 mm body, projected square plunger, 7.3 ±0.2 mm free height, 1.27 ±0.49 N operating force and 0.3 +0.2/−0.1 mm pretravel. **Filters is B32-1200, ivory, 9 × 9 mm. Next is B32-1320, orange, 12 × 12 mm**: 78% more face area. Both purchased caps fit directly onto the projected plunger. Their assembled height is 10.0 ±0.4 mm above the PCB. See the [switch drawing](https://omronfs.omron.com/en_US/ecb/products/pdf/en-b3f.pdf) and [cap drawing](https://omronfs.omron.com/en_US/ecb/products/pdf/en-b32.pdf).
 
-The controls remain flat; only the outer case edge is beveled. The board right edge is x=116 mm and both switch centers are x=108 mm. The case extends from x=−10 to 118 mm, preserving the centered active screen. The PCB and display stack move upward together by 1.965 mm; the flex bend and relative connector geometry remain unchanged. The lens is recessed below the taller housing roof.
+The controls remain flat inside flared access wells; the outer case edge has a separate bevel. In landscape top view, SW1/Filters is at (108, 17.5) mm and SW2/Next at (108, 52.3) mm. Layout coordinates use KiCad Y-down; printable CAD uses X = layout X, Y = −layout Y and Z unchanged, matching native KiCad STEP with the board translated up by 4.6 mm. Do not mirror the printable files. The mesh audit compares the asymmetric outline and all four mounting holes against that STEP datum. The board right edge is x=116 mm and both switch centers are x=108 mm. The case extends from x=−10 to 118 mm, preserving the centered active screen. The PCB and display stack move upward together by 1.965 mm; the flex bend and relative connector geometry remain unchanged. The lens is recessed below the taller housing roof.
 
 ### Clearances
 
-The openings are 9.8 × 9.8 mm and 12.8 × 12.8 mm, with 0.4 mm nominal clearance per side. These print allowances are larger than Omron's precision-panel cutouts. The geometric screen includes ±0.15 mm cap width, ±0.20 mm printed opening size and ±0.15 mm lateral alignment assumptions: minimum radial clearance is 0.075 mm. Measure the actual openings; adjust the print compensation if needed.
+The throat openings are **10 × 10 mm** and **13 × 13 mm**, with 0.5 mm nominal clearance per side. Each has a 2.5 mm-deep flare opening another 1.4 mm per side at the roof. The geometric screen includes ±0.15 mm cap width, ±0.30 mm opening size and ±0.15 mm lateral alignment assumptions: minimum radial clearance is **0.125 mm**. These are critical local fit assumptions, not a printing service's guaranteed whole-part tolerances.
 
-The cap tops are nominally z=15.8 mm, 1.6 mm above the control panel. At maximum specified 0.5 mm pretravel, including cap/PCB height tolerances and a independent ±0.20 mm printed panel-height and PCB-seat assumptions, at least 0.17 mm remains above the panel. The switch supplies its own tactile mechanism and cap retention. The housing does not preload the cap or act as a travel stop. Pretravel is not an allowable overtravel rating; test edge presses and return on the real parts.
+Cap tops are nominally z=15.8 mm below the z=16.8 mm roof. Including the manufacturer's assembled-height tolerance, board thickness and independent ±0.20 mm panel/PCB-seat assumptions, released faces remain at least **0.07 mm recessed**. At maximum 0.5 mm specified pretravel, worst-case recess is **2.43 mm**. A centered rigid R6 mm spherical access probe clears the flared well by at least **1.278 mm** in the analytical screen. This establishes geometric access, not fingertip comfort or off-centre performance. The housing does not preload the caps or stop the switch travel. Test full actuation and return on the first article.
 
-The PCB underside is z=4.6 mm. Untrimmed 3.5 mm leads clear the 1.2 mm base by 1.10 mm nominally and 0.17 mm in the declared worst-case stack. Inspect solder fillets and lead ends; keep their full envelope inside this allowance. The datasheet's reference drilling example uses a 1.6 mm PCB; this design retains 1.2 mm and explicitly reserves the greater underside protrusion. Verify body seating on the first article.
+The PCB underside is z=4.6 mm. Untrimmed nominal 3.5 mm leads have 1.10 mm base clearance; the declared worst-case untrimmed stack leaves 0.17 mm. The assembly specification therefore limits the complete lead/fillet projection to **2.60 mm below B.Cu**, trimming if needed, for at least **0.40 mm modeled base clearance**. The switch drilling example uses a 1.6 mm PCB; this design retains 1.2 mm and reserves the greater underside protrusion. Verify body seating and inspect the finished joints.
 
 ### Print and assembly preparation
 
@@ -86,7 +86,7 @@ The PCB underside is z=4.6 mm. Untrimmed 3.5 mm leads clear the 1.2 mm base by 1
 
 Four **M2.5 × 10 mm countersunk screws** close the core; use **M2.5 × 12 mm** with the optional 3.2 mm carrier. Verify head seating, pilot engagement and screw-tip clearance before installing electronics.
 
-1. Complete the 87-part SMT assembly. Seat and solder the two B3F-4050 switches from above, inspecting the underside joints and lead protrusion. B3F is unsealed and not washable; follow the manufacturer's soldering restrictions.
+1. Complete the 87-part SMT assembly. Seat and solder the two B3F-4050 switches from above, inspecting the underside joints and limiting lead/fillet projection to 2.60 mm below B.Cu. B3F is unsealed and not washable; follow the manufacturer's soldering restrictions.
 2. Verify unpressed/open and pressed/closed continuity for both controls. Support the PCB beneath each switch and press on the matching cap **after soldering**: ivory on SW1/Filters, orange on SW2/Next. Do not load the display while seating a cap.
 3. Install the board, prepared protected-cell/NTC harness, display supports, formed and latched flex, glass, perimeter foam and lens. Verify battery polarity before connection.
 4. Lower the top shell over the fitted caps through its clearance openings. Close with the four core screws. Check full return and center/edge actuation again before powering the device.
@@ -132,11 +132,23 @@ The L outline needs tab routing. Keep tabs clear of the antenna, USB opening and
 
 The assembly BOM identifies exact MPNs. Blank LCSC fields require exact-part sourcing/consignment, not an inferred substitute. Check supplier stock, pin 1, rotations, stencil apertures and exposed-pad wetting in the order preview. No filled/capped thermal via process is assumed.
 
+### Which factory and order options
+
+**PCBWay turnkey mixed assembly is the recommended first-article route.** The selected stack is the calculation basis, and its sourcing and mixed SMT/through-hole services match the exact-MPN BOM. This is an engineering fit assessment, not a price comparison or accepted quote. [PCBWay assembly scope](https://www.pcbway.com/pcb-assembly.html).
+
+Start with five bare boards and two assembled first articles. Use the exact settings and acceptance conditions in the [fabrication notes](https://github.com/giacomomellone/cicala/blob/main/hardware/rev_b/pcb/fabrication_notes.md), also included in the prototype ZIP. In particular: 1.2 mm four-layer FR-4, 1 oz inner/outer copper, ENIG, green mask/white legend, 90 Ω controlled USB impedance, tab-routed supported panel, electrical test, top SMT plus two through-hole switches, exact MPNs and hidden-joint inspection. Request caps loose. Confirm the tighter ±0.05 mm finished switch PTH tolerance; the ordinary PCBWay allowance is ±0.08 mm.
+
+**JLCPCB Standard PCBA is the alternative**, with factory rails and confirmed stack/impedance. Its current capability table distinguishes Standard from Economic by stack, finish and inspection options. Standard's 70 × 70 mm minimum means the 113 × 62 mm L board needs a supported panel. The existing 87-part JLC BOM/CPL covers SMT only; add/quote the manual operations explicitly or install the switches locally. Current JLC services support through-hole assembly and parts consignment, but availability of this exact BOM must be checked. [JLC capabilities](https://jlcpcb.com/capabilities/pcb-assembly-capabilities), [sourcing/assembly FAQ](https://jlcpcb.com/help/article/pcb-assembly-faqs).
+
+For the first case fit sample, request unpainted Somos Ledo tough SLA resin and inspection of the thin supports, PCB seats and button openings. The 0.8 mm supports and local tolerances need explicit print-service acceptance; do not infer approval from a generic material listing. PETG remains the home-print fit trial. The manufacturing notes specify the files, units, surface treatment and checks.
+
+Digital checks prepare the design for **factory review and prototype fabrication**. Production readiness additionally requires the first-article measurements, factory acceptance and UC8253 firmware integration. Those are open, and `manufacturing.release` remains false.
+
 ## Removable phone carrier
 
-The core rotates for carrying, radio end downward. With the carrier it occupies **68.8 × 114.8 mm**, adding **13.4 mm** depth behind the phone before case/adhesive gaps. Its covered accessory-style magnetic array is a separate, made-to-drawing part, not a generic ring magnet.
+The core rotates for carrying, radio end downward. With the carrier it occupies **68.8 × 130.8 mm**, with **20.0 mm** combined depth behind the phone before case/adhesive gaps. Its covered accessory-style magnetic array is a separate, made-to-drawing part, not a generic ring magnet.
 
-The wider core makes the portrait carrier 114.8 mm long. Its ring is repositioned to leave **1.185 mm** both below the iPhone 16 Plus camera keepout and above the phone bottom. These small nominal margins leave little allowance for cases or alignment error. [Selection evidence](hardware_rev_b_selection.md) gives the dimensions and source. This is a 2D fit screen, not a compatibility claim. Test actual cases, optical/flash cones, retention, slipping, removal and radio behavior. Detach for wireless charging. The carrier remains optional and does not alter the standalone electronics.
+The ring is 43.535 mm below the carrier top. On the iPhone 16 Plus reference it overlaps the camera keepout by **6.815 mm** and overhangs the bottom by **6.815 mm**. It fails that fit screen. [Selection evidence](hardware_rev_b_selection.md) gives the dimensions and source. Another phone or mounting position needs a new check, followed by physical optical/flash, retention and RF tests. Detach for wireless charging. The carrier remains experimental and optional.
 
 ## Reproduce validation
 

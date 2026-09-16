@@ -1134,3 +1134,7 @@ separate from the manual switch/cap assembly list. The carrier remains an
 experimental accessory. Cap seating, low-current contact reliability, edge
 presses, printed aperture fit and underside solder clearance require a first
 article. See [selection evidence](hardware_rev_b_selection.md).
+
+## 2026-09-16 — Recessed controls and mechanical coordinate datum
+
+Rev B.05 retains B3F-4050 switches and B32 caps, with Filters upper right and the larger Next below. Raise the roof to 16.8 mm for a nominal 1 mm recess and add flared access wells; retain the board/display/flex datum. Export mechanical geometry in KiCad STEP handedness (layout Y negated), checked using the asymmetric PCB outline and mounts. Remove the Next approach's backtracking bend and consolidate straight routing vertices. Specify a 2.60 mm maximum underside solder envelope. Factory acceptance and physical first-article qualification remain required; no production release is implied.

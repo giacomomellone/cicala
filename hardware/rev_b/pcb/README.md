@@ -19,3 +19,5 @@ with 0.15 mm minimum strokes and silk clearance. The render directory also
 contains both silkscreen drawings as SVGs.
 
 The switch hole pattern uses 1.2 mm finished PTH and 1.8 mm NPTH holes. The JLC BOM/CPL covers 87 SMT references; `manual_assembly.csv` specifies the separate switch soldering and purchased-cap installation. Caps are fitted only after soldering.
+
+The [fabrication notes](fabrication_notes.md) specify stack, impedance, panel, tighter switch-hole tolerances, assembly stages and inspection. They are included in the exported prototype package. SW1/Filters is the upper control; SW2/Next is the lower control.

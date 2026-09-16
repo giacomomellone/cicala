@@ -5,13 +5,13 @@
       "Application": "Pcbnew",
       "Version": "10.0.5"
     },
-    "CreationDate": "2026-09-16T00:07:05+02:00"
+    "CreationDate": "2026-09-16T17:44:58+02:00"
   },
   "GeneralSpecs": {
     "ProjectId": {
       "Name": "cicala_rev_b",
       "GUID": "63696361-6c61-45f7-9265-765f622e6b69",
-      "Revision": "A0"
+      "Revision": "B.05"
     },
     "Size": {
       "X": 113.05,

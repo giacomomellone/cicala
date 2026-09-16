@@ -1,4 +1,4 @@
 Refs,MPN,Qty,Method
-"SW1,SW2",B3F-4050,2,"Through-hole; body seated on PCB; solder after SMT; no wash"
+"SW1,SW2",B3F-4050,2,"Through-hole; body seated; solder after SMT; no wash; lead/fillet <=2.60 mm below B.Cu"
 SW1 cap,B32-1200,1,"Ivory 9 mm; press onto plunger after soldering"
 SW2 cap,B32-1320,1,"Orange 12 mm; press onto plunger after soldering"

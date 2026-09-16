@@ -156,7 +156,7 @@ const en = {
   "deck.count": "questions",
 
   // device page
-  "device.size": "housing / including buttons",
+  "device.size": "overall size",
   "device.screen": "centered e-paper",
   "device.cell": "protected rechargeable battery",
   "device.carrier.title": "take it with you",
@@ -189,8 +189,8 @@ const en = {
     "Views generated from the public engineering CAD. These are digital prototype models; no integrated Rev B unit has been built yet.",
   "device.controls.title": "two tactile controls",
   "device.controls.text":
-    "The ivory Filters button opens your choices. The larger orange Next button brings the next question. Both have flat faces and press straight down, for use on the table.",
-  "device.controls.caption": "Filters · 9 × 9 mm ivory / Next · 12 × 12 mm orange",
+    "Filters sits at the upper right. The larger orange Next button sits below it and brings the next question. Both flat faces sit 1 mm below the housing, with flared openings for pressing from above.",
+  "device.controls.caption": "Filters above · 9 × 9 mm ivory / Next below · 12 × 12 mm orange",
   "device.controls.alt":
     "Exploded CAD showing the small ivory Filters button and larger orange Next button above their switches.",
   "device.pcb.title": "the routed PCB",
@@ -203,9 +203,9 @@ const en = {
   "device.render.pcbBottom": "PCB underside · power guide, recovery pinout and test-point key",
   "device.render.pcbBottom.alt":
     "Straight underside KiCad view of the Rev B PCB with the Cicala logo, power-flow guide, recovery pinout and labelled test contacts.",
-  "device.render.assembly": "Rev B · centered screen, large flat buttons",
+  "device.render.assembly": "Rev B · centered screen, recessed buttons",
   "device.render.assembly.alt":
-    "Landscape CAD with a centered screen, small ivory square Filters cap and larger orange square Next cap on the right.",
+    "Straight front CAD view: centered screen, recessed ivory Filters button at the upper right and larger orange Next button below.",
   "device.render.exploded": "Exploded view · shell, lens, display supports, electronics and base",
   "device.render.exploded.alt":
     "Exploded Rev B CAD showing the thin battery beside the L-shaped PCB beneath the display.",
@@ -406,7 +406,7 @@ const de: Record<StringKey, string> = {
   "deck.saved": "in dein deck übernommen",
   "deck.count": "fragen",
 
-  "device.size": "Gehäuse / einschließlich Tasten",
+  "device.size": "Gesamtmaße",
   "device.screen": "mittiges E-Paper",
   "device.cell": "geschützter wiederaufladbarer Akku",
   "device.carrier.title": "zum Mitnehmen",
@@ -439,9 +439,9 @@ const de: Record<StringKey, string> = {
     "Ansichten aus dem öffentlichen Konstruktions-CAD. Es sind digitale Prototypmodelle; ein integriertes Rev-B-Gerät wurde noch nicht gebaut.",
   "device.controls.title": "zwei fühlbare Tasten",
   "device.controls.text":
-    "Die elfenbeinfarbene Taste Filters öffnet deine Auswahl. Die größere orange Taste Next zeigt die nächste Frage. Beide haben flache Oberflächen und lassen sich senkrecht nach unten drücken, zur Bedienung auf dem Tisch.",
+    "Filters sitzt oben rechts. Die größere orange Taste Next liegt darunter und zeigt die nächste Frage. Beide flachen Oberflächen liegen 1 mm unter dem Gehäuse, mit aufgeweiteten Öffnungen zum Drücken von oben.",
   "device.controls.caption":
-    "Filters · 9 × 9 mm, elfenbeinfarben / Next · 12 × 12 mm, orange",
+    "Filters oben · 9 × 9 mm, elfenbeinfarben / Next unten · 12 × 12 mm, orange",
   "device.controls.alt":
     "CAD-Explosionsansicht mit der kleinen elfenbeinfarbenen Taste Filters und der größeren orangefarbenen Taste Next über ihren Tastern.",
   "device.pcb.title": "die geroutete Platine",
@@ -455,9 +455,9 @@ const de: Record<StringKey, string> = {
   "device.render.pcbBottom": "Platinenunterseite · Stromversorgung, Recovery-Pinbelegung und Testpunktlegende",
   "device.render.pcbBottom.alt":
     "Gerade KiCad-Ansicht der Rev-B-Platinenunterseite mit Cicala-Logo, Stromversorgungsübersicht, Recovery-Pinbelegung und beschrifteten Testkontakten.",
-  "device.render.assembly": "Rev B · mittiges Display, große flache Tasten",
+  "device.render.assembly": "Rev B · mittiges Display, versenkte Tasten",
   "device.render.assembly.alt":
-    "CAD im Querformat mit mittigem Display, kleiner quadratischer Filters-Kappe in Elfenbein und größerer quadratischer Next-Kappe in Orange rechts.",
+    "Gerade CAD-Frontansicht: mittiges Display, versenkte elfenbeinfarbene Filters-Taste oben rechts und größere orange Next-Taste darunter.",
   "device.render.exploded":
     "Explosionsansicht · Gehäuse, Scheibe, Displayhalterungen, Elektronik und Boden",
   "device.render.exploded.alt":
@@ -655,7 +655,7 @@ const it: Record<StringKey, string> = {
   "deck.saved": "salvate nel tuo mazzo",
   "deck.count": "domande",
 
-  "device.size": "scocca / pulsanti inclusi",
+  "device.size": "dimensioni esterne",
   "device.screen": "e-paper centrato",
   "device.cell": "batteria ricaricabile protetta",
   "device.carrier.title": "portalo con te",
@@ -688,9 +688,9 @@ const it: Record<StringKey, string> = {
     "Viste generate dal CAD tecnico pubblico. Sono modelli digitali del prototipo: nessuna unità Rev B integrata è stata ancora costruita.",
   "device.controls.title": "due pulsanti tattili",
   "device.controls.text":
-    "Il pulsante avorio Filters apre le tue scelte. Il pulsante arancione Next, più grande, mostra la prossima domanda. Entrambi hanno una superficie piatta e si premono dall’alto, per usarli sul tavolo.",
+    "Filters è in alto a destra. Il pulsante arancione Next, più grande, è sotto e mostra la prossima domanda. Le due superfici piatte sono incassate di 1 mm nella scocca, con aperture svasate per premerle dall’alto.",
   "device.controls.caption":
-    "Filters · 9 × 9 mm avorio / Next · 12 × 12 mm arancione",
+    "Filters sopra · 9 × 9 mm avorio / Next sotto · 12 × 12 mm arancione",
   "device.controls.alt":
     "Vista CAD esplosa con il piccolo pulsante avorio Filters e il pulsante arancione Next, più grande, sopra i rispettivi interruttori.",
   "device.pcb.title": "il PCB con le piste",
@@ -704,9 +704,9 @@ const it: Record<StringKey, string> = {
   "device.render.pcbBottom": "PCB, lato inferiore · alimentazione, ripristino e legenda dei test point",
   "device.render.pcbBottom.alt":
     "Vista KiCad diritta del lato inferiore del PCB Rev B con logo Cicala, guida all’alimentazione, piedinatura di ripristino e contatti di test etichettati.",
-  "device.render.assembly": "Rev B · schermo centrato, grandi pulsanti piatti",
+  "device.render.assembly": "Rev B · schermo centrato, pulsanti incassati",
   "device.render.assembly.alt":
-    "CAD orizzontale con schermo centrato, copritasto Filters quadrato avorio piccolo e Next quadrato arancione più grande a destra.",
+    "Vista CAD frontale dritta: schermo centrato, Filters avorio incassato in alto a destra e Next arancione più grande sotto.",
   "device.render.exploded":
     "Vista esplosa · scocca, lente, supporti del display, elettronica e base",
   "device.render.exploded.alt":

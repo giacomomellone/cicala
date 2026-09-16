@@ -12,17 +12,26 @@
     "Factory confirmation of stack, stencil and tab-panel support at prototype order"
   ],
   "unconnected_items": 0,
+  "mechanical_datum": {
+    "datum": "KiCad STEP: X right, Y up; Z translated by pcb.z",
+    "outline_and_mounts_difference_mm2": 0.0
+  },
   "mechanical_poses": 37,
   "mesh_pairs": 14,
   "printable_parts": 8,
   "button_clearance_audit": {
     "kind": "Geometric screening using Omron drawing tolerances and declared print/assembly assumptions",
-    "minimum_radial_clearance_mm": 0.075,
-    "minimum_pressed_cap_proud_mm": 0.17,
+    "nominal_recess_mm": 1.0,
+    "minimum_unpressed_recess_mm": 0.07,
+    "maximum_pressed_recess_mm": 2.43,
+    "minimum_radial_clearance_mm": 0.125,
+    "minimum_access_probe_clearance_mm": 1.278,
+    "access_probe_radius_mm": 6.0,
     "minimum_lead_base_clearance_mm": 0.17,
+    "minimum_specified_solder_base_clearance_mm": 0.4,
     "nominal_cap_top_z_mm": 15.8,
     "maximum_specified_pretravel_mm": 0.5,
-    "qualification": "Check cap seating, full return, off-centre actuation and finished solder-joint height on the first article. Pretravel is not an allowable overtravel or overload specification."
+    "qualification": "Check cap seating, full return, off-centre actuation and finished solder-joint height on the first article. Probe access does not qualify finger comfort. Pretravel is not an allowable overtravel or overload specification."
   },
   "status": "engineering prototype files checked; first-article physical measurements pending"
 }

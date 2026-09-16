@@ -20,5 +20,13 @@
   },
   "floating_gpio_CE_max_V": 0.2516554695557462,
   "sensor": "Semitec 103JT-025; published JT table, conservative \u00b15% R/T allowance",
+  "selected_circuit_settings": {
+    "charger_current_ma": 100,
+    "charger_regulation_v": 4.2,
+    "charger_input_limit_ma": 500,
+    "converter_nominal_v": 3.308,
+    "button_pullup_ohm": 22000,
+    "usb_cc_pulldown_ohm": 5100
+  },
   "physical_tests": "Bonded sensor lag and actual cell temperature remain first-article measurements"
 }

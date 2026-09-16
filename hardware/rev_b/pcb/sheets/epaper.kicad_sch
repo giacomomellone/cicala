@@ -5,10 +5,11 @@
 	(uuid "fd4f7237-bd8a-4106-bb06-7e6957fdf325")
 	(paper "A4")
 	(title_block
-		(title "Waveshare_352_V11_UC8253 e-paper interface and boost")
-		(date "2026-09-07")
-		(rev "Rev B FIT - NOT FOR FABRICATION")
+		(title "UC8253 e-paper interface and boost")
+		(date "2026-09-16")
+		(rev "B.05")
 		(company "Cicala")
+		(comment 1 "Engineering prototype; physical qualification pending")
 	)
 	(lib_symbols
 		(symbol "Cicala:Waveshare_352_V11_UC8253"
@@ -9897,8 +9898,8 @@
 		)
 		(uuid "08e47071-0681-43a9-bab0-ed73445f7ac6")
 	)
-	(text "PANEL GATE: V1.1 p5 pin table conflicts with p16 circuit (pins 1/4/5). Boost values unqualified."
-		(at 20 185 0)
+	(text "Panel pinout follows V1.1 table: 1/4 NC, 5 VDHR.\nConfirm panel revision and rails at first bring-up."
+		(at 190 22 0)
 		(effects
 			(font
 				(size 1.27 1.27)

@@ -5,10 +5,11 @@
 	(uuid "9b5e4c31-c66f-4b64-9ff8-62a2c447d0bc")
 	(paper "A4")
 	(title_block
-		(title "Cicala Rev B FIT STUDY schematic overview")
-		(date "2026-09-07")
-		(rev "Rev B FIT - NOT FOR FABRICATION")
+		(title "Cicala Rev B.05 schematic overview")
+		(date "2026-09-16")
+		(rev "B.05")
 		(company "Cicala")
+		(comment 1 "Engineering prototype; physical qualification pending")
 	)
 	(lib_symbols)
 	(text "Power flow: USB-C 5 V or the protected cell -> BQ25185 power path (VSYS)\n-> TPS63802 buck-boost (3V3) -> TPS22917 load switches, one for the\nbattery divider and one for the panel and its boost network."
@@ -23,7 +24,7 @@
 		)
 		(uuid "4bc8cd55-2be9-44f5-9393-2c863fdbc11f")
 	)
-	(text "Cicala Rev B FIT STUDY system block diagram"
+	(text "Cicala Rev B.05 system block diagram"
 		(exclude_from_sim no)
 		(at 20.32 25.4 0)
 		(effects
@@ -1885,15 +1886,5 @@
 				)
 			)
 		)
-	)
-	(text "UNROUTED FIT STUDY — no firmware target / no fabrication release"
-		(at 20 185 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ff5e29fb-132b-444b-877e-0c468d69f781")
 	)
 )

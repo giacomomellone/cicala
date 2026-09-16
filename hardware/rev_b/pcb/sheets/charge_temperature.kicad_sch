@@ -5,9 +5,10 @@
 	(paper "A4")
 	(title_block
 		(title "Hardware charge temperature guard")
-		(date "2026-09-07")
-		(rev "Rev B FIT - NOT FOR FABRICATION")
+		(date "2026-09-16")
+		(rev "B.05")
 		(company "Cicala")
+		(comment 1 "Engineering prototype; physical qualification pending")
 	)
 	(lib_symbols
 		(symbol "Device:R"
@@ -2074,7 +2075,7 @@
 		)
 		(uuid "c224b895-cbc4-401d-85b1-d3b4f3cab7fc")
 	)
-	(text "J3.2 / BATT_NTC remains connected to BQ25185 TS/MR.\nSemitec 103AT-2 is bonded to the protected cell and returns to J3.3."
+	(text "J3.2 / BATT_NTC remains connected to BQ25185 TS/MR.\nSemitec 103JT-025 is bonded to the protected cell and returns to J3.3."
 		(at 20.32 137.16 0)
 		(effects
 			(font
@@ -2105,14 +2106,4 @@
 		(uuid "47e6c1d8-3cbd-4649-af39-2f8b5bee2aea")
 	)
 	(embedded_fonts no)
-	(text "UNROUTED FIT STUDY — no firmware target / no fabrication release"
-		(at 20 185 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "06400f11-5e39-49fa-acc9-3ccd9dcd3fe9")
-	)
 )

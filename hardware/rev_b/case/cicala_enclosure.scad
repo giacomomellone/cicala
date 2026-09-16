@@ -73,6 +73,13 @@ module caps() {
 module cap_slot(index) {
     p=buttons_centres[index]; size=buttons_cap_sizes[index]+2*buttons_radial_clearance;
     block([p.x-size/2,p.y-size/2,0],[size,size,case_height+5]);
+    // The flared mouth admits a fingertip while the cap remains recessed.
+    hull() {
+        block([p.x-size/2,p.y-size/2,case_control_ledge_z-buttons_well_depth],
+              [size,size,eps]);
+        block([p.x-size/2-buttons_well_flare,p.y-size/2-buttons_well_flare,case_control_ledge_z],
+              [size+2*buttons_well_flare,size+2*buttons_well_flare,eps]);
+    }
 }
 module flex_reserve() { block([99.225,26.5,3.85+lift],[2.15,13,3.8]); }
 module port() { block([71.7,60,pcb_z+.5],[12.6,10,4.7]); }
@@ -220,7 +227,7 @@ module assembly(explode=0) {
     color("#d0c6b6") base();
     color("#c6b66d") cell();
     color("#32694e") pcb();
-    color("#aeb6ae") components(); color("#ca9b49") switches();
+    color("#aeb6ae") components(); color("#343731") switches();
     color("#dba960") flex(); color("#a34e3c") harness();
     translate([0,0,explode]) color("#998e77") { display_frame();display_support_bar(); }
     translate([0,0,2*explode]) color("#b8b8a7") glass();
@@ -279,4 +286,5 @@ else if(part=="fit_carrier") intersection() { carrier(); union() { translate([0,
 else assert(false,str("Unknown part: ",part));
 
 }
-translate(print_shift) rotate(print_rotation) selected_part();
+// KiCad layout Y points down; native STEP and printable CAD use Y up.
+translate(print_shift) rotate(print_rotation) mirror([0,1,0]) selected_part();

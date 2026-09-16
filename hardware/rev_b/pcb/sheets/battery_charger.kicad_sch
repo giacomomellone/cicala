@@ -6,9 +6,10 @@
 	(paper "A4")
 	(title_block
 		(title "Power, charging, and USB")
-		(date "2026-09-07")
-		(rev "Rev B FIT - NOT FOR FABRICATION")
+		(date "2026-09-16")
+		(rev "B.05")
 		(company "Cicala")
+		(comment 1 "Engineering prototype; physical qualification pending")
 	)
 	(lib_symbols
 		(symbol "Cicala:BQ25185DLH"
@@ -9929,15 +9930,5 @@
 			(type default)
 		)
 		(uuid "3a6b62d3-3cb0-404f-a8b7-fe0f639f5e2c")
-	)
-	(text "UNROUTED FIT STUDY — no firmware target / no fabrication release"
-		(at 20 185 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "38cf8c61-2556-47fd-81a2-b3067427ee96")
 	)
 )

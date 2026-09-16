@@ -6,9 +6,10 @@
 	(paper "A4")
 	(title_block
 		(title "Controller, user I/O, and recovery")
-		(date "2026-09-07")
-		(rev "Rev B FIT - NOT FOR FABRICATION")
+		(date "2026-09-16")
+		(rev "B.05")
 		(company "Cicala")
+		(comment 1 "Engineering prototype; physical qualification pending")
 	)
 	(lib_symbols
 		(symbol "Connector:TestPoint"
@@ -8059,15 +8060,5 @@
 			(type default)
 		)
 		(uuid "dc889657-ab93-428f-a1ae-f77766363e94")
-	)
-	(text "UNROUTED FIT STUDY — no firmware target / no fabrication release"
-		(at 20 185 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e066aaa9-0fa9-406b-9f2a-223c5086f744")
 	)
 )

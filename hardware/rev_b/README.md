@@ -1,8 +1,8 @@
 # Rev B
 
 Landscape prototype with a centered 3.52-inch display, ESP32-S3 module,
-L-shaped PCB, 500 mAh battery and two purchased Omron caps above a flat right-hand control area.
-The core envelope is 128 × 66 × 14.2 mm (15.8 mm including caps). The phone carrier is removable.
+L-shaped PCB, 500 mAh battery and two flat, recessed Omron controls at the right: Filters above the larger Next button.
+The core envelope is 128 × 66 × 16.8 mm (1 mm nominal button recess). The phone carrier is removable.
 
 The routed board and nominal mechanical design pass the digital checks.
 This is an engineering prototype; physical qualification and factory order
@@ -12,6 +12,7 @@ review remain open. See [validation](validation.md) for the measured scope.
 - `pcb/` — native KiCad project, local libraries and component models
 - `case/` — OpenSCAD enclosure and generated geometry
 - [Complete assembly BOM](BOM.md)
+- [Fabrication and assembly order notes](pcb/fabrication_notes.md)
 - `component_selection.csv` — selected components and rationale
 - [Hardware specification](../../docs/hardware_rev_b.md)
 - [Component evidence](../../docs/hardware_rev_b_selection.md)

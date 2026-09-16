@@ -67,6 +67,8 @@ def export_views(kicad,output,report,environment):
              '--subtract-soldermask', '--fit-page-to-board', '--exclude-drawing-sheet',
              '--mode-single', '--output', output / f'silkscreen_{side}.svg', BOARD],
             report / f'plot-silkscreen-{side}.log')
+        plot = output / f'silkscreen_{side}.svg'
+        plot.write_text('\n'.join(line.rstrip() for line in plot.read_text().splitlines()) + '\n')
 
 
 if __name__ == '__main__':

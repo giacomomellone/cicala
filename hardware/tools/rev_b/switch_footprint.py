@@ -4,6 +4,9 @@ import ksexp as k
 
 def check(board, contract):
     buttons=contract['buttons']
+    if not (buttons['centres'][0][1] < buttons['centres'][1][1]
+            and buttons['cap_sizes'][0] < buttons['cap_sizes'][1]):
+        raise ValueError('Filters must be above the larger Next button in PCB top view')
     for index,ref in enumerate(('SW1','SW2')):
         fp=next(f for f in k.children(board,'footprint') if k.ref_of(f)==ref)
         if fp[1]!='cicala:SW_Omron_B3F-4050' or 'through_hole' not in k.child(fp,'attr'):

@@ -12,6 +12,9 @@ record the omitted electrical checks.
 - `patterns/`: outline for cutting the purchased clear lens sheet.
 
 `print-layout.json` records orientation, bed translation and size for each print.
+Native assembly coordinates match KiCad STEP: X right, Y up, PCB shifted up
+4.6 mm. Do not mirror the files. The asymmetric outline and mounting holes
+are checked against this datum.
 3MF contains geometry, not a qualified printer profile. Filters uses an ivory
 B32-1200 cap; Next an orange B32-1320 cap. Both fit purchased B3F-4050 switches
 after soldering. There are no printed caps, silicone strips or keepers.

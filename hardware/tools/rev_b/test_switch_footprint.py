@@ -11,6 +11,10 @@ class SwitchFootprintTests(unittest.TestCase):
     def setUpClass(cls):
         cls.board=k.load(BOARD);cls.contract=json.loads(CONTRACT.read_text())
     def test_selected_terminal_pairs_and_boss_holes(self):check(self.board,self.contract)
+    def test_reversed_button_order_is_rejected(self):
+        contract=copy.deepcopy(self.contract)
+        contract['buttons']['centres'].reverse()
+        with self.assertRaisesRegex(ValueError,'above'):check(self.board,contract)
     def test_missing_positioning_boss_is_rejected(self):
         b=copy.deepcopy(self.board);fp=next(f for f in k.children(b,'footprint') if k.ref_of(f)=='SW1')
         fp.remove(next(p for p in k.children(fp,'pad') if not p[1]))

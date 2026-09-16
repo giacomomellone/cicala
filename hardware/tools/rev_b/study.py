@@ -127,6 +127,9 @@ def main():
             run([*scad,'--hardwarnings',*options,'-o',target,SOURCE],report/f'{name}-{ext}.log')
             if ext=='stl':
                 check_mesh(target, expected_solids=5 if part=='switch_reference' else 1)
+                if part=='pcb_reference':
+                    from mechanical_datum import check_mesh_datum
+                    result['mechanical_datum'] = check_mesh_datum(triangles(target),contract)
                 if part in ('category_cap_reference','next_cap_reference'):
                     index=0 if part=='category_cap_reference' else 1
                     b=contract['buttons']
@@ -135,7 +138,7 @@ def main():
                     points=[p for face in triangles(target)for p in face]
                     for axis,limit in enumerate((contract['case']['width'],contract['case']['depth'],contract['case']['height'])):
                         extra=0
-                        lower=contract['case']['origin'][axis]
+                        lower=-contract['case']['depth'] if axis==1 else contract['case']['origin'][axis]
                         if min(p[axis]for p in points)<lower-.0001 or max(p[axis]for p in points)+extra>lower+limit+.0001:
                             raise ValueError(f'{name} exceeds the core envelope on axis {axis}')
         if args.export and role(part)!='reference':
@@ -197,8 +200,8 @@ def main():
         renders=ROOT/'hardware/rev_b/case/renders';renders.mkdir(parents=True,exist_ok=True)
         for part in ['assembly','inside','exploded','section','carrier','wedge','buttons_exploded']:
             run([*scad,'--hardwarnings','-D',f'part="{"carrier_assembly" if part == "carrier" else part}"','--imgsize=1600,1000','--viewall','--autocenter',
-                 '--render','--colorscheme=Tomorrow',
-                 '--camera='+('125,115,55,54,25,4' if part=='section' else '148,-28,70,108,35,11' if part=='buttons_exploded' else '130,-110,130,54,33,3'),
+                 '--render','--colorscheme=Tomorrow','--projection=o',
+                 '--camera='+('54,-33,200,54,-33,0' if part=='assembly' else '125,-115,55,54,-25,4' if part=='section' else '148,-94,70,108,-35,11' if part=='buttons_exploded' else '110,-130,160,54,-33,5'),
                  '-o',renders/f'{part}.png',SOURCE],report/f'render-{part}.log')
         docs_image = ROOT/'docs/assets/images/hardware_rev_b/assembly.png'
         docs_image.parent.mkdir(parents=True,exist_ok=True)
