@@ -108,6 +108,7 @@ stays empty. There is no escalation schedule, turn count, or judgment of the tab
 
 ## Website jobs
 
+- The landing at `/` opens the question app at `/play`.
 - Play mirrors the device and adds visible save/share actions. F opens or advances
   Filters; Space and Right perform Next. There is no previous/forward replay history.
 - Browse exposes all questions with search, depth, tags, and sort. Play permissions
@@ -116,10 +117,11 @@ stays empty. There is no escalation schedule, turn count, or judgment of the tab
 - Direct question links display their named question regardless of play permissions.
   They do not enable permissions; Next returns to the allowed automatic pool.
 - Contribution collects original human wording. Editors assign depth and precise tags.
+- Info introduces the project in a few sentences; Device links to the hardware README.
 
-The visual language remains two tones, square corners, 1 px rules, ordered
-dither, Zilla Slab questions, Literata wordmark, and IBM Plex Mono controls.
-The short fade respects reduced motion. See the [brand guide](brand.md).
+The website uses orange and yellow with wine-coloured ink, bold sans-serif
+branding and Zilla Slab questions on cream. The circular cicada and question
+transitions respect reduced motion. See the [brand guide](brand.md).
 
 ## Why a device
 

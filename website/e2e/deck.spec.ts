@@ -106,7 +106,7 @@ test.describe("language", () => {
   });
 
   test("the nav is translated after a switch", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/play");
     await page.locator('#lang-switch button[data-lang="de"]').click();
     await expect(page.locator('a[href="/browse"]')).toHaveText("stöbern");
   });

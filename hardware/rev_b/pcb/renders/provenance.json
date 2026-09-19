@@ -1,5 +1,5 @@
 {
-  "generated": "2026-09-16",
+  "generated": "2026-09-19",
   "generator": "KiCad 10.0.5",
   "projection": "orthographic",
   "rotation_degrees": [
@@ -20,7 +20,7 @@
     1544
   ],
   "inputs": {
-    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "2cbf2038111e29e1858022fc0727a4917186b69dfd66f8ae65ee53e7799e4ead",
+    "hardware/rev_b/pcb/cicala_rev_b.kicad_pcb": "2d5ac179e32483abfcdea94ca015c0555c43a5e1d750cf0cc10253e51d5c4eef",
     "hardware/rev_b/pcb/cicala_rev_b.kicad_pro": "e9f19d4a0ec4a547f8cabae5f1765c7b88e72c98cab21cffef789b19f06fde8c",
     "hardware/rev_b/pcb/models/Coilcraft_XFL4015_envelope.step": "4270c2a879fe8804b01041f95c47164ad5f938d5892164140be347a939cab209",
     "hardware/rev_b/pcb/models/HRO_TYPE_C_31_M_12_envelope.step": "27b848e100493808d14b518e236d721d171ca15146dc5581edafb04fe49f97e3",
@@ -32,10 +32,10 @@
     "hardware/tools/rev_b/render_pcb.py": "f85299f2fe26c3bcfad1a71956ff29947e01066a33c933e790a32cb29e0a3291"
   },
   "outputs": {
-    "top.png": "3bbb0a907671ddf7ca75af762bd49801a3edd63001037daf0cc90a67893a204f",
-    "bottom.png": "9d19ccb2c29c1d42ea98bb08c1c20858fd2ee466aca57f7656bea18c6d4d4837",
-    "silkscreen_top.svg": "6b5becfc76ce979ca6d8a2f9302af3aa34def63717100d148d635d7a61655c34",
-    "silkscreen_bottom.svg": "d15fe5405ab4ae7d657b750acc28a6c9484eb95bcf977750c9f837902405240f"
+    "top.png": "01b796ff8ee962d96b40cb0a91f952a968a0564e13321cfe716bbe483201ebfa",
+    "bottom.png": "857add916ef2c91e03c40dabaeaf760c6a4322020d435203c9b4b346f856056e",
+    "silkscreen_top.svg": "8beec6a547ed9484d046e0f965e514abfeb200045bfe8342302cb5d7bd6cba9b",
+    "silkscreen_bottom.svg": "8c3564c58caa2eb21a28be0f45eee8496d3364274a7b47a8cdd6f5e1a9ba3518"
   },
   "model_libraries": "Installed KiCad 10 models plus project-local STEP envelopes; standard library files are not vendored or fingerprinted here.",
   "limitations": "Digital board render, not a physical prototype; some component models are bounding envelopes."

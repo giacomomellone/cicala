@@ -40,7 +40,7 @@ async function done(page: Page) {
 }
 test("a draft survives reload and applies only at Done", async ({ page }) => {
   await fixture(page);
-  await page.goto("/");
+  await page.goto("/play");
   await playReady(page);
   const shown = await page.locator("#q-text").innerText();
   expect(questions.filter((q) => permitted(q, DEFAULT_PERMISSIONS)).map((q) => q.text)).toContain(
@@ -61,7 +61,7 @@ test("a draft survives reload and applies only at Done", async ({ page }) => {
 });
 test("clickable switches share the draft and cursor with the device controls", async ({ page }) => {
   await fixture(page);
-  await page.goto("/");
+  await page.goto("/play");
   await playReady(page);
   const shown = await page.locator("#q-text").innerText();
   await page.locator("#q-filters").click();
@@ -103,7 +103,7 @@ test("an empty permitted pool keeps Filters reachable", async ({ page }) => {
   );
   expect(dark.length).toBeGreaterThan(0);
   await fixture(page, dark);
-  await page.goto("/");
+  await page.goto("/play");
   await playReady(page);
   await expect(page.locator("#q-text")).toContainText("no questions match");
   await expect(page.locator("#q-meta")).toBeHidden();
@@ -133,7 +133,7 @@ for (const width of [320, 390, 768, 1440])
   test(`Filters fits at ${width}px`, async ({ page }) => {
     await fixture(page);
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     await page.locator("#q-filters").click();
     await expect(page.locator("#q-filter-3")).toBeVisible();
@@ -149,7 +149,7 @@ test("a direct link does not enable permissions and Next returns to the allowed 
   const restricted = questions.find((q) => q.depth === 3)!;
   await fixture(page);
   await page.route(`**/q/${restricted.id}`, async (route) => {
-    const home = await page.request.get("/");
+    const home = await page.request.get("/play");
     const html = (await home.text())
       .replace('id="play-root"', `id="play-root" data-seed-id="${restricted.id}"`)
       .replace('data-permalink="0"', 'data-permalink="1"');
@@ -160,7 +160,7 @@ test("a direct link does not enable permissions and Next returns to the allowed 
   await expect(page.locator("#q-text")).toHaveText(restricted.text);
   await expect(page.locator("#q-permissions")).toContainText("heavy −");
   await page.locator("#q-next").click();
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/play$/);
   expect(questions.filter((q) => permitted(q, DEFAULT_PERMISSIONS)).map((q) => q.text)).toContain(
     await page.locator("#q-text").innerText(),
   );
@@ -171,7 +171,7 @@ test("new tabs start excluded while the current tab retains permissions", async 
   context,
 }) => {
   await fixture(page);
-  await page.goto("/");
+  await page.goto("/play");
   await playReady(page);
   await page.locator("#q-filters").click();
   await page.locator("#q-next").click();
@@ -181,7 +181,7 @@ test("new tabs start excluded while the current tab retains permissions", async 
   await expect(page.locator("#q-permissions")).toContainText("dark +");
   const another = await context.newPage();
   await fixture(another);
-  await another.goto("/");
+  await another.goto("/play");
   await playReady(another);
   await expect(another.locator("#q-permissions")).toContainText("dark −");
   await another.close();
@@ -189,7 +189,7 @@ test("new tabs start excluded while the current tab retains permissions", async 
 
 test("the fixture stream exhausts ordinary questions before repeating", async ({ page }) => {
   await fixture(page);
-  await page.goto("/");
+  await page.goto("/play");
   await playReady(page);
   const allowed = questions.filter((q) => permitted(q, DEFAULT_PERMISSIONS));
   const seen = new Set<string>();

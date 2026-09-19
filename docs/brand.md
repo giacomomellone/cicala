@@ -1,129 +1,94 @@
 # Brand
 
-Cicala is Italian for cicada. Cicadas fill Italian summers with a steady
-background sound; the name gives the object a clear job: make a first voice
-easier, invite reflection, and break silence without becoming the conversation.
+Cicala is Italian for cicada. The identity draws on the heat of an Italian
+summer: saturated orange and yellow, dark wine-coloured ink, and a table
+photographed after lunch.
 
-## Mark, wordmark and type
+## Mark and type
 
-The identity pairs the lowercase `cicala` wordmark with a filled cicada. The
-selected mark, Cuneo, is one closed silhouette in a 158-unit square: a broad
-head and thorax, and two wings cut apart by a notch that runs 86 units up from
-the bottom edge, leaving 32 units between the tips. Two 15-unit eyes are the
-only other counters, cut with an even-odd fill rule so they read on any ground.
-Nothing in the mark is stroked, so it has no line weight to lose as it shrinks.
-The cicada alone represents the identity in square formats.
+The owner-selected cicada is a filled silhouette with two round eye counters
+and a deep split between its wings. The canonical SVG is traced from the
+supplied transparent artwork. It uses one even-odd path in a 1034-unit square;
+the eyes remain transparent on every background. Preserve its proportions and
+use the master path at every size.
 
-The mark it replaces was stroked at 10 units in a 156-unit box — the same 6.4%
-in the head, the wings and the tips. With no weight contrast there was no
-hierarchy to notice, and at the 16 px favicon that stroke resolved to 1.0 px
-against counters that swallowed the rest, so the mark greyed out instead of
-shrinking.
+The website places the mark inside an orange circle. The circle contains only
+the cicada. Hover, focus or a tap gives it a short rocking movement; reduced
+motion disables that movement. Small application headers use the circle alone
+as the home link. The landing uses a large lowercase `cicala` wordmark.
 
-The wordmark is Literata at normal weight with optical kerning and restrained
-negative tracking, over a 50% dither rule the width of the lockup. The rule
-carries the weight so the letterforms do not have to. The website keeps the
-wordmark as live, selectable text. Use `Cicala` normally in prose.
-
-Zilla Slab at weight 500 is the question typeface: slab strokes survive at one
-bit, which is why e-readers ship serif faces. IBM Plex Mono is reserved for
-navigation, controls, labels, metadata, and technical information. All three
-fonts are self-hosted by the website; do not add an external font request.
-
-The e-paper renders none of them. The panel draws the CFB bitmap fonts
-(10 × 16, 15 × 24, 20 × 32) with a one-pixel overdraw for weight, so the device
-mirrors the website's tone and not its typeface.
-
-Keep clear space around the lockup at least equal to the height of its `c`.
-Where a name will not fit, use the cicada alone. Keep the logo subordinate to
-the question. Preserve the notch between the wings and both eye counters; use
-the supplied artwork rather than redrawing it.
+The wordmark and website controls use Arial, falling back to Helvetica and
+sans-serif. The wordmark is bold, with tight tracking. Questions use
+self-hosted Zilla Slab 500. Keep question text large and give it a clear
+reading surface. The e-paper retains its existing bitmap fonts and monochrome
+rendering.
 
 ## Colour
 
-The panel is one bit deep, so the website is too. There is no accent colour:
-state is carried by inversion, by weight, or by the dither.
+| Token         | Value     | Use                                           |
+| ------------- | --------- | --------------------------------------------- |
+| `--orange`    | `#F46B45` | invitation, circular mark and primary actions |
+| `--yellow`    | `#FFD23F` | landing masthead and app navigation           |
+| `--paper`     | `#FFF2D6` | app background and footer                     |
+| `--panel`     | `#FFF7E6` | question reading surface                      |
+| `--ink`       | `#341E24` | primary text, marks and rules                 |
+| `--ink-soft`  | `#60454A` | secondary text                                |
+| `--ink-faint` | `#73585A` | hints on cream surfaces                       |
 
-| Token         | Value     | Use                                    |
-| ------------- | --------- | -------------------------------------- |
-| `--paper`     | `#dedad2` | page and avatar background             |
-| `--panel`     | `#ebeae4` | the question surface, and raised keys  |
-| `--ink`       | `#100f0e` | wordmark, primary text, and every rule |
-| `--ink-soft`  | `#4c4a45` | secondary text                         |
-| `--ink-faint` | `#8f8c85` | separators, hints, and disabled text   |
-| `--line`      | `#100f0e` | 1 px borders                           |
+Use the dark ink for text on orange and yellow. Its contrast is 5.18:1 on
+orange and 10.72:1 on yellow. Orange and yellow do not provide sufficient
+contrast against each other for text. Active states also use borders or
+weight. Focus indicators remain visible against each adjacent surface.
 
-Solid ink is reserved for type and for a key under a finger. A saved question
-is a filled heart, not a coloured one; a fault is heavier and underlined, not
-red.
+## Website
 
-## Dither
+The landing at `/` uses a yellow masthead, the selected overhead table scene
+on the left and an orange invitation on the right. On a phone these stack in
+that order. Its only headline is “Grab a chair, I have a question for you”.
+An arrow opens `/play`, with “Try a question” as its accessible label.
 
-One ordered pattern at four exact fractions of the 1-bit grid — 1/2, 1/4, 1/8,
-1/16 — sized in multiples of `--dither-px`, one e-paper pixel. The website
-shapes it with a gradient mask; the panel, which cannot fade a pattern, steps
-down through the same densities instead.
+The application retains browse, filters, saving, sharing and contribution.
+Info gives a short introduction; Device links to the hardware README while
+development continues.
+Direct question links stay at `/q/<id>`; drawing the next question returns to
+`/play`. The application uses the same yellow header and orange actions while
+keeping the question on cream. The website does not use decorative dither
+behind question text. The physical device retains its existing dither.
 
-| Use           | Density | Where                                               |
-| ------------- | ------- | --------------------------------------------------- |
-| Wordmark rule | 50%     | under the lockup, 2 px                              |
-| Floor         | 25%     | rising from the bottom edge of the question surface |
-
-The floor ends at 30% of the surface on the website and at
-`CICALA_PANEL_FLOOR_PCT` — 12%, 15 of 122 rows — on the device. Do not fill a
-surface uniformly: the panel has roughly 10:1 contrast to give and the question
-needs it.
+The owner-selected landing photograph is an AI-generated scene, not a record
+of a real event. Its source is `website/src/assets/landing/dopopranzo.webp`.
+Astro emits responsive sizes from that source. Keep the green bottle, wine,
+coffee traces and metal dish recognisable in crops. Do not add promotional
+captions over the photograph.
 
 ## Assets
 
-The canonical vector source is `website/public/brand/cicala-mark.svg`.
-Its single path is shared by the website and the PCB artwork generator.
-The website inlines it beside the live Literata wordmark. The source uses
-`currentColor` so the mark follows its surrounding ink colour, and
-`fill-rule="evenodd"` so the eyes stay transparent rather than paper-coloured.
+The canonical source is `website/public/brand/cicala-mark.svg`. The website
+inlines it with `currentColor`, and the PCB artwork generator reads the same
+path. Run `npm run brand-assets` in `website/` to regenerate the PNGs:
 
-Regenerate the PNGs with `npm run brand-assets` in `website/`. Square assets
-use the cicada, and the social preview uses the cicada and wordmark together.
-Every size, including the 16 px favicon, retains the master path. Transparent
-wordmark-only PNGs remain available alongside the complete logo lockups.
+- `brand/cicala-avatar-1024.png`
+- `brand/cicala-logo-dark.png` and `brand/cicala-logo-reversed.png`
+- `brand/cicala-wordmark-dark.png` and `brand/cicala-wordmark-reversed.png`
+- `favicon-16.png`, `favicon-32.png` and `apple-touch-icon.png`
+- `og.png`
 
-- [canonical SVG mark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-mark.svg)
-- [dark transparent logo](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-logo-dark.png)
-- [reversed transparent logo](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-logo-reversed.png)
-- [1024 px avatar](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-avatar-1024.png)
-- [dark transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-dark.png)
-- [reversed transparent wordmark](https://github.com/giacomomellone/cicala/blob/main/website/public/brand/cicala-wordmark-reversed.png)
-- [32 px favicon](https://github.com/giacomomellone/cicala/blob/main/website/public/favicon-32.png)
-- [16 px favicon](https://github.com/giacomomellone/cicala/blob/main/website/public/favicon-16.png)
-- [180 px Apple touch icon](https://github.com/giacomomellone/cicala/blob/main/website/public/apple-touch-icon.png)
-- [1200×630 Open Graph image](https://github.com/giacomomellone/cicala/blob/main/website/public/og.png)
-
-Every asset is monochrome.
+Square exports use the cicada; transparent lockups include the wordmark.
+Do not redraw the mark for individual placements or fill its eye counters.
 
 ## Device placement
 
-The logo does not appear on the e-paper. The normal device face stays free of
-branding, including the areas beside the Filters and Next controls. Do not add
-startup, sleep, or device logo screens. The phone captive portal may use the
-live-text wordmark and palette, but it must remain self-contained and make no
-font or image requests. If a physical mark is useful later, use only an
-optional small blind emboss on the underside or a concealed lower edge.
+The device face and e-paper stay free of branding. Do not add startup, sleep
+or device logo screens. The setup portal remains self-contained.
 
-The PCB carries the cicada beside the existing underside wordmark on
-`B.SilkS`, mirrored for reading from below. It is one native KiCad polygon in
-an 8 mm square, and its eye counters are 0.759 mm across, well above the
-0.15 mm silkscreen minimum. Because `gr_poly` cannot express a counter, each
-eye is bridged to the outline with a zero-width slit, the same treatment the
-wordmark's letterforms already use.
-Regeneration, including the Rev B step, is documented in
-`hardware/tools/pcb/assets/README.md`.
+The PCB carries the same cicada on the silkscreen, mirrored where it is read
+from below. Rev A uses an 8 mm square; Rev B uses 0.7 of that size on both
+sides. At the nominal 8 mm size the filled mark is 6.34 mm wide and 7.98 mm
+high; its eye counters are approximately 0.75 mm across. Rev B’s counters are
+approximately 0.53 mm, above the 0.15 mm silkscreen minimum. The existing
+small Literata fabrication wordmark remains alongside the new cicada.
 
-## Prohibited treatments
-
-Do not add speech bubbles, sound waves, legs, antennae or wing venation to the
-approved cicada. The two eyes are the only interior detail it carries; do not
-fill them, and do not add a mouth or any other feature that would turn them
-into a face. Do not introduce a brand colour, add gradients or glow, round a
-corner the device could not round, distort the letterforms, or make the
-wordmark larger than the current question. Do not lay the dither under a
-question at any density. The questions remain visually dominant.
+KiCad represents each eye with a zero-width bridge to the outer polygon.
+Regeneration is documented in `hardware/tools/pcb/assets/README.md`. Preserve
+all electrical and mechanical geometry when updating the artwork, and
+regenerate fabrication exports and board previews from the native source.

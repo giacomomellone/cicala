@@ -95,7 +95,7 @@ export async function initPlay(): Promise<void> {
   }
   function leaveDirect(): void {
     direct = false;
-    if (location.pathname.startsWith("/q/")) window.history.replaceState({}, "", "/");
+    if (location.pathname.startsWith("/q/")) window.history.replaceState({}, "", "/play");
     document.getElementById("q-edit")?.remove();
   }
   let busy = false;

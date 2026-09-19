@@ -27,7 +27,7 @@ The shipped corpora are currently empty, so play, browse and deck render nothing
 
 ## Structure
 
-- `src/pages/`: play (`index`, `q/[id]`), `browse`, `suggest`, `device`, `deck`, `404`
+- `src/pages/`: landing (`index`), play (`play`, `q/[id]`), `browse`, `suggest`, `info`, `device`, `deck`, `404`
 - `src/lib/`: client islands (play/browse/suggest/deck controllers, storage, data loading)
 - `functions/api/suggestions.ts`: same-origin submission API, Turnstile verification, and GitHub App client
 - `src/i18n.ts`: all UI strings, one object per shipped language

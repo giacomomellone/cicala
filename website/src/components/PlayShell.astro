@@ -1,5 +1,5 @@
 ---
-// The play surface, shared by / and /q/[id] (spec §7.4). Mirrors the device:
+// The play surface, shared by /play and /q/[id] (spec §7.4). Mirrors the device:
 // Filters sets independent permissions; Next draws from one mixed stream.
 import { t } from "../i18n";
 import { heartIcon, shareIcon } from "../lib/icons";
@@ -10,7 +10,7 @@ interface Props {
      the empty state and the client draws nothing until the corpus has one. */
   question?: Question;
   lang: string;
-  /* true on /q/[id] pages — "next" transitions back to / via replaceState */
+  /* true on /q/[id] pages — "next" transitions back to /play via replaceState */
   permalink?: boolean;
 }
 const { question, lang, permalink = false } = Astro.props;
@@ -18,7 +18,6 @@ const { question, lang, permalink = false } = Astro.props;
 
 <div class="play" id="play-root" data-seed-id={question?.id} data-permalink={permalink ? "1" : "0"}>
   <div class="panel">
-    <i class="panel__floor dither" aria-hidden="true"></i>
     <span class="panel__permissions" id="q-permissions">dark − · sexual − · heavy −</span>
     <a
       class="panel__origin"
@@ -174,29 +173,6 @@ const { question, lang, permalink = false } = Astro.props;
     border: 1px solid var(--line);
     background: var(--panel);
     padding: clamp(2rem, 8vw, 3.5rem) clamp(1.1rem, 5vw, 2.5rem);
-  }
-
-  /* The dither ramps up from the bottom edge and is gone by --floor-end, so it
-     never reaches the question. The tile grid is anchored to the bottom so the
-     row meeting that edge is whole; the partial row lands at the top, where
-     the mask has already faded it out. */
-  .panel__floor {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-position: 0 100%;
-    -webkit-mask-image: linear-gradient(
-      0deg,
-      #000 0%,
-      rgb(0 0 0 / 40%) calc(var(--floor-end) * 0.45),
-      transparent var(--floor-end)
-    );
-    mask-image: linear-gradient(
-      0deg,
-      #000 0%,
-      rgb(0 0 0 / 40%) calc(var(--floor-end) * 0.45),
-      transparent var(--floor-end)
-    );
   }
 
   /* Both corners are chrome, so the centre line belongs to the question
