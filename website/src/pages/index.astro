@@ -1,16 +1,42 @@
 ---
-// Play (spec §7.4).
-import PlayShell from "../components/PlayShell.astro";
-import { DEFAULT_PERMISSIONS } from "../config";
-import { permitted } from "../lib/bag";
+import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
-import payload from "../data/questions.en.json";
-import type { Question } from "../lib/data";
-
-const all = (payload.questions as Question[]).filter((q) => permitted(q, DEFAULT_PERMISSIONS));
-const seed = all[Math.floor(Math.random() * all.length)];
+import Cicada from "../components/Cicada.astro";
+import table from "../assets/landing/dopopranzo.webp";
 ---
 
-<Base title="cicala · let's talk" lang="en">
-  <PlayShell question={seed} lang="en" />
+<Base title="Cicala · Grab a chair" description="Grab a chair, I have a question for you." landing>
+  <section class="landing" aria-labelledby="invitation">
+    <div class="landing-masthead">
+      <span class="landing-wordmark" aria-label="Cicala">cicala</span>
+      <button class="cicada-nudge" type="button" aria-label="Give the cicada a nudge"
+        ><Cicada /></button
+      >
+    </div>
+    <div class="landing-photo">
+      <Image
+        src={table}
+        alt="An afternoon table seen from above: red wine, green water bottle, a finished coffee and the last bruschetta on an oily metal plate, between plastic chairs."
+        widths={[480, 800, 1200, 1536]}
+        sizes="(max-width: 760px) 100vw, 65vw"
+        loading="eager"
+        fetchpriority="high"
+        quality={90}
+      />
+    </div>
+    <div class="landing-invitation">
+      <h1 id="invitation">Grab a chair, <br />I have a question for you</h1>
+      <a class="landing-cta" href="/play" aria-label="Try a question">
+        <svg
+          viewBox="0 0 80 32"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="3"
+        >
+          <path d="M2 16h74M61 2l15 14-15 14"></path>
+        </svg>
+      </a>
+    </div>
+  </section>
 </Base>

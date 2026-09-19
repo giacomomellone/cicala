@@ -1148,3 +1148,17 @@ Two eyes are cut with an even-odd fill rule rather than drawn as paper-coloured 
 Rejected alternatives, all proofed at 16/24/32/48 px before the choice: keeping the outline and doubling the stroke (still a line mark, personality only from proportion); filling the existing paths with the brand's 50% and 25% dither (collapses below roughly 48 px, so it needs a second small-size cut and breaks one artwork at every size); a 16 × 16 bitmap drawn on the panel's own grid (exact at favicon size, but commits the identity to pixel art); solid body with outlined wings (two weights to hold in register across sizes); and the silhouette reversed out of a disc (strongest when small, but a container rather than a mark, and it spends a solid disc of the panel's 10:1 contrast on the logo).
 
 Accepted cost: the mark now carries more ink than the wordmark beside it, which is the opposite of the balance the outline struck, and eyes are a face-adjacent detail the prohibited-treatments list previously ruled out in general terms. That list now permits exactly these two counters and nothing else. Third-party avatars showing the old cicada must be replaced by hand, as with every earlier identity change.
+
+## 2026-09-20: Summer identity and a separate landing
+
+The website opens with a yellow masthead, an overhead table photograph and an
+orange invitation. One arrow leads to the question app at `/play`; direct
+question links remain at `/q/<id>`. The landing carries the brand, while the
+app keeps a cream reading surface and footer. Info introduces the project;
+Device links to the hardware README during development.
+
+The owner-selected cicada is the shared SVG source for web assets and native
+PCB silkscreen. The website uses the mark in a circle with a short nudge on
+hover, focus or tap, disabled by reduced-motion preferences. The physical
+device retains its monochrome display and unbranded face. The existing
+question database and contribution policy are unchanged.

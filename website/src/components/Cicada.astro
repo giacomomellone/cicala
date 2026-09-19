@@ -1,0 +1,32 @@
+---
+import mark from "../../public/brand/cicala-mark.svg?raw";
+---
+
+<span class="cicada-circle" aria-hidden="true"><span class="cicada-art" set:html={mark} /></span>
+
+<script>
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  document.querySelectorAll<HTMLElement>(".cicada-circle").forEach((circle) => {
+    const target = circle.closest<HTMLElement>("button, a") ?? circle;
+    const art = circle.querySelector<HTMLElement>(".cicada-art")!;
+    let animation: Animation | undefined;
+    const nudge = () => {
+      if (reducedMotion.matches) return;
+      animation?.cancel();
+      animation = art.animate(
+        [
+          { transform: "rotate(0deg)" },
+          { transform: "rotate(-17deg) translateY(-3px)", offset: 0.24 },
+          { transform: "rotate(14deg)", offset: 0.48 },
+          { transform: "rotate(-7deg)", offset: 0.7 },
+          { transform: "rotate(0deg)" },
+        ],
+        { duration: 700, easing: "ease-out" },
+      );
+    };
+    target.addEventListener("pointerenter", nudge);
+    target.addEventListener("click", nudge);
+    target.addEventListener("focus", nudge);
+    reducedMotion.addEventListener("change", () => animation?.cancel());
+  });
+</script>

@@ -4,9 +4,20 @@ export type Lang = "en" | "de" | "it";
 
 const en = {
   // header / nav
+  "nav.play": "play",
+  "nav.contribute": "contribute",
   "nav.browse": "browse",
   "nav.suggest": "suggest",
   "nav.device": "device",
+  "nav.info": "info",
+  "info.title": "About Cicala",
+  "info.about": "Cicala is a collection of questions for conversations around a table.",
+  "info.invite": "Pick one and see where it takes you.",
+  "info.open": "The project is open source, and anyone can contribute a question.",
+  "device.wip.title": "Work in progress",
+  "device.wip.body": "I'll update this (maybe) later.",
+  "device.wip.updates": "Check here for some updates",
+
   "nav.skip": "skip to content",
 
   // editorial metadata; the player does not expose a depth control
@@ -263,9 +274,20 @@ const en = {
 export type StringKey = keyof typeof en;
 
 const de: Record<StringKey, string> = {
+  "nav.play": "spielen",
+  "nav.contribute": "beitragen",
   "nav.browse": "stöbern",
   "nav.suggest": "vorschlagen",
   "nav.device": "gerät",
+  "nav.info": "info",
+  "info.title": "Über Cicala",
+  "info.about": "Cicala ist eine Sammlung von Fragen für Gespräche am Tisch.",
+  "info.invite": "Wählt eine aus und schaut, wohin sie euch führt.",
+  "info.open": "Das Projekt ist Open Source, und alle können eine Frage beitragen.",
+  "device.wip.title": "In Arbeit",
+  "device.wip.body": "Ich aktualisiere das hier (vielleicht) später.",
+  "device.wip.updates": "Hier gibt es Neuigkeiten",
+
   "nav.skip": "zum Inhalt springen",
 
   "depth.1": "tiefe 1",
@@ -452,7 +474,8 @@ const de: Record<StringKey, string> = {
     "Platinenoberseite · ESP32-S3, Stromversorgung, Displayanschluss und Taster",
   "device.render.pcbTop.alt":
     "Gerade KiCad-Draufsicht der bestückten L-förmigen Rev-B-Platine mit Cicala-Logo, Schaltungsgruppen, beschrifteten Testpunkten und zwei Tastern rechts.",
-  "device.render.pcbBottom": "Platinenunterseite · Stromversorgung, Recovery-Pinbelegung und Testpunktlegende",
+  "device.render.pcbBottom":
+    "Platinenunterseite · Stromversorgung, Recovery-Pinbelegung und Testpunktlegende",
   "device.render.pcbBottom.alt":
     "Gerade KiCad-Ansicht der Rev-B-Platinenunterseite mit Cicala-Logo, Stromversorgungsübersicht, Recovery-Pinbelegung und beschrifteten Testkontakten.",
   "device.render.assembly": "Rev B · mittiges Display, versenkte Tasten",
@@ -511,9 +534,20 @@ const de: Record<StringKey, string> = {
 };
 
 const it: Record<StringKey, string> = {
+  "nav.play": "gioca",
+  "nav.contribute": "contribuisci",
   "nav.browse": "sfoglia",
   "nav.suggest": "proponi",
   "nav.device": "dispositivo",
+  "nav.info": "info",
+  "info.title": "Cos’è Cicala",
+  "info.about": "Cicala è una raccolta di domande per conversazioni intorno a un tavolo.",
+  "info.invite": "Scegline una e vedi dove ti porta.",
+  "info.open": "Il progetto è open source e chiunque può contribuire con una domanda.",
+  "device.wip.title": "Lavori in corso",
+  "device.wip.body": "Aggiornerò questa pagina (forse) più avanti.",
+  "device.wip.updates": "Qui trovi gli aggiornamenti",
+
   "nav.skip": "vai al contenuto",
 
   "depth.1": "profondità 1",
@@ -689,8 +723,7 @@ const it: Record<StringKey, string> = {
   "device.controls.title": "due pulsanti tattili",
   "device.controls.text":
     "Filters è in alto a destra. Il pulsante arancione Next, più grande, è sotto e mostra la prossima domanda. Le due superfici piatte sono incassate di 1 mm nella scocca, con aperture svasate per premerle dall’alto.",
-  "device.controls.caption":
-    "Filters sopra · 9 × 9 mm avorio / Next sotto · 12 × 12 mm arancione",
+  "device.controls.caption": "Filters sopra · 9 × 9 mm avorio / Next sotto · 12 × 12 mm arancione",
   "device.controls.alt":
     "Vista CAD esplosa con il piccolo pulsante avorio Filters e il pulsante arancione Next, più grande, sopra i rispettivi interruttori.",
   "device.pcb.title": "il PCB con le piste",
@@ -701,7 +734,8 @@ const it: Record<StringKey, string> = {
     "PCB, lato superiore · ESP32-S3, alimentazione, connettore display e pulsanti",
   "device.render.pcbTop.alt":
     "Vista KiCad dall’alto del PCB Rev B a L popolato, con logo Cicala, gruppi funzionali, punti di test etichettati e due pulsanti a destra.",
-  "device.render.pcbBottom": "PCB, lato inferiore · alimentazione, ripristino e legenda dei test point",
+  "device.render.pcbBottom":
+    "PCB, lato inferiore · alimentazione, ripristino e legenda dei test point",
   "device.render.pcbBottom.alt":
     "Vista KiCad diritta del lato inferiore del PCB Rev B con logo Cicala, guida all’alimentazione, piedinatura di ripristino e contatti di test etichettati.",
   "device.render.assembly": "Rev B · schermo centrato, pulsanti incassati",

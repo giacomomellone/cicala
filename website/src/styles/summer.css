@@ -1,0 +1,370 @@
+/* The landing and app share their ink, controls and circular cicada. */
+body {
+  font-size: 1rem;
+}
+::selection {
+  background: var(--ink);
+  color: var(--yellow);
+}
+:is(a, button, input, textarea, select):focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 4px;
+}
+.cicada-circle {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--orange);
+  color: var(--ink);
+}
+.cicada-art {
+  display: block;
+  width: 55%;
+  height: 55%;
+}
+.cicada-art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.cicada-nudge {
+  border: 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 0;
+}
+.is-landing main {
+  max-width: none;
+  padding: 0;
+}
+.landing {
+  min-height: 680px;
+  height: 100svh;
+  display: grid;
+  grid-template-columns: 65% 35%;
+  grid-template-rows: clamp(180px, 31svh, 350px) minmax(0, 1fr);
+  grid-template-areas: "brand brand" "photo copy";
+}
+.landing-masthead {
+  grid-area: brand;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3.2vw 1.5vh;
+  background: var(--yellow);
+  border-bottom: 1px solid var(--ink);
+  overflow: hidden;
+}
+.landing-wordmark {
+  font-family: var(--font-brand);
+  font-size: min(26vw, 35svh);
+  line-height: 0.78;
+  font-weight: 900;
+  letter-spacing: -0.09em;
+  transform: translateX(-0.045em);
+}
+.landing .cicada-nudge {
+  width: clamp(120px, 14vw, 205px);
+  aspect-ratio: 1;
+  flex: none;
+}
+.landing-photo {
+  grid-area: photo;
+  overflow: hidden;
+}
+.landing-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: 50% 52%;
+}
+.landing-invitation {
+  grid-area: copy;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  padding: clamp(28px, 3.2vw, 64px);
+  background: var(--orange);
+  border-left: 1px solid var(--ink);
+}
+.landing-invitation h1 {
+  font-family: var(--font-brand);
+  font-size: clamp(38px, 4.2vw, 76px);
+  font-weight: 900;
+  line-height: 0.99;
+  letter-spacing: -0.055em;
+  margin: 0;
+  max-width: 10ch;
+}
+.landing-cta {
+  align-self: flex-end;
+  width: 88px;
+  min-height: 64px;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.landing-cta svg {
+  width: 100%;
+  height: 32px;
+  transition: transform 0.18s;
+}
+.landing-cta:hover svg {
+  transform: translateX(6px);
+}
+.landing-cta:focus-visible {
+  outline-offset: 5px;
+}
+
+.is-app .site-header {
+  background: var(--yellow);
+  padding: 1rem 3vw;
+}
+.is-app .wordmark {
+  width: 58px;
+  height: 58px;
+  padding: 0;
+  font-size: 1rem;
+}
+.is-app .wordmark::after {
+  content: none;
+}
+.is-app .site-nav {
+  gap: 0.3rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+.is-app .site-nav a {
+  color: var(--ink);
+  padding: 0.65rem 0.9rem;
+  text-transform: capitalize;
+  border: 1px solid transparent;
+}
+.is-app .site-nav a:hover,
+.is-app .site-nav a[aria-current="page"] {
+  background: var(--orange);
+  border-color: var(--ink);
+}
+.is-app main {
+  max-width: 54rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+.is-app main:has(.play) {
+  max-width: 64rem;
+  padding-top: 3.5rem;
+}
+.is-app h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.055em;
+}
+.is-app h2 {
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: -0.025em;
+}
+.is-app .prose strong {
+  font-weight: 700;
+}
+.is-app .play {
+  width: 100%;
+}
+.is-app .question {
+  font-size: clamp(2rem, 4.2vw, 3.3rem);
+  line-height: 1.18;
+}
+.is-app .panel {
+  min-height: 350px;
+  padding-block: 4.5rem 3.5rem;
+}
+.is-app .panel__permissions {
+  color: var(--ink-soft);
+}
+.is-app .key {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  min-height: 62px;
+}
+.is-app #q-next {
+  background: var(--orange);
+}
+.is-app #q-next:hover,
+.is-app #q-next:active {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.is-app .key__kbd {
+  opacity: 1;
+  color: var(--ink-soft);
+}
+.is-app .key:hover .key__kbd {
+  color: inherit;
+}
+.is-app .site-footer {
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.9rem 3vw 1rem;
+}
+.is-app .site-footer :is(a, button, .footer-license, .nav-dot) {
+  color: var(--ink);
+}
+.is-app .lang-switch button[aria-pressed="true"] {
+  font-weight: 700;
+}
+.is-app :is(input, textarea, select) {
+  accent-color: var(--ink);
+}
+.is-app .btn {
+  font-weight: 700;
+  background: var(--orange);
+}
+.is-app .btn:hover {
+  background: var(--ink);
+  color: var(--yellow);
+}
+.is-app .toolbar {
+  margin-bottom: 1.5rem;
+}
+.is-app .browse-question {
+  font-family: var(--font-question);
+}
+.is-app .suggest-intro {
+  margin-bottom: 1.75rem;
+}
+.is-app .suggest-tip {
+  border-color: var(--ink);
+}
+
+@media (max-width: 760px) {
+  .landing {
+    min-height: 780px;
+    height: 100svh;
+    grid-template-columns: 1fr;
+    grid-template-rows: 155px minmax(290px, 40svh) minmax(300px, 1fr);
+    grid-template-areas: "brand" "photo" "copy";
+  }
+  .landing-masthead {
+    padding: 0 22px 6px;
+  }
+  .landing-wordmark {
+    font-size: 26vw;
+  }
+  .landing .cicada-nudge {
+    width: 21vw;
+    max-width: 110px;
+  }
+  .landing-invitation {
+    border-left: 0;
+    border-top: 1px solid var(--ink);
+    padding: 24px;
+    gap: 24px;
+  }
+  .landing-invitation h1 {
+    font-size: clamp(37px, 10.8vw, 64px);
+    max-width: 16ch;
+  }
+  .landing-invitation h1 br {
+    display: none;
+  }
+  .is-app .site-nav a {
+    padding-inline: 0.6rem;
+  }
+}
+@media (max-width: 480px) {
+  .landing {
+    min-height: 740px;
+    grid-template-rows: 130px minmax(280px, 40svh) minmax(300px, 1fr);
+  }
+  .landing-masthead {
+    padding-inline: 19px;
+  }
+  .landing-invitation {
+    padding: 22px;
+    gap: 23px;
+  }
+  .is-app .site-header {
+    gap: 0.4rem;
+    padding: 0.75rem 1rem;
+  }
+  .is-app .wordmark {
+    width: 43px;
+    height: 43px;
+  }
+  .is-app .site-nav {
+    gap: 0;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    font-size: 0.8rem;
+  }
+  .is-app .site-nav a {
+    padding: 0.55rem 0.4rem;
+    min-height: 44px;
+  }
+  .is-app main {
+    padding-top: 1.75rem;
+    padding-bottom: 2rem;
+  }
+  .is-app main:has(.play) {
+    padding: 0 0 1.5rem;
+  }
+  .is-app .panel {
+    padding: 3.8rem 1.4rem 2.6rem;
+    min-height: 375px;
+  }
+  .is-app .panel__permissions {
+    letter-spacing: 0.12em;
+  }
+  .is-app .question {
+    font-size: clamp(1.9rem, 8vw, 2.4rem);
+  }
+  .is-app .site-footer {
+    padding: 0.75rem 1rem 1rem;
+  }
+  .is-app .lang-switch button[aria-pressed="true"] {
+    color: var(--yellow);
+  }
+  .is-app .key__kbd {
+    display: none;
+  }
+  .is-app .footer-license {
+    font-size: 0.65rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-cta svg {
+    transition: none;
+  }
+}
+
+.short-page {
+  max-width: 38rem;
+  padding-block: clamp(1rem, 6vh, 4rem);
+}
+.short-page h1 {
+  margin-bottom: 2rem;
+}
+.short-page p {
+  max-width: 38ch;
+  font-size: clamp(1.125rem, 2vw, 1.4rem);
+  line-height: 1.55;
+}
+.short-page p + p {
+  margin-top: 1rem;
+}
+.short-page a {
+  text-underline-offset: 5px;
+}

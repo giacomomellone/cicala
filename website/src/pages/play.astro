@@ -1,0 +1,16 @@
+---
+// The question app; the landing lives at /.
+import PlayShell from "../components/PlayShell.astro";
+import { DEFAULT_PERMISSIONS } from "../config";
+import { permitted } from "../lib/bag";
+import Base from "../layouts/Base.astro";
+import payload from "../data/questions.en.json";
+import type { Question } from "../lib/data";
+
+const all = (payload.questions as Question[]).filter((q) => permitted(q, DEFAULT_PERMISSIONS));
+const seed = all[Math.floor(Math.random() * all.length)];
+---
+
+<Base title="cicala · let's talk" lang="en">
+  <PlayShell question={seed} lang="en" />
+</Base>

@@ -10,7 +10,7 @@ Filled paths are stored as an `outline` and the `holes` it encloses, nested by
 the SVG's own even-odd fill rule, and their curves are flattened within
 0.002 mm. `apply_silkscreen.py` bridges each hole to its outline with
 `keyhole()` before writing the polygon, because KiCad's `gr_poly` is flat and
-cannot express a counter. The two eye counters are 0.759 mm across, well above
+cannot express a counter. The two eye counters are approximately 0.75 mm across, well above
 the 0.15 mm silkscreen minimum.
 
 `apply_silkscreen.py` mirrors the mark onto `B.SilkS` at (61, 8.5) mm beside
@@ -18,7 +18,7 @@ the wordmark. The group is named `Cicala cicada mark` in KiCad. Rev B places
 the same artwork at 0.7 scale on both sides through
 `hardware/tools/rev_b/silkscreen.py`.
 
-The filled mark is 6.374 mm wide and fills the nominal 8 mm height exactly, so
+The filled mark is 6.34 mm wide and 7.98 mm high within the nominal 8 mm square, so
 nothing falls outside the square; DRC checks clearance to the wordmark and the
 board edge.
 

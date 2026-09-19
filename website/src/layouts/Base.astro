@@ -1,22 +1,12 @@
 ---
 // Base layout: header, footer, i18n bootstrap, and the runtime data config.
-import "@fontsource/literata/latin-400.css";
-import "@fontsource/literata/latin-ext-400.css";
-import "@fontsource/literata/latin-400-italic.css";
-import "@fontsource/literata/latin-ext-400-italic.css";
 import "@fontsource/zilla-slab/latin-500.css";
 import "@fontsource/zilla-slab/latin-ext-500.css";
-import "@fontsource/ibm-plex-mono/latin-400.css";
-import "@fontsource/ibm-plex-mono/latin-ext-400.css";
-import "@fontsource/ibm-plex-mono/latin-500.css";
-import "@fontsource/ibm-plex-mono/latin-ext-500.css";
 import zillaLatin500 from "@fontsource/zilla-slab/files/zilla-slab-latin-500-normal.woff2?url";
-import literataLatin400 from "@fontsource/literata/files/literata-latin-400-normal.woff2?url";
-import plexLatin400 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2?url";
-import plexLatin500 from "@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2?url";
 import "../styles/tokens.css";
 import "../styles/global.css";
-import cicadaMark from "../../public/brand/cicala-mark.svg?raw";
+import "../styles/summer.css";
+import Cicada from "../components/Cicada.astro";
 import { REPO_URL, SITE_URL } from "../config";
 import languages from "../data/languages.json";
 
@@ -27,6 +17,7 @@ interface Props {
   lang?: string;
   /* Permalink language adopted by the client on load. */
   seedLang?: string;
+  landing?: boolean;
 }
 
 const {
@@ -34,6 +25,7 @@ const {
   description = "Open conversation questions made to provoke talking, invite reflection, and break the silence.",
   lang = "en",
   seedLang,
+  landing = false,
 } = Astro.props;
 
 // Content-hashed asset URLs for every per-language payload.
@@ -64,7 +56,7 @@ const cicalaConfig = {
 
 const path = Astro.url.pathname.replace(/\.html$/, "");
 const current = (p: string) => (path === p || path.startsWith(p + "/") ? "page" : undefined);
-const ogImage = new URL("/og.png?v=cuneo", SITE_URL).href;
+const ogImage = new URL("/og.png?v=summer", SITE_URL).href;
 ---
 
 <!doctype html>
@@ -72,7 +64,7 @@ const ogImage = new URL("/og.png?v=cuneo", SITE_URL).href;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#DEDAD2" />
+    <meta name="theme-color" content="#FFD23F" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta property="og:title" content={title} />
@@ -83,59 +75,83 @@ const ogImage = new URL("/og.png?v=cuneo", SITE_URL).href;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <link rel="preload" href={zillaLatin500} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={literataLatin400} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={plexLatin400} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={plexLatin500} as="font" type="font/woff2" crossorigin />
-    <link rel="icon" href="/brand/cicala-mark.svg?v=cuneo" type="image/svg+xml" />
-    <link rel="icon" href="/favicon-32.png?v=cuneo" type="image/png" sizes="32x32" />
-    <link rel="icon" href="/favicon-16.png?v=cuneo" type="image/png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=cuneo" sizes="180x180" />
+    <link rel="icon" href="/brand/cicala-mark.svg?v=summer" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png?v=summer" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon-16.png?v=summer" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=summer" sizes="180x180" />
     <script type="application/json" id="cicala-config" set:html={JSON.stringify(cicalaConfig)} />
   </head>
-  <body data-seed-lang={seedLang}>
+  <body data-seed-lang={seedLang} class:list={[landing ? "is-landing" : "is-app"]}>
     <a class="skip-link" href="#main" data-i18n="nav.skip">skip to content</a>
-    <header class="site-header">
-      <a class="wordmark" href="/" aria-label="Cicala home">
-        <span class="brand-mark" aria-hidden="true" set:html={cicadaMark} />
-        <span>cicala</span>
-      </a>
-      <nav class="site-nav" aria-label="site">
-        <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">browse</a>
-        <span class="nav-dot" aria-hidden="true">·</span>
-        <a href="/suggest" aria-current={current("/suggest")} data-i18n="nav.suggest">suggest</a>
-        <span class="nav-dot" aria-hidden="true">·</span>
-        <a href="/device" aria-current={current("/device")} data-i18n="nav.device">device</a>
-      </nav>
-    </header>
+    {
+      !landing && (
+        <header class="site-header">
+          <a class="wordmark" href="/" aria-label="Cicala home">
+            <Cicada />
+          </a>
+          <nav class="site-nav" aria-label="site">
+            <a
+              href="/play"
+              aria-current={current("/play") || (path.startsWith("/q/") ? "page" : undefined)}
+              data-i18n="nav.play"
+            >
+              Play
+            </a>
+            <a href="/browse" aria-current={current("/browse")} data-i18n="nav.browse">
+              Browse
+            </a>
+            <a href="/suggest" aria-current={current("/suggest")} data-i18n="nav.contribute">
+              Contribute
+            </a>
+            <a href="/info" aria-current={current("/info")} data-i18n="nav.info">
+              Info
+            </a>
+            <a href="/device" aria-current={current("/device")} data-i18n="nav.device">
+              Device
+            </a>
+          </nav>
+        </header>
+      )
+    }
     <main id="main">
       <slot />
     </main>
-    <footer class="site-footer">
-      <div class="lang-switch" id="lang-switch">
-        {
-          languages.map((l) => (
-            <button type="button" data-lang={l.code} aria-pressed="false" aria-label={l.name}>
-              <>
-                <span class="lang-code">{l.code}</span>
-                <span class="lang-full">
-                  {l.name.toLowerCase()} · {l.count}
-                </span>
-              </>
-            </button>
-          ))
-        }
-      </div>
-      <div class="footer-links">
-        <a href="/deck" data-i18n="deck.title">your deck</a>
-        <span class="nav-dot" aria-hidden="true">·</span>
-        <a href={REPO_URL} rel="external" data-i18n="footer.source">source</a>
-      </div>
-      <p class="footer-license">
-        <span data-i18n="footer.provenance">human originals · reviewed translations</span>
-        <span class="nav-dot" aria-hidden="true">·</span>
-        <span data-i18n="footer.license">questions are public domain (CC0)</span>
-      </p>
-    </footer>
+    {
+      !landing && (
+        <footer class="site-footer">
+          <div class="lang-switch" id="lang-switch">
+            {languages.map((l) => (
+              <button type="button" data-lang={l.code} aria-pressed="false" aria-label={l.name}>
+                <>
+                  <span class="lang-code">{l.code}</span>
+                  <span class="lang-full">
+                    {l.name.toLowerCase()} · {l.count}
+                  </span>
+                </>
+              </button>
+            ))}
+          </div>
+          <div class="footer-links">
+            <a href="/deck" data-i18n="deck.title">
+              your deck
+            </a>
+            <span class="nav-dot" aria-hidden="true">
+              ·
+            </span>
+            <a href={REPO_URL} rel="external" data-i18n="footer.source">
+              source
+            </a>
+          </div>
+          <p class="footer-license">
+            <span data-i18n="footer.provenance">human originals · reviewed translations</span>
+            <span class="nav-dot" aria-hidden="true">
+              ·
+            </span>
+            <span data-i18n="footer.license">questions are public domain (CC0)</span>
+          </p>
+        </footer>
+      )
+    }
     <script>
       import { applyI18n } from "../lib/apply-i18n";
       import { detectLang } from "../lib/data";
@@ -153,7 +169,7 @@ const ogImage = new URL("/og.png?v=cuneo", SITE_URL).href;
           if (code === lang) return;
           setStoredLang(code);
           // Leave a permalink because it pins the question language.
-          if (location.pathname.startsWith("/q/")) location.href = "/";
+          if (location.pathname.startsWith("/q/")) location.href = "/play";
           else location.reload();
         });
       });

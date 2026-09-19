@@ -1,0 +1,16 @@
+---
+import Base from "../layouts/Base.astro";
+import { t } from "../i18n";
+---
+
+<Base
+  title="About Cicala"
+  description="A collection of questions for conversations around a table."
+>
+  <article class="short-page">
+    <h1 data-i18n="info.title">{t("en", "info.title")}</h1>
+    <p data-i18n="info.about">{t("en", "info.about")}</p>
+    <p data-i18n="info.invite">{t("en", "info.invite")}</p>
+    <p data-i18n="info.open">{t("en", "info.open")}</p>
+  </article>
+</Base>

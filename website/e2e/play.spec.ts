@@ -17,11 +17,11 @@ test.describe("play", () => {
         }
       }).observe({ type: "layout-shift", buffered: true });
     });
-    await page.goto("/");
+    await page.goto("/play");
 
     const wordmark = page.getByRole("link", { name: "Cicala home" });
-    await expect(wordmark.locator(":scope > span").last()).toHaveText("cicala");
-    await expect(wordmark).toHaveCSS("font-family", /Literata/);
+    await expect(wordmark.locator(".cicada-circle")).toHaveCSS("border-radius", "50%");
+    await expect(wordmark).toHaveCSS("font-family", /Arial/);
     await expect(wordmark.locator("svg")).toHaveCount(1);
     // One filled silhouette, so there is no stroke weight to lose at favicon
     // sizes. The eyes are counters cut with an even-odd rule, which keeps them
@@ -29,21 +29,18 @@ test.describe("play", () => {
     await expect(wordmark.locator("svg > path")).toHaveCount(1);
     await expect(wordmark.locator("svg > path")).toHaveAttribute("fill", "currentColor");
     await expect(wordmark.locator("svg > path")).toHaveAttribute("fill-rule", "evenodd");
-    // The separators are the first thing a narrow header drops; they must not.
-    await expect(page.locator(".site-nav .nav-dot").first()).toBeVisible();
+    await expect(page.locator('.site-nav a[aria-current="page"]')).toHaveAttribute("href", "/play");
     await wordmark.focus();
     await expect(wordmark).toBeFocused();
 
     await expect(page.locator("#q-text")).toHaveCSS("font-family", /Zilla Slab/);
 
-    const icons = await page
-      .locator('link[rel="icon"]')
-      .evaluateAll((links) =>
-        links.map((link) => ({
-          href: (link as HTMLLinkElement).href,
-          type: (link as HTMLLinkElement).type,
-        })),
-      );
+    const icons = await page.locator('link[rel="icon"]').evaluateAll((links) =>
+      links.map((link) => ({
+        href: (link as HTMLLinkElement).href,
+        type: (link as HTMLLinkElement).type,
+      })),
+    );
     expect(icons).toHaveLength(3);
     for (const { href, type } of icons) {
       const response = await page.request.get(href);
@@ -78,16 +75,12 @@ test.describe("play", () => {
         .filter((url) => url.origin !== location.origin)
         .map((url) => url.href);
       return {
-        literata: document.fonts.check("16px Literata"),
         zilla: document.fonts.check('16px "Zilla Slab"'),
-        plex: document.fonts.check('16px "IBM Plex Mono"'),
         externalResources,
         layoutShift: (window as Window & { identityLayoutShift?: number }).identityLayoutShift ?? 0,
       };
     });
-    expect(fontState.literata).toBe(true);
     expect(fontState.zilla).toBe(true);
-    expect(fontState.plex).toBe(true);
     expect(fontState.externalResources).toEqual([]);
     expect(fontState.layoutShift).toBeLessThan(0.01);
   });
@@ -95,13 +88,13 @@ test.describe("play", () => {
   test("serves a question without JavaScript", async ({ browser }) => {
     const context = await browser.newContext({ javaScriptEnabled: false });
     const page = await context.newPage();
-    await page.goto("/");
+    await page.goto("/play");
     await expect(page.locator(questionText)).not.toBeEmpty();
     await context.close();
   });
 
   test("keeps the suggestion entry point outside the panel controls", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/play");
     const link = page.locator('a[href="/suggest?source=play"]');
     await expect(link).toBeVisible();
     await expect(page.locator('.panel a[href="/suggest?source=play"]')).toHaveCount(0);
@@ -109,7 +102,7 @@ test.describe("play", () => {
   });
 
   test("the phone trades the labels for a full-bleed sheet", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/play");
     const panel = page.locator(".panel");
     const skipNote = page.locator(".skip-note");
     const language = page.locator("#lang-switch button").first();
@@ -130,7 +123,7 @@ test.describe("play", () => {
 
   test("the card carries no blanket provenance note, only the footer", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
 
     await expect(page.locator(".panel__stamp")).toHaveCount(0);
@@ -143,7 +136,7 @@ test.describe("play", () => {
   });
 
   test("the shortcut rides its key and leaves the label centred", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/play");
     const next = page.locator("#q-next");
 
     await expect(next.locator(".key__kbd")).toHaveText("space");
@@ -158,7 +151,7 @@ test.describe("play", () => {
   test("a touch device is not offered a keyboard shortcut", async ({ browser }) => {
     const context = await browser.newContext({ ...devices["Pixel 5"] });
     const page = await context.newPage();
-    await page.goto("/");
+    await page.goto("/play");
 
     await expect(page.locator("#q-next .key__kbd")).toBeHidden();
     await expect(page.locator("#q-next")).toContainText(/next/i);
@@ -168,7 +161,7 @@ test.describe("play", () => {
 
   test("next draws a different question", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     const first = await page.locator(questionText).innerText();
     await page.getByRole("button", { name: /^next/i }).click();
@@ -177,7 +170,7 @@ test.describe("play", () => {
 
   test("space advances and arrow-left does not replay history", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     const first = await page.locator(questionText).innerText();
     await page.locator("body").press(" ");
@@ -189,7 +182,7 @@ test.describe("play", () => {
 
   test("the bag exhausts the permitted pool without a repeat", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     const seen = new Set<string>();
     for (let i = 0; i < playable("en").length; i++) {
@@ -203,7 +196,7 @@ test.describe("play", () => {
 
   test("saving a question stores it and survives a reload", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     const shown = await page.locator(questionText).innerText();
     const id = payload("en").find((q) => q.text === shown)!.id;
@@ -218,7 +211,7 @@ test.describe("play", () => {
 
   test("share copies the permalink of the question on screen", async ({ page }) => {
     skipWithoutQuestions("en");
-    await page.goto("/");
+    await page.goto("/play");
     await playReady(page);
     const shown = await page.locator(questionText).innerText();
     const id = payload("en").find((q) => q.text === shown)!.id;
@@ -253,7 +246,7 @@ test.describe("permalink", () => {
     await page.goto(`/q/${question.id}`);
     await expect(page.locator(questionText)).toHaveText(question.text);
     await page.getByRole("button", { name: /^next/i }).click();
-    await expect.poll(() => new URL(page.url()).pathname).toBe("/");
+    await expect.poll(() => new URL(page.url()).pathname).toBe("/play");
   });
 
   test("an unknown id is a 404", async ({ page }) => {
