@@ -1,20 +1,224 @@
 ---
+import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
 import { REPO_URL } from "../config";
 import { t } from "../i18n";
+import assembly from "../../../hardware/rev_b/case/renders/assembly.png";
+import exploded from "../../../hardware/rev_b/case/renders/exploded.png";
+import inside from "../../../hardware/rev_b/case/renders/inside.png";
+import section from "../../../hardware/rev_b/case/renders/section.png";
+import pcbTop from "../../../hardware/rev_b/pcb/renders/top.png";
+import pcbBottom from "../../../hardware/rev_b/pcb/renders/bottom.png";
+import silkTop from "../../../hardware/rev_b/pcb/renders/silkscreen_top.svg?url";
+import silkBottom from "../../../hardware/rev_b/pcb/renders/silkscreen_bottom.svg?url";
+
+const caseViews = [
+  { image: exploded, caption: "device.render.exploded", alt: "device.render.exploded.alt" },
+  { image: inside, caption: "device.render.inside", alt: "device.render.inside.alt" },
+  { image: section, caption: "device.render.section", alt: "device.render.section.alt" },
+] as const;
+const pcbViews = [
+  {
+    image: pcbTop,
+    silk: silkTop,
+    caption: "device.render.pcbTop",
+    alt: "device.render.pcbTop.alt",
+  },
+  {
+    image: pcbBottom,
+    silk: silkBottom,
+    caption: "device.render.pcbBottom",
+    alt: "device.render.pcbBottom.alt",
+  },
+] as const;
 ---
 
 <Base
   title="The device · Cicala"
-  description="Work in progress. Follow Cicala’s hardware development."
+  description="A small e-paper device for conversations around a table. Explore the enclosure CAD and PCB in development."
 >
-  <article class="short-page">
-    <h1 data-i18n="device.wip.title">{t("en", "device.wip.title")}</h1>
-    <p data-i18n="device.wip.body">{t("en", "device.wip.body")}</p>
-    <p>
-      <a href={`${REPO_URL}/tree/main/hardware#readme`} data-i18n="device.wip.updates"
-        >{t("en", "device.wip.updates")}</a
-      >
-    </p>
+  <article class="device-page">
+    <header class="device-intro">
+      <h1 data-i18n="device.title">{t("en", "device.title")}</h1>
+      <p class="device-goal" data-i18n="device.goal">{t("en", "device.goal")}</p>
+      <p class="device-status">
+        <strong data-i18n="device.wip.title">{t("en", "device.wip.title")}</strong>.
+        <span data-i18n="device.wip.body">{t("en", "device.wip.body")}</span>{" "}
+        <a href={`${REPO_URL}/tree/main/hardware#readme`} data-i18n="device.wip.updates">
+          {t("en", "device.wip.updates")}
+        </a>
+      </p>
+    </header>
+
+    <figure class="device-assembly">
+      <a class="device-image-link" href={assembly.src}>
+        <Image
+          src={assembly}
+          alt={t("en", "device.render.assembly.alt")}
+          data-i18n-alt="device.render.assembly.alt"
+          widths={[480, 800, 1200, 1600]}
+          sizes="(max-width: 66rem) 100vw, 1024px"
+          format="webp"
+          loading="eager"
+        />
+      </a>
+      <figcaption data-i18n="device.render.assembly">
+        {t("en", "device.render.assembly")}
+      </figcaption>
+    </figure>
+
+    <section class="device-renders" aria-labelledby="cad-title">
+      <h2 id="cad-title" data-i18n="device.renders.title">{t("en", "device.renders.title")}</h2>
+      <p data-i18n="device.renders.text">{t("en", "device.renders.text")}</p>
+      <div class="device-case-views">
+        {
+          caseViews.map((view) => (
+            <figure>
+              <a class="device-image-link" href={view.image.src}>
+                <Image
+                  src={view.image}
+                  alt={t("en", view.alt)}
+                  data-i18n-alt={view.alt}
+                  widths={[480, 800, 1200, 1600]}
+                  format="webp"
+                  sizes="(max-width: 40rem) 100vw, (max-width: 66rem) 50vw, 512px"
+                />
+              </a>
+              <figcaption data-i18n={view.caption}>{t("en", view.caption)}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="device-renders" id="pcb" aria-labelledby="pcb-title">
+      <h2 id="pcb-title" data-i18n="device.pcb.title">{t("en", "device.pcb.title")}</h2>
+      <p data-i18n="device.pcb.text">{t("en", "device.pcb.text")}</p>
+      <div class="device-board-views">
+        {
+          pcbViews.map((view) => (
+            <figure>
+              <a class="device-image-link" href={view.image.src}>
+                <Image
+                  src={view.image}
+                  alt={t("en", view.alt)}
+                  data-i18n-alt={view.alt}
+                  widths={[480, 800, 1200, view.image.width]}
+                  format="webp"
+                  sizes="(max-width: 40rem) 100vw, (max-width: 66rem) 50vw, 512px"
+                />
+              </a>
+              <figcaption>
+                <span data-i18n={view.caption}>{t("en", view.caption)}</span>
+                <a class="device-silkscreen" href={view.silk} data-i18n="device.pcb.silkscreen">
+                  {t("en", "device.pcb.silkscreen")}
+                </a>
+              </figcaption>
+            </figure>
+          ))
+        }
+      </div>
+    </section>
   </article>
 </Base>
+
+<style>
+  :global(main:has(.device-page)) {
+    max-width: 66rem;
+  }
+  .device-intro {
+    max-width: 44rem;
+    padding-block: 1rem 2rem;
+  }
+  .device-intro h1 {
+    margin-bottom: 1.5rem;
+  }
+  .device-goal {
+    max-width: 42ch;
+    font-size: clamp(1.125rem, 2vw, 1.4rem);
+    line-height: 1.55;
+  }
+  .device-status {
+    margin-top: 1.5rem;
+    color: var(--ink-soft);
+  }
+  a {
+    text-underline-offset: 0.25em;
+  }
+  .device-image-link {
+    display: block;
+    background: #ffffe5;
+    cursor: zoom-in;
+  }
+  .device-image-link img {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  .device-assembly .device-image-link,
+  .device-case-views .device-image-link {
+    background: #f8f8f8;
+  }
+  .device-assembly img {
+    max-height: 30rem;
+  }
+  figcaption {
+    margin-top: 0.65rem;
+    color: var(--ink-soft);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+  .device-assembly figcaption {
+    text-align: center;
+  }
+  .device-renders {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--line);
+    scroll-margin-top: 1.5rem;
+  }
+  .device-renders h2 {
+    margin-top: 0;
+  }
+  .device-renders > p {
+    max-width: 66ch;
+    color: var(--ink-soft);
+    margin-bottom: 1.5rem;
+  }
+  .device-case-views,
+  .device-board-views {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+  .device-case-views figure:first-child {
+    grid-row: span 2;
+  }
+  .device-case-views figure:first-child .device-image-link {
+    height: calc(100% - 3.5rem);
+  }
+  .device-case-views figure:first-child img {
+    height: 100%;
+  }
+  .device-silkscreen {
+    display: block;
+    width: fit-content;
+    padding-block: 0.5rem;
+  }
+  @media (max-width: 40rem) {
+    .device-case-views,
+    .device-board-views {
+      grid-template-columns: 1fr;
+    }
+    .device-case-views figure:first-child {
+      grid-row: auto;
+    }
+    .device-case-views figure:first-child .device-image-link {
+      height: auto;
+    }
+    .device-renders {
+      margin-top: 2rem;
+    }
+  }
+</style>

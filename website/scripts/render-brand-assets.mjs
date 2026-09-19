@@ -1,17 +1,18 @@
 import { chromium } from "@playwright/test";
-import { readFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const websiteDir = join(dirname(fileURLToPath(import.meta.url)), "..");
 const publicDir = join(websiteDir, "public");
+const iconDir = join(websiteDir, "src/assets/brand");
 const cicada = await readFile(join(publicDir, "brand/cicala-mark.svg"), "utf8");
 const paper = "#f46b45";
 const ink = "#341e24";
 
 const browser = await chromium.launch();
 
-async function render(path, width, height, body, transparent = false) {
+async function render(path, width, height, body, transparent = false, directory = publicDir) {
   const context = await browser.newContext({
     viewport: { width, height },
     deviceScaleFactor: 1,
@@ -27,7 +28,7 @@ async function render(path, width, height, body, transparent = false) {
     ${body}
   `);
   await page.evaluate(() => document.fonts.ready);
-  await page.screenshot({ path: join(publicDir, path), omitBackground: transparent });
+  await page.screenshot({ path: join(directory, path), omitBackground: transparent });
   await context.close();
 }
 
@@ -66,8 +67,22 @@ const logo = (colour) => `
 await render("brand/cicala-logo-dark.png", 1019, 378, logo(ink), true);
 await render("brand/cicala-logo-reversed.png", 1019, 378, logo(paper), true);
 await renderMark("apple-touch-icon.png", 180);
-await renderMark("favicon-32.png", 32);
-await renderMark("favicon-16.png", 16);
+// Import these into the layout so Astro gives every revision a new filename.
+// The tab icon uses the same orange circle as the website, with extra size
+// for the mark so its eyes remain legible at 16 px.
+await mkdir(iconDir, { recursive: true });
+const tabIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100%" height="100%">
+  <circle cx="50" cy="50" r="50" fill="${paper}"/>
+  ${cicada.replace("<svg ", '<svg x="10" y="10" width="80" height="80" ').replaceAll("currentColor", ink)}
+</svg>`;
+await writeFile(join(iconDir, "favicon.svg"), tabIcon);
+for (const size of [16, 32]) {
+  const filename = `favicon-${size}.png`;
+  await render(filename, size, size, tabIcon, true, iconDir);
+  // Keep conventional fallback URLs current for previously opened tabs.
+  await copyFile(join(iconDir, filename), join(publicDir, filename));
+}
+await copyFile(join(publicDir, "apple-touch-icon.png"), join(iconDir, "apple-touch-icon.png"));
 await render(
   "og.png",
   1200,

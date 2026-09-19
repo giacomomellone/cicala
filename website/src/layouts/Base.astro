@@ -7,6 +7,10 @@ import "../styles/tokens.css";
 import "../styles/global.css";
 import "../styles/summer.css";
 import Cicada from "../components/Cicada.astro";
+import favicon from "../assets/brand/favicon.svg?url";
+import favicon32 from "../assets/brand/favicon-32.png";
+import favicon16 from "../assets/brand/favicon-16.png";
+import touchIcon from "../assets/brand/apple-touch-icon.png";
 import { REPO_URL, SITE_URL } from "../config";
 import languages from "../data/languages.json";
 
@@ -75,10 +79,10 @@ const ogImage = new URL("/og.png?v=summer", SITE_URL).href;
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
     <link rel="preload" href={zillaLatin500} as="font" type="font/woff2" crossorigin />
-    <link rel="icon" href="/brand/cicala-mark.svg?v=summer" type="image/svg+xml" />
-    <link rel="icon" href="/favicon-32.png?v=summer" type="image/png" sizes="32x32" />
-    <link rel="icon" href="/favicon-16.png?v=summer" type="image/png" sizes="16x16" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=summer" sizes="180x180" />
+    <link rel="icon" href={favicon} type="image/svg+xml" />
+    <link rel="icon" href={favicon32.src} type="image/png" sizes="32x32" />
+    <link rel="icon" href={favicon16.src} type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href={touchIcon.src} sizes="180x180" />
     <script type="application/json" id="cicala-config" set:html={JSON.stringify(cicalaConfig)} />
   </head>
   <body data-seed-lang={seedLang} class:list={[landing ? "is-landing" : "is-app"]}>

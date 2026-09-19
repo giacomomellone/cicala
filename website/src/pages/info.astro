@@ -1,5 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
+import { REPO_URL } from "../config";
 import { t } from "../i18n";
 ---
 
@@ -11,6 +12,14 @@ import { t } from "../i18n";
     <h1 data-i18n="info.title">{t("en", "info.title")}</h1>
     <p data-i18n="info.about">{t("en", "info.about")}</p>
     <p data-i18n="info.invite">{t("en", "info.invite")}</p>
-    <p data-i18n="info.open">{t("en", "info.open")}</p>
+    <p>
+      <span data-i18n="info.open.start">{t("en", "info.open.start")}</span>{" "}<a
+        href={REPO_URL}
+        data-i18n="info.open.source">{t("en", "info.open.source")}</a
+      ><span data-i18n="info.open.middle">{t("en", "info.open.middle")}</span>{" "}<a
+        href="/suggest"
+        data-i18n="info.open.contribute">{t("en", "info.open.contribute")}</a
+      ><span data-i18n="info.open.end">{t("en", "info.open.end")}</span>
+    </p>
   </article>
 </Base>

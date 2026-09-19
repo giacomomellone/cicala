@@ -106,12 +106,14 @@ body {
 }
 .landing-cta {
   align-self: flex-end;
-  width: 88px;
+  width: 112px;
   min-height: 64px;
   display: grid;
   place-items: center;
-  padding: 12px;
-  color: var(--ink);
+  padding: 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--yellow);
   text-decoration: none;
 }
 .landing-cta svg {

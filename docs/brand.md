@@ -45,11 +45,14 @@ weight. Focus indicators remain visible against each adjacent surface.
 The landing at `/` uses a yellow masthead, the selected overhead table scene
 on the left and an orange invitation on the right. On a phone these stack in
 that order. Its only headline is “Grab a chair, I have a question for you”.
-An arrow opens `/play`, with “Try a question” as its accessible label.
+A yellow arrow in a dark rectangular box opens `/play`, with “Try a question”
+as its accessible label.
 
 The application retains browse, filters, saving, sharing and contribution.
-Info gives a short introduction; Device links to the hardware README while
-development continues.
+Info gives a short introduction with source and contribution links. Device
+explains the goal, shows the Rev B enclosure CAD and both PCB faces, and links
+to the hardware README for updates. Dedicated button-design views stay out
+of the page.
 Direct question links stay at `/q/<id>`; drawing the next question returns to
 `/play`. The application uses the same yellow header and orange actions while
 keeping the question on cream. The website does not use decorative dither
@@ -75,6 +78,12 @@ path. Run `npm run brand-assets` in `website/` to regenerate the PNGs:
 
 Square exports use the cicada; transparent lockups include the wordmark.
 Do not redraw the mark for individual placements or fill its eye counters.
+
+The browser tab uses the mark inside the orange circle. The renderer also
+writes SVG and PNG icons to `website/src/assets/brand/`; the layout imports
+them so Astro emits content-hashed filenames, refreshing cached browser icons
+when the artwork changes. The conventional public PNG paths remain available
+as fallbacks.
 
 ## Device placement
 

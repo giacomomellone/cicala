@@ -1,8 +1,9 @@
 # Device page imagery
 
-The current device page imports six native Rev B enclosure PNGs directly from
-`hardware/rev_b/case/renders/`: assembly, exploded, inside, section, carrier and
-buttons_exploded. Generate them with `just hw-rev-b-export --renders`. Their source hashes are recorded in
+The current device page imports four native Rev B enclosure PNGs directly from
+`hardware/rev_b/case/renders/`: assembly, exploded, inside and section.
+The dedicated button-design and carrier views are not displayed.
+Generate them with `just hw-rev-b-export --renders`. Their source hashes are recorded in
 `hardware/rev_b/case/exports/manifest.json`. Astro generates responsive WebP
 variants during the website build. They depict nominal CAD geometry of an
 unbuilt engineering prototype.

@@ -43,6 +43,10 @@ test.describe("play", () => {
     );
     expect(icons).toHaveLength(3);
     for (const { href, type } of icons) {
+      // Changed artwork must receive a new URL, including Safari's PNG fallback.
+      expect(new URL(href).pathname).toMatch(
+        /^\/_astro\/favicon(?:-16|-32)?\.[a-zA-Z0-9_-]+\.(svg|png)$/,
+      );
       const response = await page.request.get(href);
       expect(response.ok()).toBe(true);
       expect(response.headers()["content-type"]).toContain(type);
