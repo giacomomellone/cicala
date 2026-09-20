@@ -23,6 +23,28 @@ const en = {
   "device.wip.title": "Work in progress",
   "device.wip.body": "I'll update this (maybe) later.",
   "device.wip.updates": "Check here for some updates",
+  "device.crosspoint.jump": "Use an Xteink X4 Pro →",
+  "device.crosspoint.eyebrow": "Another device option · Xteink X4 Pro",
+  "device.crosspoint.title": "Cicala on CrossPoint",
+  "device.crosspoint.body":
+    "An existing e-reader is another way to use Cicala. Our CrossPoint fork adds offline conversation questions to the Xteink X4 Pro, alongside your books.",
+  "device.crosspoint.flow":
+    "Open Cicala from Home, choose your filters, and tap Next. Wi-Fi can update the question collection.",
+  "device.crosspoint.status":
+    "Development firmware for X4 Pro; build from source. Hardware testing is still pending.",
+  "device.crosspoint.source": "Explore the fork →",
+  "device.crosspoint.guide": "Build and install →",
+  "device.crosspoint.renderNote":
+    "Illustrative screens with layout examples. The initial English collection is empty.",
+  "device.crosspoint.home": "01 · Open from Home",
+  "device.crosspoint.home.alt":
+    "Illustration of the CrossPoint Home menu with the Cicala entry and its small logo.",
+  "device.crosspoint.question": "02 · One question at a time",
+  "device.crosspoint.question.alt":
+    "Illustration of Cicala on X4 Pro: a logo-only header, centered question, and black Next button.",
+  "device.crosspoint.filters": "03 · Choose what to include",
+  "device.crosspoint.filters.alt":
+    "Illustration of the Dark, Sexual and Heavy filters with Cancel and Apply controls.",
 
   "nav.skip": "skip to content",
 
@@ -299,6 +321,28 @@ const de: Record<StringKey, string> = {
   "device.wip.title": "In Arbeit",
   "device.wip.body": "Ich aktualisiere das hier (vielleicht) später.",
   "device.wip.updates": "Hier gibt es Neuigkeiten",
+  "device.crosspoint.jump": "Ein Xteink X4 Pro verwenden →",
+  "device.crosspoint.eyebrow": "Eine weitere Geräteoption · Xteink X4 Pro",
+  "device.crosspoint.title": "Cicala auf CrossPoint",
+  "device.crosspoint.body":
+    "Auch ein vorhandener E-Reader kann Cicala nutzen. Unser CrossPoint-Fork ergänzt den Xteink X4 Pro um Gesprächsfragen, die offline neben deinen Büchern verfügbar sind.",
+  "device.crosspoint.flow":
+    "Öffne Cicala im Hauptmenü, wähle deine Filter und tippe auf Next. Über WLAN lässt sich die Fragensammlung aktualisieren.",
+  "device.crosspoint.status":
+    "Entwicklungsfirmware für X4 Pro; aus dem Quellcode bauen. Tests auf dem Gerät stehen noch aus.",
+  "device.crosspoint.source": "Zum Fork →",
+  "device.crosspoint.guide": "Bauen und installieren →",
+  "device.crosspoint.renderNote":
+    "Illustrative Ansichten mit Layoutbeispielen. Die anfängliche englische Sammlung ist leer.",
+  "device.crosspoint.home": "01 · Im Hauptmenü öffnen",
+  "device.crosspoint.home.alt":
+    "Illustration des CrossPoint-Hauptmenüs mit dem Cicala-Eintrag und seinem kleinen Logo.",
+  "device.crosspoint.question": "02 · Eine Frage nach der anderen",
+  "device.crosspoint.question.alt":
+    "Illustration von Cicala auf dem X4 Pro: Logo im Kopfbereich, zentrierte Frage und schwarze Next-Taste.",
+  "device.crosspoint.filters": "03 · Inhalte auswählen",
+  "device.crosspoint.filters.alt":
+    "Illustration der Filter Dark, Sexual und Heavy mit den Schaltflächen Cancel und Apply.",
 
   "nav.skip": "zum Inhalt springen",
 
@@ -565,6 +609,28 @@ const it: Record<StringKey, string> = {
   "device.wip.title": "Lavori in corso",
   "device.wip.body": "Aggiornerò questa pagina (forse) più avanti.",
   "device.wip.updates": "Qui trovi gli aggiornamenti",
+  "device.crosspoint.jump": "Usa un Xteink X4 Pro →",
+  "device.crosspoint.eyebrow": "Un’altra opzione · Xteink X4 Pro",
+  "device.crosspoint.title": "Cicala su CrossPoint",
+  "device.crosspoint.body":
+    "Anche un e-reader è un modo per usare Cicala. Il nostro fork di CrossPoint aggiunge all’Xteink X4 Pro domande per conversare, disponibili offline accanto ai tuoi libri.",
+  "device.crosspoint.flow":
+    "Apri Cicala dalla Home, scegli i filtri e tocca Next. Il Wi-Fi permette di aggiornare la raccolta di domande.",
+  "device.crosspoint.status":
+    "Firmware in sviluppo per X4 Pro, da compilare dai sorgenti. I test sul dispositivo sono ancora da fare.",
+  "device.crosspoint.source": "Esplora il fork →",
+  "device.crosspoint.guide": "Compila e installa →",
+  "device.crosspoint.renderNote":
+    "Schermate illustrative con esempi di impaginazione. La raccolta inglese iniziale è vuota.",
+  "device.crosspoint.home": "01 · Apri dalla Home",
+  "device.crosspoint.home.alt":
+    "Illustrazione della Home di CrossPoint con la voce Cicala e il suo piccolo logo.",
+  "device.crosspoint.question": "02 · Una domanda alla volta",
+  "device.crosspoint.question.alt":
+    "Illustrazione di Cicala su X4 Pro: solo il logo in alto, domanda centrata e pulsante Next nero.",
+  "device.crosspoint.filters": "03 · Scegli cosa includere",
+  "device.crosspoint.filters.alt":
+    "Illustrazione dei filtri Dark, Sexual e Heavy con i pulsanti Cancel e Apply.",
 
   "nav.skip": "vai al contenuto",
 

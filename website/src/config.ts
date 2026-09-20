@@ -1,5 +1,6 @@
 // External URLs are defined here so a domain or organization move is atomic.
 export const REPO_URL = "https://github.com/giacomomellone/cicala";
+export const CROSSPOINT_URL = "https://github.com/giacomomellone/cicala-crosspoint";
 export const SITE_URL = "https://cicala.dev";
 
 // Shipped languages from questions/schema.json. Generated payloads add counts,
