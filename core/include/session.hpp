@@ -5,7 +5,7 @@
 namespace cicala
 {
 enum class ViewKind : uint8_t { Question = 0, Filters, Service, Empty };
-enum class Action { Next, Filters, NewSession };
+enum class Action { Next, Filters, NewSession, CancelFilters };
 enum class RenderResult { Complete, Failed, Timeout };
 
 /** Stable field order also used by the existing Zephyr RTC adapter. */

@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <initializer_list>
 
 #define CHECK(x)                                                                                   \
     do {                                                                                           \
@@ -119,6 +120,39 @@ void filter_rows()
     v = s.prepareFilterRow(3);
     CHECK(v && s.complete(v->token, RenderResult::Complete));
     CHECK(!play.menu && play.permissions == kAllowSexual && bag.drawn[0] == seen);
+}
+void cancel_filters()
+{
+    for (const bool empty : {false, true}) {
+        Fixture f;
+        if (!empty)
+            f.add(3);
+        Qdb q;
+        CHECK(q.open(f.bytes, f.size));
+        PlayState play{};
+        play.permissions = kAllowHeavy;
+        Bag::State bag{};
+        Session s(play, zero, nullptr);
+        CHECK(s.bindCorpus(q, bag));
+        apply(s, Action::Next);
+        const auto original = play;
+        const auto originalBag = bag;
+        CHECK(!s.prepare(Action::CancelFilters));
+        apply(s, Action::Filters);
+        const auto *v = s.prepareFilterRow(2);
+        CHECK(v && s.complete(v->token, RenderResult::Complete));
+        CHECK(play.draft == 0 && play.permissions == kAllowHeavy);
+        v = s.prepare(Action::CancelFilters);
+        CHECK(v && !v->play.menu);
+        CHECK(!s.complete(v->token, RenderResult::Failed));
+        CHECK(play.menu && play.draft == 0);
+        apply(s, Action::CancelFilters);
+        CHECK(!play.menu && play.draft == kAllowHeavy && play.cursor == 0);
+        CHECK(play.permissions == original.permissions && play.restrictions == original.restrictions);
+        CHECK(play.kind == original.kind && play.len == original.len);
+        CHECK(memcmp(play.text, original.text, play.len) == 0);
+        CHECK(memcmp(&bag, &originalBag, sizeof(bag)) == 0);
+    }
 }
 void selection()
 {
@@ -235,6 +269,7 @@ int main()
 {
     transactions();
     filter_rows();
+    cancel_filters();
     selection();
     snapshots();
     rebind();

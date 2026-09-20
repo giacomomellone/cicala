@@ -28,6 +28,10 @@ pending work before replacing the corpus. The prepared view owns a bounded
 copy of the question. Only `complete(token, RenderResult::Complete)` commits it.
 Calls on a session must be serialized by its adapter.
 
+`Action::CancelFilters` discards an open filter draft and returns to the committed
+question or empty view without drawing from the bag. Cancellation follows the same
+render-commit protocol as Apply; a failed refresh retains the open draft.
+
 `verify_bundle` takes a SHA-256 digest computed by the platform over the exact
 payload passed with it. It verifies that digest's signature and validates the
 payload against its manifest. The adapter owns streaming, hashing, storage,

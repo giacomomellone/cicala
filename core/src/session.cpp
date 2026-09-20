@@ -56,9 +56,17 @@ const PendingView *Session::draw()
 
 const PendingView *Session::prepare(Action action)
 {
+    if (action == Action::CancelFilters && !_committed.menu)
+        return nullptr;
     if (!begin())
         return nullptr;
     auto &play = _view.play;
+    if (action == Action::CancelFilters) {
+        play.menu = false;
+        play.draft = play.permissions;
+        play.cursor = 0;
+        return finish(play.len ? ViewKind::Question : ViewKind::Empty);
+    }
     if (action == Action::NewSession) {
         play = {};
         _stagedBag = {};
