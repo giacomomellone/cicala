@@ -23,6 +23,7 @@ website/src/data/*.json
 dist/bundles/
 dist/corpus/
 dist/test-bundles/
+dist/cicala-core-*.tar.gz*
 
 # question drafts — working notes for `just draft`, not the database itself
 drafts/

@@ -484,7 +484,19 @@ hw-fab-export:
 
 # everything that runs without hardware
 [group('tests')]
-test: validate test-tools test-website
+test: validate test-tools test-website test-core
+
+# portable firmware logic, independent of Zephyr and the X4 toolchain
+[group('tests')]
+test-core:
+    cmake -S core -B build/core -DCICALA_BUILD_TESTS=ON
+    cmake --build build/core --parallel
+    ctest --test-dir build/core --output-on-failure
+    {{ python }} tools/test_core_bundle.py build/core/tests/cicala_bundle_check
+
+[group('firmware')]
+core-package:
+    {{ python }} tools/package_core.py
 
 # tools test suite (python unittest)
 [group('tests')]

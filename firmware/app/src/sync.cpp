@@ -10,6 +10,7 @@
 #include <psa/crypto.h>
 
 #include "corpus.h"
+#include "bundle.hpp"
 #include "ed25519.hpp"
 #include "fetch.h"
 #include "manifest.hpp"
@@ -23,9 +24,6 @@ LOG_MODULE_REGISTER(cicala_sync, LOG_LEVEL_INF);
 
 /* Bound manifest memory independently of the server response. */
 #define MANIFEST_MAX 2048
-
-/* The version min_fw is compared against. */
-#define CICALA_SYNC_CONTRACT_VERSION "0.2.0"
 
 static char manifest_buf[MANIFEST_MAX];
 static size_t manifest_len;
@@ -57,8 +55,9 @@ const char *cicala_sync_installed_version(void)
 enum cicala_sync_result cicala_sync_run(const char *language, uint16_t *count, char *version,
                                         size_t version_size)
 {
-    cicala::Manifest manifest = {};
-    cicala::ManifestEntry entry = {};
+    static cicala::BundlePlan plan;
+    const auto &manifest = plan.manifest;
+    const auto &entry = plan.entry;
 
     LOG_INF("checking %s for a newer %s corpus", CONFIG_CICALA_SYNC_BASE_URL, language);
 
@@ -73,40 +72,12 @@ enum cicala_sync_result cicala_sync_run(const char *language, uint16_t *count, c
 
     manifest_len = (size_t) n;
 
-    if (!cicala::manifest_parse(manifest_buf, manifest_len, manifest)) {
-        LOG_ERR("the manifest did not parse");
-        return CICALA_SYNC_FAILED;
-    }
-
-    if (manifest.schema != cicala::kManifestSchema) {
-        /* Unknown schemas may change field meaning. */
-        LOG_ERR("manifest schema %u, expected %u", manifest.schema, cicala::kManifestSchema);
-        return CICALA_SYNC_FAILED;
-    }
-
-    if (cicala::version_compare(CICALA_SYNC_CONTRACT_VERSION, manifest.min_fw) < 0) {
-        LOG_WRN("this release wants firmware %s; this is %s", manifest.min_fw,
-                CICALA_SYNC_CONTRACT_VERSION);
-        return CICALA_SYNC_FAILED;
-    }
-
-    /* Reject signed manifests older than the installed corpus. */
-    const char *installed = cicala_corpus_version();
-
-    if (installed[0] != '\0' && cicala::version_compare(manifest.version, installed) <= 0) {
-        LOG_INF("%s is installed and the manifest offers %s — nothing to do", installed,
-                manifest.version);
+    const auto planned =
+        cicala::plan_bundle(manifest_buf, manifest_len, language, cicala_corpus_version(), plan);
+    if (planned == cicala::BundleResult::Current)
         return CICALA_SYNC_CURRENT;
-    }
-
-    if (!cicala::manifest_entry(manifest_buf, manifest_len, language, entry)) {
-        LOG_ERR("the manifest carries nothing for %s", language);
-        return CICALA_SYNC_FAILED;
-    }
-
-    if (!entry.signed_) {
-        /* tools/build_bundle.py writes "sig": null without a key. */
-        LOG_ERR("refusing an unsigned bundle");
+    if (planned != cicala::BundleResult::Ready) {
+        LOG_ERR("bundle manifest rejected (%d)", static_cast<int>(planned));
         return CICALA_SYNC_FAILED;
     }
 
@@ -147,13 +118,10 @@ enum cicala_sync_result cicala_sync_run(const char *language, uint16_t *count, c
         return CICALA_SYNC_FAILED;
     }
 
-    if (memcmp(digest, entry.sha256, sizeof(digest)) != 0) {
-        LOG_ERR("the bundle does not match its digest");
-        return CICALA_SYNC_FAILED;
-    }
-
-    if (!cicala::ed25519_verify(entry.sig, digest, sizeof(digest), CICALA_TRUSTED_KEY)) {
-        LOG_ERR("the bundle's signature is not valid — refusing it");
+    cicala::Qdb checked;
+    if (cicala::verify_bundle(plan, buf, static_cast<size_t>(n), digest, CICALA_TRUSTED_KEY,
+                              checked) != cicala::BundleResult::Ready) {
+        LOG_ERR("bundle verification failed");
         return CICALA_SYNC_FAILED;
     }
 

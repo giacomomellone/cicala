@@ -45,7 +45,7 @@ target_sources_ifdef(CONFIG_CICALA_POWER app PRIVATE src/power.c src/power_logic
 target_sources_ifdef(CONFIG_CICALA_STATUS_LED app PRIVATE src/status.c src/status_logic.cpp)
 
 # Bundle and firmware downloads share one HTTP client.
-target_sources_ifdef(CONFIG_CICALA_SYNC app PRIVATE src/fetch.c src/sync.cpp)
+target_sources_ifdef(CONFIG_CICALA_SYNC app PRIVATE src/fetch.c src/sync.cpp ${CMAKE_CURRENT_SOURCE_DIR}/../../core/src/bundle.cpp)
 target_sources_ifdef(CONFIG_CICALA_OTA app PRIVATE src/ota.cpp)
 
 # HTTP_RESOURCE_DEFINE lands each resource in a section named after its service.

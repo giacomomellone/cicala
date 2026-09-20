@@ -23,21 +23,21 @@ Native KiCad files are authoritative. Routing helpers produce candidates; replay
 
 ## Packaging
 
-| Item              | Implemented arrangement                                                                          |
-| ----------------- | ------------------------------------------------------------------------------------------------ |
-| Enclosure         | 128 × 66 × 16.8 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                           |
+| Item              | Implemented arrangement                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------- |
+| Enclosure         | 128 × 66 × 16.8 mm; 1.4 mm wall, 1.2 mm base, 4 mm outer corner radius                         |
 | PCB               | Four layers, 1.2 mm nominal; lower arm and right arm, R1 reentrant corner; lower face z=4.6 mm |
-| Assembly          | Electronic components on the top face                                                            |
-| Controller        | ESP32-S3-WROOM-1-N16, antenna toward the left edge                                               |
-| Display           | Waveshare 22609 V1.1, UC8253; 84.70 × 54.41 mm glass, 1.18 mm reserved thickness                 |
-| Active screen     | 74.51 × 49.67 mm, 360 × 240; centered at x=54, y=33 mm                                           |
-| Battery           | Protected Renata ICP303450PA-02, 500 mAh minimum; 54 × 36 × 4.8 mm assembly reservation          |
-| Display connector | Molex 503480-2400, 24 positions, 0.5 mm pitch, dual contacts                                     |
-| Battery header    | JST SH, BAT+/NTC/GND; AWG28 adapter harness                                                      |
-| Controls          | 2 × Omron B3F-4050; B32-1200 ivory 9 × 9 mm / B32-1320 orange 12 × 12 mm                                 |
-| USB / recovery    | HRO TYPE-C-31-M-12 and six-contact Tag-Connect recovery interface                                |
-| Optional carrier  | 3.2 mm behind the core; 1.4 mm around its perimeter                                              |
-| Table stand       | Separate passive wedge, approximately 12°                                                        |
+| Assembly          | Electronic components on the top face                                                          |
+| Controller        | ESP32-S3-WROOM-1-N16, antenna toward the left edge                                             |
+| Display           | Waveshare 22609 V1.1, UC8253; 84.70 × 54.41 mm glass, 1.18 mm reserved thickness               |
+| Active screen     | 74.51 × 49.67 mm, 360 × 240; centered at x=54, y=33 mm                                         |
+| Battery           | Protected Renata ICP303450PA-02, 500 mAh minimum; 54 × 36 × 4.8 mm assembly reservation        |
+| Display connector | Molex 503480-2400, 24 positions, 0.5 mm pitch, dual contacts                                   |
+| Battery header    | JST SH, BAT+/NTC/GND; AWG28 adapter harness                                                    |
+| Controls          | 2 × Omron B3F-4050; B32-1200 ivory 9 × 9 mm / B32-1320 orange 12 × 12 mm                       |
+| USB / recovery    | HRO TYPE-C-31-M-12 and six-contact Tag-Connect recovery interface                              |
+| Optional carrier  | 3.2 mm behind the core; 1.4 mm around its perimeter                                            |
+| Table stand       | Separate passive wedge, approximately 12°                                                      |
 
 The glass is offset because its inactive border is asymmetric. The **visible screen** is centered. A separate frame and lower support bar carry the glass through a nominal 0.2 mm foam interface; the battery does not support it. The lens is 0.8 mm thick. Adhesive and foam interfaces need prototype compression checks.
 
@@ -73,14 +73,14 @@ The PCB underside is z=4.6 mm. Untrimmed nominal 3.5 mm leads have 1.10 mm base 
 
 ### Print and assembly preparation
 
-| Folder | Contents |
-| --- | --- |
-| `case/exports/assembly/` | Assembly-coordinate printed parts |
-| `case/exports/print/core/` | Base, top shell, display frame and support bar |
-| `case/exports/print/accessories/` | Carrier, cover and wedge |
-| `case/exports/print/jigs/` | Temporary flex former |
-| `case/exports/reference/` | Purchased caps, switch, battery, panel and PCB envelopes; do not print |
-| `case/exports/patterns/` | Clear-sheet lens cutting outline |
+| Folder                            | Contents                                                               |
+| --------------------------------- | ---------------------------------------------------------------------- |
+| `case/exports/assembly/`          | Assembly-coordinate printed parts                                      |
+| `case/exports/print/core/`        | Base, top shell, display frame and support bar                         |
+| `case/exports/print/accessories/` | Carrier, cover and wedge                                               |
+| `case/exports/print/jigs/`        | Temporary flex former                                                  |
+| `case/exports/reference/`         | Purchased caps, switch, battery, panel and PCB envelopes; do not print |
+| `case/exports/patterns/`          | Clear-sheet lens cutting outline                                       |
 
 `print-layout.json` records print orientations and bed translations. Start home trials with PETG, a 0.4 mm nozzle and 0.15 mm layers. The top shell prints face-down; inspect the recessed display ledge and use local supports if required by the slicer. The base and display supports have flat print orientations. Purchased caps eliminate printed sliding fits, elastomer inserts and cap-retaining screws. [JLC3DP guidelines](https://jlc3dp.com/help/article/3d-printing-design-guideline) and [PCBWay printing capabilities](https://www.pcbway.com/rapid-prototyping/3d-printing/) describe the service limits, not acceptance of these parts.
 
@@ -95,15 +95,15 @@ The assembly checks cover cap insertion through the roof, 0–0.5 mm travel, lat
 
 ### What is printed, fabricated or purchased
 
-| Part or operation                                                | Practical route                                                                                       |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| L-shaped PCB: 87 SMT parts and two through-hole switches                        | PCB fabrication and assembly from Gerbers/BOM/CPL; confirm exact parts and the supported routed panel |
-| Shell, base, supports, wedge and carrier plastics | Separate prints; qualify material, surface finish, fits and pilot threads                             |
-| E-paper panel, protected battery, switches, caps, controller and NTC   | Purchase the selected components                                                                      |
-| Clear lens, foam and insulation                 | Cut purchased sheet materials using the patterns; reference meshes are not substitutes                |
-| Battery/NTC harness                                              | Crimp or source pigtails, splice and insulate, bond the sensor and verify polarity                    |
-| Fasteners, magnetic array and steel shield                       | Source separately; printing supplies their housing, not the functional materials                      |
-| Completed device                                                 | Install the controls, flex, glass and cell, close, program and test                                   |
+| Part or operation                                                    | Practical route                                                                                       |
+| -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| L-shaped PCB: 87 SMT parts and two through-hole switches             | PCB fabrication and assembly from Gerbers/BOM/CPL; confirm exact parts and the supported routed panel |
+| Shell, base, supports, wedge and carrier plastics                    | Separate prints; qualify material, surface finish, fits and pilot threads                             |
+| E-paper panel, protected battery, switches, caps, controller and NTC | Purchase the selected components                                                                      |
+| Clear lens, foam and insulation                                      | Cut purchased sheet materials using the patterns; reference meshes are not substitutes                |
+| Battery/NTC harness                                                  | Crimp or source pigtails, splice and insulate, bond the sensor and verify polarity                    |
+| Fasteners, magnetic array and steel shield                           | Source separately; printing supplies their housing, not the functional materials                      |
+| Completed device                                                     | Install the controls, flex, glass and cell, close, program and test                                   |
 
 PCBWay advertises complete product and cable-harness assembly, which needs a separately defined scope, instructions and test procedure. JLCPCB states that enclosure integration and box-build assembly are not included in its current workflow. These are advertised services, not acceptance of this design. [PCBWay assembly services](https://www.pcbway.com/pcb-assembly.html), [JLCPCB service scope](https://jlcpcb.com/blog/turnkey-pcb-assembly).
 

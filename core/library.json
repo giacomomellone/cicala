@@ -1,0 +1,7 @@
+{
+  "name": "cicala-core",
+  "version": "0.1.0",
+  "description": "Portable Cicala question, session, and signed bundle logic",
+  "license": "MIT",
+  "build": { "srcDir": "src", "includeDir": "include" }
+}
