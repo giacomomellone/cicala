@@ -9,6 +9,7 @@ An open-source system for conversation questions. Its parts share one database:
 - `questions/` — the database: YAML, one file per language, CC0. The core asset.
 - `website/` — Astro 5 static site (play / browse / contribute / device / deck), MIT.
 - `tools/` — Python validator and build scripts that turn the YAML into site payloads and device bundles, MIT.
+- `core/` — portable C++ question/session logic, bundle verification, and snapshot codecs shared by Zephyr and the public CrossPoint fork. `just core-package` builds the pinned archive that the fork consumes.
 - `firmware/` — Zephyr firmware for the ESP32-S3 device. The breadboard rig runs the tabletop loop, deep sleep, setup portal, bundle sync, signed OTA, and power-status path. Sleep current needs rev A hardware because the DevKitC indicators exceed the 30 µA budget. Hardware-free logic lives in `firmware/lib/`; Zephyr glue lives in `firmware/app/src/`. Start with `docs/firmware_primer.md`; the design is in `docs/firmware_architecture.md`.
 - `hardware/` — schematic and enclosure. Structure and contracts only.
 - `deps/` — gitignored west workspace (zephyr + modules). Never edit or commit anything here.

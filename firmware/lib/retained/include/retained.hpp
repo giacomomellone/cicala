@@ -5,22 +5,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "qdb.hpp"
+#include "session.hpp"
 
 namespace cicala
 {
-
-/** Text snapshot survives a menu visit and replacement of the backing corpus. */
-struct PlayState {
-    uint8_t permissions;
-    uint8_t draft;
-    uint8_t cursor;
-    bool menu;
-    uint8_t kind;
-    uint8_t restrictions;
-    uint16_t len;
-    char text[CONFIG_CICALA_MAX_QUESTION_BYTES];
-};
 
 /** State preserved across a deep-sleep wake. */
 struct Retained {

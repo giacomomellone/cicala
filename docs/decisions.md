@@ -1162,3 +1162,24 @@ PCB silkscreen. The website uses the mark in a circle with a short nudge on
 hover, focus or tap, disabled by reduced-motion preferences. The physical
 device retains its monochrome display and unbranded face. The existing
 question database and contribution policy are unchanged.
+
+## 2026-09-20: Shared Cicala core and an Xteink X4 Pro fork
+
+Cicala runs as a Home-menu activity in a CrossPoint fork for Xteink X4 Pro. The
+portable C++ core in this repository owns selection, filter transactions,
+bundle validation, and session snapshot encoding. Zephyr and CrossPoint provide
+their own display, transport, storage, and lifecycle adapters. The website keeps
+TypeScript behavior checked against shared selection fixtures.
+
+The fork consumes immutable core archives with source provenance and a checksum
+pin. It tracks upstream through frequent merges, with a daily disposable merge
+check. Its firmware release number is independent of CrossPoint's, and its OTA
+channel follows the fork. Generic updater configuration, sleep hooks, and
+checked display completion are separated for upstream review.
+
+The Pro session persists on SD because normal device sleep may cut power. Sleep
+retains the question or filter view, and a one-shot marker requests resume.
+Updates are manual, English is the initial corpus, and a failed display or
+bundle update does not advance the session. A small checked-refresh SDK patch
+is carried against an exact pin until the SDK offers the needed result. The
+cost is maintaining that patch and validating each SDK revision on hardware.

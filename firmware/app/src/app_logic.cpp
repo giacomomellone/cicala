@@ -96,6 +96,7 @@ const char *const debug_pages[] = {
 class Io : public cicala::AppIo
 {
 public:
+    Io() : session(cicala_retained().play, random_u32, nullptr) {}
     cicala::Qdb qdb;
 
     bool bind()
@@ -103,65 +104,33 @@ public:
         char language[4] = {};
         memcpy(language, qdb.language(), MIN(qdb.language_len(), sizeof(language) - 1));
         const int index = cicala_corpus_find(language);
-        _slot = index >= 0 && index < 3 ? index : 0;
-        cicala::Bag bag(cicala_retained().bags[_slot], random_u32, nullptr);
-        const bool kept = bag.bind(qdb);
+        const int slot = index >= 0 && index < 3 ? index : 0;
+        auto &bag = cicala_retained().bags[slot];
+        const bool kept = bag.fingerprint == qdb.fingerprint();
+        // A replaced corpus cancels any transaction referring to its old indices.
+        session.cancel();
+        session.bindCorpus(qdb, bag);
         cicala_retained_seal();
         return kept;
     }
 
     bool draw() override
     {
-        if (!begin())
+        if (!can_refresh())
             return false;
-        if (_play.menu) {
-            if (_play.cursor < 3) {
-                _play.draft ^= 1u << _play.cursor;
-                return publish(CICALA_CARD_FILTERS);
-            }
-            _play.permissions = _play.draft;
-            _play.menu = false;
-            if (_play.len && !(_play.restrictions & ~_play.permissions)) {
-                return publish(CICALA_CARD_QUESTION);
-            }
-        }
-        uint16_t index = 0;
-        cicala::Question question = {};
-        cicala::Bag bag(_bag, random_u32, nullptr);
 #ifdef CONFIG_CICALA_DEBUG_CHARSET
-        const char *page = debug_pages[_page];
-        _page = (_page + 1) % ARRAY_SIZE(debug_pages);
-        question.text = page;
-        question.len = strlen(page);
-#else
-        if (!bag.draw(qdb, _play.permissions, index, question)) {
-            _play.len = 0;
-            _play.restrictions = 0;
-            return publish(CICALA_CARD_EMPTY);
+        if (!session.state().menu) {
+            const char *page = debug_pages[_page];
+            _page = (_page + 1) % ARRAY_SIZE(debug_pages);
+            return publish(session.prepareMessage(cicala::ViewKind::Question, page, strlen(page)));
         }
 #endif
-        if (question.len > sizeof(_play.text))
-            return false;
-        _play.len = question.len;
-        memcpy(_play.text, question.text, question.len);
-        _play.restrictions = (question.dark ? cicala::kAllowDark : 0) |
-                             (question.sexual ? cicala::kAllowSexual : 0) |
-                             (question.depth == 3 ? cicala::kAllowHeavy : 0);
-        return publish(CICALA_CARD_QUESTION);
+        return publish(session.prepare(cicala::Action::Next));
     }
 
     bool show_filters() override
     {
-        if (!begin())
-            return false;
-        if (_play.menu)
-            _play.cursor = (_play.cursor + 1) % 4;
-        else {
-            _play.menu = true;
-            _play.cursor = 0;
-            _play.draft = _play.permissions;
-        }
-        return publish(CICALA_CARD_FILTERS);
+        return can_refresh() && publish(session.prepare(cicala::Action::Filters));
     }
 
     bool retained_matches() const override
@@ -172,10 +141,8 @@ public:
 
     bool show_service() override
     {
-        if (!begin())
-            return false;
-        _play.menu = false;
-        return publish(CICALA_CARD_SERVICE);
+        return can_refresh() &&
+               publish(session.prepareMessage(cicala::ViewKind::Service, nullptr, 0));
     }
 
     void set_service(const char *text, uint16_t len)
@@ -184,63 +151,51 @@ public:
         memcpy(_service_text, text, _service_len);
     }
 
-    uint32_t last_seq() const { return _seq; }
-    void adopt_seq(uint32_t seq) { _seq = seq; }
+    uint32_t last_seq() const { return session.sequence(); }
+    void adopt_seq(uint32_t seq) { session.adoptSequence(seq); }
 
     void complete(bool ok) override
     {
-        if (ok && _pending) {
-            auto &block = cicala_retained();
-            // A sync during refresh must not revive indices into the old corpus.
-            if (block.bags[_pending_slot].fingerprint == _bag.fingerprint) {
-                block.bags[_pending_slot] = _bag;
-            }
-            block.play = _play;
-            block.seq = _seq;
+        if (session.complete(session.sequence(),
+                             ok ? cicala::RenderResult::Complete : cicala::RenderResult::Failed)) {
+            cicala_retained().seq = session.sequence();
             cicala_retained_seal();
         }
-        _pending = false;
     }
 
 private:
-    bool begin()
+    bool can_refresh()
     {
-        _pending = false;
-        if (!cicala_power_refresh_allowed()) {
-            cicala_status_note_refresh_blocked();
-            return false;
-        }
-        _play = cicala_retained().play;
-        _bag = cicala_retained().bags[_slot];
-        _pending_slot = _slot;
-        return true;
+        if (cicala_power_refresh_allowed())
+            return true;
+        cicala_status_note_refresh_blocked();
+        return false;
     }
 
-    bool publish(uint8_t kind)
+    bool publish(const cicala::PendingView *view)
     {
+        if (!view)
+            return false;
         struct cicala_question_msg msg = {};
-        msg.seq = ++_seq;
-        msg.kind = kind;
-        msg.permissions = kind == CICALA_CARD_FILTERS ? _play.draft : _play.permissions;
-        msg.cursor = _play.cursor;
-        if (kind == CICALA_CARD_QUESTION) {
-            msg.len = _play.len;
-            memcpy(msg.text, _play.text, msg.len);
-        } else if (kind == CICALA_CARD_SERVICE) {
+        msg.seq = view->token;
+        const auto &play = view->play;
+        msg.kind = play.kind;
+        msg.permissions = play.menu ? play.draft : play.permissions;
+        msg.cursor = play.cursor;
+        if (msg.kind == CICALA_CARD_QUESTION) {
+            msg.len = play.len;
+            memcpy(msg.text, play.text, msg.len);
+        } else if (msg.kind == CICALA_CARD_SERVICE) {
             msg.len = _service_len;
             memcpy(msg.text, _service_text, msg.len);
         }
-        _play.kind = kind;
-        _pending = zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0;
-        return _pending;
+        if (zbus_chan_pub(&chan_question, &msg, K_MSEC(100)) == 0)
+            return true;
+        session.complete(view->token, cicala::RenderResult::Failed);
+        return false;
     }
 
-    uint32_t _seq = 0;
-    uint8_t _slot = 0;
-    uint8_t _pending_slot = 0;
-    bool _pending = false;
-    cicala::PlayState _play = {};
-    cicala::Bag::State _bag = {};
+    cicala::Session session;
     char _service_text[CONFIG_CICALA_MAX_QUESTION_BYTES] = {};
     uint16_t _service_len = 0;
 #ifdef CONFIG_CICALA_DEBUG_CHARSET

@@ -49,21 +49,23 @@ short ADC and VBUS reads run as delayed work.
 
 ## Code boundaries
 
-Hardware-free policy lives in `firmware/lib/`. Zephyr threads, drivers,
-channels, and storage adapters live in `firmware/app/src/`.
+Shared question and session policy lives in `core/`, also consumed by the
+[Xteink X4 fork](crosspoint.md). Zephyr-specific policy remains in
+`firmware/lib/`; threads, drivers, channels, and storage adapters live in
+`firmware/app/src/`.
 
 | Area                                         | Owns                                                                |
 | -------------------------------------------- | ------------------------------------------------------------------- |
 | `lib/fsm`                                    | table-driven state machine engine with an injectable clock          |
 | `lib/app_fsm`                                | Filters, Next, render, and service-card policy                      |
-| `lib/qdb`                                    | QDB4 validation and draw-without-repeats state                      |
+| `../core`, through `lib/qdb`                 | QDB4 validation, selection, and transactional session state         |
 | `lib/layout`                                 | UTF-8 decoding, accent composition, and line wrapping               |
 | `lib/portal`                                 | portal state machine, form parsing, DNS replies, and HTML rendering |
 | `lib/power`                                  | battery and external-power states                                   |
 | `lib/status`                                 | LED priority and blink patterns                                     |
-| `lib/sync`                                   | manifest parsing and version comparison                             |
+| `lib/sync`                                   | CMake adapter for shared manifest parsing and version comparison    |
 | `lib/retained`                               | validation of the RTC-retained block                                |
-| `lib/ed25519`                                | detached-signature verification                                     |
+| `lib/ed25519`                                | CMake adapter for shared detached-signature verification            |
 | `app/src/input.c`                            | Filters and Next events from `gpio-keys`                            |
 | `app/src/app.c`, `app_logic.cpp`             | app thread, state machine effects, and corpus binding               |
 | `app/src/display.c`, `panel.cpp`             | display thread, layout, and refresh policy                          |

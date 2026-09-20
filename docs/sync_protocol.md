@@ -104,7 +104,7 @@ The writer and device reader implement the same format:
 |                            | Where                   | Used by                           |
 | -------------------------- | ----------------------- | --------------------------------- |
 | Writer + reference decoder | `tools/build_bundle.py` | the bundle build, the tools suite |
-| Device reader              | `firmware/lib/qdb/`     | the firmware                      |
+| Device reader              | `core/src/qdb.cpp`      | Zephyr and the CrossPoint fork    |
 
 The firmware suites read real bundles emitted by `build_bundle.py`.
 `firmware/tests/qdb` also decodes the worked example above byte for byte.

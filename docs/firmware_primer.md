@@ -1,5 +1,8 @@
 # Firmware primer
 
+This page covers the ESP32-S3 device. The [Xteink X4 integration](crosspoint.md)
+uses the same portable Cicala core through a CrossPoint adapter.
+
 The firmware targets an ESP32-S3 DevKitC with Zephyr. The breadboard rig runs
 the full tabletop loop, deep sleep, setup portal, bundle sync, signed OTA, and
 power-status path. See [firmware architecture](firmware_architecture.md) for

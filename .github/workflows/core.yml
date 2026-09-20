@@ -1,0 +1,59 @@
+name: Portable core
+on:
+  pull_request:
+    paths:
+      [
+        "core/**",
+        "tools/**",
+        "firmware/tests/corpus/**",
+        "firmware/components/sync/trusted_key.h",
+        "questions/**",
+        ".github/workflows/core.yml",
+      ]
+  push:
+    tags: ["core-*"]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: pip install pyyaml jsonschema
+      - run: python tools/validate.py
+      - run: cmake -S core -B build/core -DCICALA_BUILD_TESTS=ON && cmake --build build/core --parallel
+      - run: ctest --test-dir build/core --output-on-failure
+      - run: python tools/test_core_bundle.py build/core/tests/cicala_bundle_check
+      - run: python tools/package_core.py --release
+      - name: Verify the packaged source builds independently
+        run: |
+          mkdir -p build/package
+          tar -xzf dist/cicala-core-0.1.0.tar.gz -C build/package
+          cmake -S build/package -B build/package-test -DCICALA_BUILD_TESTS=ON
+          cmake --build build/package-test --parallel
+          ctest --test-dir build/package-test --output-on-failure
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: cicala-core
+          path: dist/cicala-core-*.tar.gz*
+  release:
+    if: startsWith(github.ref, 'refs/tags/core-')
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: cicala-core
+          path: dist
+      - name: Publish immutable package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          test "$RELEASE_TAG" = "core-0.1.0"
+          gh release create "$RELEASE_TAG" dist/* --repo "$GITHUB_REPOSITORY" --title "Cicala core 0.1.0" --notes "Portable C++ library and English offline fallback."

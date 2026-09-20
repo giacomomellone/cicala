@@ -32,6 +32,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import openssl_tool  # noqa: E402
 import validate  # noqa: E402
 from build_site_data import git_version  # noqa: E402
 
@@ -132,7 +133,16 @@ def sign_digest(digest: bytes, key_path: Path) -> str:
         tf.write(digest)
         tf.flush()
         out = subprocess.run(
-            ["openssl", "pkeyutl", "-sign", "-inkey", str(key_path), "-rawin", "-in", tf.name],
+            [
+                openssl_tool.executable(),
+                "pkeyutl",
+                "-sign",
+                "-inkey",
+                str(key_path),
+                "-rawin",
+                "-in",
+                tf.name,
+            ],
             capture_output=True,
             check=True,
         )

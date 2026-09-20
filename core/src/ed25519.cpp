@@ -3,7 +3,7 @@
 #include <string.h>
 
 extern "C" {
-#include "tweetnacl.h"
+#include "vendor/tweetnacl.h"
 }
 
 namespace cicala

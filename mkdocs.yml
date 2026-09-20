@@ -24,6 +24,7 @@ nav:
   - hardware wiring: hardware_wiring.md
   - firmware primer: firmware_primer.md
   - firmware architecture: firmware_architecture.md
+  - Cicala on Xteink X4: crosspoint.md
   - patching zephyr: firmware_patches.md
   - decisions: decisions.md
   - contribution pipeline: contribution_pipeline.md
