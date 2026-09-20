@@ -1,5 +1,24 @@
 # Device page imagery
 
+## Xteink X4 Pro / CrossPoint
+
+`x4pro-home.png`, `x4pro-question.png` and `x4pro-filters.png` are 480 × 800
+interface illustrations exported on 20 September 2026 from the approved Reading
+room layout. They show the 32 px menu mark, 36 px question mark, Noto Sans 18 pt
+question and inverted Next button. The webpage adds a schematic device bezel.
+These are layout renders, not photographs or captures from physical hardware;
+the surrounding CrossPoint Home screen is schematic and depends on its theme.
+
+The question is copied verbatim from `website/placeholder-corpus/en/questions.yaml`.
+It is an existing layout fixture, not part of the empty production English corpus.
+Bitmap fonts come from the public CrossPoint font assets (Noto Sans / Ubuntu,
+under their bundled OFL / Ubuntu Font License). The symbol is the public
+`website/public/brand/cicala-mark.svg`. The firmware implementation lives in
+[`CicalaActivity.cpp`](https://github.com/giacomomellone/cicala-crosspoint/blob/cicala/src/activities/cicala/CicalaActivity.cpp).
+Keep these selected, approved illustrations aligned with that implementation.
+
+## Rev B renders
+
 The current device page imports four native Rev B enclosure PNGs directly from
 `hardware/rev_b/case/renders/`: assembly, exploded, inside and section.
 The dedicated button-design and carrier views are not displayed.

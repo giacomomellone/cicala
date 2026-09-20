@@ -1,7 +1,7 @@
 ---
 import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
-import { REPO_URL } from "../config";
+import { CROSSPOINT_URL, REPO_URL } from "../config";
 import { t } from "../i18n";
 import assembly from "../../../hardware/rev_b/case/renders/assembly.png";
 import exploded from "../../../hardware/rev_b/case/renders/exploded.png";
@@ -11,6 +11,23 @@ import pcbTop from "../../../hardware/rev_b/pcb/renders/top.png";
 import pcbBottom from "../../../hardware/rev_b/pcb/renders/bottom.png";
 import silkTop from "../../../hardware/rev_b/pcb/renders/silkscreen_top.svg?url";
 import silkBottom from "../../../hardware/rev_b/pcb/renders/silkscreen_bottom.svg?url";
+import x4proHome from "../assets/device/x4pro-home.png";
+import x4proQuestion from "../assets/device/x4pro-question.png";
+import x4proFilters from "../assets/device/x4pro-filters.png";
+
+const crosspointViews = [
+  { image: x4proHome, caption: "device.crosspoint.home", alt: "device.crosspoint.home.alt" },
+  {
+    image: x4proQuestion,
+    caption: "device.crosspoint.question",
+    alt: "device.crosspoint.question.alt",
+  },
+  {
+    image: x4proFilters,
+    caption: "device.crosspoint.filters",
+    alt: "device.crosspoint.filters.alt",
+  },
+] as const;
 
 const caseViews = [
   { image: exploded, caption: "device.render.exploded", alt: "device.render.exploded.alt" },
@@ -35,7 +52,7 @@ const pcbViews = [
 
 <Base
   title="The device · Cicala"
-  description="A small e-paper device for conversations around a table. Explore the enclosure CAD and PCB in development."
+  description="Cicala on e-paper: explore the dedicated device in development, or use an Xteink X4 Pro with our CrossPoint firmware fork."
 >
   <article class="device-page">
     <header class="device-intro">
@@ -48,6 +65,9 @@ const pcbViews = [
           {t("en", "device.wip.updates")}
         </a>
       </p>
+      <a class="device-alternative" href="#crosspoint" data-i18n="device.crosspoint.jump">
+        {t("en", "device.crosspoint.jump")}
+      </a>
     </header>
 
     <figure class="device-assembly">
@@ -119,6 +139,54 @@ const pcbViews = [
         }
       </div>
     </section>
+    <section
+      class="device-renders device-crosspoint"
+      id="crosspoint"
+      aria-labelledby="crosspoint-title"
+    >
+      <p class="crosspoint-eyebrow" data-i18n="device.crosspoint.eyebrow">
+        {t("en", "device.crosspoint.eyebrow")}
+      </p>
+      <h2 id="crosspoint-title" data-i18n="device.crosspoint.title">
+        {t("en", "device.crosspoint.title")}
+      </h2>
+      <p data-i18n="device.crosspoint.body">{t("en", "device.crosspoint.body")}</p>
+      <p data-i18n="device.crosspoint.flow">{t("en", "device.crosspoint.flow")}</p>
+      <div class="crosspoint-screens">
+        {
+          crosspointViews.map((view) => (
+            <figure>
+              <a class="device-image-link crosspoint-device" href={view.image.src}>
+                <Image
+                  src={view.image}
+                  alt={t("en", view.alt)}
+                  data-i18n-alt={view.alt}
+                  widths={[240, 480]}
+                  sizes="(max-width: 40rem) 176px, 208px"
+                  format="png"
+                  loading="lazy"
+                />
+              </a>
+              <figcaption data-i18n={view.caption}>{t("en", view.caption)}</figcaption>
+            </figure>
+          ))
+        }
+      </div>
+      <p class="crosspoint-render-note" data-i18n="device.crosspoint.renderNote">
+        {t("en", "device.crosspoint.renderNote")}
+      </p>
+      <div class="crosspoint-links">
+        <a href={`${CROSSPOINT_URL}/tree/cicala`} data-i18n="device.crosspoint.source"
+          >{t("en", "device.crosspoint.source")}</a
+        >
+        <a href={`${CROSSPOINT_URL}/blob/cicala/docs/cicala.md`} data-i18n="device.crosspoint.guide"
+          >{t("en", "device.crosspoint.guide")}</a
+        >
+      </div>
+      <p class="crosspoint-status" data-i18n="device.crosspoint.status">
+        {t("en", "device.crosspoint.status")}
+      </p>
+    </section>
   </article>
 </Base>
 
@@ -141,6 +209,75 @@ const pcbViews = [
   .device-status {
     margin-top: 1.5rem;
     color: var(--ink-soft);
+  }
+  .device-alternative {
+    display: inline-block;
+    margin-top: 1rem;
+  }
+  .device-crosspoint .crosspoint-eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+  .device-crosspoint > p {
+    max-width: 68ch;
+  }
+  .crosspoint-screens {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+    margin-block: 2rem 1.5rem;
+    padding: 1.5rem 1rem;
+    background: var(--paper);
+  }
+  .crosspoint-screens figure {
+    margin: 0;
+    min-width: 0;
+  }
+  .crosspoint-screens figcaption {
+    text-align: center;
+    margin-top: 1.25rem;
+  }
+  .device-image-link.crosspoint-device {
+    width: min(100%, 14rem);
+    margin-inline: auto;
+    padding: 0.65rem 0.65rem 1.65rem;
+    border: 2px solid #42453d;
+    border-radius: 1rem;
+    background: #282b24;
+    position: relative;
+    transition: transform 180ms ease;
+  }
+  .crosspoint-device::after {
+    content: "";
+    position: absolute;
+    bottom: 0.45rem;
+    left: calc(50% - 0.3rem);
+    width: 0.6rem;
+    height: 0.6rem;
+    border: 1px solid #919587;
+    border-radius: 50%;
+  }
+  .crosspoint-device:hover {
+    transform: translateY(-3px);
+  }
+  .crosspoint-device:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 5px;
+  }
+  .crosspoint-links {
+    display: flex;
+    gap: 0.75rem 2rem;
+    flex-wrap: wrap;
+  }
+  .device-crosspoint .crosspoint-render-note,
+  .device-crosspoint .crosspoint-status {
+    font-size: 0.8125rem;
+    max-width: none;
+  }
+  .device-crosspoint .crosspoint-status {
+    margin-top: 1rem;
   }
   a {
     text-underline-offset: 0.25em;
@@ -207,6 +344,16 @@ const pcbViews = [
     padding-block: 0.5rem;
   }
   @media (max-width: 40rem) {
+    .crosspoint-screens {
+      grid-template-columns: repeat(3, 12.5rem);
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      gap: 1.25rem;
+      padding-inline: 0;
+    }
+    .crosspoint-screens figure {
+      scroll-snap-align: start;
+    }
     .device-case-views,
     .device-board-views {
       grid-template-columns: 1fr;
@@ -219,6 +366,17 @@ const pcbViews = [
     }
     .device-renders {
       margin-top: 2rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .crosspoint-device {
+      transition: none;
+    }
+    .crosspoint-device:hover {
+      transform: none;
+    }
+    .crosspoint-screens {
+      scroll-snap-type: none;
     }
   }
 </style>
