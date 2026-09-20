@@ -1,5 +1,6 @@
+set(core ${CMAKE_CURRENT_LIST_DIR}/../../../core)
 zephyr_library_named(cicala_ed25519)
-zephyr_library_sources(ed25519.cpp vendor/tweetnacl.c)
-zephyr_include_directories(include vendor)
-
+zephyr_library_sources(${core}/src/ed25519.cpp ${core}/src/vendor/tweetnacl.c)
+zephyr_include_directories(${core}/include)
+zephyr_library_include_directories(${core}/src/vendor)
 add_dependencies(cicala_ed25519 zephyr_generated_headers)

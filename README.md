@@ -10,6 +10,10 @@ Its three parts share one database:
 2. **[Website](website/)**: a static front-end to the database, no account needed. Anyone can play, save favorites, and suggest questions.
 3. **[Device](hardware/)**: a pocket-sized offline object with one e-paper display and adjacent Filters and Next buttons. The first prototype is still in development.
 
+Cicala also has an [Xteink X4 Pro integration](docs/crosspoint.md) in a CrossPoint
+fork. It shares the portable question engine with the device firmware and adds
+manual bundle updates and sessions saved on SD.
+
 ## AI policy
 
 Cicala's questions are [**Human Reserved**](https://www.gatesnotes.com/home/home-page-topic/reader/a-turbulent-ai-era-and-critical-choices-to-make).

@@ -1,5 +1,5 @@
+set(core ${CMAKE_CURRENT_LIST_DIR}/../../../core)
 zephyr_library_named(cicala_sync)
-zephyr_library_sources(manifest.cpp)
-zephyr_include_directories(include)
-
+zephyr_library_sources(${core}/src/manifest.cpp)
+zephyr_include_directories(${core}/include)
 add_dependencies(cicala_sync zephyr_generated_headers)

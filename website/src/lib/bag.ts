@@ -1,4 +1,4 @@
-// Selection happens at draw time, with the same priorities as firmware/lib/qdb.
+// Selection happens at draw time, with the same priorities as core/src/qdb.cpp.
 import { FORMS, RECENT_WINDOW, type Permissions } from "../config";
 
 export interface TextureMeta {

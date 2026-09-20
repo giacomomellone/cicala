@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "config.hpp"
 
 namespace cicala
 {
@@ -13,24 +14,6 @@ constexpr uint8_t kAllowDark = 1 << 0;
 constexpr uint8_t kAllowSexual = 1 << 1;
 constexpr uint8_t kAllowHeavy = 1 << 2;
 constexpr uint8_t kPermissionsValid = 7;
-
-#ifdef CONFIG_CICALA_MAX_QUESTIONS
-constexpr uint16_t kMaxQuestions = CONFIG_CICALA_MAX_QUESTIONS;
-#else
-constexpr uint16_t kMaxQuestions = 512;
-#endif
-
-#ifdef CONFIG_CICALA_RECENT_RING
-constexpr uint8_t kRecentRing = CONFIG_CICALA_RECENT_RING;
-#else
-constexpr uint8_t kRecentRing = 20;
-#endif
-
-#ifdef CONFIG_CICALA_TEXTURE
-constexpr bool kTexture = true;
-#else
-constexpr bool kTexture = false;
-#endif
 
 constexpr uint16_t kBitmapWords = (kMaxQuestions + 31) / 32;
 
